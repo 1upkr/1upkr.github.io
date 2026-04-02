@@ -11,6 +11,7 @@ plugins:
 
 # Theme options
 # style: dark # dark (default) or light or hacker
+style: dark # dark (default) or light or hacker
 # listen_for_clients_preferred_style: true # true or false (default)
 
 # Fonts
