@@ -16,9 +16,9 @@ robots: noindex
    └─ EXP: MAX
    
    ITEMS:
-   ├─ VIBES ---------------------- x∞
-   ├─ GOOD LUCK RIBBON ----------- x1
-   └─ NERD PENDANT --------------- x1
+   ├─ VIBES ══════════════════ x9
+   ├─ GOOD LUCK RIBBON ═══════ x1
+   └─ NERD PENDANT ═══════════ x1
    
    PSI POWERS:
    ├─ PSI VIBE α
@@ -29,9 +29,11 @@ robots: noindex
    Take these good vibes with you!"
    
    $ PRAY
-   > Your vibes were restored!
+   〉 Your vibes were restored!
 ╠═══════════════════════════════════════╣
-   © 2026 | made with soul in SEOUL
-   Status: ONLINE | Mode: ULTIMATE VB
-   Connection established... _
+  © 2026 | Manufactured in Seoul, KR
+  Status: ONLINE | EarthBound Beginnings
+  Connection established... _
 ╚═══════════════════════════════════════╝
+
+<br/>
