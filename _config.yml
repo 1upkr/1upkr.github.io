@@ -4,7 +4,7 @@
 #  - index.md
 #  - about.md
 
-#footer: 'follow us on <a href="https://twitter.com/">twitter</a>'
+footer: "// © 2026 nerd ]v[asta. just 1UP YOUR VIBE."
 
 plugins:
   - jekyll-seo-tag
