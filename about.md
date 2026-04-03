@@ -5,7 +5,7 @@ permalink: /about.html
 robots: noindex
 ---
 
-# about
+# /about
 <br/>
 ```
 ╔════════════════════════════════════╗                                       
