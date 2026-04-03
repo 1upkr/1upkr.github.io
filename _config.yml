@@ -1,8 +1,8 @@
 # Example Site settings
 
-header_pages:
-  - index.md
-  - about.md
+# header_pages:
+#  - index.md
+#  - about.md
 
 footer: "// © 2026 nerd ]v[asta. just 1UP YOUR VIBE."
 
