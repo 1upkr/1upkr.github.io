@@ -4,6 +4,14 @@ layout: home
 permalink: /
 ---
 
-# Lorem 안녕하세요.
+# / 1UP.
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+한 번 더 살아나는 감각.
+
+CRT의 잔상과 8비트 사운드 속에서 시작된 이 짧은 신호는, 이제 익숙한 추억을 넘어 오늘의 에너지를 깨우는 새로운 언어가 된다.
+
+쌓여온 경험은 지금의 리듬이 되고, 반복된 시행착오는 각자의 감각을 더 선명하게 만든다. 일상을 채우는 작은 노이즈마저도 결국 나만의 분위기와 태도로 완성된다.
+
+익숙한 감각을 깨우고, 지금의 바이브를 올린다.
+
+1UP YOUR VIBE.
