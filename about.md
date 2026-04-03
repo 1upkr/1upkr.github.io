@@ -29,7 +29,7 @@ robots: noindex
    Take these good vibes with you!"
    
    ＄PRAY
-   〉Your vibes were restored!
+   〉 Your vibes were restored!
 ╠════════════════════════════════════╣
   © 2026 | Manufactured in Seoul, KR
   Status: ONLINE | EarthBound Beginnings
