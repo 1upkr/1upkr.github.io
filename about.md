@@ -28,7 +28,7 @@ robots: noindex
    "It's dangerous to code alone.
    Take these good vibes with you!"
 
-    ＄PRAY
+   ＄PRAY
     〉 Your vibes were restored!
 ╠════════════════════════════════════╣
   © 2026 | Manufactured in Seoul, KR
