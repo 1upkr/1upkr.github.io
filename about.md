@@ -33,7 +33,7 @@ robots: noindex
    >Your vibes were restored!
 ╠════════════════════════════════════╣
   © 2026 | Manufactured in Seoul, KR
-  Status: ONLINE | EarthBound Beginnings
+  Status: 1UP | EarthBound Beginnings
   Connection established... _
 ╚════════════════════════════════════╝
 ```
