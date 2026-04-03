@@ -7,6 +7,7 @@ robots: noindex
 
 # about
 <br/>
+```
 ╔════════════════════════════════════╗                                       
              N / E / R / D                                                         
 ╠════════════════════════════════════╣                                         
@@ -35,5 +36,5 @@ robots: noindex
   Status: ONLINE | EarthBound Beginnings
   Connection established... _
 ╚════════════════════════════════════╝
-
+```
 <br/>
