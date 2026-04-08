@@ -1,5 +1,8 @@
 # Example Site settings
 
+lang: ko-KR        # 또는 ko
+timezone: Asia/Seoul
+
 header_pages:
   - index.md
   - about.md
