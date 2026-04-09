@@ -3,136 +3,144 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>1up kr :: ⚾ 레전드 스카우트 🏟️</title>
+<title>1up :: 👻 레전드 스카우트 시뮬레이터 ⚾</title>
 <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root,[data-theme="light"]{
-  --bg:#f4f2ee;--surface:#faf9f6;--surface-2:#fff;--surface-off:#eeebe5;--surface-dyn:#e4e1db;
-  --border:#d8d4cc;--divider:#e8e5df;
-  --text:#1e1c18;--text-m:#706d66;--text-f:#b0ada6;
-  --primary:#c8372d;--primary-h:#a82820;--primary-hl:#fae8e7;
-  --gold:#d4920a;--green:#2e7d32;--blue:#1565c0;
-  --sh-sm:0 1px 3px oklch(0.2 0.02 50/.07);--sh-md:0 4px 16px oklch(0.2 0.02 50/.10);--sh-lg:0 12px 36px oklch(0.2 0.02 50/.14);
+  --bg:#f4f2ee;--surface:#faf9f6;--s2:#fff;--soff:#edeae4;--sdyn:#e2dfd9;
+  --border:rgba(0,0,0,.1);--div:rgba(0,0,0,.07);
+  --text:#1a1814;--tm:#706d66;--tf:#b8b5ae;
+  --primary:#d03228;--primary-h:#b02520;--primary-hl:#fae8e7;
+  --gold:#c9880a;--green:#2a7130;--blue:#1251a3;
+  --sh-sm:0 1px 3px rgba(0,0,0,.08);--sh-md:0 4px 16px rgba(0,0,0,.11);--sh-lg:0 12px 36px rgba(0,0,0,.16);
   --r-sm:.375rem;--r-md:.5rem;--r-lg:.75rem;--r-xl:1rem;--r-2xl:1.5rem;--r-full:9999px;
-  --font:'Satoshi',sans-serif;--tr:200ms cubic-bezier(.16,1,.3,1);
+  --font:"Satoshi",sans-serif;--tr:180ms cubic-bezier(.16,1,.3,1);
 }
 [data-theme="dark"]{
-  --bg:#141210;--surface:#1a1917;--surface-2:#201e1c;--surface-off:#1d1b19;--surface-dyn:#2a2825;
-  --border:#3a3733;--divider:#252320;
-  --text:#e8e5e0;--text-m:#8a8781;--text-f:#55524e;
-  --primary:#e8534a;--primary-h:#f06b62;--primary-hl:#3d1f1d;
-  --gold:#f0b429;--green:#66bb6a;--blue:#64b5f6;
-  --sh-sm:0 1px 3px #00000040;--sh-md:0 4px 16px #00000050;--sh-lg:0 12px 36px #00000060;
+  --bg:#111009;--surface:#181714;--s2:#1e1c19;--soff:#1b1a17;--sdyn:#27251f;
+  --border:rgba(255,255,255,.09);--div:rgba(255,255,255,.05);
+  --text:#e6e3de;--tm:#898680;--tf:#504e49;
+  --primary:#e55248;--primary-h:#f0625a;--primary-hl:#3a1a18;
+  --gold:#f0b22a;--green:#5caa60;--blue:#5ea0f5;
+  --sh-sm:0 1px 3px rgba(0,0,0,.45);--sh-md:0 4px 16px rgba(0,0,0,.55);--sh-lg:0 12px 36px rgba(0,0,0,.65);
 }
 html{-webkit-font-smoothing:antialiased;scroll-behavior:smooth}
 body{min-height:100dvh;font-family:var(--font);font-size:16px;color:var(--text);background:var(--bg);line-height:1.6}
 button{cursor:pointer;background:none;border:none;font:inherit;color:inherit;transition:all var(--tr)}
-
-/* ── Layout ── */
-.wrap{max-width:720px;margin:0 auto;padding:24px 16px 48px}
+.wrap{max-width:740px;margin:0 auto;padding:20px 16px 60px}
 
 /* ── Header ── */
-.header{text-align:center;margin-bottom:32px}
-.header-title{font-size:clamp(1.5rem,4vw,2.2rem);font-weight:900;letter-spacing:-.03em;line-height:1.1;margin-bottom:6px}
-.header-sub{font-size:.875rem;color:var(--text-m)}
-.theme-row{display:flex;justify-content:flex-end;margin-bottom:12px}
-.theme-btn{width:34px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:var(--r-full);color:var(--text-m);border:1px solid var(--border)}
-.theme-btn:hover{background:var(--surface-dyn);color:var(--text)}
+.topbar{display:flex;justify-content:flex-end;margin-bottom:10px}
+.theme-btn{width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:var(--r-full);border:1px solid var(--border);font-size:1.1rem;color:var(--tm)}
+.theme-btn:hover{background:var(--sdyn)}
+.header{text-align:center;margin-bottom:28px;padding:16px 0 8px}
+.header-emoji{font-size:2.6rem;margin-bottom:8px;line-height:1}
+.header-title{font-size:clamp(1.5rem,4vw,2rem);font-weight:900;letter-spacing:-.03em;margin-bottom:6px}
+.header-sub{font-size:.85rem;color:var(--tm)}
+
+/* ── Section label ── */
+.sec-label{font-size:.7rem;font-weight:700;color:var(--tm);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px}
 
 /* ── Stadium grid ── */
-.section-label{font-size:.72rem;font-weight:700;color:var(--text-m);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px}
-.stadium-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:28px}
-@media(max-width:480px){.stadium-grid{grid-template-columns:repeat(3,1fr)}}
-.stadium-btn{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;border-radius:var(--r-xl);background:var(--surface);border:2px solid var(--border);transition:all var(--tr)}
-.stadium-btn:hover{border-color:var(--primary);transform:translateY(-2px);box-shadow:var(--sh-sm)}
-.stadium-btn.selected{border-color:var(--primary);background:var(--primary-hl);box-shadow:var(--sh-md)}
-.st-emoji{font-size:1.6rem;line-height:1}
-.st-name{font-size:.72rem;font-weight:700;text-align:center;line-height:1.2}
-.st-team{font-size:.65rem;color:var(--text-m);text-align:center}
+.st-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:24px}
+@media(max-width:460px){.st-grid{grid-template-columns:repeat(3,1fr)}}
+.st-btn{display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 6px;border-radius:var(--r-xl);background:var(--surface);border:2px solid var(--border);transition:all var(--tr)}
+.st-btn:hover{border-color:var(--primary);transform:translateY(-2px);box-shadow:var(--sh-sm)}
+.st-btn.sel{border-color:var(--primary);background:var(--primary-hl);box-shadow:var(--sh-md)}
+.st-emoji{font-size:1.5rem;line-height:1.2}
+.st-city{font-size:.72rem;font-weight:700;text-align:center}
+.st-team{font-size:.62rem;color:var(--tm);text-align:center}
 
 /* ── Scout button ── */
-.scout-btn{width:100%;padding:16px;background:var(--primary);color:#fff;font-size:1.05rem;font-weight:700;border-radius:var(--r-2xl);box-shadow:var(--sh-md);margin-bottom:28px;letter-spacing:-.01em;position:relative;overflow:hidden}
-.scout-btn::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.12) 0%,transparent 60%)}
+.scout-btn{width:100%;padding:15px;background:var(--primary);color:#fff;font-size:1rem;font-weight:700;border-radius:var(--r-2xl);box-shadow:var(--sh-md);margin-bottom:24px;letter-spacing:-.01em;overflow:hidden;position:relative}
+.scout-btn::after{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.13),transparent 55%)}
 .scout-btn:hover:not(:disabled){background:var(--primary-h);transform:translateY(-2px);box-shadow:var(--sh-lg)}
 .scout-btn:active:not(:disabled){transform:none}
-.scout-btn:disabled{opacity:.38;cursor:not-allowed;transform:none}
+.scout-btn:disabled{opacity:.35;cursor:not-allowed;transform:none}
 
 /* ── Result area ── */
-.result-area{min-height:160px;display:flex;align-items:center;justify-content:center;margin-bottom:28px}
-.result-empty{color:var(--text-f);font-size:.9rem;text-align:center;padding:24px}
-.result-card{width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-2xl);padding:24px;box-shadow:var(--sh-md);animation:pop .38s cubic-bezier(.16,1,.3,1)}
-@keyframes pop{from{opacity:0;transform:scale(.9) translateY(10px)}to{opacity:1;transform:none}}
-.result-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap;gap:8px}
-.result-stadium{font-size:.75rem;font-weight:700;color:var(--text-m);display:flex;align-items:center;gap:4px}
-.result-prob-badge{font-size:.72rem;padding:3px 10px;border-radius:var(--r-full);font-weight:700}
-.prob-high{background:color-mix(in oklab,var(--gold) 18%,var(--surface-off));color:var(--gold)}
-.prob-normal{background:var(--surface-dyn);color:var(--text-m)}
-.result-player{font-size:clamp(1.8rem,6vw,2.6rem);font-weight:900;letter-spacing:-.03em;margin-bottom:8px;line-height:1.1}
-.result-sub{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.result-area{min-height:160px;display:flex;align-items:center;justify-content:center;margin-bottom:24px}
+.result-empty{color:var(--tf);font-size:.9rem;text-align:center;padding:24px;line-height:2.2}
+
+/* Result card */
+.result-card{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:var(--r-2xl);box-shadow:var(--sh-md);overflow:hidden;animation:pop .38s cubic-bezier(.16,1,.3,1)}
+@keyframes pop{from{opacity:0;transform:scale(.9) translateY(12px)}to{opacity:1;transform:none}}
+.rc-top{padding:14px 20px 0;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px}
+.rc-stadium{font-size:.75rem;font-weight:700;color:var(--tm)}
+.rc-prob{font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:var(--r-full)}
+.rc-prob.high{background:color-mix(in oklab,var(--gold) 16%,var(--soff));color:var(--gold)}
+.rc-prob.norm{background:var(--sdyn);color:var(--tm)}
+.rc-body{padding:14px 20px 20px}
+.rc-name{font-size:clamp(1.8rem,5vw,2.4rem);font-weight:900;letter-spacing:-.03em;line-height:1.1;margin-bottom:10px}
+.rc-badges{display:flex;gap:6px;flex-wrap:wrap}
 .badge{font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:var(--r-full)}
-.badge-team{background:color-mix(in oklab,var(--blue) 14%,var(--surface-off));color:var(--blue)}
-.badge-hist{background:color-mix(in oklab,var(--green) 14%,var(--surface-off));color:var(--green)}
+.b-team{background:color-mix(in oklab,var(--blue) 14%,var(--soff));color:var(--blue)}
+.b-win{background:color-mix(in oklab,var(--green) 14%,var(--soff));color:var(--green)}
 
-/* ── Rolling ── */
-.rolling-card{width:100%;background:var(--surface-2);border:2px solid var(--primary);border-radius:var(--r-2xl);padding:24px;text-align:center;box-shadow:var(--sh-lg)}
-.rolling-name{font-size:clamp(1.6rem,5vw,2.2rem);font-weight:900;letter-spacing:-.03em;opacity:.5;animation:flicker .12s steps(1) infinite}
-@keyframes flicker{0%{opacity:.3}50%{opacity:.9}100%{opacity:.3}}
+/* Rolling */
+.rolling-card{width:100%;background:var(--s2);border:2px solid var(--primary);border-radius:var(--r-2xl);padding:28px 20px;text-align:center;box-shadow:var(--sh-lg)}
+.rolling-name{font-size:clamp(1.6rem,5vw,2.2rem);font-weight:900;letter-spacing:-.03em;animation:flicker .15s steps(1) infinite}
+@keyframes flicker{0%{opacity:.2}50%{opacity:.95}100%{opacity:.2}}
+.rolling-team{font-size:.8rem;color:var(--tm);margin-top:6px}
 
-/* ── Odds table ── */
-.odds-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);overflow:hidden;margin-bottom:28px}
-.odds-header{padding:12px 16px;border-bottom:1px solid var(--divider);display:flex;align-items:center;justify-content:space-between;gap:8px}
-.odds-title{font-size:.8rem;font-weight:700}
-.odds-sub{font-size:.72rem;color:var(--text-m)}
-.odds-body{padding:12px 16px;display:flex;flex-direction:column;gap:6px;max-height:240px;overflow-y:auto}
-.odds-body::-webkit-scrollbar{width:4px}
+/* ── Odds panel ── */
+.odds-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);overflow:hidden;margin-bottom:24px}
+.odds-hd{padding:12px 16px;border-bottom:1px solid var(--div);display:flex;justify-content:space-between;align-items:center;gap:8px}
+.odds-title{font-size:.78rem;font-weight:700}
+.odds-sub{font-size:.7rem;color:var(--tm)}
+.odds-body{padding:10px 16px;display:flex;flex-direction:column;gap:5px;max-height:220px;overflow-y:auto}
+.odds-body::-webkit-scrollbar{width:3px}
 .odds-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:var(--r-full)}
-.odds-row{display:flex;align-items:center;gap:10px}
-.odds-bar-wrap{flex:1;display:flex;align-items:center;gap:6px}
-.odds-bar{height:6px;background:var(--surface-dyn);border-radius:var(--r-full);flex:1;overflow:hidden}
+.odds-row{display:flex;align-items:center;gap:8px}
+.odds-emo{font-size:.85rem;flex-shrink:0;width:18px;text-align:center}
+.odds-name{font-size:.73rem;font-weight:600;min-width:52px}
+.odds-team-label{font-size:.65rem;color:var(--tm);min-width:42px}
+.odds-bar-wrap{flex:1;display:flex;align-items:center;gap:5px}
+.odds-bar{height:5px;background:var(--sdyn);border-radius:var(--r-full);flex:1;overflow:hidden}
 .odds-bar-fill{height:100%;border-radius:var(--r-full);transition:width .5s cubic-bezier(.16,1,.3,1)}
-.fill-high{background:linear-gradient(90deg,var(--primary),var(--gold))}
-.fill-norm{background:var(--text-f)}
-.odds-name{font-size:.75rem;font-weight:600;min-width:52px}
-.odds-team{font-size:.68rem;color:var(--text-m);min-width:36px}
-.odds-pct{font-size:.72rem;font-weight:700;min-width:42px;text-align:right;font-variant-numeric:tabular-nums}
+.fill-h{background:linear-gradient(90deg,var(--primary),var(--gold))}
+.fill-n{background:var(--tf)}
+.odds-pct{font-size:.7rem;font-weight:700;min-width:40px;text-align:right;font-variant-numeric:tabular-nums}
 
 /* ── History ── */
-.hist-section{border-top:1px solid var(--divider);padding-top:20px}
-.hist-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-.clear-btn{font-size:.75rem;color:var(--text-m);padding:4px 8px;border-radius:var(--r-sm)}
+.hist-section{border-top:1px solid var(--div);padding-top:20px}
+.hist-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.clear-btn{font-size:.75rem;color:var(--tm);padding:4px 8px;border-radius:var(--r-sm)}
 .clear-btn:hover{color:var(--primary)}
 .hist-list{display:flex;flex-direction:column;gap:6px}
-.hist-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface);border-radius:var(--r-lg);border:1px solid var(--border);animation:pop .2s ease}
-.hist-num{font-size:.68rem;color:var(--text-f);min-width:18px;text-align:right}
-.hist-emoji{font-size:1rem}
-.hist-player{font-size:.875rem;font-weight:700;flex:1}
-.hist-meta{font-size:.72rem;color:var(--text-m)}
-.hist-pct{font-size:.68rem;color:var(--text-f);font-variant-numeric:tabular-nums}
-.hist-empty{font-size:.875rem;color:var(--text-f);text-align:center;padding:20px}
+.hist-item{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--surface);border-radius:var(--r-lg);border:1px solid var(--border);animation:pop .2s ease}
+.hist-num{font-size:.65rem;color:var(--tf);min-width:16px;text-align:right;flex-shrink:0}
+.hist-emoji{font-size:1.1rem;flex-shrink:0}
+.hist-player{font-size:.875rem;font-weight:700;flex:1;min-width:0}
+.hist-origin{font-size:.72rem;color:var(--tm);flex-shrink:0}
+.hist-venue{font-size:.68rem;color:var(--tf);flex-shrink:0;white-space:nowrap}
+.hist-pct{font-size:.67rem;color:var(--tf);font-variant-numeric:tabular-nums;flex-shrink:0}
+.hist-empty{font-size:.875rem;color:var(--tf);text-align:center;padding:20px}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="theme-row">
-    <button class="theme-btn" data-theme-toggle aria-label="테마 전환">🌙</button>
+  <div class="topbar">
+    <button class="theme-btn" data-theme-toggle title="테마 전환">🌙</button>
   </div>
   <div class="header">
-    <div class="header-title">⚾ 레전드 스카우트 🏟️</div>
-    <div class="header-sub">구장을 선택하고 레전드를 뽑아보세요!</div>
+    <div class="header-emoji">⚾</div>
+    <div class="header-title">레전드 스카우트</div>
+    <div class="header-sub">구장을 선택하고 레전드 선수를 뽑아보세요!</div>
   </div>
 
-  <div class="section-label">🏟️ 구장 선택</div>
-  <div class="stadium-grid" id="stadiumGrid"></div>
+  <div class="sec-label">🏟️ 구장 선택</div>
+  <div class="st-grid" id="stadiumGrid"></div>
 
   <button class="scout-btn" id="scoutBtn" disabled>구장을 먼저 선택해주세요 🙏</button>
 
   <div class="result-area" id="resultArea">
-    <div class="result-empty">⬆️ 구장을 선택하고<br>스카우트 버튼을 눌러보세요!</div>
+    <div class="result-empty">⬆️ 구장을 선택한 뒤<br>스카우트 버튼을 눌러보세요! 🎲</div>
   </div>
 
-  <div class="odds-wrap" id="oddsWrap" style="display:none">
-    <div class="odds-header">
+  <div id="oddsWrap" class="odds-wrap" style="display:none">
+    <div class="odds-hd">
       <div class="odds-title" id="oddsTitle">확률 목록</div>
       <div class="odds-sub" id="oddsSub"></div>
     </div>
@@ -140,8 +148,8 @@ button{cursor:pointer;background:none;border:none;font:inherit;color:inherit;tra
   </div>
 
   <div class="hist-section">
-    <div class="hist-header">
-      <div class="section-label" style="margin:0">📋 뽑기 기록</div>
+    <div class="hist-hd">
+      <div class="sec-label" style="margin:0">📋 뽑기 기록</div>
       <button class="clear-btn" id="clearBtn">초기화 🗑️</button>
     </div>
     <div class="hist-list" id="histList">
@@ -151,387 +159,411 @@ button{cursor:pointer;background:none;border:none;font:inherit;color:inherit;tra
 </div>
 
 <script>
+// ── 원 소속 구단 매핑 ──
+const ORIGIN = {
+  '니퍼트':{t:'두산',e:'🐻'},'박철순':{t:'OB',e:'🐻'},
+  '김현수B':{t:'두산',e:'🐻'},'김동주B':{t:'두산',e:'🐻'},'홍성흔':{t:'두산',e:'🐻'},'우즈':{t:'OB',e:'🐻'},
+  '김시진':{t:'삼성',e:'🦁'},'오승환':{t:'삼성',e:'🦁'},'배영수':{t:'삼성',e:'🦁'},'임기효':{t:'삼성',e:'🦁'},
+  '장효조':{t:'삼성',e:'🦁'},'류중일':{t:'삼성',e:'🦁'},'이승엽':{t:'삼성',e:'🦁'},'이만수':{t:'삼성',e:'🦁'},
+  '최형우':{t:'삼성',e:'🦁'},'양준혁':{t:'삼성',e:'🦁'},'박한이':{t:'삼성',e:'🦁'},
+  '류현진':{t:'한화',e:'🦅'},'구대성':{t:'한화',e:'🦅'},'정민철':{t:'한화',e:'🦅'},'송진우':{t:'한화',e:'🦅'},
+  '김태균S':{t:'한화',e:'🦅'},'장종훈':{t:'한화',e:'🦅'},
+  '최동원':{t:'롯데',e:'🕊️'},'윤학길':{t:'롯데',e:'🕊️'},'박정태':{t:'롯데',e:'🕊️'},'마해영':{t:'롯데',e:'🕊️'},
+  '손아섭':{t:'롯데',e:'🕊️'},'강민호':{t:'롯데',e:'🕊️'},'이대호':{t:'롯데',e:'🕊️'},'전준호B':{t:'롯데',e:'🕊️'},
+  '양현종':{t:'KIA',e:'🐅'},'이범호':{t:'KIA',e:'🐅'},
+  '선동열':{t:'해태',e:'🐅'},'조계현':{t:'해태',e:'🐅'},'이강철':{t:'해태',e:'🐅'},
+  '김성한B':{t:'해태',e:'🐅'},'이순철':{t:'해태',e:'🐅'},'한대화':{t:'해태',e:'🐅'},
+  '이종범':{t:'해태',e:'🐅'},'장성호':{t:'해태',e:'🐅'},
+  '박병호':{t:'키움',e:'🦸'},'심정수':{t:'현대',e:'🦸'},'정민태':{t:'현대',e:'🦸'},
+  '박재홍':{t:'현대',e:'🦸'},'박진만':{t:'현대',e:'🦸'},'정명원':{t:'태평양',e:'🦸'},
+  '이상훈C':{t:'LG',e:'👯'},'김용수':{t:'LG',e:'👯'},'김재현S':{t:'LG',e:'👯'},
+  '이병규B':{t:'LG',e:'👯'},'박용택':{t:'LG',e:'👯'},'백인천':{t:'MBC',e:'👯'},'김재박':{t:'MBC',e:'👯'},
+  '김기태S':{t:'쌍방울',e:'🛸'},'김원형':{t:'쌍방울',e:'🛸'},
+  '김광현':{t:'SK',e:'🛸'},'정근우':{t:'SK',e:'🛸'},'최정':{t:'SK',e:'🛸'},'박경완':{t:'SK',e:'🛸'},
+  '양의지':{t:'NC',e:'🦕'},'이호준B':{t:'NC',e:'🦕'},
+};
+function go(n){return ORIGIN[n]||{t:n,e:'⭐'};}
+
+// ── 구장 ──
 const STADIUMS = [
-  { id:'jamsil_doosan', name:'잠실', team:'두산', emoji:'🐻', color:'#003087' },
-  { id:'daegu',         name:'대구', team:'삼성', emoji:'🦁', color:'#074CA1' },
-  { id:'daejeon',       name:'대전', team:'한화', emoji:'🦅', color:'#FF6600' },
-  { id:'busan',         name:'부산', team:'롯데', emoji:'🕊️', color:'#041E42' },
-  { id:'gwangju',       name:'광주', team:'KIA', emoji:'🐅', color:'#EA0029' },
-  { id:'gochuk',        name:'고척', team:'키움', emoji:'🦸', color:'#570514' },
-  { id:'incheon',       name:'인천', team:'SSG', emoji:'🛸', color:'#CE0E2D' },
-  { id:'jamsil_lg',     name:'잠실', team:'LG',  emoji:'👯', color:'#C30452' },
-  { id:'changwon',      name:'창원', team:'NC',  emoji:'🦕', color:'#071D49' },
-  { id:'suwon',         name:'수원', team:'KT',  emoji:'⚡', color:'#231F20' },
+  {id:'jamsil_doosan',name:'잠실',team:'두산',emoji:'🐻'},
+  {id:'daegu',        name:'대구',team:'삼성',emoji:'🦁'},
+  {id:'daejeon',      name:'대전',team:'한화',emoji:'🦅'},
+  {id:'busan',        name:'부산',team:'롯데',emoji:'🕊️'},
+  {id:'gwangju',      name:'광주',team:'KIA', emoji:'🐅'},
+  {id:'gochuk',       name:'고척',team:'키움',emoji:'🦸'},
+  {id:'incheon',      name:'인천',team:'SSG', emoji:'🛸'},
+  {id:'jamsil_lg',    name:'잠실',team:'LG',  emoji:'👯'},
+  {id:'changwon',     name:'창원',team:'NC',  emoji:'🦕'},
+  {id:'suwon',        name:'수원',team:'KT',  emoji:'⚡'},
 ];
 
+// ── 확률 데이터 ──
 const DATA = {
-  jamsil_doosan: [
-    {n:'니퍼트',t:'두산',p:9.1666666667},{n:'김현수B',t:'두산',p:9.1666666667},{n:'김동주B',t:'두산',p:9.1666666667},
-    {n:'홍성흔',t:'두산',p:9.1666666667},{n:'우즈',t:'OB',p:9.1666666667},{n:'박철순',t:'OB',p:9.1666666667},
-    {n:'김시진',t:'삼성',p:0.8035714286},{n:'장효조',t:'삼성',p:0.8035714286},{n:'오승환',t:'삼성',p:0.8035714286},
-    {n:'류중일',t:'삼성',p:0.8035714286},{n:'이승엽',t:'삼성',p:0.8035714286},{n:'이만수',t:'삼성',p:0.8035714286},
-    {n:'최형우',t:'삼성',p:0.8035714286},{n:'배영수',t:'삼성',p:0.8035714286},{n:'양준혁',t:'삼성',p:0.8035714286},
-    {n:'임기효',t:'삼성',p:0.8035714286},{n:'박한이',t:'삼성',p:0.8035714286},
-    {n:'류현진',t:'한화',p:0.8035714286},{n:'구대성',t:'한화',p:0.8035714286},{n:'정민철',t:'한화',p:0.8035714286},
-    {n:'김태균S',t:'한화',p:0.8035714286},{n:'장종훈',t:'한화',p:0.8035714286},{n:'송진우',t:'한화',p:0.8035714286},
-    {n:'최동원',t:'롯데',p:0.8035714286},{n:'윤학길',t:'롯데',p:0.8035714286},{n:'박정태',t:'롯데',p:0.8035714286},
-    {n:'마해영',t:'롯데',p:0.8035714286},{n:'손아섭',t:'롯데',p:0.8035714286},{n:'강민호',t:'롯데',p:0.8035714286},
-    {n:'이대호',t:'롯데',p:0.8035714286},{n:'전준호B',t:'롯데',p:0.8035714286},
-    {n:'양현종',t:'KIA',p:0.8035714286},{n:'이범호',t:'KIA',p:0.8035714286},
-    {n:'박병호',t:'키움',p:0.8035714286},
-    {n:'이상훈C',t:'LG',p:0.8035714286},{n:'김용수',t:'LG',p:0.8035714286},{n:'김재현S',t:'LG',p:0.8035714286},
-    {n:'이병규B',t:'LG',p:0.8035714286},{n:'박용택',t:'LG',p:0.8035714286},
-    {n:'양의지',t:'NC',p:0.8035714286},{n:'이호준B',t:'NC',p:0.8035714286},
-    {n:'백인천',t:'MBC',p:0.8035714286},{n:'김재박',t:'MBC',p:0.8035714286},
-    {n:'선동열',t:'해태',p:0.8035714286},{n:'조계현',t:'해태',p:0.8035714286},{n:'김성한B',t:'해태',p:0.8035714286},
-    {n:'이순철',t:'해태',p:0.8035714286},{n:'한대화',t:'해태',p:0.8035714286},{n:'이강철',t:'해태',p:0.8035714286},
-    {n:'이종범',t:'해태',p:0.8035714286},{n:'장성호',t:'해태',p:0.8035714286},
-    {n:'심정수',t:'현대',p:0.8035714286},{n:'정민태',t:'현대',p:0.8035714286},{n:'박재홍',t:'현대',p:0.8035714286},
-    {n:'박진만',t:'현대',p:0.8035714286},
-    {n:'김기태S',t:'쌍방울',p:0.8035714286},{n:'김원형',t:'쌍방울',p:0.8035714286},
-    {n:'정명원',t:'태평양',p:0.8035714286},
-    {n:'김광현',t:'SK',p:0.8035714286},{n:'정근우',t:'SK',p:0.8035714286},{n:'최정',t:'SK',p:0.8035714286},{n:'박경완',t:'SK',p:0.8035714286}
+  jamsil_doosan:[
+    {n:'니퍼트',p:9.1666666667},{n:'김현수B',p:9.1666666667},{n:'김동주B',p:9.1666666667},
+    {n:'홍성흔',p:9.1666666667},{n:'우즈',p:9.1666666667},{n:'박철순',p:9.1666666667},
+    {n:'김시진',p:0.8035714286},{n:'장효조',p:0.8035714286},{n:'오승환',p:0.8035714286},{n:'류중일',p:0.8035714286},
+    {n:'이승엽',p:0.8035714286},{n:'이만수',p:0.8035714286},{n:'최형우',p:0.8035714286},{n:'배영수',p:0.8035714286},
+    {n:'양준혁',p:0.8035714286},{n:'임기효',p:0.8035714286},{n:'박한이',p:0.8035714286},
+    {n:'류현진',p:0.8035714286},{n:'구대성',p:0.8035714286},{n:'정민철',p:0.8035714286},
+    {n:'김태균S',p:0.8035714286},{n:'장종훈',p:0.8035714286},{n:'송진우',p:0.8035714286},
+    {n:'최동원',p:0.8035714286},{n:'윤학길',p:0.8035714286},{n:'박정태',p:0.8035714286},
+    {n:'마해영',p:0.8035714286},{n:'손아섭',p:0.8035714286},{n:'강민호',p:0.8035714286},
+    {n:'이대호',p:0.8035714286},{n:'전준호B',p:0.8035714286},
+    {n:'양현종',p:0.8035714286},{n:'이범호',p:0.8035714286},
+    {n:'박병호',p:0.8035714286},
+    {n:'이상훈C',p:0.8035714286},{n:'김용수',p:0.8035714286},{n:'김재현S',p:0.8035714286},
+    {n:'이병규B',p:0.8035714286},{n:'박용택',p:0.8035714286},
+    {n:'양의지',p:0.8035714286},{n:'이호준B',p:0.8035714286},
+    {n:'백인천',p:0.8035714286},{n:'김재박',p:0.8035714286},
+    {n:'선동열',p:0.8035714286},{n:'조계현',p:0.8035714286},{n:'김성한B',p:0.8035714286},
+    {n:'이순철',p:0.8035714286},{n:'한대화',p:0.8035714286},{n:'이강철',p:0.8035714286},
+    {n:'이종범',p:0.8035714286},{n:'장성호',p:0.8035714286},
+    {n:'심정수',p:0.8035714286},{n:'정민태',p:0.8035714286},{n:'박재홍',p:0.8035714286},{n:'박진만',p:0.8035714286},
+    {n:'김기태S',p:0.8035714286},{n:'김원형',p:0.8035714286},
+    {n:'정명원',p:0.8035714286},
+    {n:'김광현',p:0.8035714286},{n:'정근우',p:0.8035714286},{n:'최정',p:0.8035714286},{n:'박경완',p:0.8035714286},
   ],
-  daegu: [
-    {n:'김시진',t:'삼성',p:5.0},{n:'장효조',t:'삼성',p:5.0},{n:'오승환',t:'삼성',p:5.0},
-    {n:'류중일',t:'삼성',p:5.0},{n:'이승엽',t:'삼성',p:5.0},{n:'이만수',t:'삼성',p:5.0},
-    {n:'최형우',t:'삼성',p:5.0},{n:'배영수',t:'삼성',p:5.0},{n:'양준혁',t:'삼성',p:5.0},
-    {n:'임기효',t:'삼성',p:5.0},{n:'박한이',t:'삼성',p:5.0},
-    {n:'니퍼트',t:'두산',p:0.8823529412},{n:'김현수B',t:'두산',p:0.8823529412},{n:'김동주B',t:'두산',p:0.8823529412},{n:'홍성흔',t:'두산',p:0.8823529412},
-    {n:'류현진',t:'한화',p:0.8823529412},{n:'구대성',t:'한화',p:0.8823529412},{n:'정민철',t:'한화',p:0.8823529412},
-    {n:'김태균S',t:'한화',p:0.8823529412},{n:'장종훈',t:'한화',p:0.8823529412},{n:'송진우',t:'한화',p:0.8823529412},
-    {n:'최동원',t:'롯데',p:0.8823529412},{n:'윤학길',t:'롯데',p:0.8823529412},{n:'박정태',t:'롯데',p:0.8823529412},
-    {n:'마해영',t:'롯데',p:0.8823529412},{n:'손아섭',t:'롯데',p:0.8823529412},{n:'강민호',t:'롯데',p:0.8823529412},
-    {n:'이대호',t:'롯데',p:0.8823529412},{n:'전준호B',t:'롯데',p:0.8823529412},
-    {n:'양현종',t:'KIA',p:0.8823529412},{n:'이범호',t:'KIA',p:0.8823529412},
-    {n:'박병호',t:'키움',p:0.8823529412},
-    {n:'이상훈C',t:'LG',p:0.8823529412},{n:'김용수',t:'LG',p:0.8823529412},{n:'김재현S',t:'LG',p:0.8823529412},
-    {n:'이병규B',t:'LG',p:0.8823529412},{n:'박용택',t:'LG',p:0.8823529412},
-    {n:'양의지',t:'NC',p:0.8823529412},{n:'이호준B',t:'NC',p:0.8823529412},
-    {n:'우즈',t:'OB',p:0.8823529412},{n:'박철순',t:'OB',p:0.8823529412},
-    {n:'백인천',t:'MBC',p:0.8823529412},{n:'김재박',t:'MBC',p:0.8823529412},
-    {n:'선동열',t:'해태',p:0.8823529412},{n:'조계현',t:'해태',p:0.8823529412},{n:'김성한B',t:'해태',p:0.8823529412},
-    {n:'이순철',t:'해태',p:0.8823529412},{n:'한대화',t:'해태',p:0.8823529412},{n:'이강철',t:'해태',p:0.8823529412},
-    {n:'이종범',t:'해태',p:0.8823529412},{n:'장성호',t:'해태',p:0.8823529412},
-    {n:'심정수',t:'현대',p:0.8823529412},{n:'정민태',t:'현대',p:0.8823529412},{n:'박재홍',t:'현대',p:0.8823529412},{n:'박진만',t:'현대',p:0.8823529412},
-    {n:'김기태S',t:'쌍방울',p:0.8823529412},{n:'김원형',t:'쌍방울',p:0.8823529412},
-    {n:'정명원',t:'태평양',p:0.8823529412},
-    {n:'김광현',t:'SK',p:0.8823529412},{n:'정근우',t:'SK',p:0.8823529412},{n:'최정',t:'SK',p:0.8823529412},{n:'박경완',t:'SK',p:0.8823529412}
+  daegu:[
+    {n:'김시진',p:5},{n:'장효조',p:5},{n:'오승환',p:5},{n:'류중일',p:5},{n:'이승엽',p:5},{n:'이만수',p:5},
+    {n:'최형우',p:5},{n:'배영수',p:5},{n:'양준혁',p:5},{n:'임기효',p:5},{n:'박한이',p:5},
+    {n:'니퍼트',p:0.8823529412},{n:'김현수B',p:0.8823529412},{n:'김동주B',p:0.8823529412},{n:'홍성흔',p:0.8823529412},
+    {n:'류현진',p:0.8823529412},{n:'구대성',p:0.8823529412},{n:'정민철',p:0.8823529412},
+    {n:'김태균S',p:0.8823529412},{n:'장종훈',p:0.8823529412},{n:'송진우',p:0.8823529412},
+    {n:'최동원',p:0.8823529412},{n:'윤학길',p:0.8823529412},{n:'박정태',p:0.8823529412},
+    {n:'마해영',p:0.8823529412},{n:'손아섭',p:0.8823529412},{n:'강민호',p:0.8823529412},
+    {n:'이대호',p:0.8823529412},{n:'전준호B',p:0.8823529412},
+    {n:'양현종',p:0.8823529412},{n:'이범호',p:0.8823529412},
+    {n:'박병호',p:0.8823529412},
+    {n:'이상훈C',p:0.8823529412},{n:'김용수',p:0.8823529412},{n:'김재현S',p:0.8823529412},
+    {n:'이병규B',p:0.8823529412},{n:'박용택',p:0.8823529412},
+    {n:'양의지',p:0.8823529412},{n:'이호준B',p:0.8823529412},
+    {n:'우즈',p:0.8823529412},{n:'박철순',p:0.8823529412},
+    {n:'백인천',p:0.8823529412},{n:'김재박',p:0.8823529412},
+    {n:'선동열',p:0.8823529412},{n:'조계현',p:0.8823529412},{n:'김성한B',p:0.8823529412},
+    {n:'이순철',p:0.8823529412},{n:'한대화',p:0.8823529412},{n:'이강철',p:0.8823529412},
+    {n:'이종범',p:0.8823529412},{n:'장성호',p:0.8823529412},
+    {n:'심정수',p:0.8823529412},{n:'정민태',p:0.8823529412},{n:'박재홍',p:0.8823529412},{n:'박진만',p:0.8823529412},
+    {n:'김기태S',p:0.8823529412},{n:'김원형',p:0.8823529412},
+    {n:'정명원',p:0.8823529412},
+    {n:'김광현',p:0.8823529412},{n:'정근우',p:0.8823529412},{n:'최정',p:0.8823529412},{n:'박경완',p:0.8823529412},
   ],
-  daejeon: [
-    {n:'류현진',t:'한화',p:9.1666666667},{n:'구대성',t:'한화',p:9.1666666667},{n:'정민철',t:'한화',p:9.1666666667},
-    {n:'김태균S',t:'한화',p:9.1666666667},{n:'장종훈',t:'한화',p:9.1666666667},{n:'송진우',t:'한화',p:9.1666666667},
-    {n:'니퍼트',t:'두산',p:0.8035714286},{n:'김현수B',t:'두산',p:0.8035714286},{n:'김동주B',t:'두산',p:0.8035714286},{n:'홍성흔',t:'두산',p:0.8035714286},
-    {n:'김시진',t:'삼성',p:0.8035714286},{n:'장효조',t:'삼성',p:0.8035714286},{n:'오승환',t:'삼성',p:0.8035714286},
-    {n:'류중일',t:'삼성',p:0.8035714286},{n:'이승엽',t:'삼성',p:0.8035714286},{n:'이만수',t:'삼성',p:0.8035714286},
-    {n:'최형우',t:'삼성',p:0.8035714286},{n:'배영수',t:'삼성',p:0.8035714286},{n:'양준혁',t:'삼성',p:0.8035714286},
-    {n:'임기효',t:'삼성',p:0.8035714286},{n:'박한이',t:'삼성',p:0.8035714286},
-    {n:'최동원',t:'롯데',p:0.8035714286},{n:'윤학길',t:'롯데',p:0.8035714286},{n:'박정태',t:'롯데',p:0.8035714286},
-    {n:'마해영',t:'롯데',p:0.8035714286},{n:'손아섭',t:'롯데',p:0.8035714286},{n:'강민호',t:'롯데',p:0.8035714286},
-    {n:'이대호',t:'롯데',p:0.8035714286},{n:'전준호B',t:'롯데',p:0.8035714286},
-    {n:'양현종',t:'KIA',p:0.8035714286},{n:'이범호',t:'KIA',p:0.8035714286},
-    {n:'박병호',t:'키움',p:0.8035714286},
-    {n:'이상훈C',t:'LG',p:0.8035714286},{n:'김용수',t:'LG',p:0.8035714286},{n:'김재현S',t:'LG',p:0.8035714286},
-    {n:'이병규B',t:'LG',p:0.8035714286},{n:'박용택',t:'LG',p:0.8035714286},
-    {n:'양의지',t:'NC',p:0.8035714286},{n:'이호준B',t:'NC',p:0.8035714286},
-    {n:'우즈',t:'OB',p:0.8035714286},{n:'박철순',t:'OB',p:0.8035714286},
-    {n:'백인천',t:'MBC',p:0.8035714286},{n:'김재박',t:'MBC',p:0.8035714286},
-    {n:'선동열',t:'해태',p:0.8035714286},{n:'조계현',t:'해태',p:0.8035714286},{n:'김성한B',t:'해태',p:0.8035714286},
-    {n:'이순철',t:'해태',p:0.8035714286},{n:'한대화',t:'해태',p:0.8035714286},{n:'이강철',t:'해태',p:0.8035714286},
-    {n:'이종범',t:'해태',p:0.8035714286},{n:'장성호',t:'해태',p:0.8035714286},
-    {n:'심정수',t:'현대',p:0.8035714286},{n:'정민태',t:'현대',p:0.8035714286},{n:'박재홍',t:'현대',p:0.8035714286},{n:'박진만',t:'현대',p:0.8035714286},
-    {n:'김기태S',t:'쌍방울',p:0.8035714286},{n:'김원형',t:'쌍방울',p:0.8035714286},
-    {n:'정명원',t:'태평양',p:0.8035714286},
-    {n:'김광현',t:'SK',p:0.8035714286},{n:'정근우',t:'SK',p:0.8035714286},{n:'최정',t:'SK',p:0.8035714286},{n:'박경완',t:'SK',p:0.8035714286}
+  daejeon:[
+    {n:'류현진',p:9.1666666667},{n:'구대성',p:9.1666666667},{n:'정민철',p:9.1666666667},
+    {n:'김태균S',p:9.1666666667},{n:'장종훈',p:9.1666666667},{n:'송진우',p:9.1666666667},
+    {n:'니퍼트',p:0.8035714286},{n:'김현수B',p:0.8035714286},{n:'김동주B',p:0.8035714286},{n:'홍성흔',p:0.8035714286},
+    {n:'김시진',p:0.8035714286},{n:'장효조',p:0.8035714286},{n:'오승환',p:0.8035714286},{n:'류중일',p:0.8035714286},
+    {n:'이승엽',p:0.8035714286},{n:'이만수',p:0.8035714286},{n:'최형우',p:0.8035714286},{n:'배영수',p:0.8035714286},
+    {n:'양준혁',p:0.8035714286},{n:'임기효',p:0.8035714286},{n:'박한이',p:0.8035714286},
+    {n:'최동원',p:0.8035714286},{n:'윤학길',p:0.8035714286},{n:'박정태',p:0.8035714286},
+    {n:'마해영',p:0.8035714286},{n:'손아섭',p:0.8035714286},{n:'강민호',p:0.8035714286},
+    {n:'이대호',p:0.8035714286},{n:'전준호B',p:0.8035714286},
+    {n:'양현종',p:0.8035714286},{n:'이범호',p:0.8035714286},
+    {n:'박병호',p:0.8035714286},
+    {n:'이상훈C',p:0.8035714286},{n:'김용수',p:0.8035714286},{n:'김재현S',p:0.8035714286},
+    {n:'이병규B',p:0.8035714286},{n:'박용택',p:0.8035714286},
+    {n:'양의지',p:0.8035714286},{n:'이호준B',p:0.8035714286},
+    {n:'우즈',p:0.8035714286},{n:'박철순',p:0.8035714286},
+    {n:'백인천',p:0.8035714286},{n:'김재박',p:0.8035714286},
+    {n:'선동열',p:0.8035714286},{n:'조계현',p:0.8035714286},{n:'김성한B',p:0.8035714286},
+    {n:'이순철',p:0.8035714286},{n:'한대화',p:0.8035714286},{n:'이강철',p:0.8035714286},
+    {n:'이종범',p:0.8035714286},{n:'장성호',p:0.8035714286},
+    {n:'심정수',p:0.8035714286},{n:'정민태',p:0.8035714286},{n:'박재홍',p:0.8035714286},{n:'박진만',p:0.8035714286},
+    {n:'김기태S',p:0.8035714286},{n:'김원형',p:0.8035714286},
+    {n:'정명원',p:0.8035714286},
+    {n:'김광현',p:0.8035714286},{n:'정근우',p:0.8035714286},{n:'최정',p:0.8035714286},{n:'박경완',p:0.8035714286},
   ],
-  busan: [
-    {n:'최동원',t:'롯데',p:6.875},{n:'윤학길',t:'롯데',p:6.875},{n:'박정태',t:'롯데',p:6.875},
-    {n:'마해영',t:'롯데',p:6.875},{n:'손아섭',t:'롯데',p:6.875},{n:'강민호',t:'롯데',p:6.875},
-    {n:'이대호',t:'롯데',p:6.875},{n:'전준호B',t:'롯데',p:6.875},
-    {n:'니퍼트',t:'두산',p:0.8333333333},{n:'김현수B',t:'두산',p:0.8333333333},{n:'김동주B',t:'두산',p:0.8333333333},{n:'홍성흔',t:'두산',p:0.8333333333},
-    {n:'김시진',t:'삼성',p:0.8333333333},{n:'장효조',t:'삼성',p:0.8333333333},{n:'오승환',t:'삼성',p:0.8333333333},
-    {n:'류중일',t:'삼성',p:0.8333333333},{n:'이승엽',t:'삼성',p:0.8333333333},{n:'이만수',t:'삼성',p:0.8333333333},
-    {n:'최형우',t:'삼성',p:0.8333333333},{n:'배영수',t:'삼성',p:0.8333333333},{n:'양준혁',t:'삼성',p:0.8333333333},
-    {n:'임기효',t:'삼성',p:0.8333333333},{n:'박한이',t:'삼성',p:0.8333333333},
-    {n:'류현진',t:'한화',p:0.8333333333},{n:'구대성',t:'한화',p:0.8333333333},{n:'정민철',t:'한화',p:0.8333333333},
-    {n:'김태균S',t:'한화',p:0.8333333333},{n:'장종훈',t:'한화',p:0.8333333333},{n:'송진우',t:'한화',p:0.8333333333},
-    {n:'양현종',t:'KIA',p:0.8333333333},{n:'이범호',t:'KIA',p:0.8333333333},
-    {n:'박병호',t:'키움',p:0.8333333333},
-    {n:'이상훈C',t:'LG',p:0.8333333333},{n:'김용수',t:'LG',p:0.8333333333},{n:'김재현S',t:'LG',p:0.8333333333},
-    {n:'이병규B',t:'LG',p:0.8333333333},{n:'박용택',t:'LG',p:0.8333333333},
-    {n:'양의지',t:'NC',p:0.8333333333},{n:'이호준B',t:'NC',p:0.8333333333},
-    {n:'우즈',t:'OB',p:0.8333333333},{n:'박철순',t:'OB',p:0.8333333333},
-    {n:'백인천',t:'MBC',p:0.8333333333},{n:'김재박',t:'MBC',p:0.8333333333},
-    {n:'선동열',t:'해태',p:0.8333333333},{n:'조계현',t:'해태',p:0.8333333333},{n:'김성한B',t:'해태',p:0.8333333333},
-    {n:'이순철',t:'해태',p:0.8333333333},{n:'한대화',t:'해태',p:0.8333333333},{n:'이강철',t:'해태',p:0.8333333333},
-    {n:'이종범',t:'해태',p:0.8333333333},{n:'장성호',t:'해태',p:0.8333333333},
-    {n:'심정수',t:'현대',p:0.8333333333},{n:'정민태',t:'현대',p:0.8333333333},{n:'박재홍',t:'현대',p:0.8333333333},{n:'박진만',t:'현대',p:0.8333333333},
-    {n:'김기태S',t:'쌍방울',p:0.8333333333},{n:'김원형',t:'쌍방울',p:0.8333333333},
-    {n:'정명원',t:'태평양',p:0.8333333333},
-    {n:'김광현',t:'SK',p:0.8333333333},{n:'정근우',t:'SK',p:0.8333333333},{n:'최정',t:'SK',p:0.8333333333},{n:'박경완',t:'SK',p:0.8333333333}
+  busan:[
+    {n:'최동원',p:6.875},{n:'윤학길',p:6.875},{n:'박정태',p:6.875},{n:'마해영',p:6.875},
+    {n:'손아섭',p:6.875},{n:'강민호',p:6.875},{n:'이대호',p:6.875},{n:'전준호B',p:6.875},
+    {n:'니퍼트',p:0.8333333333},{n:'김현수B',p:0.8333333333},{n:'김동주B',p:0.8333333333},{n:'홍성흔',p:0.8333333333},
+    {n:'김시진',p:0.8333333333},{n:'장효조',p:0.8333333333},{n:'오승환',p:0.8333333333},{n:'류중일',p:0.8333333333},
+    {n:'이승엽',p:0.8333333333},{n:'이만수',p:0.8333333333},{n:'최형우',p:0.8333333333},{n:'배영수',p:0.8333333333},
+    {n:'양준혁',p:0.8333333333},{n:'임기효',p:0.8333333333},{n:'박한이',p:0.8333333333},
+    {n:'류현진',p:0.8333333333},{n:'구대성',p:0.8333333333},{n:'정민철',p:0.8333333333},
+    {n:'김태균S',p:0.8333333333},{n:'장종훈',p:0.8333333333},{n:'송진우',p:0.8333333333},
+    {n:'양현종',p:0.8333333333},{n:'이범호',p:0.8333333333},
+    {n:'박병호',p:0.8333333333},
+    {n:'이상훈C',p:0.8333333333},{n:'김용수',p:0.8333333333},{n:'김재현S',p:0.8333333333},
+    {n:'이병규B',p:0.8333333333},{n:'박용택',p:0.8333333333},
+    {n:'양의지',p:0.8333333333},{n:'이호준B',p:0.8333333333},
+    {n:'우즈',p:0.8333333333},{n:'박철순',p:0.8333333333},
+    {n:'백인천',p:0.8333333333},{n:'김재박',p:0.8333333333},
+    {n:'선동열',p:0.8333333333},{n:'조계현',p:0.8333333333},{n:'김성한B',p:0.8333333333},
+    {n:'이순철',p:0.8333333333},{n:'한대화',p:0.8333333333},{n:'이강철',p:0.8333333333},
+    {n:'이종범',p:0.8333333333},{n:'장성호',p:0.8333333333},
+    {n:'심정수',p:0.8333333333},{n:'정민태',p:0.8333333333},{n:'박재홍',p:0.8333333333},{n:'박진만',p:0.8333333333},
+    {n:'김기태S',p:0.8333333333},{n:'김원형',p:0.8333333333},
+    {n:'정명원',p:0.8333333333},
+    {n:'김광현',p:0.8333333333},{n:'정근우',p:0.8333333333},{n:'최정',p:0.8333333333},{n:'박경완',p:0.8333333333},
   ],
-  gwangju: [
-    {n:'양현종',t:'KIA',p:5.5},{n:'이범호',t:'KIA',p:5.5},
-    {n:'선동열',t:'해태',p:5.5},{n:'조계현',t:'해태',p:5.5},{n:'김성한B',t:'해태',p:5.5},
-    {n:'이순철',t:'해태',p:5.5},{n:'한대화',t:'해태',p:5.5},{n:'이강철',t:'해태',p:5.5},
-    {n:'이종범',t:'해태',p:5.5},{n:'장성호',t:'해태',p:5.5},
-    {n:'니퍼트',t:'두산',p:0.8653846154},{n:'김현수B',t:'두산',p:0.8653846154},{n:'김동주B',t:'두산',p:0.8653846154},{n:'홍성흔',t:'두산',p:0.8653846154},
-    {n:'김시진',t:'삼성',p:0.8653846154},{n:'장효조',t:'삼성',p:0.8653846154},{n:'오승환',t:'삼성',p:0.8653846154},
-    {n:'류중일',t:'삼성',p:0.8653846154},{n:'이승엽',t:'삼성',p:0.8653846154},{n:'이만수',t:'삼성',p:0.8653846154},
-    {n:'최형우',t:'삼성',p:0.8653846154},{n:'배영수',t:'삼성',p:0.8653846154},{n:'양준혁',t:'삼성',p:0.8653846154},
-    {n:'임기효',t:'삼성',p:0.8653846154},{n:'박한이',t:'삼성',p:0.8653846154},
-    {n:'류현진',t:'한화',p:0.8653846154},{n:'구대성',t:'한화',p:0.8653846154},{n:'정민철',t:'한화',p:0.8653846154},
-    {n:'김태균S',t:'한화',p:0.8653846154},{n:'장종훈',t:'한화',p:0.8653846154},{n:'송진우',t:'한화',p:0.8653846154},
-    {n:'최동원',t:'롯데',p:0.8653846154},{n:'윤학길',t:'롯데',p:0.8653846154},{n:'박정태',t:'롯데',p:0.8653846154},
-    {n:'마해영',t:'롯데',p:0.8653846154},{n:'손아섭',t:'롯데',p:0.8653846154},{n:'강민호',t:'롯데',p:0.8653846154},
-    {n:'이대호',t:'롯데',p:0.8653846154},{n:'전준호B',t:'롯데',p:0.8653846154},
-    {n:'박병호',t:'키움',p:0.8653846154},
-    {n:'이상훈C',t:'LG',p:0.8653846154},{n:'김용수',t:'LG',p:0.8653846154},{n:'김재현S',t:'LG',p:0.8653846154},
-    {n:'이병규B',t:'LG',p:0.8653846154},{n:'박용택',t:'LG',p:0.8653846154},
-    {n:'양의지',t:'NC',p:0.8653846154},{n:'이호준B',t:'NC',p:0.8653846154},
-    {n:'우즈',t:'OB',p:0.8653846154},{n:'박철순',t:'OB',p:0.8653846154},
-    {n:'백인천',t:'MBC',p:0.8653846154},{n:'김재박',t:'MBC',p:0.8653846154},
-    {n:'심정수',t:'현대',p:0.8653846154},{n:'정민태',t:'현대',p:0.8653846154},{n:'박재홍',t:'현대',p:0.8653846154},{n:'박진만',t:'현대',p:0.8653846154},
-    {n:'김기태S',t:'쌍방울',p:0.8653846154},{n:'김원형',t:'쌍방울',p:0.8653846154},
-    {n:'정명원',t:'태평양',p:0.8653846154},
-    {n:'김광현',t:'SK',p:0.8653846154},{n:'정근우',t:'SK',p:0.8653846154},{n:'최정',t:'SK',p:0.8653846154},{n:'박경완',t:'SK',p:0.8653846154}
+  gwangju:[
+    {n:'양현종',p:5.5},{n:'이범호',p:5.5},
+    {n:'선동열',p:5.5},{n:'조계현',p:5.5},{n:'김성한B',p:5.5},{n:'이순철',p:5.5},
+    {n:'한대화',p:5.5},{n:'이강철',p:5.5},{n:'이종범',p:5.5},{n:'장성호',p:5.5},
+    {n:'니퍼트',p:0.8653846154},{n:'김현수B',p:0.8653846154},{n:'김동주B',p:0.8653846154},{n:'홍성흔',p:0.8653846154},
+    {n:'김시진',p:0.8653846154},{n:'장효조',p:0.8653846154},{n:'오승환',p:0.8653846154},{n:'류중일',p:0.8653846154},
+    {n:'이승엽',p:0.8653846154},{n:'이만수',p:0.8653846154},{n:'최형우',p:0.8653846154},{n:'배영수',p:0.8653846154},
+    {n:'양준혁',p:0.8653846154},{n:'임기효',p:0.8653846154},{n:'박한이',p:0.8653846154},
+    {n:'류현진',p:0.8653846154},{n:'구대성',p:0.8653846154},{n:'정민철',p:0.8653846154},
+    {n:'김태균S',p:0.8653846154},{n:'장종훈',p:0.8653846154},{n:'송진우',p:0.8653846154},
+    {n:'최동원',p:0.8653846154},{n:'윤학길',p:0.8653846154},{n:'박정태',p:0.8653846154},
+    {n:'마해영',p:0.8653846154},{n:'손아섭',p:0.8653846154},{n:'강민호',p:0.8653846154},
+    {n:'이대호',p:0.8653846154},{n:'전준호B',p:0.8653846154},
+    {n:'박병호',p:0.8653846154},
+    {n:'이상훈C',p:0.8653846154},{n:'김용수',p:0.8653846154},{n:'김재현S',p:0.8653846154},
+    {n:'이병규B',p:0.8653846154},{n:'박용택',p:0.8653846154},
+    {n:'양의지',p:0.8653846154},{n:'이호준B',p:0.8653846154},
+    {n:'우즈',p:0.8653846154},{n:'박철순',p:0.8653846154},
+    {n:'백인천',p:0.8653846154},{n:'김재박',p:0.8653846154},
+    {n:'심정수',p:0.8653846154},{n:'정민태',p:0.8653846154},{n:'박재홍',p:0.8653846154},{n:'박진만',p:0.8653846154},
+    {n:'김기태S',p:0.8653846154},{n:'김원형',p:0.8653846154},
+    {n:'정명원',p:0.8653846154},
+    {n:'김광현',p:0.8653846154},{n:'정근우',p:0.8653846154},{n:'최정',p:0.8653846154},{n:'박경완',p:0.8653846154},
   ],
-  gochuk: [
-    {n:'박병호',t:'키움',p:9.1666666667},{n:'심정수',t:'현대',p:9.1666666667},{n:'정민태',t:'현대',p:9.1666666667},
-    {n:'박재홍',t:'현대',p:9.1666666667},{n:'박진만',t:'현대',p:9.1666666667},{n:'정명원',t:'태평양',p:9.1666666667},
-    {n:'니퍼트',t:'두산',p:0.8035714286},{n:'김현수B',t:'두산',p:0.8035714286},{n:'김동주B',t:'두산',p:0.8035714286},{n:'홍성흔',t:'두산',p:0.8035714286},
-    {n:'김시진',t:'삼성',p:0.8035714286},{n:'장효조',t:'삼성',p:0.8035714286},{n:'오승환',t:'삼성',p:0.8035714286},
-    {n:'류중일',t:'삼성',p:0.8035714286},{n:'이승엽',t:'삼성',p:0.8035714286},{n:'이만수',t:'삼성',p:0.8035714286},
-    {n:'최형우',t:'삼성',p:0.8035714286},{n:'배영수',t:'삼성',p:0.8035714286},{n:'양준혁',t:'삼성',p:0.8035714286},
-    {n:'임기효',t:'삼성',p:0.8035714286},{n:'박한이',t:'삼성',p:0.8035714286},
-    {n:'류현진',t:'한화',p:0.8035714286},{n:'구대성',t:'한화',p:0.8035714286},{n:'정민철',t:'한화',p:0.8035714286},
-    {n:'김태균S',t:'한화',p:0.8035714286},{n:'장종훈',t:'한화',p:0.8035714286},{n:'송진우',t:'한화',p:0.8035714286},
-    {n:'최동원',t:'롯데',p:0.8035714286},{n:'윤학길',t:'롯데',p:0.8035714286},{n:'박정태',t:'롯데',p:0.8035714286},
-    {n:'마해영',t:'롯데',p:0.8035714286},{n:'손아섭',t:'롯데',p:0.8035714286},{n:'강민호',t:'롯데',p:0.8035714286},
-    {n:'이대호',t:'롯데',p:0.8035714286},{n:'전준호B',t:'롯데',p:0.8035714286},
-    {n:'양현종',t:'KIA',p:0.8035714286},{n:'이범호',t:'KIA',p:0.8035714286},
-    {n:'이상훈C',t:'LG',p:0.8035714286},{n:'김용수',t:'LG',p:0.8035714286},{n:'김재현S',t:'LG',p:0.8035714286},
-    {n:'이병규B',t:'LG',p:0.8035714286},{n:'박용택',t:'LG',p:0.8035714286},
-    {n:'양의지',t:'NC',p:0.8035714286},{n:'이호준B',t:'NC',p:0.8035714286},
-    {n:'우즈',t:'OB',p:0.8035714286},{n:'박철순',t:'OB',p:0.8035714286},
-    {n:'백인천',t:'MBC',p:0.8035714286},{n:'김재박',t:'MBC',p:0.8035714286},
-    {n:'선동열',t:'해태',p:0.8035714286},{n:'조계현',t:'해태',p:0.8035714286},{n:'김성한B',t:'해태',p:0.8035714286},
-    {n:'이순철',t:'해태',p:0.8035714286},{n:'한대화',t:'해태',p:0.8035714286},{n:'이강철',t:'해태',p:0.8035714286},
-    {n:'이종범',t:'해태',p:0.8035714286},{n:'장성호',t:'해태',p:0.8035714286},
-    {n:'김기태S',t:'쌍방울',p:0.8035714286},{n:'김원형',t:'쌍방울',p:0.8035714286},
-    {n:'김광현',t:'SK',p:0.8035714286},{n:'정근우',t:'SK',p:0.8035714286},{n:'최정',t:'SK',p:0.8035714286},{n:'박경완',t:'SK',p:0.8035714286}
+  gochuk:[
+    {n:'박병호',p:9.1666666667},{n:'심정수',p:9.1666666667},{n:'정민태',p:9.1666666667},
+    {n:'박재홍',p:9.1666666667},{n:'박진만',p:9.1666666667},{n:'정명원',p:9.1666666667},
+    {n:'니퍼트',p:0.8035714286},{n:'김현수B',p:0.8035714286},{n:'김동주B',p:0.8035714286},{n:'홍성흔',p:0.8035714286},
+    {n:'김시진',p:0.8035714286},{n:'장효조',p:0.8035714286},{n:'오승환',p:0.8035714286},{n:'류중일',p:0.8035714286},
+    {n:'이승엽',p:0.8035714286},{n:'이만수',p:0.8035714286},{n:'최형우',p:0.8035714286},{n:'배영수',p:0.8035714286},
+    {n:'양준혁',p:0.8035714286},{n:'임기효',p:0.8035714286},{n:'박한이',p:0.8035714286},
+    {n:'류현진',p:0.8035714286},{n:'구대성',p:0.8035714286},{n:'정민철',p:0.8035714286},
+    {n:'김태균S',p:0.8035714286},{n:'장종훈',p:0.8035714286},{n:'송진우',p:0.8035714286},
+    {n:'최동원',p:0.8035714286},{n:'윤학길',p:0.8035714286},{n:'박정태',p:0.8035714286},
+    {n:'마해영',p:0.8035714286},{n:'손아섭',p:0.8035714286},{n:'강민호',p:0.8035714286},
+    {n:'이대호',p:0.8035714286},{n:'전준호B',p:0.8035714286},
+    {n:'양현종',p:0.8035714286},{n:'이범호',p:0.8035714286},
+    {n:'이상훈C',p:0.8035714286},{n:'김용수',p:0.8035714286},{n:'김재현S',p:0.8035714286},
+    {n:'이병규B',p:0.8035714286},{n:'박용택',p:0.8035714286},
+    {n:'양의지',p:0.8035714286},{n:'이호준B',p:0.8035714286},
+    {n:'우즈',p:0.8035714286},{n:'박철순',p:0.8035714286},
+    {n:'백인천',p:0.8035714286},{n:'김재박',p:0.8035714286},
+    {n:'선동열',p:0.8035714286},{n:'조계현',p:0.8035714286},{n:'김성한B',p:0.8035714286},
+    {n:'이순철',p:0.8035714286},{n:'한대화',p:0.8035714286},{n:'이강철',p:0.8035714286},
+    {n:'이종범',p:0.8035714286},{n:'장성호',p:0.8035714286},
+    {n:'김기태S',p:0.8035714286},{n:'김원형',p:0.8035714286},
+    {n:'김광현',p:0.8035714286},{n:'정근우',p:0.8035714286},{n:'최정',p:0.8035714286},{n:'박경완',p:0.8035714286},
   ],
-  incheon: [
-    {n:'김기태S',t:'쌍방울',p:9.1666666667},{n:'김원형',t:'쌍방울',p:9.1666666667},
-    {n:'김광현',t:'SK',p:9.1666666667},{n:'정근우',t:'SK',p:9.1666666667},{n:'최정',t:'SK',p:9.1666666667},{n:'박경완',t:'SK',p:9.1666666667},
-    {n:'니퍼트',t:'두산',p:0.8035714286},{n:'김현수B',t:'두산',p:0.8035714286},{n:'김동주B',t:'두산',p:0.8035714286},{n:'홍성흔',t:'두산',p:0.8035714286},
-    {n:'김시진',t:'삼성',p:0.8035714286},{n:'장효조',t:'삼성',p:0.8035714286},{n:'오승환',t:'삼성',p:0.8035714286},
-    {n:'류중일',t:'삼성',p:0.8035714286},{n:'이승엽',t:'삼성',p:0.8035714286},{n:'이만수',t:'삼성',p:0.8035714286},
-    {n:'최형우',t:'삼성',p:0.8035714286},{n:'배영수',t:'삼성',p:0.8035714286},{n:'양준혁',t:'삼성',p:0.8035714286},
-    {n:'임기효',t:'삼성',p:0.8035714286},{n:'박한이',t:'삼성',p:0.8035714286},
-    {n:'류현진',t:'한화',p:0.8035714286},{n:'구대성',t:'한화',p:0.8035714286},{n:'정민철',t:'한화',p:0.8035714286},
-    {n:'김태균S',t:'한화',p:0.8035714286},{n:'장종훈',t:'한화',p:0.8035714286},{n:'송진우',t:'한화',p:0.8035714286},
-    {n:'최동원',t:'롯데',p:0.8035714286},{n:'윤학길',t:'롯데',p:0.8035714286},{n:'박정태',t:'롯데',p:0.8035714286},
-    {n:'마해영',t:'롯데',p:0.8035714286},{n:'손아섭',t:'롯데',p:0.8035714286},{n:'강민호',t:'롯데',p:0.8035714286},
-    {n:'이대호',t:'롯데',p:0.8035714286},{n:'전준호B',t:'롯데',p:0.8035714286},
-    {n:'양현종',t:'KIA',p:0.8035714286},{n:'이범호',t:'KIA',p:0.8035714286},
-    {n:'박병호',t:'키움',p:0.8035714286},
-    {n:'이상훈C',t:'LG',p:0.8035714286},{n:'김용수',t:'LG',p:0.8035714286},{n:'김재현S',t:'LG',p:0.8035714286},
-    {n:'이병규B',t:'LG',p:0.8035714286},{n:'박용택',t:'LG',p:0.8035714286},
-    {n:'양의지',t:'NC',p:0.8035714286},{n:'이호준B',t:'NC',p:0.8035714286},
-    {n:'우즈',t:'OB',p:0.8035714286},{n:'박철순',t:'OB',p:0.8035714286},
-    {n:'백인천',t:'MBC',p:0.8035714286},{n:'김재박',t:'MBC',p:0.8035714286},
-    {n:'선동열',t:'해태',p:0.8035714286},{n:'조계현',t:'해태',p:0.8035714286},{n:'김성한B',t:'해태',p:0.8035714286},
-    {n:'이순철',t:'해태',p:0.8035714286},{n:'한대화',t:'해태',p:0.8035714286},{n:'이강철',t:'해태',p:0.8035714286},
-    {n:'이종범',t:'해태',p:0.8035714286},{n:'장성호',t:'해태',p:0.8035714286},
-    {n:'심정수',t:'현대',p:0.8035714286},{n:'정민태',t:'현대',p:0.8035714286},{n:'박재홍',t:'현대',p:0.8035714286},{n:'박진만',t:'현대',p:0.8035714286},
-    {n:'정명원',t:'태평양',p:0.8035714286}
+  incheon:[
+    {n:'김기태S',p:9.1666666667},{n:'김원형',p:9.1666666667},
+    {n:'김광현',p:9.1666666667},{n:'정근우',p:9.1666666667},{n:'최정',p:9.1666666667},{n:'박경완',p:9.1666666667},
+    {n:'니퍼트',p:0.8035714286},{n:'김현수B',p:0.8035714286},{n:'김동주B',p:0.8035714286},{n:'홍성흔',p:0.8035714286},
+    {n:'김시진',p:0.8035714286},{n:'장효조',p:0.8035714286},{n:'오승환',p:0.8035714286},{n:'류중일',p:0.8035714286},
+    {n:'이승엽',p:0.8035714286},{n:'이만수',p:0.8035714286},{n:'최형우',p:0.8035714286},{n:'배영수',p:0.8035714286},
+    {n:'양준혁',p:0.8035714286},{n:'임기효',p:0.8035714286},{n:'박한이',p:0.8035714286},
+    {n:'류현진',p:0.8035714286},{n:'구대성',p:0.8035714286},{n:'정민철',p:0.8035714286},
+    {n:'김태균S',p:0.8035714286},{n:'장종훈',p:0.8035714286},{n:'송진우',p:0.8035714286},
+    {n:'최동원',p:0.8035714286},{n:'윤학길',p:0.8035714286},{n:'박정태',p:0.8035714286},
+    {n:'마해영',p:0.8035714286},{n:'손아섭',p:0.8035714286},{n:'강민호',p:0.8035714286},
+    {n:'이대호',p:0.8035714286},{n:'전준호B',p:0.8035714286},
+    {n:'양현종',p:0.8035714286},{n:'이범호',p:0.8035714286},
+    {n:'박병호',p:0.8035714286},
+    {n:'이상훈C',p:0.8035714286},{n:'김용수',p:0.8035714286},{n:'김재현S',p:0.8035714286},
+    {n:'이병규B',p:0.8035714286},{n:'박용택',p:0.8035714286},
+    {n:'양의지',p:0.8035714286},{n:'이호준B',p:0.8035714286},
+    {n:'우즈',p:0.8035714286},{n:'박철순',p:0.8035714286},
+    {n:'백인천',p:0.8035714286},{n:'김재박',p:0.8035714286},
+    {n:'선동열',p:0.8035714286},{n:'조계현',p:0.8035714286},{n:'김성한B',p:0.8035714286},
+    {n:'이순철',p:0.8035714286},{n:'한대화',p:0.8035714286},{n:'이강철',p:0.8035714286},
+    {n:'이종범',p:0.8035714286},{n:'장성호',p:0.8035714286},
+    {n:'심정수',p:0.8035714286},{n:'정민태',p:0.8035714286},{n:'박재홍',p:0.8035714286},{n:'박진만',p:0.8035714286},
+    {n:'정명원',p:0.8035714286},
   ],
-  jamsil_lg: [
-    {n:'이상훈C',t:'LG',p:7.8571428571},{n:'김용수',t:'LG',p:7.8571428571},{n:'김재현S',t:'LG',p:7.8571428571},
-    {n:'이병규B',t:'LG',p:7.8571428571},{n:'박용택',t:'LG',p:7.8571428571},
-    {n:'백인천',t:'MBC',p:7.8571428571},{n:'김재박',t:'MBC',p:7.8571428571},
-    {n:'니퍼트',t:'두산',p:0.8181818182},{n:'김현수B',t:'두산',p:0.8181818182},{n:'김동주B',t:'두산',p:0.8181818182},{n:'홍성흔',t:'두산',p:0.8181818182},
-    {n:'김시진',t:'삼성',p:0.8181818182},{n:'장효조',t:'삼성',p:0.8181818182},{n:'오승환',t:'삼성',p:0.8181818182},
-    {n:'류중일',t:'삼성',p:0.8181818182},{n:'이승엽',t:'삼성',p:0.8181818182},{n:'이만수',t:'삼성',p:0.8181818182},
-    {n:'최형우',t:'삼성',p:0.8181818182},{n:'배영수',t:'삼성',p:0.8181818182},{n:'양준혁',t:'삼성',p:0.8181818182},
-    {n:'임기효',t:'삼성',p:0.8181818182},{n:'박한이',t:'삼성',p:0.8181818182},
-    {n:'류현진',t:'한화',p:0.8181818182},{n:'구대성',t:'한화',p:0.8181818182},{n:'정민철',t:'한화',p:0.8181818182},
-    {n:'김태균S',t:'한화',p:0.8181818182},{n:'장종훈',t:'한화',p:0.8181818182},{n:'송진우',t:'한화',p:0.8181818182},
-    {n:'최동원',t:'롯데',p:0.8181818182},{n:'윤학길',t:'롯데',p:0.8181818182},{n:'박정태',t:'롯데',p:0.8181818182},
-    {n:'마해영',t:'롯데',p:0.8181818182},{n:'손아섭',t:'롯데',p:0.8181818182},{n:'강민호',t:'롯데',p:0.8181818182},
-    {n:'이대호',t:'롯데',p:0.8181818182},{n:'전준호B',t:'롯데',p:0.8181818182},
-    {n:'양현종',t:'KIA',p:0.8181818182},{n:'이범호',t:'KIA',p:0.8181818182},
-    {n:'박병호',t:'키움',p:0.8181818182},
-    {n:'양의지',t:'NC',p:0.8181818182},{n:'이호준B',t:'NC',p:0.8181818182},
-    {n:'우즈',t:'OB',p:0.8181818182},{n:'박철순',t:'OB',p:0.8181818182},
-    {n:'선동열',t:'해태',p:0.8181818182},{n:'조계현',t:'해태',p:0.8181818182},{n:'김성한B',t:'해태',p:0.8181818182},
-    {n:'이순철',t:'해태',p:0.8181818182},{n:'한대화',t:'해태',p:0.8181818182},{n:'이강철',t:'해태',p:0.8181818182},
-    {n:'이종범',t:'해태',p:0.8181818182},{n:'장성호',t:'해태',p:0.8181818182},
-    {n:'심정수',t:'현대',p:0.8181818182},{n:'정민태',t:'현대',p:0.8181818182},{n:'박재홍',t:'현대',p:0.8181818182},{n:'박진만',t:'현대',p:0.8181818182},
-    {n:'김기태S',t:'쌍방울',p:0.8181818182},{n:'김원형',t:'쌍방울',p:0.8181818182},
-    {n:'정명원',t:'태평양',p:0.8181818182},
-    {n:'김광현',t:'SK',p:0.8181818182},{n:'정근우',t:'SK',p:0.8181818182},{n:'최정',t:'SK',p:0.8181818182},{n:'박경완',t:'SK',p:0.8181818182}
+  jamsil_lg:[
+    {n:'이상훈C',p:7.8571428571},{n:'김용수',p:7.8571428571},{n:'김재현S',p:7.8571428571},
+    {n:'이병규B',p:7.8571428571},{n:'박용택',p:7.8571428571},
+    {n:'백인천',p:7.8571428571},{n:'김재박',p:7.8571428571},
+    {n:'니퍼트',p:0.8181818182},{n:'김현수B',p:0.8181818182},{n:'김동주B',p:0.8181818182},{n:'홍성흔',p:0.8181818182},
+    {n:'김시진',p:0.8181818182},{n:'장효조',p:0.8181818182},{n:'오승환',p:0.8181818182},{n:'류중일',p:0.8181818182},
+    {n:'이승엽',p:0.8181818182},{n:'이만수',p:0.8181818182},{n:'최형우',p:0.8181818182},{n:'배영수',p:0.8181818182},
+    {n:'양준혁',p:0.8181818182},{n:'임기효',p:0.8181818182},{n:'박한이',p:0.8181818182},
+    {n:'류현진',p:0.8181818182},{n:'구대성',p:0.8181818182},{n:'정민철',p:0.8181818182},
+    {n:'김태균S',p:0.8181818182},{n:'장종훈',p:0.8181818182},{n:'송진우',p:0.8181818182},
+    {n:'최동원',p:0.8181818182},{n:'윤학길',p:0.8181818182},{n:'박정태',p:0.8181818182},
+    {n:'마해영',p:0.8181818182},{n:'손아섭',p:0.8181818182},{n:'강민호',p:0.8181818182},
+    {n:'이대호',p:0.8181818182},{n:'전준호B',p:0.8181818182},
+    {n:'양현종',p:0.8181818182},{n:'이범호',p:0.8181818182},
+    {n:'박병호',p:0.8181818182},
+    {n:'양의지',p:0.8181818182},{n:'이호준B',p:0.8181818182},
+    {n:'우즈',p:0.8181818182},{n:'박철순',p:0.8181818182},
+    {n:'선동열',p:0.8181818182},{n:'조계현',p:0.8181818182},{n:'김성한B',p:0.8181818182},
+    {n:'이순철',p:0.8181818182},{n:'한대화',p:0.8181818182},{n:'이강철',p:0.8181818182},
+    {n:'이종범',p:0.8181818182},{n:'장성호',p:0.8181818182},
+    {n:'심정수',p:0.8181818182},{n:'정민태',p:0.8181818182},{n:'박재홍',p:0.8181818182},{n:'박진만',p:0.8181818182},
+    {n:'김기태S',p:0.8181818182},{n:'김원형',p:0.8181818182},
+    {n:'정명원',p:0.8181818182},
+    {n:'김광현',p:0.8181818182},{n:'정근우',p:0.8181818182},{n:'최정',p:0.8181818182},{n:'박경완',p:0.8181818182},
   ],
-  changwon: [
-    {n:'양의지',t:'NC',p:27.5},{n:'이호준B',t:'NC',p:27.5},
-    {n:'니퍼트',t:'두산',p:0.75},{n:'김현수B',t:'두산',p:0.75},{n:'김동주B',t:'두산',p:0.75},{n:'홍성흔',t:'두산',p:0.75},
-    {n:'김시진',t:'삼성',p:0.75},{n:'장효조',t:'삼성',p:0.75},{n:'오승환',t:'삼성',p:0.75},
-    {n:'류중일',t:'삼성',p:0.75},{n:'이승엽',t:'삼성',p:0.75},{n:'이만수',t:'삼성',p:0.75},
-    {n:'최형우',t:'삼성',p:0.75},{n:'배영수',t:'삼성',p:0.75},{n:'양준혁',t:'삼성',p:0.75},
-    {n:'임기효',t:'삼성',p:0.75},{n:'박한이',t:'삼성',p:0.75},
-    {n:'류현진',t:'한화',p:0.75},{n:'구대성',t:'한화',p:0.75},{n:'정민철',t:'한화',p:0.75},
-    {n:'김태균S',t:'한화',p:0.75},{n:'장종훈',t:'한화',p:0.75},{n:'송진우',t:'한화',p:0.75},
-    {n:'최동원',t:'롯데',p:0.75},{n:'윤학길',t:'롯데',p:0.75},{n:'박정태',t:'롯데',p:0.75},
-    {n:'마해영',t:'롯데',p:0.75},{n:'손아섭',t:'롯데',p:0.75},{n:'강민호',t:'롯데',p:0.75},
-    {n:'이대호',t:'롯데',p:0.75},{n:'전준호B',t:'롯데',p:0.75},
-    {n:'양현종',t:'KIA',p:0.75},{n:'이범호',t:'KIA',p:0.75},
-    {n:'박병호',t:'키움',p:0.75},
-    {n:'이상훈C',t:'LG',p:0.75},{n:'김용수',t:'LG',p:0.75},{n:'김재현S',t:'LG',p:0.75},
-    {n:'이병규B',t:'LG',p:0.75},{n:'박용택',t:'LG',p:0.75},
-    {n:'우즈',t:'OB',p:0.75},{n:'박철순',t:'OB',p:0.75},
-    {n:'백인천',t:'MBC',p:0.75},{n:'김재박',t:'MBC',p:0.75},
-    {n:'선동열',t:'해태',p:0.75},{n:'조계현',t:'해태',p:0.75},{n:'김성한B',t:'해태',p:0.75},
-    {n:'이순철',t:'해태',p:0.75},{n:'한대화',t:'해태',p:0.75},{n:'이강철',t:'해태',p:0.75},
-    {n:'이종범',t:'해태',p:0.75},{n:'장성호',t:'해태',p:0.75},
-    {n:'심정수',t:'현대',p:0.75},{n:'정민태',t:'현대',p:0.75},{n:'박재홍',t:'현대',p:0.75},{n:'박진만',t:'현대',p:0.75},
-    {n:'김기태S',t:'쌍방울',p:0.75},{n:'김원형',t:'쌍방울',p:0.75},
-    {n:'정명원',t:'태평양',p:0.75},
-    {n:'김광현',t:'SK',p:0.75},{n:'정근우',t:'SK',p:0.75},{n:'최정',t:'SK',p:0.75},{n:'박경완',t:'SK',p:0.75}
+  changwon:[
+    {n:'양의지',p:27.5},{n:'이호준B',p:27.5},
+    {n:'니퍼트',p:0.75},{n:'김현수B',p:0.75},{n:'김동주B',p:0.75},{n:'홍성흔',p:0.75},
+    {n:'김시진',p:0.75},{n:'장효조',p:0.75},{n:'오승환',p:0.75},{n:'류중일',p:0.75},
+    {n:'이승엽',p:0.75},{n:'이만수',p:0.75},{n:'최형우',p:0.75},{n:'배영수',p:0.75},
+    {n:'양준혁',p:0.75},{n:'임기효',p:0.75},{n:'박한이',p:0.75},
+    {n:'류현진',p:0.75},{n:'구대성',p:0.75},{n:'정민철',p:0.75},
+    {n:'김태균S',p:0.75},{n:'장종훈',p:0.75},{n:'송진우',p:0.75},
+    {n:'최동원',p:0.75},{n:'윤학길',p:0.75},{n:'박정태',p:0.75},
+    {n:'마해영',p:0.75},{n:'손아섭',p:0.75},{n:'강민호',p:0.75},{n:'이대호',p:0.75},{n:'전준호B',p:0.75},
+    {n:'양현종',p:0.75},{n:'이범호',p:0.75},
+    {n:'박병호',p:0.75},
+    {n:'이상훈C',p:0.75},{n:'김용수',p:0.75},{n:'김재현S',p:0.75},
+    {n:'이병규B',p:0.75},{n:'박용택',p:0.75},
+    {n:'우즈',p:0.75},{n:'박철순',p:0.75},
+    {n:'백인천',p:0.75},{n:'김재박',p:0.75},
+    {n:'선동열',p:0.75},{n:'조계현',p:0.75},{n:'김성한B',p:0.75},
+    {n:'이순철',p:0.75},{n:'한대화',p:0.75},{n:'이강철',p:0.75},{n:'이종범',p:0.75},{n:'장성호',p:0.75},
+    {n:'심정수',p:0.75},{n:'정민태',p:0.75},{n:'박재홍',p:0.75},{n:'박진만',p:0.75},
+    {n:'김기태S',p:0.75},{n:'김원형',p:0.75},
+    {n:'정명원',p:0.75},
+    {n:'김광현',p:0.75},{n:'정근우',p:0.75},{n:'최정',p:0.75},{n:'박경완',p:0.75},
   ],
-  suwon: (() => {
-    const p = 1.6129032258;
-    return [
-      {n:'니퍼트',t:'두산',p},{n:'김현수B',t:'두산',p},{n:'김동주B',t:'두산',p},{n:'홍성흔',t:'두산',p},
-      {n:'김시진',t:'삼성',p},{n:'장효조',t:'삼성',p},{n:'오승환',t:'삼성',p},{n:'류중일',t:'삼성',p},
-      {n:'이승엽',t:'삼성',p},{n:'이만수',t:'삼성',p},{n:'최형우',t:'삼성',p},{n:'배영수',t:'삼성',p},
-      {n:'양준혁',t:'삼성',p},{n:'임기효',t:'삼성',p},{n:'박한이',t:'삼성',p},
-      {n:'류현진',t:'한화',p},{n:'구대성',t:'한화',p},{n:'정민철',t:'한화',p},{n:'김태균S',t:'한화',p},{n:'장종훈',t:'한화',p},{n:'송진우',t:'한화',p},
-      {n:'최동원',t:'롯데',p},{n:'윤학길',t:'롯데',p},{n:'박정태',t:'롯데',p},{n:'마해영',t:'롯데',p},{n:'손아섭',t:'롯데',p},{n:'강민호',t:'롯데',p},{n:'이대호',t:'롯데',p},{n:'전준호B',t:'롯데',p},
-      {n:'양현종',t:'KIA',p},{n:'이범호',t:'KIA',p},
-      {n:'박병호',t:'키움',p},
-      {n:'이상훈C',t:'LG',p},{n:'김용수',t:'LG',p},{n:'김재현S',t:'LG',p},{n:'이병규B',t:'LG',p},{n:'박용택',t:'LG',p},
-      {n:'양의지',t:'NC',p},{n:'이호준B',t:'NC',p},
-      {n:'우즈',t:'OB',p},{n:'박철순',t:'OB',p},
-      {n:'백인천',t:'MBC',p},{n:'김재박',t:'MBC',p},
-      {n:'선동열',t:'해태',p},{n:'조계현',t:'해태',p},{n:'김성한B',t:'해태',p},{n:'이순철',t:'해태',p},{n:'한대화',t:'해태',p},{n:'이강철',t:'해태',p},{n:'이종범',t:'해태',p},{n:'장성호',t:'해태',p},
-      {n:'심정수',t:'현대',p},{n:'정민태',t:'현대',p},{n:'박재홍',t:'현대',p},{n:'박진만',t:'현대',p},
-      {n:'김기태S',t:'쌍방울',p},{n:'김원형',t:'쌍방울',p},
-      {n:'정명원',t:'태평양',p},
-      {n:'김광현',t:'SK',p},{n:'정근우',t:'SK',p},{n:'최정',t:'SK',p},{n:'박경완',t:'SK',p}
-    ];
-  })()
+  suwon:(()=>{const p=1.6129032258;return[
+    {n:'니퍼트',p},{n:'김현수B',p},{n:'김동주B',p},{n:'홍성흔',p},
+    {n:'김시진',p},{n:'장효조',p},{n:'오승환',p},{n:'류중일',p},{n:'이승엽',p},{n:'이만수',p},
+    {n:'최형우',p},{n:'배영수',p},{n:'양준혁',p},{n:'임기효',p},{n:'박한이',p},
+    {n:'류현진',p},{n:'구대성',p},{n:'정민철',p},{n:'김태균S',p},{n:'장종훈',p},{n:'송진우',p},
+    {n:'최동원',p},{n:'윤학길',p},{n:'박정태',p},{n:'마해영',p},{n:'손아섭',p},{n:'강민호',p},{n:'이대호',p},{n:'전준호B',p},
+    {n:'양현종',p},{n:'이범호',p},
+    {n:'박병호',p},
+    {n:'이상훈C',p},{n:'김용수',p},{n:'김재현S',p},{n:'이병규B',p},{n:'박용택',p},
+    {n:'양의지',p},{n:'이호준B',p},
+    {n:'우즈',p},{n:'박철순',p},
+    {n:'백인천',p},{n:'김재박',p},
+    {n:'선동열',p},{n:'조계현',p},{n:'김성한B',p},{n:'이순철',p},{n:'한대화',p},{n:'이강철',p},{n:'이종범',p},{n:'장성호',p},
+    {n:'심정수',p},{n:'정민태',p},{n:'박재홍',p},{n:'박진만',p},
+    {n:'김기태S',p},{n:'김원형',p},
+    {n:'정명원',p},
+    {n:'김광현',p},{n:'정근우',p},{n:'최정',p},{n:'박경완',p},
+  ];})()
 };
 
-// Build stadium buttons
-const grid = document.getElementById('stadiumGrid');
-STADIUMS.forEach(s => {
-  const b = document.createElement('button');
-  b.className = 'stadium-btn'; b.dataset.id = s.id;
-  b.innerHTML = `<span class="st-emoji">${s.emoji}</span><span class="st-name">${s.name}</span><span class="st-team">${s.team}</span>`;
-  b.addEventListener('click', () => selectStadium(s));
+// ── 구장 버튼 렌더 ──
+const grid=document.getElementById('stadiumGrid');
+STADIUMS.forEach(s=>{
+  const b=document.createElement('button');
+  b.className='st-btn'; b.dataset.id=s.id;
+  b.innerHTML=`<span class="st-emoji">${s.emoji}</span><span class="st-city">${s.name}</span><span class="st-team">${s.team}</span>`;
+  b.addEventListener('click',()=>selectStadium(s));
   grid.appendChild(b);
 });
 
-let selStadium = null, hist = [], rolling = false;
+let selStadium=null, hist=[], rolling=false;
 
-function selectStadium(s) {
-  selStadium = s;
-  document.querySelectorAll('.stadium-btn').forEach(b => b.classList.toggle('selected', b.dataset.id === s.id));
-  const btn = document.getElementById('scoutBtn');
-  btn.disabled = false;
-  btn.textContent = `${s.emoji} ${s.name}(${s.team}) 레전드 뽑기! 🎉`;
+function selectStadium(s){
+  selStadium=s;
+  document.querySelectorAll('.st-btn').forEach(b=>b.classList.toggle('sel',b.dataset.id===s.id));
+  const btn=document.getElementById('scoutBtn');
+  btn.disabled=false;
+  btn.textContent=`${s.emoji} ${s.name}(${s.team}) 레전드 뽑기! 🎉`;
   renderOdds(s.id);
 }
 
-function renderOdds(sid) {
-  const players = DATA[sid];
-  const maxP = Math.max(...players.map(p => p.p));
-  document.getElementById('oddsTitle').textContent = `🎲 선수 확률 목록 (총 ${players.length}명)`;
-  const st = STADIUMS.find(s => s.id === sid);
-  const homeLabel = players.filter(p => p.p > 1).map(p => p.t).filter((v,i,a)=>a.indexOf(v)===i).join('·');
-  document.getElementById('oddsSub').textContent = homeLabel ? `홈 보너스: ${homeLabel}` : '';
-  document.getElementById('oddsBody').innerHTML = players.map(p => {
-    const isHigh = p.p > 1;
+function renderOdds(sid){
+  const players=DATA[sid];
+  const maxP=Math.max(...players.map(p=>p.p));
+  document.getElementById('oddsTitle').textContent=`🎲 확률 목록 (총 ${players.length}명)`;
+  const homeTeams=players.filter(p=>p.p===maxP).map(p=>go(p.n).t).filter((v,i,a)=>a.indexOf(v)===i).join('·');
+  document.getElementById('oddsSub').textContent=`🏠 홈 보너스: ${homeTeams}`;
+  document.getElementById('oddsBody').innerHTML=players.map(p=>{
+    const isH=p.p===maxP; const o=go(p.n);
     return `<div class="odds-row">
+      <span class="odds-emo">${o.e}</span>
       <span class="odds-name">${p.n}</span>
-      <span class="odds-team">${p.t}</span>
+      <span class="odds-team-label">${o.t}</span>
       <div class="odds-bar-wrap">
-        <div class="odds-bar"><div class="odds-bar-fill ${isHigh?'fill-high':'fill-norm'}" style="width:${(p.p/maxP*100).toFixed(1)}%"></div></div>
-        <span class="odds-pct" style="color:${isHigh?'var(--gold)':'var(--text-f)'}">${p.p.toFixed(2)}%</span>
+        <div class="odds-bar"><div class="odds-bar-fill ${isH?'fill-h':'fill-n'}" style="width:${(p.p/maxP*100).toFixed(1)}%"></div></div>
       </div>
+      <span class="odds-pct">${p.p.toFixed(2)}%</span>
     </div>`;
   }).join('');
-  document.getElementById('oddsWrap').style.display = '';
+  document.getElementById('oddsWrap').style.display='';
 }
 
-// Scout
-document.getElementById('scoutBtn').addEventListener('click', doScout);
-function doScout() {
-  if (!selStadium || rolling) return;
-  rolling = true;
-  document.getElementById('scoutBtn').disabled = true;
-  const pool = DATA[selStadium.id];
-  const area = document.getElementById('resultArea');
-  let n = 0;
-  const iv = setInterval(() => {
-    const rp = pool[Math.floor(Math.random() * pool.length)];
-    area.innerHTML = `<div class="rolling-card"><div style="font-size:2rem;margin-bottom:8px">${selStadium.emoji}</div><div class="rolling-name">${rp.n}</div><div style="font-size:.8rem;color:var(--text-m);margin-top:6px">${rp.t}</div></div>`;
-    if (++n >= 20) { clearInterval(iv); finalize(pool); }
-  }, 75);
+document.getElementById('scoutBtn').addEventListener('click',doScout);
+
+let lastPicked=null, lastStadium=null;
+function doScout(){
+  if(!selStadium||rolling) return;
+  rolling=true;
+  document.getElementById('scoutBtn').disabled=true;
+  const pool=DATA[selStadium.id];
+  const area=document.getElementById('resultArea');
+
+  const iv=setInterval(()=>{
+    const rp=pool[Math.floor(Math.random()*pool.length)];
+    area.innerHTML=`<div class="rolling-card">
+      <div class="rolling-name">${go(rp.n).e} ${rp.n}</div>
+      <div class="rolling-team">${go(rp.n).t}</div>
+    </div>`;
+  },80);
+
+  setTimeout(()=>{
+    clearInterval(iv);
+    const total=pool.reduce((s,p)=>s+p.p,0);
+    let r=Math.random()*total, picked=pool[pool.length-1];
+    for(const p of pool){r-=p.p; if(r<=0){picked=p;break;}}
+    lastPicked=picked; lastStadium=selStadium;
+    hist.unshift({player:picked, stadium:selStadium});
+    renderHist();
+    showResult(picked);
+    rolling=false;
+    document.getElementById('scoutBtn').disabled=false;
+    document.getElementById('scoutBtn').textContent=`${selStadium.emoji} ${selStadium.name}(${selStadium.team}) 레전드 뽑기! 🎉`;
+  },1400);
 }
 
-function finalize(pool) {
-  // weighted random
-  const total = pool.reduce((s,p) => s + p.p, 0);
-  let r = Math.random() * total, picked = pool[pool.length-1];
-  for (const p of pool) { r -= p.p; if (r <= 0) { picked = p; break; } }
-  showResult(picked);
-  hist.unshift({player:picked, stadium:selStadium});
-  renderHist();
-  rolling = false;
-  const btn = document.getElementById('scoutBtn');
-  btn.disabled = false;
-  btn.textContent = `${selStadium.emoji} ${selStadium.name}(${selStadium.team}) 레전드 뽑기! 🎉`;
-}
-
-function showResult(p) {
-  const isHigh = p.p > 1;
-  document.getElementById('resultArea').innerHTML = `
+function showResult(p){
+  const pool=DATA[lastStadium.id];
+  const maxP=Math.max(...pool.map(x=>x.p));
+  const isH=p.p===maxP;
+  const o=go(p.n);
+  document.getElementById('resultArea').innerHTML=`
     <div class="result-card">
-      <div class="result-top">
-        <div class="result-stadium">${selStadium.emoji} ${selStadium.name} · ${selStadium.team} 홈구장</div>
-        <span class="result-prob-badge ${isHigh?'prob-high':'prob-normal'}">${isHigh?'🌟 홈 보너스':'일반'} ${p.p.toFixed(2)}%</span>
+      <div class="rc-top">
+        <div class="rc-stadium">${lastStadium.emoji} 선택 구장: ${lastStadium.name}(${lastStadium.team})</div>
+        <span class="rc-prob ${isH?'high':'norm'}">${isH?'🌟 홈 보너스':'일반'} ${p.p.toFixed(2)}%</span>
       </div>
-      <div class="result-player">⭐ ${p.n}</div>
-      <div class="result-sub">
-        <span class="badge badge-team">🏟️ ${p.t}</span>
-        <span class="badge badge-hist">레전드 획득!</span>
+      <div class="rc-body">
+        <div class="rc-name">${o.e} ${p.n}</div>
+        <div class="rc-badges">
+          <span class="badge b-team">${o.e} 원소속: ${o.t}</span>
+          <span class="badge b-win">⭐ 레전드 획득!</span>
+        </div>
       </div>
     </div>`;
 }
 
-function renderHist() {
-  const el = document.getElementById('histList');
-  if (!hist.length) { el.innerHTML = '<div class="hist-empty">아직 뽑은 선수가 없어요 😊</div>'; return; }
-  el.innerHTML = hist.slice(0,20).map((h,i) =>
-    `<div class="hist-item">
+function renderHist(){
+  const el=document.getElementById('histList');
+  if(!hist.length){el.innerHTML='<div class="hist-empty">아직 뽑은 선수가 없어요 😊</div>';return;}
+  el.innerHTML=hist.slice(0,20).map((h,i)=>{
+    const o=go(h.player.n);
+    return `<div class="hist-item">
       <span class="hist-num">${hist.length-i}</span>
-      <span class="hist-emoji">${h.stadium.emoji}</span>
+      <span class="hist-emoji">${o.e}</span>
       <span class="hist-player">${h.player.n}</span>
-      <span class="hist-meta">${h.player.t} · ${h.stadium.name}</span>
+      <span class="hist-origin">${o.t}</span>
+      <span class="hist-venue">선택 구장(${h.stadium.name})</span>
       <span class="hist-pct">${h.player.p.toFixed(2)}%</span>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
-document.getElementById('clearBtn').addEventListener('click', () => { hist=[]; renderHist(); });
+document.getElementById('clearBtn').addEventListener('click',()=>{hist=[];lastPicked=null;renderHist();});
 
-// Theme
+// ── 테마 토글 ──
 (function(){
   const btn=document.querySelector('[data-theme-toggle]'),root=document.documentElement;
-  let d=root.getAttribute('data-theme')||'dark';
+  let d=matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';
+  root.setAttribute('data-theme',d);
   btn.textContent=d==='dark'?'☀️':'🌙';
-  btn.addEventListener('click',()=>{d=d==='dark'?'light':'dark';root.setAttribute('data-theme',d);btn.textContent=d==='dark'?'☀️':'🌙';});
+  btn.addEventListener('click',()=>{
+    d=d==='dark'?'light':'dark';
+    root.setAttribute('data-theme',d);
+    btn.textContent=d==='dark'?'☀️':'🌙';
+  });
 })();
 </script>
 </body>
