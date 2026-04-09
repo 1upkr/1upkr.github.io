@@ -3,672 +3,671 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>버무림 v0.4 Web Edition 👾⚡✨</title>
+<title>버무림 Web v1.0 👾⚡✨</title>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
   body {
-    background: #1a1a2e;
-    color: #e0e0e0;
-    font-family: 'Segoe UI', sans-serif;
-    display: flex;
-    flex-direction: column;
+    background: #1e1e2e;
+    color: #cdd6f4;
+    font-family: 'Segoe UI', Arial, sans-serif;
     height: 100vh;
-    overflow: hidden;
-  }
-  #main {
-    display: flex;
-    flex: 1;
-    gap: 0;
-    overflow: hidden;
-  }
-  #preview-wrap {
-    flex: 1;
-    background: #2b2b2b;
-    margin: 16px 0 16px 16px;
-    border-radius: 8px;
-    overflow: hidden;
-    position: relative;
-  }
-  #preview-canvas {
-    width: 100%;
-    height: 100%;
-    display: block;
-    cursor: default;
-  }
-  #options {
-    width: 260px;
-    min-width: 260px;
-    background: #2b2b3b;
-    margin: 16px;
-    border-radius: 8px;
-    padding: 16px 14px;
     display: flex;
     flex-direction: column;
-    gap: 0;
-    overflow-y: auto;
+    overflow: hidden;
+    user-select: none;
   }
-  #options label {
+
+  header {
+    background: #181825;
+    padding: 8px 20px;
+    border-bottom: 1px solid #313244;
     font-size: 13px;
-    color: #aaa;
-    margin-top: 14px;
-    margin-bottom: 4px;
-    display: block;
-  }
-  #options select,
-  #options input[type="text"],
-  #options input[type="number"] {
-    width: 100%;
-    background: #3a3a4a;
-    border: 1px solid #555;
-    border-radius: 6px;
-    color: #e0e0e0;
-    padding: 7px 10px;
-    font-size: 13px;
-    outline: none;
-  }
-  #options input[type="range"] {
-    width: 100%;
-    accent-color: #4a90d9;
-    cursor: pointer;
-  }
-  .slider-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .slider-row span {
-    min-width: 24px;
-    text-align: right;
-    font-size: 13px;
-    color: #ccc;
-  }
-  #custom-ratio-row { display: none; }
-  .btn {
-    width: 100%;
-    padding: 10px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 600;
-    transition: filter .15s;
-  }
-  .btn:hover { filter: brightness(1.15); }
-  #btn-border-color {
-    background: #000;
-    color: #fff;
-    margin-top: 10px;
-  }
-  #btn-save {
-    background: #4a90d9;
-    color: #fff;
-    margin-top: 18px;
-    padding: 13px;
-    font-size: 15px;
-  }
-  #footer {
-    height: 26px;
-    background: #222230;
-    display: flex;
-    align-items: center;
-    padding: 0 14px;
-    font-size: 11px;
-    color: #888;
-    border-top: 1px solid #333;
+    color: #6c7086;
     flex-shrink: 0;
   }
-  #toast {
-    position: fixed;
-    bottom: 40px;
-    left: 50%;
-    transform: translateX(-50%) translateY(20px);
-    background: #333;
-    color: #fff;
-    padding: 10px 22px;
-    border-radius: 8px;
-    font-size: 14px;
-    opacity: 0;
-    transition: opacity .3s, transform .3s;
-    pointer-events: none;
-    z-index: 999;
-    white-space: nowrap;
+  header strong { color: #89b4fa; }
+
+  .main-layout {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+    min-height: 0;
   }
-  #toast.show {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
+
+  .preview-wrapper {
+    flex: 1;
+    padding: 16px;
+    display: flex;
+    min-width: 0;
   }
-  #file-input { display: none; }
+
+  #mainCanvas {
+    width: 100%;
+    height: 100%;
+    background: #2B2B2B;
+    border-radius: 10px;
+    display: block;
+    cursor: crosshair;
+  }
+
+  /* ── 옵션 패널 ── */
+  .options-panel {
+    width: 270px;
+    flex-shrink: 0;
+    background: #181825;
+    border-left: 1px solid #313244;
+    padding: 14px 14px 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .opt-group { display: flex; flex-direction: column; gap: 6px; }
+
+  .opt-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #6c7086;
+    letter-spacing: 0.7px;
+    text-transform: uppercase;
+  }
+
+  select, .text-input {
+    width: 100%;
+    background: #1e1e2e;
+    border: 1px solid #45475a;
+    color: #cdd6f4;
+    padding: 7px 10px;
+    border-radius: 7px;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236c7086' fill='none' stroke-width='2'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px; cursor: pointer; }
+  select:focus, .text-input:focus { border-color: #89b4fa; }
+  select option { background: #1e1e2e; }
+
+  .slider-row { display: flex; align-items: center; gap: 10px; }
+  input[type="range"] {
+    flex: 1; height: 4px; accent-color: #89b4fa; cursor: pointer;
+    appearance: none; -webkit-appearance: none;
+    background: linear-gradient(to right, #89b4fa 0%, #89b4fa var(--pct, 0%), #45475a var(--pct, 0%), #45475a 100%);
+    border-radius: 2px;
+  }
+  input[type="range"]::-webkit-slider-thumb { appearance: none; width: 16px; height: 16px; border-radius: 50%; background: #89b4fa; cursor: pointer; }
+  .slider-badge {
+    min-width: 28px; text-align: center; font-size: 13px;
+    color: #89b4fa; font-weight: 700; background: #1e1e2e;
+    border: 1px solid #45475a; border-radius: 5px; padding: 2px 4px;
+  }
+
+  .color-row {
+    display: flex; align-items: center; gap: 8px;
+    background: #1e1e2e; border: 1px solid #45475a;
+    border-radius: 7px; padding: 7px 10px; cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .color-row:hover { border-color: #89b4fa; }
+  .color-swatch {
+    width: 22px; height: 22px; border-radius: 5px;
+    border: 1px solid #6c7086; flex-shrink: 0;
+  }
+  .color-row span { font-size: 13px; color: #cdd6f4; }
+
+  .divider { height: 1px; background: #313244; margin: 2px 0; }
+
+  .gen-btn {
+    background: linear-gradient(135deg, #89b4fa 0%, #74c7ec 100%);
+    color: #1e1e2e; border: none; padding: 13px;
+    border-radius: 9px; font-size: 14px; font-weight: 800;
+    cursor: pointer; width: 100%;
+    transition: opacity 0.2s, transform 0.1s;
+    letter-spacing: 0.3px;
+  }
+  .gen-btn:hover { opacity: 0.92; }
+  .gen-btn:active { transform: scale(0.97); }
+
+  #customRatioWrap { display: none; }
+
+  footer {
+    background: #181825;
+    border-top: 1px solid #313244;
+    padding: 4px 16px;
+    font-size: 11px;
+    color: #585b70;
+    flex-shrink: 0;
+  }
+
+  /* 토스트 */
+  .toast {
+    position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%);
+    background: #a6e3a1; color: #1e1e2e;
+    padding: 11px 24px; border-radius: 9px; font-size: 14px; font-weight: 700;
+    z-index: 9999; box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    animation: fadeInUp 0.3s ease;
+  }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateX(-50%) translateY(12px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+  }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: #1e1e2e; }
+  ::-webkit-scrollbar-thumb { background: #45475a; border-radius: 3px; }
 </style>
 </head>
 <body>
 
-<div id="main">
-  <div id="preview-wrap">
-    <canvas id="preview-canvas"></canvas>
+<header>
+  <strong>버무림 Web v1.0</strong> 👾⚡✨ &nbsp;|&nbsp; 프레임을 클릭해 이미지 추가 &nbsp;·&nbsp; 드래그로 위치 조정 &nbsp;·&nbsp; 휠로 확대/축소
+</header>
+
+<div class="main-layout">
+
+  <!-- 캔버스 미리보기 -->
+  <div class="preview-wrapper">
+    <canvas id="mainCanvas"></canvas>
   </div>
 
-  <div id="options">
-    <label>레이아웃</label>
-    <select id="sel-layout">
-      <option value="1행">1행</option>
-      <option value="2행">2행</option>
-    </select>
+  <!-- 옵션 패널 -->
+  <div class="options-panel">
 
-    <label>이미지 비율</label>
-    <select id="sel-ratio">
-      <option value="5:3">5:3</option>
-      <option value="5:2">5:2</option>
-      <option value="4:3">4:3</option>
-      <option value="1:1">1:1</option>
-      <option value="자유 입력">자유 입력</option>
-    </select>
-    <div id="custom-ratio-row">
-      <input type="text" id="inp-custom-ratio" placeholder="예: 16:9">
+    <div class="opt-group">
+      <div class="opt-label">레이아웃</div>
+      <select id="layoutSelect">
+        <option value="1행">1행</option>
+        <option value="2행">2행</option>
+      </select>
     </div>
 
-    <label id="lbl-frame-count">프레임 수 (2개)</label>
-    <div class="slider-row">
-      <input type="range" id="slider-frames" min="2" max="5" step="1" value="2">
-      <span id="slider-val">2</span>
+    <div class="opt-group">
+      <div class="opt-label">이미지 비율</div>
+      <select id="ratioSelect">
+        <option value="5:3">5:3</option>
+        <option value="5:2">5:2</option>
+        <option value="4:3">4:3</option>
+        <option value="1:1">1:1</option>
+        <option value="custom">자유 입력</option>
+      </select>
+      <div id="customRatioWrap">
+        <input type="text" id="customRatio" class="text-input" placeholder="예: 16:9" />
+      </div>
     </div>
 
-    <label>구분선 (px)</label>
-    <input type="number" id="inp-border" value="0" min="0">
+    <div class="opt-group">
+      <div class="opt-label" id="frameCountLabel">프레임 수</div>
+      <div class="slider-row">
+        <input type="range" id="frameSlider" min="2" max="5" step="1" value="2" />
+        <div class="slider-badge" id="frameSliderVal">2</div>
+      </div>
+    </div>
 
-    <button class="btn" id="btn-border-color">구분선 색상</button>
-    <input type="color" id="picker-border-color" value="#000000" style="display:none">
+    <div class="divider"></div>
 
-    <label>생성 이미지 가로 크기 (px)</label>
-    <input type="number" id="inp-save-width" value="1200" min="100">
+    <div class="opt-group">
+      <div class="opt-label">구분선 두께 (px)</div>
+      <input type="number" id="borderWidth" class="text-input" value="0" min="0" max="200" />
+    </div>
 
-    <button class="btn" id="btn-save">이미지 생성하기</button>
+    <div class="opt-group">
+      <div class="opt-label">구분선 색상</div>
+      <div class="color-row" id="colorRow" onclick="document.getElementById('colorPicker').click()">
+        <div class="color-swatch" id="colorSwatch"></div>
+        <span id="colorLabel">#000000</span>
+      </div>
+      <input type="color" id="colorPicker" value="#000000" style="display:none" />
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="opt-group">
+      <div class="opt-label">생성 이미지 가로 크기 (px)</div>
+      <input type="number" id="saveWidth" class="text-input" value="3000" min="100" max="20000" />
+    </div>
+
+    <button class="gen-btn" id="genBtn">⬇ 이미지 생성하기</button>
+
   </div>
 </div>
 
-<div id="footer">버무림 Version 0.4 ⓡ Build 2510021 | 2025 👾⚡✨☢️ N3RD </div>
-<div id="toast"></div>
-<input type="file" id="file-input" accept="image/*">
+<!-- 숨김 파일 입력 -->
+<input type="file" id="fileInput" accept=".jpg,.jpeg,.png,.gif,.webp,.bmp,.JPG,.JPEG,.PNG,.GIF,.WEBP,.BMP" style="display:none" />
+
+<footer>버무림 Web Version 1.0 &nbsp;|&nbsp; 2025 👾⚡✨☢️</footer>
 
 <script>
-const state = {
-  imagesData: {},
-  borderColor: '#000000',
-  dragIndex: null,
-  dragStartX: 0,
-  dragStartY: 0,
-  frameW: 0,
-  frameH: 0,
-  pendingUploadIndex: null,
-};
+// ──────────────────────────────────────────────
+//  BurMoorim Web  ·  Single-file Canvas App
+// ──────────────────────────────────────────────
+class BurMoorim {
+  constructor() {
+    this.canvas  = document.getElementById("mainCanvas");
+    this.ctx     = this.canvas.getContext("2d");
 
-const canvas        = document.getElementById('preview-canvas');
-const ctx           = canvas.getContext('2d');
-const selLayout     = document.getElementById('sel-layout');
-const selRatio      = document.getElementById('sel-ratio');
-const inpCustomRatio= document.getElementById('inp-custom-ratio');
-const customRatioRow= document.getElementById('custom-ratio-row');
-const sliderFrames  = document.getElementById('slider-frames');
-const sliderVal     = document.getElementById('slider-val');
-const lblFrameCount = document.getElementById('lbl-frame-count');
-const inpBorder     = document.getElementById('inp-border');
-const btnBorderColor= document.getElementById('btn-border-color');
-const pickerBorder  = document.getElementById('picker-border-color');
-const inpSaveWidth  = document.getElementById('inp-save-width');
-const btnSave       = document.getElementById('btn-save');
-const fileInput     = document.getElementById('file-input');
+    this.imagesData  = {};   // { index: { img, posX, posY, zoom } }
+    this.frameRects  = [];   // { x, y, w, h } per frame index
+    this.frameWidth  = 0;
+    this.frameHeight = 0;
+    this.borderColor = "#000000";
 
-function showToast(msg, duration = 2800) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), duration);
-}
+    this.dragState          = null;
+    this.pendingUploadIndex = null;
 
-function getAspectRatio() {
-  let s = selRatio.value;
-  if (s === '자유 입력') s = inpCustomRatio.value;
-  const parts = s.split(':').map(Number);
-  if (parts.length === 2 && parts[0] > 0 && parts[1] > 0) return [parts[0], parts[1]];
-  return [5, 3];
-}
-
-function getLayoutConfig() {
-  const layout = selLayout.value;
-  const cols   = parseInt(sliderFrames.value);
-  if (layout === '2행') return { rows: 2, cols, total: cols * 2 };
-  return { rows: 1, cols, total: cols };
-}
-
-function getContrastColor(hex) {
-  hex = hex.replace('#','');
-  const r = parseInt(hex.slice(0,2),16);
-  const g = parseInt(hex.slice(2,4),16);
-  const b = parseInt(hex.slice(4,6),16);
-  return (0.299*r + 0.587*g + 0.114*b)/255 > 0.5 ? '#000000' : '#ffffff';
-}
-
-function resizeCanvas() {
-  const wrap = document.getElementById('preview-wrap');
-  canvas.width  = wrap.clientWidth;
-  canvas.height = wrap.clientHeight;
-}
-
-// 미리보기 프레임 크기 계산 (저장 로직과 공유)
-function calcFrameSize() {
-  const cw = canvas.width, ch = canvas.height;
-  const [aw, ah] = getAspectRatio();
-  const targetAspect = aw / ah;
-  let pw = cw - 40, ph = pw / targetAspect;
-  if (ph > ch - 40) { ph = ch - 40; pw = ph * targetAspect; }
-
-  const borderPx  = Math.max(0, parseInt(inpBorder.value) || 0);
-  const saveWidth = Math.max(100, parseInt(inpSaveWidth.value) || 1200);
-  const { rows, cols } = getLayoutConfig();
-  const scaleRatio = pw / saveWidth;
-  const borderPrev = borderPx * scaleRatio;
-
-  const fw = (pw - borderPrev * (cols - 1)) / cols;
-  const fh = (ph - borderPrev * (rows - 1)) / rows;
-  return { fw, fh, pw, ph, targetAspect };
-}
-
-function updatePreview() {
-  const cw = canvas.width, ch = canvas.height;
-  ctx.clearRect(0, 0, cw, ch);
-  ctx.fillStyle = '#2b2b2b';
-  ctx.fillRect(0, 0, cw, ch);
-
-  if (cw <= 1 || ch <= 1) return;
-
-  const [aw, ah] = getAspectRatio();
-  const targetAspect = aw / ah;
-  let pw = cw - 40, ph = pw / targetAspect;
-  if (ph > ch - 40) { ph = ch - 40; pw = ph * targetAspect; }
-
-  const sx = (cw - pw) / 2, sy = (ch - ph) / 2;
-
-  const borderPx   = Math.max(0, parseInt(inpBorder.value) || 0);
-  const saveWidth  = Math.max(100, parseInt(inpSaveWidth.value) || 1200);
-  const { rows, cols } = getLayoutConfig();
-
-  const scaleRatio  = pw / saveWidth;
-  const borderPrev  = borderPx * scaleRatio;
-
-  state.frameW = (pw - borderPrev * (cols - 1)) / cols;
-  state.frameH = (ph - borderPrev * (rows - 1)) / rows;
-
-  if (state.frameW <= 0 || state.frameH <= 0) return;
-
-  let cy = sy;
-  for (let r = 0; r < rows; r++) {
-    let cx2 = sx;
-    for (let c = 0; c < cols; c++) {
-      const idx = r * cols + c;
-      if (state.imagesData[idx]) {
-        drawImageFrame(idx, cx2, cy);
-      } else {
-        ctx.save();
-        ctx.strokeStyle = '#565b5e';
-        ctx.lineWidth = 2;
-        ctx.setLineDash([6, 5]);
-        ctx.strokeRect(cx2 + 1, cy + 1, state.frameW - 2, state.frameH - 2);
-        ctx.restore();
-        ctx.fillStyle = '#565b5e';
-        ctx.font = 'bold 52px Arial';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('+', cx2 + state.frameW / 2, cy + state.frameH / 2);
-      }
-      if (c < cols - 1) {
-        ctx.fillStyle = state.borderColor;
-        ctx.fillRect(cx2 + state.frameW, cy, borderPrev, state.frameH);
-      }
-      cx2 += state.frameW + borderPrev;
-    }
-    if (r < rows - 1) {
-      ctx.fillStyle = state.borderColor;
-      ctx.fillRect(sx, cy + state.frameH, pw, borderPrev);
-    }
-    cy += state.frameH + borderPrev;
+    this._initCanvas();
+    this._bindEvents();
+    this._onOptionChange();
   }
-}
 
-function drawImageFrame(index, fx, fy) {
-  const { img, pos, zoom } = state.imagesData[index];
-  const fw = state.frameW, fh = state.frameH;
+  // ── 캔버스 초기 크기 설정 ──
+  _initCanvas() {
+    const wrapper = this.canvas.parentElement;
+    const ro = new ResizeObserver(() => {
+      this.canvas.width  = wrapper.clientWidth  - 32;
+      this.canvas.height = wrapper.clientHeight - 32;
+      this._drawPreview();
+    });
+    ro.observe(wrapper);
+    this.canvas.width  = wrapper.clientWidth  - 32;
+    this.canvas.height = wrapper.clientHeight - 32;
+  }
 
-  ctx.save();
-  ctx.beginPath();
-  ctx.rect(fx, fy, fw, fh);
-  ctx.clip();
+  // ── 이벤트 바인딩 ──
+  _bindEvents() {
+    const ids = ["layoutSelect","ratioSelect","frameSlider","borderWidth","saveWidth"];
+    ids.forEach(id => {
+      const el = document.getElementById(id);
+      el.addEventListener("input",  () => this._onOptionChange());
+      el.addEventListener("change", () => this._onOptionChange());
+    });
+    document.getElementById("customRatio").addEventListener("input", () => this._drawPreview());
 
-  const dw = img.naturalWidth  * zoom;
-  const dh = img.naturalHeight * zoom;
-  ctx.drawImage(img, fx + pos.x, fy + pos.y, dw, dh);
-  ctx.restore();
+    // 슬라이더 배지 업데이트 + 그라디언트
+    const slider = document.getElementById("frameSlider");
+    slider.addEventListener("input", () => {
+      document.getElementById("frameSliderVal").textContent = slider.value;
+      this._updateSliderTrack(slider);
+    });
+    this._updateSliderTrack(slider);
 
-  ctx.font = '16px Arial';
-  ctx.textAlign = 'right';
-  ctx.textBaseline = 'top';
-  ctx.fillStyle = 'rgba(0,0,0,0.55)';
-  ctx.fillRect(fx + fw - 30, fy + 2, 28, 22);
-  ctx.fillStyle = '#ff5555';
-  ctx.fillText('✕', fx + fw - 6, fy + 4);
-}
+    // 색상 피커
+    document.getElementById("colorPicker").addEventListener("input", e => {
+      this.borderColor = e.target.value;
+      document.getElementById("colorSwatch").style.background = this.borderColor;
+      document.getElementById("colorLabel").textContent = this.borderColor.toUpperCase();
+      this._drawPreview();
+    });
+    document.getElementById("colorSwatch").style.background = this.borderColor;
 
-function getFrameAt(mx, my) {
-  const cw = canvas.width, ch = canvas.height;
-  const [aw, ah] = getAspectRatio();
-  const targetAspect = aw / ah;
-  let pw = cw - 40, ph = pw / targetAspect;
-  if (ph > ch - 40) { ph = ch - 40; pw = ph * targetAspect; }
-  const sx = (cw - pw) / 2, sy = (ch - ph) / 2;
+    // 캔버스 이벤트
+    this.canvas.addEventListener("mousedown",  e => this._onMouseDown(e));
+    this.canvas.addEventListener("mousemove",  e => this._onMouseMove(e));
+    this.canvas.addEventListener("mouseup",    () => this._onMouseUp());
+    this.canvas.addEventListener("mouseleave", () => this._onMouseUp());
+    this.canvas.addEventListener("wheel",      e => { e.preventDefault(); this._onWheel(e); }, { passive: false });
+    this.canvas.addEventListener("contextmenu", e => e.preventDefault());
 
-  const borderPx  = Math.max(0, parseInt(inpBorder.value) || 0);
-  const saveWidth = Math.max(100, parseInt(inpSaveWidth.value) || 1200);
-  const { rows, cols } = getLayoutConfig();
-  const scaleRatio = pw / saveWidth;
-  const borderPrev = borderPx * scaleRatio;
-  const fw = (pw - borderPrev * (cols - 1)) / cols;
-  const fh = (ph - borderPrev * (rows - 1)) / rows;
+    // 터치 이벤트
+    this.canvas.addEventListener("touchstart", e => { e.preventDefault(); if (e.touches.length===1) this._onMouseDown(this._touchToMouse(e.touches[0])); }, { passive: false });
+    this.canvas.addEventListener("touchmove",  e => { e.preventDefault(); if (e.touches.length===1) this._onMouseMove(this._touchToMouse(e.touches[0])); }, { passive: false });
+    this.canvas.addEventListener("touchend",   () => this._onMouseUp());
 
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
-      const fx = sx + c * (fw + borderPrev);
-      const fy = sy + r * (fh + borderPrev);
-      if (mx >= fx && mx <= fx + fw && my >= fy && my <= fy + fh) {
-        return { index: r * cols + c, fx, fy };
-      }
+    // 파일 선택
+    document.getElementById("fileInput").addEventListener("change", e => this._onFileSelected(e));
+
+    // 생성 버튼
+    document.getElementById("genBtn").addEventListener("click", () => this._saveImage());
+  }
+
+  _touchToMouse(touch) { return { clientX: touch.clientX, clientY: touch.clientY }; }
+
+  _updateSliderTrack(slider) {
+    const pct = ((slider.value - slider.min) / (slider.max - slider.min)) * 100;
+    slider.style.setProperty("--pct", pct + "%");
+  }
+
+  // ── 옵션 변경 핸들러 ──
+  _onOptionChange() {
+    // 자유 입력 표시/숨김
+    const ratioVal = document.getElementById("ratioSelect").value;
+    document.getElementById("customRatioWrap").style.display = (ratioVal === "custom") ? "block" : "none";
+
+    // 슬라이더 라벨
+    const { rows, cols, total } = this._getLayoutConfig();
+    const layout = document.getElementById("layoutSelect").value;
+    const lbl = document.getElementById("frameCountLabel");
+    if (layout === "1행") {
+      lbl.textContent = `프레임 수 (${total}개)`;
+    } else {
+      lbl.textContent = `열 개수 (${cols}열 / 총 ${total}개)`;
+    }
+    document.getElementById("frameSliderVal").textContent = cols;
+    this._updateSliderTrack(document.getElementById("frameSlider"));
+
+    this._drawPreview();
+  }
+
+  // ── 레이아웃 설정 반환 ──
+  _getLayoutConfig() {
+    const layout = document.getElementById("layoutSelect").value;
+    const cols   = parseInt(document.getElementById("frameSlider").value);
+    const rows   = (layout === "2행") ? 2 : 1;
+    return { rows, cols, total: rows * cols };
+  }
+
+  // ── 비율 반환 ──
+  _getAspectRatio() {
+    const sel = document.getElementById("ratioSelect").value;
+    const str = (sel === "custom") ? document.getElementById("customRatio").value : sel;
+    try {
+      const [w, h] = str.split(":").map(Number);
+      if (!w || !h || h === 0) return { w: 5, h: 3 };
+      return { w, h };
+    } catch { return { w: 5, h: 3 }; }
+  }
+
+  // ── 캔버스 내 마우스 좌표 (DPI 보정) ──
+  _canvasPos(e) {
+    const rect = this.canvas.getBoundingClientRect();
+    const sx = this.canvas.width  / rect.width;
+    const sy = this.canvas.height / rect.height;
+    return { x: (e.clientX - rect.left) * sx, y: (e.clientY - rect.top) * sy };
+  }
+
+  // ── 좌표 → 프레임 인덱스 ──
+  _hitFrame(x, y) {
+    for (let i = 0; i < this.frameRects.length; i++) {
+      const r = this.frameRects[i];
+      if (r && x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h) return i;
+    }
+    return -1;
+  }
+
+  // ── 삭제 버튼 히트 여부 ──
+  _hitDelete(index, x, y) {
+    const r = this.frameRects[index];
+    if (!r) return false;
+    return Math.abs(x - (r.x + r.w - 18)) < 16 && Math.abs(y - (r.y + 18)) < 16;
+  }
+
+  // ── 마우스/터치 이벤트 ──
+  _onMouseDown(e) {
+    const { x, y } = this._canvasPos(e);
+    const idx = this._hitFrame(x, y);
+    if (idx === -1) return;
+
+    if (this.imagesData[idx]) {
+      if (this._hitDelete(idx, x, y)) { this._deleteImage(idx); return; }
+      this.dragState = { idx, sx: x, sy: y };
+      this.canvas.style.cursor = "grabbing";
+    } else {
+      this._uploadImage(idx);
     }
   }
-  return null;
-}
 
-canvas.addEventListener('click', (e) => {
-  const rect = canvas.getBoundingClientRect();
-  const mx = (e.clientX - rect.left) * (canvas.width / rect.width);
-  const my = (e.clientY - rect.top)  * (canvas.height / rect.height);
-  const hit = getFrameAt(mx, my);
-  if (!hit) return;
+  _onMouseMove(e) {
+    if (!this.dragState) return;
+    const { x, y } = this._canvasPos(e);
+    const { idx, sx, sy } = this.dragState;
+    const data = this.imagesData[idx];
+    if (!data) return;
 
-  const { index, fx, fy } = hit;
-  if (state.imagesData[index]) {
-    const fw = state.frameW;
-    if (mx >= fx + fw - 30 && mx <= fx + fw && my >= fy && my <= fy + 24) {
-      delete state.imagesData[index];
-      updatePreview();
+    const dx = x - sx, dy = y - sy;
+    const zw = data.img.width  * data.zoom;
+    const zh = data.img.height * data.zoom;
+    data.posX = Math.min(0, Math.max(this.frameWidth  - zw, data.posX + dx));
+    data.posY = Math.min(0, Math.max(this.frameHeight - zh, data.posY + dy));
+    this.dragState.sx = x;
+    this.dragState.sy = y;
+    this._drawPreview();
+  }
+
+  _onMouseUp() {
+    this.dragState = null;
+    this.canvas.style.cursor = "crosshair";
+  }
+
+  _onWheel(e) {
+    const { x, y } = this._canvasPos(e);
+    const idx = this._hitFrame(x, y);
+    if (idx === -1 || !this.imagesData[idx]) return;
+
+    const data = this.imagesData[idx];
+    const rect = this.frameRects[idx];
+    const factor   = e.deltaY < 0 ? 1.05 : 1 / 1.05;
+    const oldZoom  = data.zoom;
+    const newZoom  = Math.max(0.05, Math.min(20, oldZoom * factor));
+    const mxf = x - rect.x;
+    const myf = y - rect.y;
+    const ratio = newZoom / oldZoom;
+
+    let newPX = mxf - (mxf - data.posX) * ratio;
+    let newPY = myf - (myf - data.posY) * ratio;
+    const zw = data.img.width  * newZoom;
+    const zh = data.img.height * newZoom;
+    newPX = Math.min(0, Math.max(this.frameWidth  - zw, newPX));
+    newPY = Math.min(0, Math.max(this.frameHeight - zh, newPY));
+
+    data.zoom = newZoom;
+    data.posX = newPX;
+    data.posY = newPY;
+    this._drawPreview();
+  }
+
+  // ── 이미지 업로드 ──
+  _uploadImage(idx) {
+    this.pendingUploadIndex = idx;
+    const fi = document.getElementById("fileInput");
+    fi.value = "";
+    fi.click();
+  }
+
+  _onFileSelected(e) {
+    const file = e.target.files[0];
+    if (!file || this.pendingUploadIndex === null) return;
+    const idx = this.pendingUploadIndex;
+    this.pendingUploadIndex = null;
+
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const img = new Image();
+      img.onload = () => {
+        const ia = img.width  / img.height;
+        const fa = this.frameWidth / this.frameHeight;
+        const zoom = (ia > fa) ? this.frameHeight / img.height : this.frameWidth / img.width;
+        const posX = (this.frameWidth  - img.width  * zoom) / 2;
+        const posY = (this.frameHeight - img.height * zoom) / 2;
+        this.imagesData[idx] = { img, posX, posY, zoom };
+        this._drawPreview();
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // ── 이미지 삭제 ──
+  _deleteImage(idx) {
+    delete this.imagesData[idx];
+    this._drawPreview();
+  }
+
+  // ── 미리보기 렌더링 ──
+  _drawPreview() {
+    const canvas = this.canvas;
+    const ctx    = this.ctx;
+    const cw = canvas.width, ch = canvas.height;
+
+    ctx.clearRect(0, 0, cw, ch);
+    ctx.fillStyle = "#2B2B2B";
+    ctx.fillRect(0, 0, cw, ch);
+
+    const { w: aw, h: ah } = this._getAspectRatio();
+    const targetAsp = aw / ah;
+
+    let pw = cw - 40, ph = pw / targetAsp;
+    if (ph > ch - 40) { ph = ch - 40; pw = ph * targetAsp; }
+
+    const sx = (cw - pw) / 2, sy = (ch - ph) / 2;
+    const bpx  = parseInt(document.getElementById("borderWidth").value) || 0;
+    const sw   = parseInt(document.getElementById("saveWidth").value)   || 300;
+
+    const { rows, cols } = this._getLayoutConfig();
+    const bScale  = pw / sw;
+    const bprev   = bpx * bScale;
+    this.frameWidth  = (pw - bprev * (cols - 1)) / cols;
+    this.frameHeight = (ph - bprev * (rows - 1)) / rows;
+    this.frameRects  = new Array(rows * cols).fill(null);
+
+    if (this.frameWidth <= 0 || this.frameHeight <= 0) return;
+
+    let cy = sy;
+    for (let r = 0; r < rows; r++) {
+      let cx = sx;
+      for (let c = 0; c < cols; c++) {
+        const idx = r * cols + c;
+        this.frameRects[idx] = { x: cx, y: cy, w: this.frameWidth, h: this.frameHeight };
+
+        if (this.imagesData[idx]) {
+          this._renderFrame(idx, cx, cy);
+        } else {
+          this._renderEmpty(cx, cy);
+        }
+
+        // 수평 구분선
+        if (c < cols - 1 && bprev > 0) {
+          ctx.fillStyle = this.borderColor;
+          ctx.fillRect(cx + this.frameWidth, cy, bprev, this.frameHeight);
+        }
+        cx += this.frameWidth + bprev;
+      }
+      // 수직 구분선
+      if (r < rows - 1 && bprev > 0) {
+        ctx.fillStyle = this.borderColor;
+        ctx.fillRect(sx, cy + this.frameHeight, pw, bprev);
+      }
+      cy += this.frameHeight + bprev;
+    }
+  }
+
+  _renderEmpty(fx, fy) {
+    const ctx = this.ctx;
+    ctx.save();
+    ctx.strokeStyle = "#565B5E";
+    ctx.lineWidth = 2;
+    ctx.setLineDash([6, 4]);
+    ctx.strokeRect(fx + 1, fy + 1, this.frameWidth - 2, this.frameHeight - 2);
+    ctx.setLineDash([]);
+    const fs = Math.min(52, this.frameHeight * 0.42, this.frameWidth * 0.42);
+    ctx.fillStyle = "#565B5E";
+    ctx.font = `${fs}px Arial`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("+", fx + this.frameWidth / 2, fy + this.frameHeight / 2);
+    ctx.restore();
+  }
+
+  _renderFrame(idx, fx, fy) {
+    const ctx  = this.ctx;
+    const data = this.imagesData[idx];
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(fx, fy, this.frameWidth, this.frameHeight);
+    ctx.clip();
+    ctx.drawImage(data.img, fx + data.posX, fy + data.posY,
+                  data.img.width * data.zoom, data.img.height * data.zoom);
+    ctx.restore();
+
+    // 삭제 버튼
+    const bx = fx + this.frameWidth - 18, by = fy + 18;
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(bx, by, 13, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(0,0,0,0.55)";
+    ctx.fill();
+    ctx.font = "bold 14px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = "#ff5555";
+    ctx.fillText("✕", bx, by);
+    ctx.restore();
+  }
+
+  // ── 이미지 저장 ──
+  _saveImage() {
+    const { rows, cols, total } = this._getLayoutConfig();
+    const loaded = Object.keys(this.imagesData).length;
+    if (loaded !== total) {
+      this._toast(`⚠️ ${total}개 이미지를 모두 채워주세요 (현재 ${loaded}개)`, "#f38ba8");
       return;
     }
-  } else {
-    state.pendingUploadIndex = index;
-    fileInput.value = '';
-    fileInput.click();
-  }
-});
 
-canvas.addEventListener('mousedown', (e) => {
-  const rect = canvas.getBoundingClientRect();
-  const mx = (e.clientX - rect.left) * (canvas.width / rect.width);
-  const my = (e.clientY - rect.top)  * (canvas.height / rect.height);
-  const hit = getFrameAt(mx, my);
-  if (hit && state.imagesData[hit.index]) {
-    const fw = state.frameW;
-    if (mx >= hit.fx + fw - 30 && mx <= hit.fx + fw && my >= hit.fy && my <= hit.fy + 24) return;
-    state.dragIndex  = hit.index;
-    state.dragStartX = mx;
-    state.dragStartY = my;
-    canvas.style.cursor = 'grabbing';
-  }
-});
+    const bw  = parseInt(document.getElementById("borderWidth").value) || 0;
+    const ow  = parseInt(document.getElementById("saveWidth").value) || 3000;
+    if (isNaN(ow) || ow <= 0) { this._toast("가로 크기를 올바르게 입력해주세요.", "#f38ba8"); return; }
 
-canvas.addEventListener('mousemove', (e) => {
-  if (state.dragIndex === null) return;
-  const rect = canvas.getBoundingClientRect();
-  const mx = (e.clientX - rect.left) * (canvas.width / rect.width);
-  const my = (e.clientY - rect.top)  * (canvas.height / rect.height);
+    const { w: aw, h: ah } = this._getAspectRatio();
+    const oh  = Math.round(ow / ((aw * cols) / (ah * rows)));
+    const off = document.createElement("canvas");
+    off.width = ow; off.height = oh;
+    const ctx = off.getContext("2d");
 
-  const dx = mx - state.dragStartX;
-  const dy = my - state.dragStartY;
-  const d  = state.imagesData[state.dragIndex];
-  if (!d) { state.dragIndex = null; return; }
+    ctx.fillStyle = this.borderColor;
+    ctx.fillRect(0, 0, ow, oh);
 
-  let nx = d.pos.x + dx;
-  let ny = d.pos.y + dy;
-  const zw = d.img.naturalWidth  * d.zoom;
-  const zh = d.img.naturalHeight * d.zoom;
-  nx = Math.min(0, Math.max(state.frameW - zw, nx));
-  ny = Math.min(0, Math.max(state.frameH - zh, ny));
-  d.pos = { x: nx, y: ny };
-  state.dragStartX = mx;
-  state.dragStartY = my;
-  updatePreview();
-});
+    const tcw = ow - bw * (cols - 1);
+    const tch = oh - bw * (rows - 1);
+    if (tcw <= 0 || tch <= 0) { this._toast("구분선이 너무 두꺼워 이미지 크기가 0 이하입니다.", "#f38ba8"); return; }
+    if (this.frameWidth === 0) { this._toast("미리보기 프레임 너비가 0입니다.", "#f38ba8"); return; }
 
-canvas.addEventListener('mouseup',   () => { state.dragIndex = null; canvas.style.cursor = 'default'; });
-canvas.addEventListener('mouseleave',() => { state.dragIndex = null; canvas.style.cursor = 'default'; });
+    const sfw   = tcw / cols, sfh = tch / rows;
+    const scale = sfw / this.frameWidth;
 
-canvas.addEventListener('touchstart', (e) => {
-  const t = e.touches[0];
-  const rect = canvas.getBoundingClientRect();
-  const mx = (t.clientX - rect.left) * (canvas.width / rect.width);
-  const my = (t.clientY - rect.top)  * (canvas.height / rect.height);
-  const hit = getFrameAt(mx, my);
-  if (!hit) return;
-  if (state.imagesData[hit.index]) {
-    state.dragIndex = hit.index;
-    state.dragStartX = mx; state.dragStartY = my;
-  } else {
-    state.pendingUploadIndex = hit.index;
-    fileInput.value = ''; fileInput.click();
-  }
-}, { passive: true });
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const idx  = r * cols + c;
+        const data = this.imagesData[idx];
+        const fz   = data.zoom * scale;
+        const fpx  = data.posX * scale;
+        const fpy  = data.posY * scale;
+        const px   = Math.round(c * (sfw + bw));
+        const py   = Math.round(r * (sfh + bw));
 
-canvas.addEventListener('touchmove', (e) => {
-  if (state.dragIndex === null) return;
-  e.preventDefault();
-  const t = e.touches[0];
-  const rect = canvas.getBoundingClientRect();
-  const mx = (t.clientX - rect.left) * (canvas.width / rect.width);
-  const my = (t.clientY - rect.top)  * (canvas.height / rect.height);
-  const dx = mx - state.dragStartX, dy = my - state.dragStartY;
-  const d = state.imagesData[state.dragIndex];
-  if (!d) { state.dragIndex = null; return; }
-  let nx = d.pos.x + dx, ny = d.pos.y + dy;
-  const zw = d.img.naturalWidth * d.zoom, zh = d.img.naturalHeight * d.zoom;
-  nx = Math.min(0, Math.max(state.frameW - zw, nx));
-  ny = Math.min(0, Math.max(state.frameH - zh, ny));
-  d.pos = { x: nx, y: ny };
-  state.dragStartX = mx; state.dragStartY = my;
-  updatePreview();
-}, { passive: false });
-
-canvas.addEventListener('touchend', () => { state.dragIndex = null; });
-
-canvas.addEventListener('wheel', (e) => {
-  e.preventDefault();
-  const rect = canvas.getBoundingClientRect();
-  const mx = (e.clientX - rect.left) * (canvas.width / rect.width);
-  const my = (e.clientY - rect.top)  * (canvas.height / rect.height);
-  const hit = getFrameAt(mx, my);
-  if (!hit || !state.imagesData[hit.index]) return;
-
-  const d = state.imagesData[hit.index];
-  const { fx, fy } = hit;
-  const factor    = e.deltaY < 0 ? 1.05 : 1 / 1.05;
-  const oldZoom   = d.zoom;
-  const newZoom   = Math.min(20, Math.max(0.05, oldZoom * factor));
-
-  const mouseInFx = mx - fx;
-  const mouseInFy = my - fy;
-  let nx = mouseInFx - (mouseInFx - d.pos.x) * (newZoom / oldZoom);
-  let ny = mouseInFy - (mouseInFy - d.pos.y) * (newZoom / oldZoom);
-  const zw = d.img.naturalWidth  * newZoom;
-  const zh = d.img.naturalHeight * newZoom;
-  nx = Math.min(0, Math.max(state.frameW - zw, nx));
-  ny = Math.min(0, Math.max(state.frameH - zh, ny));
-  d.zoom = newZoom;
-  d.pos  = { x: nx, y: ny };
-  updatePreview();
-}, { passive: false });
-
-fileInput.addEventListener('change', () => {
-  const file = fileInput.files[0];
-  if (!file) return;
-  const index = state.pendingUploadIndex;
-  const reader = new FileReader();
-  reader.onload = (ev) => {
-    const img = new Image();
-    img.onload = () => {
-      const fw = state.frameW, fh = state.frameH;
-      // cover fit: 프레임을 꽉 채우는 zoom
-      const zoomX = fw / img.naturalWidth;
-      const zoomY = fh / img.naturalHeight;
-      const zoom  = Math.max(zoomX, zoomY);
-      const zw = img.naturalWidth  * zoom;
-      const zh = img.naturalHeight * zoom;
-      state.imagesData[index] = {
-        img,
-        pos: { x: (fw - zw) / 2, y: (fh - zh) / 2 },
-        zoom,
-      };
-      updatePreview();
-    };
-    img.src = ev.target.result;
-  };
-  reader.readAsDataURL(file);
-});
-
-btnBorderColor.addEventListener('click', () => pickerBorder.click());
-pickerBorder.addEventListener('input', (e) => {
-  state.borderColor = e.target.value;
-  btnBorderColor.style.background = state.borderColor;
-  btnBorderColor.style.color = getContrastColor(state.borderColor);
-  updatePreview();
-});
-
-function onOptionChange() {
-  customRatioRow.style.display = selRatio.value === '자유 입력' ? 'block' : 'none';
-  const { rows, cols, total } = getLayoutConfig();
-  sliderVal.textContent = cols;
-  if (selLayout.value === '1행') {
-    lblFrameCount.textContent = `프레임 수 (${total}개)`;
-  } else {
-    lblFrameCount.textContent = `열 개수 (${cols}열 / 총 ${total}개)`;
-  }
-  updatePreview();
-}
-
-selLayout.addEventListener('change', onOptionChange);
-selRatio.addEventListener('change', onOptionChange);
-inpCustomRatio.addEventListener('input', onOptionChange);
-sliderFrames.addEventListener('input', onOptionChange);
-inpBorder.addEventListener('input', onOptionChange);
-inpSaveWidth.addEventListener('input', onOptionChange);
-
-btnSave.addEventListener('click', () => {
-  const borderWidth = Math.max(0, parseInt(inpBorder.value) || 0);
-  const outputWidth = parseInt(inpSaveWidth.value);
-  if (!outputWidth || outputWidth < 10) { showToast('⚠️ 이미지 가로 크기를 올바르게 입력해주세요'); return; }
-
-  const { rows, cols, total } = getLayoutConfig();
-  if (Object.keys(state.imagesData).length !== total) {
-    showToast(`⚠️ ${total}개의 이미지를 모두 채워주세요`); return;
-  }
-
-  const [aw, ah] = getAspectRatio();
-
-  // ✅ 핵심 수정: 전체 캔버스 비율이 아닌 단일 프레임 비율(aw:ah)로 outputH 계산
-  // 단일 프레임 크기: outputWidth/cols × (ah/aw * outputWidth/cols)
-  const singleFrameW = (outputWidth - borderWidth * (cols - 1)) / cols;
-  const singleFrameH = singleFrameW * ah / aw;
-  const outputH = Math.round(singleFrameH * rows + borderWidth * (rows - 1));
-
-  const offCanvas = document.createElement('canvas');
-  offCanvas.width  = outputWidth;
-  offCanvas.height = outputH;
-  const octx = offCanvas.getContext('2d');
-
-  octx.fillStyle = state.borderColor;
-  octx.fillRect(0, 0, outputWidth, outputH);
-
-  const sfw = singleFrameW;
-  const sfh = singleFrameH;
-
-  if (sfh <= 0 || sfw <= 0) { showToast('⚠️ 프레임 크기가 유효하지 않습니다'); return; }
-
-  // 미리보기 frameW/H 재계산 (저장 시점 최신값 보장)
-  const cw = canvas.width, ch = canvas.height;
-  const targetAspect = aw / ah;
-  let pw = cw - 40, ph = pw / targetAspect;
-  if (ph > ch - 40) { ph = ch - 40; pw = ph * targetAspect; }
-  const scaleRatioPreview = pw / outputWidth;
-  const borderPrev = borderWidth * scaleRatioPreview;
-  const previewFW = (pw - borderPrev * (cols - 1)) / cols;
-  const previewFH = (ph - borderPrev * (rows - 1)) / rows;
-
-  if (previewFW <= 0 || previewFH <= 0) { showToast('⚠️ 미리보기 프레임 크기가 유효하지 않습니다'); return; }
-
-  // 스케일: 미리보기→출력 (X, Y 독립 계산)
-  const scaleX = sfw / previewFW;
-  const scaleY = sfh / previewFH;
-
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
-      const index = r * cols + c;
-      const d = state.imagesData[index];
-      const img = d.img;
-
-      // pos 변환: 미리보기 좌표 → 출력 좌표
-      const fpx = d.pos.x * scaleX;
-      const fpy = d.pos.y * scaleY;
-
-      // zoom 변환: 미리보기 zoom → 출력 zoom
-      // 미리보기 cover-fit zoom 재계산
-      const previewCoverZoom = Math.max(previewFW / img.naturalWidth, previewFH / img.naturalHeight);
-      // 출력 cover-fit zoom
-      const outputCoverZoom  = Math.max(sfw / img.naturalWidth, sfh / img.naturalHeight);
-      // 사용자가 미리보기에서 조정한 배율
-      const userZoomRatio = previewCoverZoom > 0 ? d.zoom / previewCoverZoom : 1;
-      // 최종 출력 zoom
-      const finalZoom = outputCoverZoom * userZoomRatio;
-
-      const dw = img.naturalWidth  * finalZoom;
-      const dh = img.naturalHeight * finalZoom;
-
-      const pasteX = Math.round(c * (sfw + borderWidth));
-      const pasteY = Math.round(r * (sfh + borderWidth));
-
-      octx.save();
-      octx.beginPath();
-      octx.rect(pasteX, pasteY, Math.ceil(sfw), Math.ceil(sfh));
-      octx.clip();
-      octx.drawImage(img, pasteX + fpx, pasteY + fpy, dw, dh);
-      octx.restore();
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(px, py, sfw, sfh);
+        ctx.clip();
+        ctx.drawImage(data.img, px + fpx, py + fpy,
+                      data.img.width * fz, data.img.height * fz);
+        ctx.restore();
+      }
     }
+
+    const now  = new Date();
+    const pad  = n => String(n).padStart(2, "0");
+    const ts   = `${now.getFullYear()}_${pad(now.getMonth()+1)}_${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+    const link = document.createElement("a");
+    link.download = `bur_${ts}.jpg`;
+    link.href = off.toDataURL("image/jpeg", 0.95);
+    link.click();
+    this._toast("✅ 이미지가 생성되어 저장됩니다!");
   }
 
-  const now = new Date();
-  const ts  = `${now.getFullYear()}_${String(now.getMonth()+1).padStart(2,'0')}_${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}${String(now.getSeconds()).padStart(2,'0')}`;
-  const filename = `bur_${ts}.jpg`;
-
-  offCanvas.toBlob((blob) => {
-    const url = URL.createObjectURL(blob);
-    const a   = document.createElement('a');
-    a.href     = url;
-    a.download = filename;
-    a.click();
-    URL.revokeObjectURL(url);
-    showToast(`👍 이미지 생성 완료 ⚡ — ${filename}`);
-  }, 'image/jpeg', 0.95);
-});
-
-function init() {
-  resizeCanvas();
-  onOptionChange();
+  _toast(msg, bg = "#a6e3a1") {
+    const el = document.createElement("div");
+    el.className = "toast";
+    el.textContent = msg;
+    el.style.background = bg;
+    el.style.color = bg === "#a6e3a1" ? "#1e1e2e" : "#fff";
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 3200);
+  }
 }
 
-window.addEventListener('resize', () => { resizeCanvas(); updatePreview(); });
-init();
+const app = new BurMoorim();
 </script>
 </body>
 </html>
