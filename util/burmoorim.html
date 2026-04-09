@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>버무림 Web v1.1 👾⚡✨</title>
+<title>버무림 Web v1.2 👾⚡✨</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -125,6 +125,17 @@
 
   .divider { height: 1px; background: #313244; margin: 2px 0; }
 
+  .size-info {
+    font-size: 11px;
+    color: #6c7086;
+    text-align: center;
+    padding: 4px 6px;
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 5px;
+  }
+  .size-info span { color: #89b4fa; font-weight: 700; }
+
   .gen-btn {
     background: linear-gradient(135deg, #89b4fa 0%, #74c7ec 100%);
     color: #1e1e2e; border: none; padding: 13px;
@@ -167,7 +178,7 @@
 <body>
 
 <header>
-  <strong>버무림 Web v1.1</strong> 👾⚡✨
+  <strong>버무림 Web v1.2</strong> 👾⚡✨
   &nbsp;|&nbsp; 빈 프레임 클릭 → 이미지 추가 &nbsp;·&nbsp; 드래그 → 위치 조정 &nbsp;·&nbsp; 마우스 휠 → 확대/축소
 </header>
 
@@ -186,7 +197,7 @@
     </div>
 
     <div class="opt-group">
-      <div class="opt-label">이미지 비율 (프레임 기준)</div>
+      <div class="opt-label">최종 이미지 비율</div>
       <select id="ratioSelect">
         <option value="5:3">5:3</option>
         <option value="5:2">5:2</option>
@@ -230,13 +241,16 @@
       <input type="number" id="saveWidth" class="text-input" value="300" min="100" max="20000" />
     </div>
 
+    <!-- 계산된 최종 크기 표시 -->
+    <div class="size-info" id="sizeInfo">최종 크기: <span id="sizeDisplay">-</span></div>
+
     <button class="gen-btn" id="genBtn">⬇ 이미지 생성하기</button>
   </div>
 </div>
 
 <input type="file" id="fileInput" accept=".jpg,.jpeg,.png,.gif,.webp,.bmp,.JPG,.JPEG,.PNG,.GIF,.WEBP,.BMP" style="display:none" />
 
-<footer>버무림 Web Version 1.1 &nbsp;|&nbsp; 2025 👾⚡✨☢️ &nbsp;|&nbsp; 각 프레임 비율 기준으로 저장됩니다</footer>
+<footer>버무림 Web Version 1.2 &nbsp;|&nbsp; 2025 👾⚡✨☢️ &nbsp;|&nbsp; 선택한 비율 = 최종 결과물 전체 비율</footer>
 
 <script>
 class BurMoorim {
@@ -249,6 +263,10 @@ class BurMoorim {
     this.frameWidth  = 0;
     this.frameHeight = 0;
     this.borderColor = "#000000";
+
+    // 미리보기 전체 영역 크기 (저장 시 scale 계산에 사용)
+    this.previewW = 0;
+    this.previewH = 0;
 
     this.dragState          = null;
     this.pendingUploadIndex = null;
@@ -278,7 +296,7 @@ class BurMoorim {
       el.addEventListener("input",  () => this._onOptionChange());
       el.addEventListener("change", () => this._onOptionChange());
     });
-    document.getElementById("customRatio").addEventListener("input", () => this._drawPreview());
+    document.getElementById("customRatio").addEventListener("input", () => this._onOptionChange());
 
     const slider = document.getElementById("frameSlider");
     slider.addEventListener("input", () => {
@@ -316,22 +334,31 @@ class BurMoorim {
     slider.style.setProperty("--pct", pct + "%");
   }
 
-  // ── 옵션 변경 ──
+  // ── 옵션 변경 핸들러 ──
   _onOptionChange() {
     const ratioVal = document.getElementById("ratioSelect").value;
     document.getElementById("customRatioWrap").style.display = (ratioVal === "custom") ? "block" : "none";
 
     const { rows, cols, total } = this._getLayoutConfig();
     const layout = document.getElementById("layoutSelect").value;
-    const lbl = document.getElementById("frameCountLabel");
-    lbl.textContent = (layout === "1행") ? `프레임 수 (${total}개)` : `열 개수 (${cols}열 / 총 ${total}개)`;
-
+    document.getElementById("frameCountLabel").textContent =
+      (layout === "1행") ? `프레임 수 (${total}개)` : `열 개수 (${cols}열 / 총 ${total}개)`;
     document.getElementById("frameSliderVal").textContent = cols;
     this._updateSliderTrack(document.getElementById("frameSlider"));
+
+    this._updateSizeDisplay();
     this._drawPreview();
   }
 
-  // ── 레이아웃 설정 ──
+  // ── 최종 크기 표시 업데이트 ──
+  _updateSizeDisplay() {
+    const ow = parseInt(document.getElementById("saveWidth").value) || 300;
+    const { w: aw, h: ah } = this._getAspectRatio();
+    const oh = Math.round(ow * ah / aw);
+    document.getElementById("sizeDisplay").textContent = `${ow} × ${oh} px`;
+  }
+
+  // ── 레이아웃 설정 반환 ──
   _getLayoutConfig() {
     const layout = document.getElementById("layoutSelect").value;
     const cols   = parseInt(document.getElementById("frameSlider").value);
@@ -339,7 +366,7 @@ class BurMoorim {
     return { rows, cols, total: rows * cols };
   }
 
-  // ── 비율 파싱 ──
+  // ── 비율 파싱 (= 최종 결과물 전체 비율) ──
   _getAspectRatio() {
     const sel = document.getElementById("ratioSelect").value;
     const str = (sel === "custom") ? document.getElementById("customRatio").value.trim() : sel;
@@ -351,15 +378,15 @@ class BurMoorim {
     } catch { return { w: 5, h: 3 }; }
   }
 
-  // ── 캔버스 좌표 변환 (DPI 대응) ──
+  // ── 캔버스 좌표 변환 ──
   _canvasPos(e) {
     const rect = this.canvas.getBoundingClientRect();
-    const sx = this.canvas.width  / rect.width;
-    const sy = this.canvas.height / rect.height;
-    return { x: (e.clientX - rect.left) * sx, y: (e.clientY - rect.top) * sy };
+    return {
+      x: (e.clientX - rect.left) * (this.canvas.width  / rect.width),
+      y: (e.clientY - rect.top)  * (this.canvas.height / rect.height)
+    };
   }
 
-  // ── 프레임 인덱스 히트 테스트 ──
   _hitFrame(x, y) {
     for (let i = 0; i < this.frameRects.length; i++) {
       const r = this.frameRects[i];
@@ -368,7 +395,6 @@ class BurMoorim {
     return -1;
   }
 
-  // ── 삭제 버튼 히트 테스트 ──
   _hitDelete(idx, x, y) {
     const r = this.frameRects[idx];
     if (!r) return false;
@@ -380,7 +406,7 @@ class BurMoorim {
     const { x, y } = this._canvasPos(e);
     const idx = this._hitFrame(x, y);
     if (idx === -1) return;
-    if (this.imagesData[idx]) {
+    if (this.imagesData[idx] && this.imagesData[idx].img) {
       if (this._hitDelete(idx, x, y)) { this._deleteImage(idx); return; }
       this.dragState = { idx, sx: x, sy: y };
       this.canvas.style.cursor = "grabbing";
@@ -394,7 +420,7 @@ class BurMoorim {
     const { x, y } = this._canvasPos(e);
     const { idx, sx, sy } = this.dragState;
     const data = this.imagesData[idx];
-    if (!data) return;
+    if (!data || !data.img) return;
 
     const dx = x - sx, dy = y - sy;
     const zw = data.img.width  * data.zoom;
@@ -414,31 +440,29 @@ class BurMoorim {
   _onWheel(e) {
     const { x, y } = this._canvasPos(e);
     const idx = this._hitFrame(x, y);
-    if (idx === -1 || !this.imagesData[idx]) return;
+    if (idx === -1 || !this.imagesData[idx] || !this.imagesData[idx].img) return;
 
     const data   = this.imagesData[idx];
     const rect   = this.frameRects[idx];
     const factor = e.deltaY < 0 ? 1.05 : 1 / 1.05;
     const oldZ   = data.zoom;
     const newZ   = Math.max(0.05, Math.min(20, oldZ * factor));
-    const r      = newZ / oldZ;
+    const ratio  = newZ / oldZ;
     const mxf    = x - rect.x;
     const myf    = y - rect.y;
 
-    let newPX = mxf - (mxf - data.posX) * r;
-    let newPY = myf - (myf - data.posY) * r;
-    const zw = data.img.width  * newZ;
-    const zh = data.img.height * newZ;
-    newPX = Math.min(0, Math.max(this.frameWidth  - zw, newPX));
-    newPY = Math.min(0, Math.max(this.frameHeight - zh, newPY));
+    let npx = mxf - (mxf - data.posX) * ratio;
+    let npy = myf - (myf - data.posY) * ratio;
+    npx = Math.min(0, Math.max(this.frameWidth  - data.img.width  * newZ, npx));
+    npy = Math.min(0, Math.max(this.frameHeight - data.img.height * newZ, npy));
 
     data.zoom = newZ;
-    data.posX = newPX;
-    data.posY = newPY;
+    data.posX = npx;
+    data.posY = npy;
     this._drawPreview();
   }
 
-  // ── 이미지 업로드 ──
+  // ── 파일 업로드 ──
   _uploadImage(idx) {
     this.pendingUploadIndex = idx;
     const fi = document.getElementById("fileInput");
@@ -456,25 +480,16 @@ class BurMoorim {
     reader.onload = ev => {
       const img = new Image();
       img.onload = () => {
-        // 이미지를 프레임에 꽉 차게 (cover) 초기 배치
-        const ia = img.width / img.height;
-        const fa = this.frameWidth / this.frameHeight;
+        // 프레임에 cover 방식으로 꽉 채워 초기 배치
+        const ia   = img.width / img.height;
+        const fa   = this.frameWidth / this.frameHeight;
         const zoom = (ia > fa) ? this.frameHeight / img.height : this.frameWidth / img.width;
-        data.posX = (this.frameWidth  - img.width  * zoom) / 2;
-        data.posY = (this.frameHeight - img.height * zoom) / 2;
-        data.zoom = zoom;
-        this._drawPreview();
-      };
-      const data = { img: null, posX: 0, posY: 0, zoom: 1 };
-      this.imagesData[idx] = data;
-      img.onload = () => {
-        const ia = img.width / img.height;
-        const fa = this.frameWidth / this.frameHeight;
-        const zoom = (ia > fa) ? this.frameHeight / img.height : this.frameWidth / img.width;
-        data.img  = img;
-        data.posX = (this.frameWidth  - img.width  * zoom) / 2;
-        data.posY = (this.frameHeight - img.height * zoom) / 2;
-        data.zoom = zoom;
+        this.imagesData[idx] = {
+          img,
+          posX: (this.frameWidth  - img.width  * zoom) / 2,
+          posY: (this.frameHeight - img.height * zoom) / 2,
+          zoom
+        };
         this._drawPreview();
       };
       img.src = ev.target.result;
@@ -482,17 +497,22 @@ class BurMoorim {
     reader.readAsDataURL(file);
   }
 
-  // ── 이미지 삭제 ──
   _deleteImage(idx) {
     delete this.imagesData[idx];
     this._drawPreview();
   }
 
-  // ────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────
   //  미리보기 렌더링
-  //  ★ 핵심 수정: 프레임 비율을 aw:ah 기준으로 계산
-  //    (구분선 포함 시에도 각 프레임 비율 정확하게 유지)
-  // ────────────────────────────────────────────────
+  //
+  //  선택한 비율(aw:ah) = 최종 결과물 전체의 비율
+  //  → 미리보기 전체 박스도 aw:ah 비율로 그린다.
+  //  → 각 프레임 크기는 전체 박스를 cols×rows + 구분선으로 나눈 값
+  //
+  //  구분선 미리보기 크기:
+  //    bprev = bpx_저장 × (previewW / saveWidth)
+  //    → 저장 비율과 동일한 시각 비율 유지
+  // ─────────────────────────────────────────────────────────
   _drawPreview() {
     const canvas = this.canvas;
     const ctx    = this.ctx;
@@ -504,43 +524,26 @@ class BurMoorim {
 
     const { w: aw, h: ah } = this._getAspectRatio();
     const { rows, cols }   = this._getLayoutConfig();
-
     const bpx = Math.max(0, parseInt(document.getElementById("borderWidth").value) || 0);
     const sw  = Math.max(1, parseInt(document.getElementById("saveWidth").value)   || 300);
 
-    const maxW = cw - 40;
-    const maxH = ch - 40;
-
-    // ──────────────────────────────────────────────
-    //  각 프레임이 정확히 aw:ah 비율이 되도록 계산
-    //
-    //  bprev = bpx * (pw / sw)   (저장 비율과 동일한 구분선 비율)
-    //  frameW = (pw - bprev*(cols-1)) / cols
-    //  frameH = frameW * ah / aw
-    //  totalH = frameH*rows + bprev*(rows-1)
-    //
-    //  totalH = pw * K  (K는 비율 상수)
-    //  K = [1 - bpx*(cols-1)/sw] * (ah/aw) * (rows/cols)
-    //      + bpx*(rows-1)/sw
-    //
-    //  pw = min(maxW, maxH / K)
-    // ──────────────────────────────────────────────
-    const bc  = bpx * (cols - 1) / sw;  // 구분선 cols 비율
-    const br  = bpx * (rows - 1) / sw;  // 구분선 rows 비율
-    const K   = (1 - bc) * (ah / aw) * (rows / cols) + br;
-
-    let pw;
-    if (K > 0 && isFinite(K)) {
-      pw = Math.min(maxW, maxH / K);
-    } else {
-      pw = maxW;
-    }
+    // 전체 박스: aw:ah 비율, 캔버스에 맞게 최대 크기
+    const maxW = cw - 40, maxH = ch - 40;
+    let pw = maxW, ph = pw * ah / aw;
+    if (ph > maxH) { ph = maxH; pw = ph * aw / ah; }
     pw = Math.max(1, pw);
+    ph = Math.max(1, ph);
 
+    // 저장 비율에 맞춘 구분선 미리보기 크기
     const bprev = bpx * (pw / sw);
+
+    // 각 프레임 크기
     this.frameWidth  = (pw - bprev * (cols - 1)) / cols;
-    this.frameHeight = this.frameWidth * ah / aw;
-    const ph = this.frameHeight * rows + bprev * (rows - 1);
+    this.frameHeight = (ph - bprev * (rows - 1)) / rows;
+
+    // 전체 박스 크기 저장 (저장 시 scale 계산용)
+    this.previewW = pw;
+    this.previewH = ph;
 
     this.frameRects = new Array(rows * cols).fill(null);
     if (this.frameWidth <= 0 || this.frameHeight <= 0) return;
@@ -622,44 +625,55 @@ class BurMoorim {
     ctx.restore();
   }
 
-  // ────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────
   //  이미지 저장 (고해상도)
-  //  ★ 핵심 수정: 각 프레임이 aw:ah 비율이 되도록
-  //    sfw / sfh를 직접 계산
-  // ────────────────────────────────────────────────
+  //
+  //  최종 이미지 전체 크기 = output_width × output_height
+  //  output_height = output_width × (ah / aw)  ← 선택 비율 그대로
+  //
+  //  각 프레임 크기:
+  //    sfw = (output_width  - bw*(cols-1)) / cols
+  //    sfh = (output_height - bw*(rows-1)) / rows
+  //
+  //  미리보기 → 저장 스케일:
+  //    scale = output_width / previewW
+  //    (previewW, previewH 가 동일 비율이므로 가로/세로 동일)
+  // ─────────────────────────────────────────────────────────
   _saveImage() {
     const { rows, cols, total } = this._getLayoutConfig();
-    const loaded = Object.keys(this.imagesData).filter(k => this.imagesData[k] && this.imagesData[k].img).length;
+    const loaded = Object.keys(this.imagesData)
+      .filter(k => this.imagesData[k] && this.imagesData[k].img).length;
 
     if (loaded !== total) {
       this._toast(`⚠️ ${total}개 이미지를 모두 채워주세요 (현재 ${loaded}개)`, "#f38ba8");
       return;
     }
 
-    const bw  = Math.max(0, parseInt(document.getElementById("borderWidth").value) || 0);
-    const ow  = parseInt(document.getElementById("saveWidth").value) || 300;
+    const bw = Math.max(0, parseInt(document.getElementById("borderWidth").value) || 0);
+    const ow = parseInt(document.getElementById("saveWidth").value) || 300;
     if (!ow || ow <= 0) { this._toast("가로 크기를 올바르게 입력해주세요.", "#f38ba8"); return; }
 
     const { w: aw, h: ah } = this._getAspectRatio();
 
-    // ──────────────────────────────────────────────
-    //  각 프레임이 정확히 aw:ah 비율이 되도록 계산
-    //  sfw = (ow - bw*(cols-1)) / cols
-    //  sfh = sfw * ah / aw
-    //  output_h = sfh*rows + bw*(rows-1)
-    // ──────────────────────────────────────────────
+    // ── 최종 이미지 크기: 선택 비율 그대로 ──
+    const oh = Math.round(ow * ah / aw);
+
+    // ── 각 프레임 크기 ──
     const sfw = (ow - bw * (cols - 1)) / cols;
-    const sfh = sfw * ah / aw;
-    const oh  = Math.round(sfh * rows + bw * (rows - 1));
+    const sfh = (oh - bw * (rows - 1)) / rows;
 
     if (sfw <= 0 || sfh <= 0) {
       this._toast("구분선이 너무 두꺼워 이미지 크기가 0 이하입니다.", "#f38ba8");
       return;
     }
-    if (this.frameWidth <= 0) {
-      this._toast("미리보기 프레임 너비가 0입니다. 옵션을 확인해주세요.", "#f38ba8");
+    if (this.previewW <= 0) {
+      this._toast("미리보기 크기 오류. 옵션을 확인해주세요.", "#f38ba8");
       return;
     }
+
+    // ── 미리보기 → 저장 스케일 ──
+    const scaleX = ow / this.previewW;
+    const scaleY = oh / this.previewH;
 
     const offscreen = document.createElement("canvas");
     offscreen.width  = ow;
@@ -670,19 +684,18 @@ class BurMoorim {
     ctx.fillStyle = this.borderColor;
     ctx.fillRect(0, 0, ow, oh);
 
-    // 미리보기 → 저장 스케일 비율
-    const scale = sfw / this.frameWidth;
-
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < cols; c++) {
         const idx  = r * cols + c;
         const data = this.imagesData[idx];
 
-        const fz   = data.zoom * scale;
-        const fpx  = data.posX * scale;
-        const fpy  = data.posY * scale;
-        const px   = Math.round(c * (sfw + bw));
-        const py   = Math.round(r * (sfh + bw));
+        // 미리보기의 posX/posY/zoom → 저장 좌표로 변환
+        const fz   = data.zoom * scaleX;       // 이미지 zoom 스케일
+        const fpx  = data.posX * scaleX;       // 프레임 내 x 오프셋
+        const fpy  = data.posY * scaleY;       // 프레임 내 y 오프셋
+
+        const px   = Math.round(c * (sfw + bw));  // 프레임 시작 x
+        const py   = Math.round(r * (sfh + bw));  // 프레임 시작 y
 
         ctx.save();
         ctx.beginPath();
@@ -704,13 +717,12 @@ class BurMoorim {
     a.href     = offscreen.toDataURL("image/jpeg", 0.95);
     a.click();
 
-    this._toast(`✅ ${ow}×${oh}px 이미지가 생성되었습니다!`);
+    this._toast(`✅ ${ow}×${oh}px (${aw}:${ah}) 이미지가 생성되었습니다!`);
   }
 
-  // ── 토스트 알림 ──
   _toast(msg, bg = "#a6e3a1") {
     const el = document.createElement("div");
-    el.className  = "toast";
+    el.className   = "toast";
     el.textContent = msg;
     el.style.background = bg;
     el.style.color = (bg === "#a6e3a1") ? "#1e1e2e" : "#fff";
