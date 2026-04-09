@@ -3,666 +3,535 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>1up.kr :: 레전드 스카우트</title>
-<link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap" rel="stylesheet">
+<title>1up kr :: ⚾ 레전드 스카우트 🏟️</title>
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root,[data-theme="light"]{
-  --color-bg:#f7f6f2;--color-surface:#f9f8f5;--color-surface-2:#fbfbf9;
-  --color-surface-offset:#f3f0ec;--color-surface-dynamic:#e6e4df;
-  --color-divider:#dcd9d5;--color-border:#d4d1ca;
-  --color-text:#28251d;--color-text-muted:#7a7974;--color-text-faint:#bab9b4;
-  --color-primary:#01696f;--color-primary-hover:#0c4e54;
-  --color-primary-highlight:#cedcd8;
-  --color-gold:#d19900;--color-success:#437a22;
-  --color-error:#a12c7b;--color-orange:#da7101;
-  --shadow-sm:0 1px 2px oklch(0.2 0.01 80/0.06);
-  --shadow-md:0 4px 12px oklch(0.2 0.01 80/0.08);
-  --shadow-lg:0 12px 32px oklch(0.2 0.01 80/0.12);
-  --radius-sm:0.375rem;--radius-md:0.5rem;--radius-lg:0.75rem;--radius-xl:1rem;--radius-full:9999px;
-  --space-1:0.25rem;--space-2:0.5rem;--space-3:0.75rem;--space-4:1rem;--space-5:1.25rem;
-  --space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;
-  --text-xs:clamp(0.75rem,0.7rem + 0.25vw,0.875rem);
-  --text-sm:clamp(0.875rem,0.8rem + 0.35vw,1rem);
-  --text-base:clamp(1rem,0.95rem + 0.25vw,1.125rem);
-  --text-lg:clamp(1.125rem,1rem + 0.75vw,1.5rem);
-  --text-xl:clamp(1.5rem,1.2rem + 1.25vw,2.25rem);
-  --font-body:'Satoshi',sans-serif;
-  --transition:180ms cubic-bezier(0.16,1,0.3,1);
+  --bg:#f4f2ee;--surface:#faf9f6;--surface-2:#fff;--surface-off:#eeebe5;--surface-dyn:#e4e1db;
+  --border:#d8d4cc;--divider:#e8e5df;
+  --text:#1e1c18;--text-m:#706d66;--text-f:#b0ada6;
+  --primary:#c8372d;--primary-h:#a82820;--primary-hl:#fae8e7;
+  --gold:#d4920a;--green:#2e7d32;--blue:#1565c0;
+  --sh-sm:0 1px 3px oklch(0.2 0.02 50/.07);--sh-md:0 4px 16px oklch(0.2 0.02 50/.10);--sh-lg:0 12px 36px oklch(0.2 0.02 50/.14);
+  --r-sm:.375rem;--r-md:.5rem;--r-lg:.75rem;--r-xl:1rem;--r-2xl:1.5rem;--r-full:9999px;
+  --font:'Satoshi',sans-serif;--tr:200ms cubic-bezier(.16,1,.3,1);
 }
 [data-theme="dark"]{
-  --color-bg:#171614;--color-surface:#1c1b19;--color-surface-2:#201f1d;
-  --color-surface-offset:#1d1c1a;--color-surface-dynamic:#2d2c2a;
-  --color-divider:#262523;--color-border:#393836;
-  --color-text:#cdccca;--color-text-muted:#797876;--color-text-faint:#5a5957;
-  --color-primary:#4f98a3;--color-primary-hover:#227f8b;
-  --color-primary-highlight:#313b3b;
-  --color-gold:#e8af34;--color-success:#6daa45;
-  --color-error:#d163a7;--color-orange:#fdab43;
-  --shadow-sm:0 1px 2px oklch(0 0 0/0.2);
-  --shadow-md:0 4px 12px oklch(0 0 0/0.3);
-  --shadow-lg:0 12px 32px oklch(0 0 0/0.4);
+  --bg:#141210;--surface:#1a1917;--surface-2:#201e1c;--surface-off:#1d1b19;--surface-dyn:#2a2825;
+  --border:#3a3733;--divider:#252320;
+  --text:#e8e5e0;--text-m:#8a8781;--text-f:#55524e;
+  --primary:#e8534a;--primary-h:#f06b62;--primary-hl:#3d1f1d;
+  --gold:#f0b429;--green:#66bb6a;--blue:#64b5f6;
+  --sh-sm:0 1px 3px #00000040;--sh-md:0 4px 16px #00000050;--sh-lg:0 12px 36px #00000060;
 }
 html{-webkit-font-smoothing:antialiased;scroll-behavior:smooth}
-body{min-height:100dvh;font-family:var(--font-body);font-size:var(--text-base);color:var(--color-text);background:var(--color-bg);line-height:1.6}
-button{cursor:pointer;background:none;border:none;font:inherit;color:inherit;transition:color var(--transition),background var(--transition),box-shadow var(--transition),transform var(--transition)}
+body{min-height:100dvh;font-family:var(--font);font-size:16px;color:var(--text);background:var(--bg);line-height:1.6}
+button{cursor:pointer;background:none;border:none;font:inherit;color:inherit;transition:all var(--tr)}
 
-.app{max-width:960px;margin:0 auto;padding:var(--space-6) var(--space-4)}
-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-8);padding-bottom:var(--space-4);border-bottom:1px solid var(--color-border)}
-.logo{display:flex;align-items:center;gap:var(--space-3)}
-.logo-icon{width:36px;height:36px}
-.logo-text{font-size:var(--text-lg);font-weight:700;letter-spacing:-0.02em}
-.logo-sub{font-size:var(--text-xs);color:var(--color-text-muted);margin-top:-2px}
-.theme-btn{width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:var(--radius-md);color:var(--color-text-muted)}
-.theme-btn:hover{background:var(--color-surface-dynamic);color:var(--color-text)}
+/* ── Layout ── */
+.wrap{max-width:720px;margin:0 auto;padding:24px 16px 48px}
 
-/* Tabs */
-.tabs{display:flex;gap:var(--space-1);background:var(--color-surface);border-radius:var(--radius-xl);padding:var(--space-1);margin-bottom:var(--space-6);border:1px solid var(--color-border)}
-.tab-btn{flex:1;padding:var(--space-2) var(--space-4);border-radius:calc(var(--radius-xl) - 4px);font-size:var(--text-sm);font-weight:600;color:var(--color-text-muted);transition:all var(--transition)}
-.tab-btn.active{background:var(--color-primary);color:#fff;box-shadow:var(--shadow-sm)}
-.tab-btn:hover:not(.active){color:var(--color-text);background:var(--color-surface-dynamic)}
-.tab-panel{display:none}
-.tab-panel.active{display:block}
+/* ── Header ── */
+.header{text-align:center;margin-bottom:32px}
+.header-title{font-size:clamp(1.5rem,4vw,2.2rem);font-weight:900;letter-spacing:-.03em;line-height:1.1;margin-bottom:6px}
+.header-sub{font-size:.875rem;color:var(--text-m)}
+.theme-row{display:flex;justify-content:flex-end;margin-bottom:12px}
+.theme-btn{width:34px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:var(--r-full);color:var(--text-m);border:1px solid var(--border)}
+.theme-btn:hover{background:var(--surface-dyn);color:var(--text)}
 
-/* Section label */
-.section-label{font-size:var(--text-xs);font-weight:700;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:var(--space-3)}
+/* ── Stadium grid ── */
+.section-label{font-size:.72rem;font-weight:700;color:var(--text-m);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px}
+.stadium-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:28px}
+@media(max-width:480px){.stadium-grid{grid-template-columns:repeat(3,1fr)}}
+.stadium-btn{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;border-radius:var(--r-xl);background:var(--surface);border:2px solid var(--border);transition:all var(--tr)}
+.stadium-btn:hover{border-color:var(--primary);transform:translateY(-2px);box-shadow:var(--sh-sm)}
+.stadium-btn.selected{border-color:var(--primary);background:var(--primary-hl);box-shadow:var(--sh-md)}
+.st-emoji{font-size:1.6rem;line-height:1}
+.st-name{font-size:.72rem;font-weight:700;text-align:center;line-height:1.2}
+.st-team{font-size:.65rem;color:var(--text-m);text-align:center}
 
-/* Team grid */
-.teams-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:var(--space-2);margin-bottom:var(--space-6)}
-.team-btn{padding:var(--space-3) var(--space-2);border-radius:var(--radius-lg);background:var(--color-surface);border:1.5px solid var(--color-border);display:flex;flex-direction:column;align-items:center;gap:var(--space-1);transition:all var(--transition)}
-.team-btn:hover{border-color:var(--color-primary);box-shadow:var(--shadow-sm);transform:translateY(-1px)}
-.team-btn.selected{border-color:var(--color-primary);background:var(--color-primary-highlight);box-shadow:var(--shadow-md)}
-.team-emoji{font-size:1.75rem;line-height:1}
-.team-name{font-size:var(--text-xs);font-weight:600;text-align:center}
-.team-count{font-size:var(--text-xs);color:var(--color-text-muted)}
+/* ── Scout button ── */
+.scout-btn{width:100%;padding:16px;background:var(--primary);color:#fff;font-size:1.05rem;font-weight:700;border-radius:var(--r-2xl);box-shadow:var(--sh-md);margin-bottom:28px;letter-spacing:-.01em;position:relative;overflow:hidden}
+.scout-btn::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.12) 0%,transparent 60%)}
+.scout-btn:hover:not(:disabled){background:var(--primary-h);transform:translateY(-2px);box-shadow:var(--sh-lg)}
+.scout-btn:active:not(:disabled){transform:none}
+.scout-btn:disabled{opacity:.38;cursor:not-allowed;transform:none}
 
-/* Prob info */
-.prob-info{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:var(--space-4);margin-bottom:var(--space-6);display:flex;gap:var(--space-4);flex-wrap:wrap}
-.prob-box{flex:1;min-width:130px;background:var(--color-surface-offset);border-radius:var(--radius-md);padding:var(--space-3)}
-.prob-value{font-size:var(--text-xl);font-weight:700;color:var(--color-primary)}
-.prob-label{font-size:var(--text-xs);color:var(--color-text-muted)}
-.prob-detail{font-size:var(--text-xs);color:var(--color-text-faint);margin-top:2px}
+/* ── Result area ── */
+.result-area{min-height:160px;display:flex;align-items:center;justify-content:center;margin-bottom:28px}
+.result-empty{color:var(--text-f);font-size:.9rem;text-align:center;padding:24px}
+.result-card{width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-2xl);padding:24px;box-shadow:var(--sh-md);animation:pop .38s cubic-bezier(.16,1,.3,1)}
+@keyframes pop{from{opacity:0;transform:scale(.9) translateY(10px)}to{opacity:1;transform:none}}
+.result-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.result-stadium{font-size:.75rem;font-weight:700;color:var(--text-m);display:flex;align-items:center;gap:4px}
+.result-prob-badge{font-size:.72rem;padding:3px 10px;border-radius:var(--r-full);font-weight:700}
+.prob-high{background:color-mix(in oklab,var(--gold) 18%,var(--surface-off));color:var(--gold)}
+.prob-normal{background:var(--surface-dyn);color:var(--text-m)}
+.result-player{font-size:clamp(1.8rem,6vw,2.6rem);font-weight:900;letter-spacing:-.03em;margin-bottom:8px;line-height:1.1}
+.result-sub{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.badge{font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:var(--r-full)}
+.badge-team{background:color-mix(in oklab,var(--blue) 14%,var(--surface-off));color:var(--blue)}
+.badge-hist{background:color-mix(in oklab,var(--green) 14%,var(--surface-off));color:var(--green)}
 
-/* Scout btn */
-.scout-btn{width:100%;padding:var(--space-4) var(--space-6);background:var(--color-primary);color:#fff;font-size:var(--text-base);font-weight:700;border-radius:var(--radius-xl);box-shadow:var(--shadow-md);margin-bottom:var(--space-8);letter-spacing:-0.01em}
-.scout-btn:hover:not(:disabled){background:var(--color-primary-hover);box-shadow:var(--shadow-lg);transform:translateY(-2px)}
-.scout-btn:active:not(:disabled){transform:translateY(0)}
-.scout-btn:disabled{opacity:0.4;cursor:not-allowed;transform:none}
+/* ── Rolling ── */
+.rolling-card{width:100%;background:var(--surface-2);border:2px solid var(--primary);border-radius:var(--r-2xl);padding:24px;text-align:center;box-shadow:var(--sh-lg)}
+.rolling-name{font-size:clamp(1.6rem,5vw,2.2rem);font-weight:900;letter-spacing:-.03em;opacity:.5;animation:flicker .12s steps(1) infinite}
+@keyframes flicker{0%{opacity:.3}50%{opacity:.9}100%{opacity:.3}}
 
-/* Result */
-.result-area{min-height:160px;display:flex;align-items:center;justify-content:center;margin-bottom:var(--space-8)}
-.result-empty{color:var(--color-text-faint);font-size:var(--text-sm);text-align:center}
-.result-card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-xl);padding:var(--space-6);width:100%;animation:resultPop 0.35s cubic-bezier(0.16,1,0.3,1)}
-@keyframes resultPop{from{opacity:0;transform:scale(0.92) translateY(8px)}to{opacity:1;transform:none}}
-.result-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:var(--space-4);flex-wrap:wrap;gap:var(--space-2)}
-.result-team{display:flex;align-items:center;gap:var(--space-2)}
-.result-team-emoji{font-size:2rem}
-.result-team-name{font-size:var(--text-sm);font-weight:600;color:var(--color-text-muted)}
-.result-source{font-size:var(--text-xs);padding:2px var(--space-3);border-radius:var(--radius-full);font-weight:600}
-.source-selected{background:var(--color-primary-highlight);color:var(--color-primary)}
-.source-other{background:var(--color-surface-dynamic);color:var(--color-text-muted)}
-.result-player{font-size:var(--text-xl);font-weight:700;letter-spacing:-0.02em;margin-bottom:var(--space-2)}
-.result-badges{display:flex;gap:var(--space-2);flex-wrap:wrap}
-.badge{font-size:var(--text-xs);font-weight:600;padding:2px var(--space-2);border-radius:var(--radius-full)}
-.badge-pitcher{background:color-mix(in oklab,var(--color-orange) 15%,var(--color-surface-offset));color:var(--color-orange)}
-.badge-batter{background:color-mix(in oklab,var(--color-success) 15%,var(--color-surface-offset));color:var(--color-success)}
-.badge-org{background:var(--color-surface-dynamic);color:var(--color-text-muted)}
-.badge-unwanted{background:color-mix(in oklab,var(--color-error) 15%,var(--color-surface-offset));color:var(--color-error)}
+/* ── Odds table ── */
+.odds-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);overflow:hidden;margin-bottom:28px}
+.odds-header{padding:12px 16px;border-bottom:1px solid var(--divider);display:flex;align-items:center;justify-content:space-between;gap:8px}
+.odds-title{font-size:.8rem;font-weight:700}
+.odds-sub{font-size:.72rem;color:var(--text-m)}
+.odds-body{padding:12px 16px;display:flex;flex-direction:column;gap:6px;max-height:240px;overflow-y:auto}
+.odds-body::-webkit-scrollbar{width:4px}
+.odds-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:var(--r-full)}
+.odds-row{display:flex;align-items:center;gap:10px}
+.odds-bar-wrap{flex:1;display:flex;align-items:center;gap:6px}
+.odds-bar{height:6px;background:var(--surface-dyn);border-radius:var(--r-full);flex:1;overflow:hidden}
+.odds-bar-fill{height:100%;border-radius:var(--r-full);transition:width .5s cubic-bezier(.16,1,.3,1)}
+.fill-high{background:linear-gradient(90deg,var(--primary),var(--gold))}
+.fill-norm{background:var(--text-f)}
+.odds-name{font-size:.75rem;font-weight:600;min-width:52px}
+.odds-team{font-size:.68rem;color:var(--text-m);min-width:36px}
+.odds-pct{font-size:.72rem;font-weight:700;min-width:42px;text-align:right;font-variant-numeric:tabular-nums}
 
-/* History */
-.history-section{border-top:1px solid var(--color-divider);padding-top:var(--space-6)}
-.history-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-4)}
-.clear-btn{font-size:var(--text-xs);color:var(--color-text-muted);padding:var(--space-1) var(--space-2);border-radius:var(--radius-sm)}
-.clear-btn:hover{color:var(--color-error);background:color-mix(in oklab,var(--color-error) 10%,var(--color-surface))}
-.history-list{display:flex;flex-direction:column;gap:var(--space-2)}
-.history-item{display:flex;align-items:center;gap:var(--space-3);padding:var(--space-3);background:var(--color-surface);border-radius:var(--radius-md);border:1px solid var(--color-border);animation:resultPop 0.25s cubic-bezier(0.16,1,0.3,1)}
-.history-num{font-size:var(--text-xs);color:var(--color-text-faint);min-width:20px;text-align:right}
-.history-emoji{font-size:1.1rem}
-.history-player{font-size:var(--text-sm);font-weight:600;flex:1}
-.history-meta{font-size:var(--text-xs);color:var(--color-text-muted)}
-.history-source-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.dot-selected{background:var(--color-primary)}
-.dot-other{background:var(--color-text-faint)}
-.history-empty{font-size:var(--text-sm);color:var(--color-text-faint);text-align:center;padding:var(--space-6)}
-.history-unwanted{opacity:0.45;text-decoration:line-through}
-
-/* === EXCLUDE TAB === */
-.exclude-layout{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-6)}
-@media(max-width:640px){.exclude-layout{grid-template-columns:1fr}}
-.team-filter-tabs{display:flex;flex-wrap:wrap;gap:var(--space-1);margin-bottom:var(--space-3)}
-.filter-tab{font-size:var(--text-xs);padding:var(--space-1) var(--space-2);border-radius:var(--radius-full);border:1px solid var(--color-border);color:var(--color-text-muted);background:var(--color-surface);transition:all var(--transition)}
-.filter-tab.active{background:var(--color-primary);color:#fff;border-color:var(--color-primary)}
-.filter-tab:hover:not(.active){border-color:var(--color-primary);color:var(--color-text)}
-.player-list{display:flex;flex-direction:column;gap:var(--space-1);max-height:420px;overflow-y:auto;padding-right:var(--space-1)}
-.player-list::-webkit-scrollbar{width:4px}
-.player-list::-webkit-scrollbar-track{background:transparent}
-.player-list::-webkit-scrollbar-thumb{background:var(--color-border);border-radius:var(--radius-full)}
-.player-item{display:flex;align-items:center;gap:var(--space-2);padding:var(--space-2) var(--space-3);border-radius:var(--radius-md);border:1px solid var(--color-border);background:var(--color-surface);cursor:pointer;transition:all var(--transition);user-select:none}
-.player-item:hover{border-color:var(--color-primary);background:var(--color-surface-dynamic)}
-.player-item.excluded{border-color:var(--color-error);background:color-mix(in oklab,var(--color-error) 8%,var(--color-surface))}
-.player-item-check{width:16px;height:16px;border-radius:var(--radius-sm);border:1.5px solid var(--color-border);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all var(--transition)}
-.player-item.excluded .player-item-check{background:var(--color-error);border-color:var(--color-error)}
-.player-item-name{font-size:var(--text-sm);font-weight:500;flex:1}
-.player-item-role{font-size:var(--text-xs);color:var(--color-text-muted)}
-.player-item-team{font-size:var(--text-xs)}
-
-/* Excluded tags panel */
-.excluded-panel{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:var(--space-4)}
-.excluded-tags{display:flex;flex-wrap:wrap;gap:var(--space-2);min-height:40px;margin-bottom:var(--space-4)}
-.excluded-tag{display:flex;align-items:center;gap:var(--space-1);padding:var(--space-1) var(--space-3);background:color-mix(in oklab,var(--color-error) 12%,var(--color-surface));border:1px solid color-mix(in oklab,var(--color-error) 25%,var(--color-border));border-radius:var(--radius-full);font-size:var(--text-xs);font-weight:600;color:var(--color-error);animation:resultPop 0.2s ease}
-.excluded-tag-remove{cursor:pointer;opacity:0.6;font-size:14px;line-height:1;margin-left:2px;border-radius:50%;padding:1px 3px}
-.excluded-tag-remove:hover{opacity:1;background:color-mix(in oklab,var(--color-error) 20%,transparent)}
-.excluded-count{font-size:var(--text-xs);color:var(--color-text-muted);margin-bottom:var(--space-3)}
-.clear-all-btn{font-size:var(--text-xs);color:var(--color-text-muted);padding:var(--space-1) var(--space-3);border-radius:var(--radius-sm);border:1px solid var(--color-border);background:var(--color-surface)}
-.clear-all-btn:hover{color:var(--color-error);border-color:var(--color-error)}
-
-/* Probability table */
-.prob-table-wrap{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-xl);overflow:hidden;margin-top:var(--space-6)}
-.prob-table-header{padding:var(--space-4) var(--space-5);border-bottom:1px solid var(--color-border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-2)}
-.prob-table-title{font-size:var(--text-sm);font-weight:700}
-.prob-table-sub{font-size:var(--text-xs);color:var(--color-text-muted)}
-table{width:100%;border-collapse:collapse}
-thead tr{background:var(--color-surface-offset)}
-th{padding:var(--space-3) var(--space-4);text-align:left;font-size:var(--text-xs);font-weight:700;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap}
-th.right,td.right{text-align:right}
-th.center,td.center{text-align:center}
-tbody tr{border-top:1px solid var(--color-divider);transition:background var(--transition)}
-tbody tr:hover{background:var(--color-surface-dynamic)}
-tbody tr.rank-1{background:color-mix(in oklab,var(--color-primary) 6%,var(--color-surface))}
-tbody tr.rank-1:hover{background:color-mix(in oklab,var(--color-primary) 10%,var(--color-surface))}
-td{padding:var(--space-3) var(--space-4);font-size:var(--text-sm)}
-.rank-badge{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;font-size:var(--text-xs);font-weight:700}
-.rank-1 .rank-badge{background:var(--color-gold);color:#1a1200}
-.rank-2 .rank-badge{background:var(--color-surface-dynamic);color:var(--color-text)}
-.rank-3 .rank-badge{background:color-mix(in oklab,var(--color-orange) 30%,var(--color-surface-offset));color:var(--color-orange)}
-.rank-other .rank-badge{background:var(--color-surface-offset);color:var(--color-text-muted)}
-.prob-bar-wrap{display:flex;align-items:center;gap:var(--space-2)}
-.prob-bar{height:6px;border-radius:var(--radius-full);background:var(--color-surface-dynamic);flex:1;overflow:hidden;min-width:50px}
-.prob-bar-fill{height:100%;border-radius:var(--radius-full);transition:width 0.6s cubic-bezier(0.16,1,0.3,1)}
-.fill-total{background:var(--color-primary)}
-.fill-pitcher{background:var(--color-orange)}
-.fill-batter{background:var(--color-success)}
-.prob-num{font-size:var(--text-xs);font-weight:600;min-width:42px;text-align:right;font-variant-numeric:tabular-nums}
-.zero-prob{color:var(--color-text-faint)}
-.team-cell{display:flex;align-items:center;gap:var(--space-2)}
-.team-cell-emoji{font-size:1.1rem}
-.team-cell-name{font-weight:600}
-.unwanted-chip{display:inline-block;font-size:10px;padding:1px 5px;border-radius:var(--radius-full);background:color-mix(in oklab,var(--color-error) 15%,var(--color-surface-offset));color:var(--color-error);margin-left:var(--space-1);vertical-align:middle}
-.no-exclude-msg{padding:var(--space-6);text-align:center;color:var(--color-text-muted);font-size:var(--text-sm)}
-
-/* Rolling */
-.rolling{animation:roll 0.08s steps(1) infinite}
-@keyframes roll{0%{opacity:1}50%{opacity:0.3}100%{opacity:1}}
-
-@media(max-width:540px){
-  .teams-grid{grid-template-columns:repeat(3,1fr)}
-  .prob-info{flex-direction:column}
-  th,td{padding:var(--space-2) var(--space-3)}
-  .prob-bar{min-width:30px}
-}
+/* ── History ── */
+.hist-section{border-top:1px solid var(--divider);padding-top:20px}
+.hist-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.clear-btn{font-size:.75rem;color:var(--text-m);padding:4px 8px;border-radius:var(--r-sm)}
+.clear-btn:hover{color:var(--primary)}
+.hist-list{display:flex;flex-direction:column;gap:6px}
+.hist-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface);border-radius:var(--r-lg);border:1px solid var(--border);animation:pop .2s ease}
+.hist-num{font-size:.68rem;color:var(--text-f);min-width:18px;text-align:right}
+.hist-emoji{font-size:1rem}
+.hist-player{font-size:.875rem;font-weight:700;flex:1}
+.hist-meta{font-size:.72rem;color:var(--text-m)}
+.hist-pct{font-size:.68rem;color:var(--text-f);font-variant-numeric:tabular-nums}
+.hist-empty{font-size:.875rem;color:var(--text-f);text-align:center;padding:20px}
 </style>
 </head>
 <body>
-<div class="app">
-  <header>
-    <div class="logo">
-      <svg class="logo-icon" viewBox="0 0 36 36" fill="none" aria-label="레전드 스카우트">
-        <circle cx="18" cy="18" r="16" fill="var(--color-primary)" opacity="0.15"/>
-        <path d="M18 6 L21 14 L30 14 L23 19 L25 28 L18 23 L11 28 L13 19 L6 14 L15 14 Z" fill="var(--color-primary)"/>
-      </svg>
-      <div>
-        <div class="logo-text">레전드 스카우트</div>
-        <div class="logo-sub">컴투스프로야구 2026</div>
-      </div>
-    </div>
-    <button class="theme-btn" data-theme-toggle aria-label="테마 전환">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-    </button>
-  </header>
-
-  <!-- Tabs -->
-  <div class="tabs" role="tablist">
-    <button class="tab-btn active" data-tab="scout" role="tab">🎯 스카우트</button>
-    <button class="tab-btn" data-tab="exclude" role="tab">🚫 제외 선수</button>
-    <button class="tab-btn" data-tab="analysis" role="tab">📊 확률 분석</button>
+<div class="wrap">
+  <div class="theme-row">
+    <button class="theme-btn" data-theme-toggle aria-label="테마 전환">🌙</button>
+  </div>
+  <div class="header">
+    <div class="header-title">⚾ 레전드 스카우트 🏟️</div>
+    <div class="header-sub">구장을 선택하고 레전드를 뽑아보세요!</div>
   </div>
 
-  <!-- SCOUT TAB -->
-  <div id="tab-scout" class="tab-panel active">
-    <div class="section-label">구단 선택</div>
-    <div class="teams-grid" id="teamsGrid"></div>
-    <div class="prob-info">
-      <div class="prob-box">
-        <div class="prob-value" id="probSelected">—</div>
-        <div class="prob-label">선택 구단 확률</div>
-        <div class="prob-detail" id="probSelectedDetail">구단을 먼저 선택하세요</div>
-      </div>
-      <div class="prob-box">
-        <div class="prob-value" id="probOtherValue" style="color:var(--color-text-muted)">45%</div>
-        <div class="prob-label" id="probOtherLabel">타 구단 확률</div>
-        <div class="prob-detail" id="probOtherDetail">나머지 선수 중 무작위</div>
-      </div>
-      <div class="prob-box">
-        <div class="prob-value" id="probPool">62명</div>
-        <div class="prob-label">유효 레전드 풀</div>
-        <div class="prob-detail" id="probPoolDetail">제외 선수 0명</div>
-      </div>
-    </div>
-    <button class="scout-btn" id="scoutBtn" disabled>구단을 먼저 선택해주세요</button>
-    <div class="result-area" id="resultArea">
-      <div class="result-empty">구단을 선택하고 스카우트 버튼을 누르세요</div>
-    </div>
-    <div class="history-section">
-      <div class="history-header">
-        <div class="section-label" style="margin:0">스카우트 기록</div>
-        <button class="clear-btn" id="clearHistoryBtn">초기화</button>
-      </div>
-      <div class="history-list" id="historyList">
-        <div class="history-empty">아직 스카우트 기록이 없습니다</div>
-      </div>
-    </div>
+  <div class="section-label">🏟️ 구장 선택</div>
+  <div class="stadium-grid" id="stadiumGrid"></div>
+
+  <button class="scout-btn" id="scoutBtn" disabled>구장을 먼저 선택해주세요 🙏</button>
+
+  <div class="result-area" id="resultArea">
+    <div class="result-empty">⬆️ 구장을 선택하고<br>스카우트 버튼을 눌러보세요!</div>
   </div>
 
-  <!-- EXCLUDE TAB -->
-  <div id="tab-exclude" class="tab-panel">
-    <div class="exclude-layout">
-      <div>
-        <div class="section-label">선수 목록 (클릭하여 제외)</div>
-        <div class="team-filter-tabs" id="filterTabs"></div>
-        <div class="player-list" id="playerList"></div>
-      </div>
-      <div>
-        <div class="section-label">제외된 선수</div>
-        <div class="excluded-panel">
-          <div class="excluded-tags" id="excludedTags"><span style="color:var(--color-text-faint);font-size:var(--text-xs)">제외된 선수가 없습니다</span></div>
-          <div class="excluded-count" id="excludedCount">총 0명 제외됨 (전체 62명 중)</div>
-          <button class="clear-all-btn" id="clearExcludeBtn">전체 해제</button>
-        </div>
-      </div>
+  <div class="odds-wrap" id="oddsWrap" style="display:none">
+    <div class="odds-header">
+      <div class="odds-title" id="oddsTitle">확률 목록</div>
+      <div class="odds-sub" id="oddsSub"></div>
     </div>
+    <div class="odds-body" id="oddsBody"></div>
   </div>
 
-  <!-- ANALYSIS TAB -->
-  <div id="tab-analysis" class="tab-panel">
-    <div class="prob-table-wrap">
-      <div class="prob-table-header">
-        <div>
-          <div class="prob-table-title">구단별 기피 선수 제외 확률 분석</div>
-          <div class="prob-table-sub" id="analysisSubtitle">제외 선수 0명 · 구단 선택 후 유효 선수 획득 확률 순위</div>
-        </div>
-        <div style="display:flex;gap:var(--space-3);font-size:var(--text-xs);color:var(--color-text-muted);align-items:center;flex-wrap:wrap">
-          <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:50%;background:var(--color-primary);display:inline-block"></span>전체</span>
-          <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:50%;background:var(--color-orange);display:inline-block"></span>투수</span>
-          <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:50%;background:var(--color-success);display:inline-block"></span>타자</span>
-        </div>
-      </div>
-      <div id="probTableContainer"></div>
+  <div class="hist-section">
+    <div class="hist-header">
+      <div class="section-label" style="margin:0">📋 뽑기 기록</div>
+      <button class="clear-btn" id="clearBtn">초기화 🗑️</button>
+    </div>
+    <div class="hist-list" id="histList">
+      <div class="hist-empty">아직 뽑은 선수가 없어요 😊</div>
     </div>
   </div>
 </div>
 
 <script>
-const TEAMS = [
-  { id:'doosan', name:'두산 베어스', emoji:'🐻', shortName:'두산',
-    pitchers:['니퍼트','박철순'], batters:['김현수B','김동주B','홍성흔','우즈'] },
-  { id:'samsung', name:'삼성 라이온즈', emoji:'🦁', shortName:'삼성',
-    pitchers:['김시진','오승환','배영수','임기효'], batters:['장효조','류중일','이승엽','이만수','최형우','양준혁','박한이'] },
-  { id:'hanwha', name:'한화 이글스', emoji:'🦅', shortName:'한화',
-    pitchers:['류현진','구대성','정민철','송진우'], batters:['김태균S','장종훈'] },
-  { id:'lotte', name:'롯데 자이언츠', emoji:'🕊️', shortName:'롯데',
-    pitchers:['최동원','윤학길'], batters:['박정태','마해영','손아섭','강민호','이대호','전준호B'] },
-  { id:'kia', name:'KIA 타이거즈', emoji:'🐅', shortName:'KIA',
-    pitchers:['양현종','선동열','조계현','이강철'], batters:['이범호','김성한B','이순철','한대화','이종범','장성호'] },
-  { id:'kiwoom', name:'키움 히어로즈', emoji:'🦸', shortName:'키움',
-    pitchers:['정명원','정민태'], batters:['박병호','심정수','박재홍','박진만'] },
-  { id:'lg', name:'LG 트윈스', emoji:'👯', shortName:'LG',
-    pitchers:['이상훈C','김용수'], batters:['김재현S','이병규B','박용택','백인천','김재박'] },
-  { id:'ssg', name:'SSG 랜더스', emoji:'🛸', shortName:'SSG',
-    pitchers:['김원형','김광현'], batters:['김기태S','정근우','최정','박경완'] },
-  { id:'kt', name:'KT 위즈', emoji:'⚡', shortName:'KT',
-    pitchers:[], batters:[] },
-  { id:'nc', name:'NC 다이노스', emoji:'🦕', shortName:'NC',
-    pitchers:[], batters:['양의지','이호준B'] }
+const STADIUMS = [
+  { id:'jamsil_doosan', name:'잠실', team:'두산', emoji:'🐻', color:'#003087' },
+  { id:'daegu',         name:'대구', team:'삼성', emoji:'🦁', color:'#074CA1' },
+  { id:'daejeon',       name:'대전', team:'한화', emoji:'🦅', color:'#FF6600' },
+  { id:'busan',         name:'부산', team:'롯데', emoji:'🕊️', color:'#041E42' },
+  { id:'gwangju',       name:'광주', team:'KIA', emoji:'🐅', color:'#EA0029' },
+  { id:'gochuk',        name:'고척', team:'키움', emoji:'🦸', color:'#570514' },
+  { id:'incheon',       name:'인천', team:'SSG', emoji:'🛸', color:'#CE0E2D' },
+  { id:'jamsil_lg',     name:'잠실', team:'LG',  emoji:'👯', color:'#C30452' },
+  { id:'changwon',      name:'창원', team:'NC',  emoji:'🦕', color:'#071D49' },
+  { id:'suwon',         name:'수원', team:'KT',  emoji:'⚡', color:'#231F20' },
 ];
 
-const ALL_PLAYERS = [];
-TEAMS.forEach(t => {
-  t.pitchers.forEach(p => ALL_PLAYERS.push({name:p,type:'투수',teamId:t.id,teamName:t.name,teamEmoji:t.emoji,teamShort:t.shortName}));
-  t.batters.forEach(p => ALL_PLAYERS.push({name:p,type:'타자',teamId:t.id,teamName:t.name,teamEmoji:t.emoji,teamShort:t.shortName}));
+const DATA = {
+  jamsil_doosan: [
+    {n:'니퍼트',t:'두산',p:9.1666666667},{n:'김현수B',t:'두산',p:9.1666666667},{n:'김동주B',t:'두산',p:9.1666666667},
+    {n:'홍성흔',t:'두산',p:9.1666666667},{n:'우즈',t:'OB',p:9.1666666667},{n:'박철순',t:'OB',p:9.1666666667},
+    {n:'김시진',t:'삼성',p:0.8035714286},{n:'장효조',t:'삼성',p:0.8035714286},{n:'오승환',t:'삼성',p:0.8035714286},
+    {n:'류중일',t:'삼성',p:0.8035714286},{n:'이승엽',t:'삼성',p:0.8035714286},{n:'이만수',t:'삼성',p:0.8035714286},
+    {n:'최형우',t:'삼성',p:0.8035714286},{n:'배영수',t:'삼성',p:0.8035714286},{n:'양준혁',t:'삼성',p:0.8035714286},
+    {n:'임기효',t:'삼성',p:0.8035714286},{n:'박한이',t:'삼성',p:0.8035714286},
+    {n:'류현진',t:'한화',p:0.8035714286},{n:'구대성',t:'한화',p:0.8035714286},{n:'정민철',t:'한화',p:0.8035714286},
+    {n:'김태균S',t:'한화',p:0.8035714286},{n:'장종훈',t:'한화',p:0.8035714286},{n:'송진우',t:'한화',p:0.8035714286},
+    {n:'최동원',t:'롯데',p:0.8035714286},{n:'윤학길',t:'롯데',p:0.8035714286},{n:'박정태',t:'롯데',p:0.8035714286},
+    {n:'마해영',t:'롯데',p:0.8035714286},{n:'손아섭',t:'롯데',p:0.8035714286},{n:'강민호',t:'롯데',p:0.8035714286},
+    {n:'이대호',t:'롯데',p:0.8035714286},{n:'전준호B',t:'롯데',p:0.8035714286},
+    {n:'양현종',t:'KIA',p:0.8035714286},{n:'이범호',t:'KIA',p:0.8035714286},
+    {n:'박병호',t:'키움',p:0.8035714286},
+    {n:'이상훈C',t:'LG',p:0.8035714286},{n:'김용수',t:'LG',p:0.8035714286},{n:'김재현S',t:'LG',p:0.8035714286},
+    {n:'이병규B',t:'LG',p:0.8035714286},{n:'박용택',t:'LG',p:0.8035714286},
+    {n:'양의지',t:'NC',p:0.8035714286},{n:'이호준B',t:'NC',p:0.8035714286},
+    {n:'백인천',t:'MBC',p:0.8035714286},{n:'김재박',t:'MBC',p:0.8035714286},
+    {n:'선동열',t:'해태',p:0.8035714286},{n:'조계현',t:'해태',p:0.8035714286},{n:'김성한B',t:'해태',p:0.8035714286},
+    {n:'이순철',t:'해태',p:0.8035714286},{n:'한대화',t:'해태',p:0.8035714286},{n:'이강철',t:'해태',p:0.8035714286},
+    {n:'이종범',t:'해태',p:0.8035714286},{n:'장성호',t:'해태',p:0.8035714286},
+    {n:'심정수',t:'현대',p:0.8035714286},{n:'정민태',t:'현대',p:0.8035714286},{n:'박재홍',t:'현대',p:0.8035714286},
+    {n:'박진만',t:'현대',p:0.8035714286},
+    {n:'김기태S',t:'쌍방울',p:0.8035714286},{n:'김원형',t:'쌍방울',p:0.8035714286},
+    {n:'정명원',t:'태평양',p:0.8035714286},
+    {n:'김광현',t:'SK',p:0.8035714286},{n:'정근우',t:'SK',p:0.8035714286},{n:'최정',t:'SK',p:0.8035714286},{n:'박경완',t:'SK',p:0.8035714286}
+  ],
+  daegu: [
+    {n:'김시진',t:'삼성',p:5.0},{n:'장효조',t:'삼성',p:5.0},{n:'오승환',t:'삼성',p:5.0},
+    {n:'류중일',t:'삼성',p:5.0},{n:'이승엽',t:'삼성',p:5.0},{n:'이만수',t:'삼성',p:5.0},
+    {n:'최형우',t:'삼성',p:5.0},{n:'배영수',t:'삼성',p:5.0},{n:'양준혁',t:'삼성',p:5.0},
+    {n:'임기효',t:'삼성',p:5.0},{n:'박한이',t:'삼성',p:5.0},
+    {n:'니퍼트',t:'두산',p:0.8823529412},{n:'김현수B',t:'두산',p:0.8823529412},{n:'김동주B',t:'두산',p:0.8823529412},{n:'홍성흔',t:'두산',p:0.8823529412},
+    {n:'류현진',t:'한화',p:0.8823529412},{n:'구대성',t:'한화',p:0.8823529412},{n:'정민철',t:'한화',p:0.8823529412},
+    {n:'김태균S',t:'한화',p:0.8823529412},{n:'장종훈',t:'한화',p:0.8823529412},{n:'송진우',t:'한화',p:0.8823529412},
+    {n:'최동원',t:'롯데',p:0.8823529412},{n:'윤학길',t:'롯데',p:0.8823529412},{n:'박정태',t:'롯데',p:0.8823529412},
+    {n:'마해영',t:'롯데',p:0.8823529412},{n:'손아섭',t:'롯데',p:0.8823529412},{n:'강민호',t:'롯데',p:0.8823529412},
+    {n:'이대호',t:'롯데',p:0.8823529412},{n:'전준호B',t:'롯데',p:0.8823529412},
+    {n:'양현종',t:'KIA',p:0.8823529412},{n:'이범호',t:'KIA',p:0.8823529412},
+    {n:'박병호',t:'키움',p:0.8823529412},
+    {n:'이상훈C',t:'LG',p:0.8823529412},{n:'김용수',t:'LG',p:0.8823529412},{n:'김재현S',t:'LG',p:0.8823529412},
+    {n:'이병규B',t:'LG',p:0.8823529412},{n:'박용택',t:'LG',p:0.8823529412},
+    {n:'양의지',t:'NC',p:0.8823529412},{n:'이호준B',t:'NC',p:0.8823529412},
+    {n:'우즈',t:'OB',p:0.8823529412},{n:'박철순',t:'OB',p:0.8823529412},
+    {n:'백인천',t:'MBC',p:0.8823529412},{n:'김재박',t:'MBC',p:0.8823529412},
+    {n:'선동열',t:'해태',p:0.8823529412},{n:'조계현',t:'해태',p:0.8823529412},{n:'김성한B',t:'해태',p:0.8823529412},
+    {n:'이순철',t:'해태',p:0.8823529412},{n:'한대화',t:'해태',p:0.8823529412},{n:'이강철',t:'해태',p:0.8823529412},
+    {n:'이종범',t:'해태',p:0.8823529412},{n:'장성호',t:'해태',p:0.8823529412},
+    {n:'심정수',t:'현대',p:0.8823529412},{n:'정민태',t:'현대',p:0.8823529412},{n:'박재홍',t:'현대',p:0.8823529412},{n:'박진만',t:'현대',p:0.8823529412},
+    {n:'김기태S',t:'쌍방울',p:0.8823529412},{n:'김원형',t:'쌍방울',p:0.8823529412},
+    {n:'정명원',t:'태평양',p:0.8823529412},
+    {n:'김광현',t:'SK',p:0.8823529412},{n:'정근우',t:'SK',p:0.8823529412},{n:'최정',t:'SK',p:0.8823529412},{n:'박경완',t:'SK',p:0.8823529412}
+  ],
+  daejeon: [
+    {n:'류현진',t:'한화',p:9.1666666667},{n:'구대성',t:'한화',p:9.1666666667},{n:'정민철',t:'한화',p:9.1666666667},
+    {n:'김태균S',t:'한화',p:9.1666666667},{n:'장종훈',t:'한화',p:9.1666666667},{n:'송진우',t:'한화',p:9.1666666667},
+    {n:'니퍼트',t:'두산',p:0.8035714286},{n:'김현수B',t:'두산',p:0.8035714286},{n:'김동주B',t:'두산',p:0.8035714286},{n:'홍성흔',t:'두산',p:0.8035714286},
+    {n:'김시진',t:'삼성',p:0.8035714286},{n:'장효조',t:'삼성',p:0.8035714286},{n:'오승환',t:'삼성',p:0.8035714286},
+    {n:'류중일',t:'삼성',p:0.8035714286},{n:'이승엽',t:'삼성',p:0.8035714286},{n:'이만수',t:'삼성',p:0.8035714286},
+    {n:'최형우',t:'삼성',p:0.8035714286},{n:'배영수',t:'삼성',p:0.8035714286},{n:'양준혁',t:'삼성',p:0.8035714286},
+    {n:'임기효',t:'삼성',p:0.8035714286},{n:'박한이',t:'삼성',p:0.8035714286},
+    {n:'최동원',t:'롯데',p:0.8035714286},{n:'윤학길',t:'롯데',p:0.8035714286},{n:'박정태',t:'롯데',p:0.8035714286},
+    {n:'마해영',t:'롯데',p:0.8035714286},{n:'손아섭',t:'롯데',p:0.8035714286},{n:'강민호',t:'롯데',p:0.8035714286},
+    {n:'이대호',t:'롯데',p:0.8035714286},{n:'전준호B',t:'롯데',p:0.8035714286},
+    {n:'양현종',t:'KIA',p:0.8035714286},{n:'이범호',t:'KIA',p:0.8035714286},
+    {n:'박병호',t:'키움',p:0.8035714286},
+    {n:'이상훈C',t:'LG',p:0.8035714286},{n:'김용수',t:'LG',p:0.8035714286},{n:'김재현S',t:'LG',p:0.8035714286},
+    {n:'이병규B',t:'LG',p:0.8035714286},{n:'박용택',t:'LG',p:0.8035714286},
+    {n:'양의지',t:'NC',p:0.8035714286},{n:'이호준B',t:'NC',p:0.8035714286},
+    {n:'우즈',t:'OB',p:0.8035714286},{n:'박철순',t:'OB',p:0.8035714286},
+    {n:'백인천',t:'MBC',p:0.8035714286},{n:'김재박',t:'MBC',p:0.8035714286},
+    {n:'선동열',t:'해태',p:0.8035714286},{n:'조계현',t:'해태',p:0.8035714286},{n:'김성한B',t:'해태',p:0.8035714286},
+    {n:'이순철',t:'해태',p:0.8035714286},{n:'한대화',t:'해태',p:0.8035714286},{n:'이강철',t:'해태',p:0.8035714286},
+    {n:'이종범',t:'해태',p:0.8035714286},{n:'장성호',t:'해태',p:0.8035714286},
+    {n:'심정수',t:'현대',p:0.8035714286},{n:'정민태',t:'현대',p:0.8035714286},{n:'박재홍',t:'현대',p:0.8035714286},{n:'박진만',t:'현대',p:0.8035714286},
+    {n:'김기태S',t:'쌍방울',p:0.8035714286},{n:'김원형',t:'쌍방울',p:0.8035714286},
+    {n:'정명원',t:'태평양',p:0.8035714286},
+    {n:'김광현',t:'SK',p:0.8035714286},{n:'정근우',t:'SK',p:0.8035714286},{n:'최정',t:'SK',p:0.8035714286},{n:'박경완',t:'SK',p:0.8035714286}
+  ],
+  busan: [
+    {n:'최동원',t:'롯데',p:6.875},{n:'윤학길',t:'롯데',p:6.875},{n:'박정태',t:'롯데',p:6.875},
+    {n:'마해영',t:'롯데',p:6.875},{n:'손아섭',t:'롯데',p:6.875},{n:'강민호',t:'롯데',p:6.875},
+    {n:'이대호',t:'롯데',p:6.875},{n:'전준호B',t:'롯데',p:6.875},
+    {n:'니퍼트',t:'두산',p:0.8333333333},{n:'김현수B',t:'두산',p:0.8333333333},{n:'김동주B',t:'두산',p:0.8333333333},{n:'홍성흔',t:'두산',p:0.8333333333},
+    {n:'김시진',t:'삼성',p:0.8333333333},{n:'장효조',t:'삼성',p:0.8333333333},{n:'오승환',t:'삼성',p:0.8333333333},
+    {n:'류중일',t:'삼성',p:0.8333333333},{n:'이승엽',t:'삼성',p:0.8333333333},{n:'이만수',t:'삼성',p:0.8333333333},
+    {n:'최형우',t:'삼성',p:0.8333333333},{n:'배영수',t:'삼성',p:0.8333333333},{n:'양준혁',t:'삼성',p:0.8333333333},
+    {n:'임기효',t:'삼성',p:0.8333333333},{n:'박한이',t:'삼성',p:0.8333333333},
+    {n:'류현진',t:'한화',p:0.8333333333},{n:'구대성',t:'한화',p:0.8333333333},{n:'정민철',t:'한화',p:0.8333333333},
+    {n:'김태균S',t:'한화',p:0.8333333333},{n:'장종훈',t:'한화',p:0.8333333333},{n:'송진우',t:'한화',p:0.8333333333},
+    {n:'양현종',t:'KIA',p:0.8333333333},{n:'이범호',t:'KIA',p:0.8333333333},
+    {n:'박병호',t:'키움',p:0.8333333333},
+    {n:'이상훈C',t:'LG',p:0.8333333333},{n:'김용수',t:'LG',p:0.8333333333},{n:'김재현S',t:'LG',p:0.8333333333},
+    {n:'이병규B',t:'LG',p:0.8333333333},{n:'박용택',t:'LG',p:0.8333333333},
+    {n:'양의지',t:'NC',p:0.8333333333},{n:'이호준B',t:'NC',p:0.8333333333},
+    {n:'우즈',t:'OB',p:0.8333333333},{n:'박철순',t:'OB',p:0.8333333333},
+    {n:'백인천',t:'MBC',p:0.8333333333},{n:'김재박',t:'MBC',p:0.8333333333},
+    {n:'선동열',t:'해태',p:0.8333333333},{n:'조계현',t:'해태',p:0.8333333333},{n:'김성한B',t:'해태',p:0.8333333333},
+    {n:'이순철',t:'해태',p:0.8333333333},{n:'한대화',t:'해태',p:0.8333333333},{n:'이강철',t:'해태',p:0.8333333333},
+    {n:'이종범',t:'해태',p:0.8333333333},{n:'장성호',t:'해태',p:0.8333333333},
+    {n:'심정수',t:'현대',p:0.8333333333},{n:'정민태',t:'현대',p:0.8333333333},{n:'박재홍',t:'현대',p:0.8333333333},{n:'박진만',t:'현대',p:0.8333333333},
+    {n:'김기태S',t:'쌍방울',p:0.8333333333},{n:'김원형',t:'쌍방울',p:0.8333333333},
+    {n:'정명원',t:'태평양',p:0.8333333333},
+    {n:'김광현',t:'SK',p:0.8333333333},{n:'정근우',t:'SK',p:0.8333333333},{n:'최정',t:'SK',p:0.8333333333},{n:'박경완',t:'SK',p:0.8333333333}
+  ],
+  gwangju: [
+    {n:'양현종',t:'KIA',p:5.5},{n:'이범호',t:'KIA',p:5.5},
+    {n:'선동열',t:'해태',p:5.5},{n:'조계현',t:'해태',p:5.5},{n:'김성한B',t:'해태',p:5.5},
+    {n:'이순철',t:'해태',p:5.5},{n:'한대화',t:'해태',p:5.5},{n:'이강철',t:'해태',p:5.5},
+    {n:'이종범',t:'해태',p:5.5},{n:'장성호',t:'해태',p:5.5},
+    {n:'니퍼트',t:'두산',p:0.8653846154},{n:'김현수B',t:'두산',p:0.8653846154},{n:'김동주B',t:'두산',p:0.8653846154},{n:'홍성흔',t:'두산',p:0.8653846154},
+    {n:'김시진',t:'삼성',p:0.8653846154},{n:'장효조',t:'삼성',p:0.8653846154},{n:'오승환',t:'삼성',p:0.8653846154},
+    {n:'류중일',t:'삼성',p:0.8653846154},{n:'이승엽',t:'삼성',p:0.8653846154},{n:'이만수',t:'삼성',p:0.8653846154},
+    {n:'최형우',t:'삼성',p:0.8653846154},{n:'배영수',t:'삼성',p:0.8653846154},{n:'양준혁',t:'삼성',p:0.8653846154},
+    {n:'임기효',t:'삼성',p:0.8653846154},{n:'박한이',t:'삼성',p:0.8653846154},
+    {n:'류현진',t:'한화',p:0.8653846154},{n:'구대성',t:'한화',p:0.8653846154},{n:'정민철',t:'한화',p:0.8653846154},
+    {n:'김태균S',t:'한화',p:0.8653846154},{n:'장종훈',t:'한화',p:0.8653846154},{n:'송진우',t:'한화',p:0.8653846154},
+    {n:'최동원',t:'롯데',p:0.8653846154},{n:'윤학길',t:'롯데',p:0.8653846154},{n:'박정태',t:'롯데',p:0.8653846154},
+    {n:'마해영',t:'롯데',p:0.8653846154},{n:'손아섭',t:'롯데',p:0.8653846154},{n:'강민호',t:'롯데',p:0.8653846154},
+    {n:'이대호',t:'롯데',p:0.8653846154},{n:'전준호B',t:'롯데',p:0.8653846154},
+    {n:'박병호',t:'키움',p:0.8653846154},
+    {n:'이상훈C',t:'LG',p:0.8653846154},{n:'김용수',t:'LG',p:0.8653846154},{n:'김재현S',t:'LG',p:0.8653846154},
+    {n:'이병규B',t:'LG',p:0.8653846154},{n:'박용택',t:'LG',p:0.8653846154},
+    {n:'양의지',t:'NC',p:0.8653846154},{n:'이호준B',t:'NC',p:0.8653846154},
+    {n:'우즈',t:'OB',p:0.8653846154},{n:'박철순',t:'OB',p:0.8653846154},
+    {n:'백인천',t:'MBC',p:0.8653846154},{n:'김재박',t:'MBC',p:0.8653846154},
+    {n:'심정수',t:'현대',p:0.8653846154},{n:'정민태',t:'현대',p:0.8653846154},{n:'박재홍',t:'현대',p:0.8653846154},{n:'박진만',t:'현대',p:0.8653846154},
+    {n:'김기태S',t:'쌍방울',p:0.8653846154},{n:'김원형',t:'쌍방울',p:0.8653846154},
+    {n:'정명원',t:'태평양',p:0.8653846154},
+    {n:'김광현',t:'SK',p:0.8653846154},{n:'정근우',t:'SK',p:0.8653846154},{n:'최정',t:'SK',p:0.8653846154},{n:'박경완',t:'SK',p:0.8653846154}
+  ],
+  gochuk: [
+    {n:'박병호',t:'키움',p:9.1666666667},{n:'심정수',t:'현대',p:9.1666666667},{n:'정민태',t:'현대',p:9.1666666667},
+    {n:'박재홍',t:'현대',p:9.1666666667},{n:'박진만',t:'현대',p:9.1666666667},{n:'정명원',t:'태평양',p:9.1666666667},
+    {n:'니퍼트',t:'두산',p:0.8035714286},{n:'김현수B',t:'두산',p:0.8035714286},{n:'김동주B',t:'두산',p:0.8035714286},{n:'홍성흔',t:'두산',p:0.8035714286},
+    {n:'김시진',t:'삼성',p:0.8035714286},{n:'장효조',t:'삼성',p:0.8035714286},{n:'오승환',t:'삼성',p:0.8035714286},
+    {n:'류중일',t:'삼성',p:0.8035714286},{n:'이승엽',t:'삼성',p:0.8035714286},{n:'이만수',t:'삼성',p:0.8035714286},
+    {n:'최형우',t:'삼성',p:0.8035714286},{n:'배영수',t:'삼성',p:0.8035714286},{n:'양준혁',t:'삼성',p:0.8035714286},
+    {n:'임기효',t:'삼성',p:0.8035714286},{n:'박한이',t:'삼성',p:0.8035714286},
+    {n:'류현진',t:'한화',p:0.8035714286},{n:'구대성',t:'한화',p:0.8035714286},{n:'정민철',t:'한화',p:0.8035714286},
+    {n:'김태균S',t:'한화',p:0.8035714286},{n:'장종훈',t:'한화',p:0.8035714286},{n:'송진우',t:'한화',p:0.8035714286},
+    {n:'최동원',t:'롯데',p:0.8035714286},{n:'윤학길',t:'롯데',p:0.8035714286},{n:'박정태',t:'롯데',p:0.8035714286},
+    {n:'마해영',t:'롯데',p:0.8035714286},{n:'손아섭',t:'롯데',p:0.8035714286},{n:'강민호',t:'롯데',p:0.8035714286},
+    {n:'이대호',t:'롯데',p:0.8035714286},{n:'전준호B',t:'롯데',p:0.8035714286},
+    {n:'양현종',t:'KIA',p:0.8035714286},{n:'이범호',t:'KIA',p:0.8035714286},
+    {n:'이상훈C',t:'LG',p:0.8035714286},{n:'김용수',t:'LG',p:0.8035714286},{n:'김재현S',t:'LG',p:0.8035714286},
+    {n:'이병규B',t:'LG',p:0.8035714286},{n:'박용택',t:'LG',p:0.8035714286},
+    {n:'양의지',t:'NC',p:0.8035714286},{n:'이호준B',t:'NC',p:0.8035714286},
+    {n:'우즈',t:'OB',p:0.8035714286},{n:'박철순',t:'OB',p:0.8035714286},
+    {n:'백인천',t:'MBC',p:0.8035714286},{n:'김재박',t:'MBC',p:0.8035714286},
+    {n:'선동열',t:'해태',p:0.8035714286},{n:'조계현',t:'해태',p:0.8035714286},{n:'김성한B',t:'해태',p:0.8035714286},
+    {n:'이순철',t:'해태',p:0.8035714286},{n:'한대화',t:'해태',p:0.8035714286},{n:'이강철',t:'해태',p:0.8035714286},
+    {n:'이종범',t:'해태',p:0.8035714286},{n:'장성호',t:'해태',p:0.8035714286},
+    {n:'김기태S',t:'쌍방울',p:0.8035714286},{n:'김원형',t:'쌍방울',p:0.8035714286},
+    {n:'김광현',t:'SK',p:0.8035714286},{n:'정근우',t:'SK',p:0.8035714286},{n:'최정',t:'SK',p:0.8035714286},{n:'박경완',t:'SK',p:0.8035714286}
+  ],
+  incheon: [
+    {n:'김기태S',t:'쌍방울',p:9.1666666667},{n:'김원형',t:'쌍방울',p:9.1666666667},
+    {n:'김광현',t:'SK',p:9.1666666667},{n:'정근우',t:'SK',p:9.1666666667},{n:'최정',t:'SK',p:9.1666666667},{n:'박경완',t:'SK',p:9.1666666667},
+    {n:'니퍼트',t:'두산',p:0.8035714286},{n:'김현수B',t:'두산',p:0.8035714286},{n:'김동주B',t:'두산',p:0.8035714286},{n:'홍성흔',t:'두산',p:0.8035714286},
+    {n:'김시진',t:'삼성',p:0.8035714286},{n:'장효조',t:'삼성',p:0.8035714286},{n:'오승환',t:'삼성',p:0.8035714286},
+    {n:'류중일',t:'삼성',p:0.8035714286},{n:'이승엽',t:'삼성',p:0.8035714286},{n:'이만수',t:'삼성',p:0.8035714286},
+    {n:'최형우',t:'삼성',p:0.8035714286},{n:'배영수',t:'삼성',p:0.8035714286},{n:'양준혁',t:'삼성',p:0.8035714286},
+    {n:'임기효',t:'삼성',p:0.8035714286},{n:'박한이',t:'삼성',p:0.8035714286},
+    {n:'류현진',t:'한화',p:0.8035714286},{n:'구대성',t:'한화',p:0.8035714286},{n:'정민철',t:'한화',p:0.8035714286},
+    {n:'김태균S',t:'한화',p:0.8035714286},{n:'장종훈',t:'한화',p:0.8035714286},{n:'송진우',t:'한화',p:0.8035714286},
+    {n:'최동원',t:'롯데',p:0.8035714286},{n:'윤학길',t:'롯데',p:0.8035714286},{n:'박정태',t:'롯데',p:0.8035714286},
+    {n:'마해영',t:'롯데',p:0.8035714286},{n:'손아섭',t:'롯데',p:0.8035714286},{n:'강민호',t:'롯데',p:0.8035714286},
+    {n:'이대호',t:'롯데',p:0.8035714286},{n:'전준호B',t:'롯데',p:0.8035714286},
+    {n:'양현종',t:'KIA',p:0.8035714286},{n:'이범호',t:'KIA',p:0.8035714286},
+    {n:'박병호',t:'키움',p:0.8035714286},
+    {n:'이상훈C',t:'LG',p:0.8035714286},{n:'김용수',t:'LG',p:0.8035714286},{n:'김재현S',t:'LG',p:0.8035714286},
+    {n:'이병규B',t:'LG',p:0.8035714286},{n:'박용택',t:'LG',p:0.8035714286},
+    {n:'양의지',t:'NC',p:0.8035714286},{n:'이호준B',t:'NC',p:0.8035714286},
+    {n:'우즈',t:'OB',p:0.8035714286},{n:'박철순',t:'OB',p:0.8035714286},
+    {n:'백인천',t:'MBC',p:0.8035714286},{n:'김재박',t:'MBC',p:0.8035714286},
+    {n:'선동열',t:'해태',p:0.8035714286},{n:'조계현',t:'해태',p:0.8035714286},{n:'김성한B',t:'해태',p:0.8035714286},
+    {n:'이순철',t:'해태',p:0.8035714286},{n:'한대화',t:'해태',p:0.8035714286},{n:'이강철',t:'해태',p:0.8035714286},
+    {n:'이종범',t:'해태',p:0.8035714286},{n:'장성호',t:'해태',p:0.8035714286},
+    {n:'심정수',t:'현대',p:0.8035714286},{n:'정민태',t:'현대',p:0.8035714286},{n:'박재홍',t:'현대',p:0.8035714286},{n:'박진만',t:'현대',p:0.8035714286},
+    {n:'정명원',t:'태평양',p:0.8035714286}
+  ],
+  jamsil_lg: [
+    {n:'이상훈C',t:'LG',p:7.8571428571},{n:'김용수',t:'LG',p:7.8571428571},{n:'김재현S',t:'LG',p:7.8571428571},
+    {n:'이병규B',t:'LG',p:7.8571428571},{n:'박용택',t:'LG',p:7.8571428571},
+    {n:'백인천',t:'MBC',p:7.8571428571},{n:'김재박',t:'MBC',p:7.8571428571},
+    {n:'니퍼트',t:'두산',p:0.8181818182},{n:'김현수B',t:'두산',p:0.8181818182},{n:'김동주B',t:'두산',p:0.8181818182},{n:'홍성흔',t:'두산',p:0.8181818182},
+    {n:'김시진',t:'삼성',p:0.8181818182},{n:'장효조',t:'삼성',p:0.8181818182},{n:'오승환',t:'삼성',p:0.8181818182},
+    {n:'류중일',t:'삼성',p:0.8181818182},{n:'이승엽',t:'삼성',p:0.8181818182},{n:'이만수',t:'삼성',p:0.8181818182},
+    {n:'최형우',t:'삼성',p:0.8181818182},{n:'배영수',t:'삼성',p:0.8181818182},{n:'양준혁',t:'삼성',p:0.8181818182},
+    {n:'임기효',t:'삼성',p:0.8181818182},{n:'박한이',t:'삼성',p:0.8181818182},
+    {n:'류현진',t:'한화',p:0.8181818182},{n:'구대성',t:'한화',p:0.8181818182},{n:'정민철',t:'한화',p:0.8181818182},
+    {n:'김태균S',t:'한화',p:0.8181818182},{n:'장종훈',t:'한화',p:0.8181818182},{n:'송진우',t:'한화',p:0.8181818182},
+    {n:'최동원',t:'롯데',p:0.8181818182},{n:'윤학길',t:'롯데',p:0.8181818182},{n:'박정태',t:'롯데',p:0.8181818182},
+    {n:'마해영',t:'롯데',p:0.8181818182},{n:'손아섭',t:'롯데',p:0.8181818182},{n:'강민호',t:'롯데',p:0.8181818182},
+    {n:'이대호',t:'롯데',p:0.8181818182},{n:'전준호B',t:'롯데',p:0.8181818182},
+    {n:'양현종',t:'KIA',p:0.8181818182},{n:'이범호',t:'KIA',p:0.8181818182},
+    {n:'박병호',t:'키움',p:0.8181818182},
+    {n:'양의지',t:'NC',p:0.8181818182},{n:'이호준B',t:'NC',p:0.8181818182},
+    {n:'우즈',t:'OB',p:0.8181818182},{n:'박철순',t:'OB',p:0.8181818182},
+    {n:'선동열',t:'해태',p:0.8181818182},{n:'조계현',t:'해태',p:0.8181818182},{n:'김성한B',t:'해태',p:0.8181818182},
+    {n:'이순철',t:'해태',p:0.8181818182},{n:'한대화',t:'해태',p:0.8181818182},{n:'이강철',t:'해태',p:0.8181818182},
+    {n:'이종범',t:'해태',p:0.8181818182},{n:'장성호',t:'해태',p:0.8181818182},
+    {n:'심정수',t:'현대',p:0.8181818182},{n:'정민태',t:'현대',p:0.8181818182},{n:'박재홍',t:'현대',p:0.8181818182},{n:'박진만',t:'현대',p:0.8181818182},
+    {n:'김기태S',t:'쌍방울',p:0.8181818182},{n:'김원형',t:'쌍방울',p:0.8181818182},
+    {n:'정명원',t:'태평양',p:0.8181818182},
+    {n:'김광현',t:'SK',p:0.8181818182},{n:'정근우',t:'SK',p:0.8181818182},{n:'최정',t:'SK',p:0.8181818182},{n:'박경완',t:'SK',p:0.8181818182}
+  ],
+  changwon: [
+    {n:'양의지',t:'NC',p:27.5},{n:'이호준B',t:'NC',p:27.5},
+    {n:'니퍼트',t:'두산',p:0.75},{n:'김현수B',t:'두산',p:0.75},{n:'김동주B',t:'두산',p:0.75},{n:'홍성흔',t:'두산',p:0.75},
+    {n:'김시진',t:'삼성',p:0.75},{n:'장효조',t:'삼성',p:0.75},{n:'오승환',t:'삼성',p:0.75},
+    {n:'류중일',t:'삼성',p:0.75},{n:'이승엽',t:'삼성',p:0.75},{n:'이만수',t:'삼성',p:0.75},
+    {n:'최형우',t:'삼성',p:0.75},{n:'배영수',t:'삼성',p:0.75},{n:'양준혁',t:'삼성',p:0.75},
+    {n:'임기효',t:'삼성',p:0.75},{n:'박한이',t:'삼성',p:0.75},
+    {n:'류현진',t:'한화',p:0.75},{n:'구대성',t:'한화',p:0.75},{n:'정민철',t:'한화',p:0.75},
+    {n:'김태균S',t:'한화',p:0.75},{n:'장종훈',t:'한화',p:0.75},{n:'송진우',t:'한화',p:0.75},
+    {n:'최동원',t:'롯데',p:0.75},{n:'윤학길',t:'롯데',p:0.75},{n:'박정태',t:'롯데',p:0.75},
+    {n:'마해영',t:'롯데',p:0.75},{n:'손아섭',t:'롯데',p:0.75},{n:'강민호',t:'롯데',p:0.75},
+    {n:'이대호',t:'롯데',p:0.75},{n:'전준호B',t:'롯데',p:0.75},
+    {n:'양현종',t:'KIA',p:0.75},{n:'이범호',t:'KIA',p:0.75},
+    {n:'박병호',t:'키움',p:0.75},
+    {n:'이상훈C',t:'LG',p:0.75},{n:'김용수',t:'LG',p:0.75},{n:'김재현S',t:'LG',p:0.75},
+    {n:'이병규B',t:'LG',p:0.75},{n:'박용택',t:'LG',p:0.75},
+    {n:'우즈',t:'OB',p:0.75},{n:'박철순',t:'OB',p:0.75},
+    {n:'백인천',t:'MBC',p:0.75},{n:'김재박',t:'MBC',p:0.75},
+    {n:'선동열',t:'해태',p:0.75},{n:'조계현',t:'해태',p:0.75},{n:'김성한B',t:'해태',p:0.75},
+    {n:'이순철',t:'해태',p:0.75},{n:'한대화',t:'해태',p:0.75},{n:'이강철',t:'해태',p:0.75},
+    {n:'이종범',t:'해태',p:0.75},{n:'장성호',t:'해태',p:0.75},
+    {n:'심정수',t:'현대',p:0.75},{n:'정민태',t:'현대',p:0.75},{n:'박재홍',t:'현대',p:0.75},{n:'박진만',t:'현대',p:0.75},
+    {n:'김기태S',t:'쌍방울',p:0.75},{n:'김원형',t:'쌍방울',p:0.75},
+    {n:'정명원',t:'태평양',p:0.75},
+    {n:'김광현',t:'SK',p:0.75},{n:'정근우',t:'SK',p:0.75},{n:'최정',t:'SK',p:0.75},{n:'박경완',t:'SK',p:0.75}
+  ],
+  suwon: (() => {
+    const p = 1.6129032258;
+    return [
+      {n:'니퍼트',t:'두산',p},{n:'김현수B',t:'두산',p},{n:'김동주B',t:'두산',p},{n:'홍성흔',t:'두산',p},
+      {n:'김시진',t:'삼성',p},{n:'장효조',t:'삼성',p},{n:'오승환',t:'삼성',p},{n:'류중일',t:'삼성',p},
+      {n:'이승엽',t:'삼성',p},{n:'이만수',t:'삼성',p},{n:'최형우',t:'삼성',p},{n:'배영수',t:'삼성',p},
+      {n:'양준혁',t:'삼성',p},{n:'임기효',t:'삼성',p},{n:'박한이',t:'삼성',p},
+      {n:'류현진',t:'한화',p},{n:'구대성',t:'한화',p},{n:'정민철',t:'한화',p},{n:'김태균S',t:'한화',p},{n:'장종훈',t:'한화',p},{n:'송진우',t:'한화',p},
+      {n:'최동원',t:'롯데',p},{n:'윤학길',t:'롯데',p},{n:'박정태',t:'롯데',p},{n:'마해영',t:'롯데',p},{n:'손아섭',t:'롯데',p},{n:'강민호',t:'롯데',p},{n:'이대호',t:'롯데',p},{n:'전준호B',t:'롯데',p},
+      {n:'양현종',t:'KIA',p},{n:'이범호',t:'KIA',p},
+      {n:'박병호',t:'키움',p},
+      {n:'이상훈C',t:'LG',p},{n:'김용수',t:'LG',p},{n:'김재현S',t:'LG',p},{n:'이병규B',t:'LG',p},{n:'박용택',t:'LG',p},
+      {n:'양의지',t:'NC',p},{n:'이호준B',t:'NC',p},
+      {n:'우즈',t:'OB',p},{n:'박철순',t:'OB',p},
+      {n:'백인천',t:'MBC',p},{n:'김재박',t:'MBC',p},
+      {n:'선동열',t:'해태',p},{n:'조계현',t:'해태',p},{n:'김성한B',t:'해태',p},{n:'이순철',t:'해태',p},{n:'한대화',t:'해태',p},{n:'이강철',t:'해태',p},{n:'이종범',t:'해태',p},{n:'장성호',t:'해태',p},
+      {n:'심정수',t:'현대',p},{n:'정민태',t:'현대',p},{n:'박재홍',t:'현대',p},{n:'박진만',t:'현대',p},
+      {n:'김기태S',t:'쌍방울',p},{n:'김원형',t:'쌍방울',p},
+      {n:'정명원',t:'태평양',p},
+      {n:'김광현',t:'SK',p},{n:'정근우',t:'SK',p},{n:'최정',t:'SK',p},{n:'박경완',t:'SK',p}
+    ];
+  })()
+};
+
+// Build stadium buttons
+const grid = document.getElementById('stadiumGrid');
+STADIUMS.forEach(s => {
+  const b = document.createElement('button');
+  b.className = 'stadium-btn'; b.dataset.id = s.id;
+  b.innerHTML = `<span class="st-emoji">${s.emoji}</span><span class="st-name">${s.name}</span><span class="st-team">${s.team}</span>`;
+  b.addEventListener('click', () => selectStadium(s));
+  grid.appendChild(b);
 });
 
-let selectedTeam = null;
-let excludedNames = new Set();
-let history = [];
-let isRolling = false;
-let activeFilterTeam = 'all';
+let selStadium = null, hist = [], rolling = false;
 
-// ── TAB SWITCHING ──
-document.querySelectorAll('.tab-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
-    if (btn.dataset.tab === 'analysis') renderProbTable();
-  });
-});
-
-// ── TEAM GRID (scout tab) ──
-const teamsGrid = document.getElementById('teamsGrid');
-TEAMS.forEach(t => {
-  const total = t.pitchers.length + t.batters.length;
-  const btn = document.createElement('button');
-  btn.className = 'team-btn';
-  btn.dataset.id = t.id;
-  btn.innerHTML = `<span class="team-emoji">${t.emoji}</span><span class="team-name">${t.shortName}</span><span class="team-count">${total}명</span>`;
-  btn.addEventListener('click', () => selectTeam(t));
-  teamsGrid.appendChild(btn);
-});
-
-function selectTeam(team) {
-  selectedTeam = team;
-  document.querySelectorAll('.team-btn').forEach(b => b.classList.toggle('selected', b.dataset.id === team.id));
-  const total = team.pitchers.length + team.batters.length;
-  const validInTeam = [...team.pitchers, ...team.batters].filter(n => !excludedNames.has(n)).length;
-  if (team.id === 'kt') {
-    document.getElementById('probSelected').textContent = '100%';
-    document.getElementById('probSelectedDetail').textContent = `레전드 선수 없음 → 전체 풀에서 뽑기`;
-    document.getElementById('probOtherValue').textContent = '—';
-    document.getElementById('probOtherLabel').textContent = '타 구단 확률';
-    document.getElementById('probOtherDetail').textContent = `전체 ${62 - excludedNames.size}명에서 균등 추첨`;
-  } else {
-    document.getElementById('probSelected').textContent = '55%';
-    document.getElementById('probSelectedDetail').textContent = `${total}명 중 유효 ${validInTeam}명 (투수 ${team.pitchers.filter(n=>!excludedNames.has(n)).length} / 타자 ${team.batters.filter(n=>!excludedNames.has(n)).length})`;
-    document.getElementById('probOtherValue').textContent = '45%';
-    document.getElementById('probOtherLabel').textContent = '타 구단 확률';
-    const otherValid = ALL_PLAYERS.filter(p => p.teamId !== team.id && !excludedNames.has(p.name)).length;
-    document.getElementById('probOtherDetail').textContent = `타 구단 유효 ${otherValid}명 중 무작위`;
-  }
-  const scoutBtn = document.getElementById('scoutBtn');
-  scoutBtn.disabled = false;
-  scoutBtn.textContent = `${team.emoji} ${team.name} 레전드 스카우트 하기`;
-  updatePoolInfo();
+function selectStadium(s) {
+  selStadium = s;
+  document.querySelectorAll('.stadium-btn').forEach(b => b.classList.toggle('selected', b.dataset.id === s.id));
+  const btn = document.getElementById('scoutBtn');
+  btn.disabled = false;
+  btn.textContent = `${s.emoji} ${s.name}(${s.team}) 레전드 뽑기! 🎉`;
+  renderOdds(s.id);
 }
 
-function updatePoolInfo() {
-  const total = 62 - excludedNames.size;
-  document.getElementById('probPool').textContent = total + '명';
-  document.getElementById('probPoolDetail').textContent = `제외 선수 ${excludedNames.size}명`;
-  if (selectedTeam) selectTeam(selectedTeam);
-}
-
-// ── SCOUT LOGIC ──
-function scout() {
-  if (!selectedTeam || isRolling) return;
-  const isKT = selectedTeam.id === 'kt';
-  const validInTeam = isKT ? [] : ALL_PLAYERS.filter(p => p.teamId === selectedTeam.id && !excludedNames.has(p.name));
-  const validOther = isKT
-    ? ALL_PLAYERS.filter(p => !excludedNames.has(p.name))
-    : ALL_PLAYERS.filter(p => p.teamId !== selectedTeam.id && !excludedNames.has(p.name));
-  if (validInTeam.length === 0 && validOther.length === 0) {
-    alert('유효한 선수가 없습니다. 제외 선수를 줄여주세요.');
-    return;
-  }
-  isRolling = true;
-  document.getElementById('scoutBtn').disabled = true;
-
-  const allValid = [...ALL_PLAYERS.filter(p => !excludedNames.has(p.name))];
-  const resultArea = document.getElementById('resultArea');
-  let rollCount = 0;
-  const rollInterval = setInterval(() => {
-    const rp = allValid[Math.floor(Math.random() * allValid.length)];
-    resultArea.innerHTML = `<div class="result-card rolling"><div style="text-align:center;padding:var(--space-4)"><div style="font-size:2.5rem;margin-bottom:var(--space-2)">${rp.teamEmoji}</div><div style="font-size:var(--text-xl);font-weight:700">${rp.name}</div><div style="font-size:var(--text-sm);color:var(--color-text-muted)">${rp.type}</div></div></div>`;
-    rollCount++;
-    if (rollCount >= 18) { clearInterval(rollInterval); finalizeScout(validInTeam, validOther); }
-  }, 80);
-}
-
-function finalizeScout(validInTeam, validOther) {
-  let pickedPlayer, isFromSelected;
-  // Adjust 55%/45% if one pool is empty
-  let p55 = validInTeam.length > 0 ? 0.55 : 0;
-  let p45 = validOther.length > 0 ? 0.45 : 0;
-  const total = p55 + p45;
-  if (total === 0) return;
-  const rand = Math.random() * total;
-  if (rand < p55) {
-    pickedPlayer = validInTeam[Math.floor(Math.random() * validInTeam.length)];
-    isFromSelected = true;
-  } else {
-    pickedPlayer = validOther[Math.floor(Math.random() * validOther.length)];
-    isFromSelected = false;
-  }
-  showResult(pickedPlayer, isFromSelected);
-  addHistory(pickedPlayer, isFromSelected);
-  isRolling = false;
-  const scoutBtn = document.getElementById('scoutBtn');
-  scoutBtn.disabled = false;
-  scoutBtn.textContent = `${selectedTeam.emoji} ${selectedTeam.name} 레전드 스카우트 하기`;
-}
-
-function showResult(player, isFromSelected) {
-  const isUnwanted = excludedNames.has(player.name); // shouldn't happen but safe check
-  const isKTResult = selectedTeam && selectedTeam.id === 'kt';
-  const srcBadge = isKTResult
-    ? `<span class="result-source source-other">⚡ KT 전체 풀 (100%)</span>`
-    : isFromSelected
-      ? `<span class="result-source source-selected">선택 구단 (55%)</span>`
-      : `<span class="result-source source-other">타 구단 (45%)</span>`;
-  const roleBadge = player.type === '투수'
-    ? `<span class="badge badge-pitcher">⚾ 투수</span>`
-    : `<span class="badge badge-batter">🏏 타자</span>`;
-  document.getElementById('resultArea').innerHTML = `
-    <div class="result-card">
-      <div class="result-header">
-        <div class="result-team"><span class="result-team-emoji">${player.teamEmoji}</span><span class="result-team-name">${player.teamName}</span></div>
-        ${srcBadge}
+function renderOdds(sid) {
+  const players = DATA[sid];
+  const maxP = Math.max(...players.map(p => p.p));
+  document.getElementById('oddsTitle').textContent = `🎲 선수 확률 목록 (총 ${players.length}명)`;
+  const st = STADIUMS.find(s => s.id === sid);
+  const homeLabel = players.filter(p => p.p > 1).map(p => p.t).filter((v,i,a)=>a.indexOf(v)===i).join('·');
+  document.getElementById('oddsSub').textContent = homeLabel ? `홈 보너스: ${homeLabel}` : '';
+  document.getElementById('oddsBody').innerHTML = players.map(p => {
+    const isHigh = p.p > 1;
+    return `<div class="odds-row">
+      <span class="odds-name">${p.n}</span>
+      <span class="odds-team">${p.t}</span>
+      <div class="odds-bar-wrap">
+        <div class="odds-bar"><div class="odds-bar-fill ${isHigh?'fill-high':'fill-norm'}" style="width:${(p.p/maxP*100).toFixed(1)}%"></div></div>
+        <span class="odds-pct" style="color:${isHigh?'var(--gold)':'var(--text-f)'}">${p.p.toFixed(2)}%</span>
       </div>
-      <div class="result-player">${player.name}</div>
-      <div class="result-badges">${roleBadge}<span class="badge badge-org">${player.teamName}</span></div>
-    </div>`;
-}
-
-function addHistory(player, isFromSelected) {
-  history.unshift({player, isFromSelected, num: history.length + 1});
-  renderHistory();
-}
-function renderHistory() {
-  const list = document.getElementById('historyList');
-  if (!history.length) { list.innerHTML = '<div class="history-empty">아직 스카우트 기록이 없습니다</div>'; return; }
-  list.innerHTML = history.slice(0,20).map((h,i) =>
-    `<div class="history-item ${excludedNames.has(h.player.name)?'history-unwanted':''}">
-      <span class="history-num">${history.length-i}</span>
-      <span class="history-emoji">${h.player.teamEmoji}</span>
-      <span class="history-player">${h.player.name}</span>
-      <span class="history-meta">${h.player.type === '투수' ? '⚾ 투수' : '🏏 타자'} · ${h.player.teamShort}</span>
-      <span class="history-source-dot ${h.isFromSelected?'dot-selected':'dot-other'}" title="${h.isFromSelected?'선택 구단':'타 구단'}"></span>
-    </div>`).join('');
-}
-document.getElementById('scoutBtn').addEventListener('click', scout);
-document.getElementById('clearHistoryBtn').addEventListener('click', () => { history=[]; renderHistory(); });
-
-// ── EXCLUDE TAB ──
-function buildFilterTabs() {
-  const container = document.getElementById('filterTabs');
-  container.innerHTML = '';
-  const all = document.createElement('button');
-  all.className = 'filter-tab' + (activeFilterTeam==='all'?' active':'');
-  all.textContent = '전체';
-  all.addEventListener('click', () => { activeFilterTeam='all'; buildFilterTabs(); renderPlayerList(); });
-  container.appendChild(all);
-  TEAMS.forEach(t => {
-    const btn = document.createElement('button');
-    btn.className = 'filter-tab' + (activeFilterTeam===t.id?' active':'');
-    btn.textContent = t.emoji + ' ' + t.shortName;
-    btn.addEventListener('click', () => { activeFilterTeam=t.id; buildFilterTabs(); renderPlayerList(); });
-    container.appendChild(btn);
-  });
-}
-
-function renderPlayerList() {
-  const list = document.getElementById('playerList');
-  const filtered = activeFilterTeam === 'all'
-    ? ALL_PLAYERS
-    : ALL_PLAYERS.filter(p => p.teamId === activeFilterTeam);
-  list.innerHTML = filtered.map(p => {
-    const ex = excludedNames.has(p.name);
-    return `<div class="player-item ${ex?'excluded':''}" data-name="${p.name}" role="checkbox" aria-checked="${ex}" tabindex="0">
-      <div class="player-item-check">${ex?'<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1.5 5L4 7.5L8.5 2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>':''}</div>
-      <span class="player-item-name">${p.name}</span>
-      <span class="player-item-role">${p.type==='투수'?'⚾':'🏏'}</span>
-      <span class="player-item-team">${p.teamEmoji}</span>
     </div>`;
   }).join('');
-  list.querySelectorAll('.player-item').forEach(item => {
-    const toggle = () => toggleExclude(item.dataset.name);
-    item.addEventListener('click', toggle);
-    item.addEventListener('keydown', e => { if(e.key===' '||e.key==='Enter'){e.preventDefault();toggle();} });
-  });
+  document.getElementById('oddsWrap').style.display = '';
 }
 
-function toggleExclude(name) {
-  if (excludedNames.has(name)) excludedNames.delete(name);
-  else excludedNames.add(name);
-  renderPlayerList();
-  renderExcludedTags();
-  updatePoolInfo();
-  renderHistory(); // update strikethrough
+// Scout
+document.getElementById('scoutBtn').addEventListener('click', doScout);
+function doScout() {
+  if (!selStadium || rolling) return;
+  rolling = true;
+  document.getElementById('scoutBtn').disabled = true;
+  const pool = DATA[selStadium.id];
+  const area = document.getElementById('resultArea');
+  let n = 0;
+  const iv = setInterval(() => {
+    const rp = pool[Math.floor(Math.random() * pool.length)];
+    area.innerHTML = `<div class="rolling-card"><div style="font-size:2rem;margin-bottom:8px">${selStadium.emoji}</div><div class="rolling-name">${rp.n}</div><div style="font-size:.8rem;color:var(--text-m);margin-top:6px">${rp.t}</div></div>`;
+    if (++n >= 20) { clearInterval(iv); finalize(pool); }
+  }, 75);
 }
 
-function renderExcludedTags() {
-  const container = document.getElementById('excludedTags');
-  if (excludedNames.size === 0) {
-    container.innerHTML = '<span style="color:var(--color-text-faint);font-size:var(--text-xs)">제외된 선수가 없습니다</span>';
-  } else {
-    container.innerHTML = [...excludedNames].map(name =>
-      `<span class="excluded-tag">${name}<span class="excluded-tag-remove" data-name="${name}" title="제외 해제">✕</span></span>`
-    ).join('');
-    container.querySelectorAll('.excluded-tag-remove').forEach(btn => {
-      btn.addEventListener('click', () => toggleExclude(btn.dataset.name));
-    });
-  }
-  document.getElementById('excludedCount').textContent = `총 ${excludedNames.size}명 제외됨 (전체 62명 중 유효 ${62 - excludedNames.size}명)`;
+function finalize(pool) {
+  // weighted random
+  const total = pool.reduce((s,p) => s + p.p, 0);
+  let r = Math.random() * total, picked = pool[pool.length-1];
+  for (const p of pool) { r -= p.p; if (r <= 0) { picked = p; break; } }
+  showResult(picked);
+  hist.unshift({player:picked, stadium:selStadium});
+  renderHist();
+  rolling = false;
+  const btn = document.getElementById('scoutBtn');
+  btn.disabled = false;
+  btn.textContent = `${selStadium.emoji} ${selStadium.name}(${selStadium.team}) 레전드 뽑기! 🎉`;
 }
 
-document.getElementById('clearExcludeBtn').addEventListener('click', () => {
-  excludedNames.clear();
-  renderPlayerList();
-  renderExcludedTags();
-  updatePoolInfo();
-  renderHistory();
-});
-
-buildFilterTabs();
-renderPlayerList();
-renderExcludedTags();
-
-// ── ANALYSIS TABLE ──
-function calcProb(chosenTeamId) {
-  const team = TEAMS.find(t => t.id === chosenTeamId);
-  if (chosenTeamId === 'kt') {
-    const allWanted = ALL_PLAYERS.filter(p => !excludedNames.has(p.name));
-    const allP = allWanted.filter(p => p.type==='투수').length;
-    const allB = allWanted.filter(p => p.type==='타자').length;
-    const allT = allWanted.length;
-    const base = 62;
-    return {
-      total: allT > 0 ? (allT / base) * 100 : 0,
-      pitcher: allP > 0 ? (allP / base) * 100 : 0,
-      batter: allB > 0 ? (allB / base) * 100 : 0,
-      teamWanted: 0, teamWantedP: 0, teamWantedB: 0,
-      unwantedInTeam: 0, isKT: true
-    };
-  }
-  const teamAll = [...team.pitchers, ...team.batters];
-  const teamTotal = teamAll.length;
-  const teamWantedP = team.pitchers.filter(n => !excludedNames.has(n)).length;
-  const teamWantedB = team.batters.filter(n => !excludedNames.has(n)).length;
-  const teamWanted = teamWantedP + teamWantedB;
-
-  const otherAll = ALL_PLAYERS.filter(p => p.teamId !== chosenTeamId);
-  const otherTotal = otherAll.length;
-  const otherWantedP = otherAll.filter(p => p.type==='투수' && !excludedNames.has(p.name)).length;
-  const otherWantedB = otherAll.filter(p => p.type==='타자' && !excludedNames.has(p.name)).length;
-  const otherWanted = otherWantedP + otherWantedB;
-
-  const tT = teamTotal > 0 ? teamWanted / teamTotal : 0;
-  const oT = otherTotal > 0 ? otherWanted / otherTotal : 0;
-  const tP = teamTotal > 0 ? teamWantedP / teamTotal : 0;
-  const oP = otherTotal > 0 ? otherWantedP / otherTotal : 0;
-  const tB = teamTotal > 0 ? teamWantedB / teamTotal : 0;
-  const oB = otherTotal > 0 ? otherWantedB / otherTotal : 0;
-
-  return {
-    total: (0.55 * tT + 0.45 * oT) * 100,
-    pitcher: (0.55 * tP + 0.45 * oP) * 100,
-    batter: (0.55 * tB + 0.45 * oB) * 100,
-    teamWanted, teamWantedP, teamWantedB,
-    unwantedInTeam: teamAll.filter(n => excludedNames.has(n)).length
-  };
+function showResult(p) {
+  const isHigh = p.p > 1;
+  document.getElementById('resultArea').innerHTML = `
+    <div class="result-card">
+      <div class="result-top">
+        <div class="result-stadium">${selStadium.emoji} ${selStadium.name} · ${selStadium.team} 홈구장</div>
+        <span class="result-prob-badge ${isHigh?'prob-high':'prob-normal'}">${isHigh?'🌟 홈 보너스':'일반'} ${p.p.toFixed(2)}%</span>
+      </div>
+      <div class="result-player">⭐ ${p.n}</div>
+      <div class="result-sub">
+        <span class="badge badge-team">🏟️ ${p.t}</span>
+        <span class="badge badge-hist">레전드 획득!</span>
+      </div>
+    </div>`;
 }
 
-function renderProbTable() {
-  const container = document.getElementById('probTableContainer');
-  document.getElementById('analysisSubtitle').textContent =
-    `제외 선수 ${excludedNames.size}명 · 구단 선택 후 유효 선수 획득 확률 순위`;
-
-  const rows = TEAMS.map(t => {
-    const prob = calcProb(t.id);
-    return { team: t, ...prob };
-  }).sort((a, b) => b.total - a.total);
-
-  const maxTotal = Math.max(...rows.map(r => r.total));
-  const maxP = Math.max(...rows.map(r => r.pitcher));
-  const maxB = Math.max(...rows.map(r => r.batter));
-
-  const rankClass = i => i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-other';
-
-  container.innerHTML = `<table>
-    <thead>
-      <tr>
-        <th>순위</th>
-        <th>구단</th>
-        <th colspan="2">전체 확률</th>
-        <th colspan="2">투수 확률</th>
-        <th colspan="2">타자 확률</th>
-        <th class="center">구단내 유효</th>
-        <th class="center">제외 수</th>
-      </tr>
-    </thead>
-    <tbody>
-      ${rows.map((r, i) => {
-        const rc = rankClass(i);
-        const fmtPct = v => v < 0.01 ? '<span class="zero-prob">0%</span>' : v.toFixed(1)+'%';
-        const bar = (v, max, cls) => `<div class="prob-bar"><div class="prob-bar-fill ${cls}" style="width:${max>0?(v/max*100):0}%"></div></div>`;
-        const unwantedChip = r.unwantedInTeam > 0 ? `<span class="unwanted-chip">-${r.unwantedInTeam}</span>` : '';
-        return `<tr class="${rc}">
-          <td><span class="rank-badge">${i+1}</span></td>
-          <td><div class="team-cell"><span class="team-cell-emoji">${r.team.emoji}</span><span class="team-cell-name">${r.team.shortName}</span>${unwantedChip}${r.isKT?'<span style="font-size:10px;color:var(--color-text-faint);margin-left:4px">전체풀</span>':''}</div></td>
-          <td><div class="prob-bar-wrap">${bar(r.total,maxTotal,'fill-total')}<span class="prob-num" style="color:var(--color-primary)">${fmtPct(r.total)}</span></div></td>
-          <td></td>
-          <td><div class="prob-bar-wrap">${bar(r.pitcher,maxP,'fill-pitcher')}<span class="prob-num" style="color:var(--color-orange)">${fmtPct(r.pitcher)}</span></div></td>
-          <td></td>
-          <td><div class="prob-bar-wrap">${bar(r.batter,maxB,'fill-batter')}<span class="prob-num" style="color:var(--color-success)">${fmtPct(r.batter)}</span></div></td>
-          <td></td>
-          <td class="center">${r.isKT?'<span style="color:var(--color-text-faint);font-size:var(--text-xs)">전체 62명</span>':`<span style="font-weight:600">${r.teamWanted}</span><span style="color:var(--color-text-muted);font-size:var(--text-xs)"> (⚾${r.teamWantedP}·🏏${r.teamWantedB})</span>`}</td>
-          <td class="center">${r.unwantedInTeam > 0 ? `<span style="color:var(--color-error);font-weight:600">${r.unwantedInTeam}명</span>` : '<span style="color:var(--color-text-faint)">—</span>'}</td>
-        </tr>`;
-      }).join('')}
-    </tbody>
-  </table>`;
+function renderHist() {
+  const el = document.getElementById('histList');
+  if (!hist.length) { el.innerHTML = '<div class="hist-empty">아직 뽑은 선수가 없어요 😊</div>'; return; }
+  el.innerHTML = hist.slice(0,20).map((h,i) =>
+    `<div class="hist-item">
+      <span class="hist-num">${hist.length-i}</span>
+      <span class="hist-emoji">${h.stadium.emoji}</span>
+      <span class="hist-player">${h.player.n}</span>
+      <span class="hist-meta">${h.player.t} · ${h.stadium.name}</span>
+      <span class="hist-pct">${h.player.p.toFixed(2)}%</span>
+    </div>`).join('');
 }
 
-renderProbTable();
+document.getElementById('clearBtn').addEventListener('click', () => { hist=[]; renderHist(); });
 
-// ── THEME TOGGLE ──
+// Theme
 (function(){
-  const t = document.querySelector('[data-theme-toggle]');
-  const r = document.documentElement;
-  let d = r.getAttribute('data-theme') || 'dark';
-  function updateIcon(){t.innerHTML=d==='dark'?'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>':'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';}
-  updateIcon();
-  t.addEventListener('click',()=>{d=d==='dark'?'light':'dark';r.setAttribute('data-theme',d);updateIcon();});
+  const btn=document.querySelector('[data-theme-toggle]'),root=document.documentElement;
+  let d=root.getAttribute('data-theme')||'dark';
+  btn.textContent=d==='dark'?'☀️':'🌙';
+  btn.addEventListener('click',()=>{d=d==='dark'?'light':'dark';root.setAttribute('data-theme',d);btn.textContent=d==='dark'?'☀️':'🌙';});
 })();
 </script>
 </body>
