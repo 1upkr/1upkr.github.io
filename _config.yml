@@ -16,7 +16,7 @@ header_pages:
   - about.md
   - 404.md
 
-footer: 'root@nerd:~$ echo "1up your vibe!" | © 2026'
+footer: 'root@n3rd:~$ echo "1up your vibe!" | © 2026'
 
 plugins:
   - jekyll-seo-tag
