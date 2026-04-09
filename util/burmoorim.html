@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>버무림 Web v1.0 👾⚡✨</title>
+<title>버무림 Web v1.1 👾⚡✨</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -51,7 +51,6 @@
     cursor: crosshair;
   }
 
-  /* ── 옵션 패널 ── */
   .options-panel {
     width: 270px;
     flex-shrink: 0;
@@ -87,18 +86,27 @@
     appearance: none;
     -webkit-appearance: none;
   }
-  select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236c7086' fill='none' stroke-width='2'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px; cursor: pointer; }
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236c7086' fill='none' stroke-width='2'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    padding-right: 28px;
+    cursor: pointer;
+  }
   select:focus, .text-input:focus { border-color: #89b4fa; }
   select option { background: #1e1e2e; }
 
   .slider-row { display: flex; align-items: center; gap: 10px; }
   input[type="range"] {
-    flex: 1; height: 4px; accent-color: #89b4fa; cursor: pointer;
+    flex: 1; height: 4px; cursor: pointer;
     appearance: none; -webkit-appearance: none;
-    background: linear-gradient(to right, #89b4fa 0%, #89b4fa var(--pct, 0%), #45475a var(--pct, 0%), #45475a 100%);
+    background: linear-gradient(to right, #89b4fa 0%, #89b4fa var(--pct,0%), #45475a var(--pct,0%), #45475a 100%);
     border-radius: 2px;
   }
-  input[type="range"]::-webkit-slider-thumb { appearance: none; width: 16px; height: 16px; border-radius: 50%; background: #89b4fa; cursor: pointer; }
+  input[type="range"]::-webkit-slider-thumb {
+    appearance: none; width: 16px; height: 16px;
+    border-radius: 50%; background: #89b4fa; cursor: pointer;
+  }
   .slider-badge {
     min-width: 28px; text-align: center; font-size: 13px;
     color: #89b4fa; font-weight: 700; background: #1e1e2e;
@@ -112,10 +120,7 @@
     transition: border-color 0.2s;
   }
   .color-row:hover { border-color: #89b4fa; }
-  .color-swatch {
-    width: 22px; height: 22px; border-radius: 5px;
-    border: 1px solid #6c7086; flex-shrink: 0;
-  }
+  .color-swatch { width: 22px; height: 22px; border-radius: 5px; border: 1px solid #6c7086; flex-shrink: 0; }
   .color-row span { font-size: 13px; color: #cdd6f4; }
 
   .divider { height: 1px; background: #313244; margin: 2px 0; }
@@ -128,7 +133,7 @@
     transition: opacity 0.2s, transform 0.1s;
     letter-spacing: 0.3px;
   }
-  .gen-btn:hover { opacity: 0.92; }
+  .gen-btn:hover { opacity: 0.9; }
   .gen-btn:active { transform: scale(0.97); }
 
   #customRatioWrap { display: none; }
@@ -142,16 +147,15 @@
     flex-shrink: 0;
   }
 
-  /* 토스트 */
   .toast {
     position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%);
-    background: #a6e3a1; color: #1e1e2e;
     padding: 11px 24px; border-radius: 9px; font-size: 14px; font-weight: 700;
     z-index: 9999; box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-    animation: fadeInUp 0.3s ease;
+    animation: fadeUp 0.3s ease;
+    white-space: nowrap;
   }
-  @keyframes fadeInUp {
-    from { opacity: 0; transform: translateX(-50%) translateY(12px); }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateX(-50%) translateY(10px); }
     to   { opacity: 1; transform: translateX(-50%) translateY(0); }
   }
 
@@ -163,19 +167,16 @@
 <body>
 
 <header>
-  <strong>버무림 Web v1.0</strong> 👾⚡✨ &nbsp;|&nbsp; 프레임을 클릭해 이미지 추가 &nbsp;·&nbsp; 드래그로 위치 조정 &nbsp;·&nbsp; 휠로 확대/축소
+  <strong>버무림 Web v1.1</strong> 👾⚡✨
+  &nbsp;|&nbsp; 빈 프레임 클릭 → 이미지 추가 &nbsp;·&nbsp; 드래그 → 위치 조정 &nbsp;·&nbsp; 마우스 휠 → 확대/축소
 </header>
 
 <div class="main-layout">
-
-  <!-- 캔버스 미리보기 -->
   <div class="preview-wrapper">
     <canvas id="mainCanvas"></canvas>
   </div>
 
-  <!-- 옵션 패널 -->
   <div class="options-panel">
-
     <div class="opt-group">
       <div class="opt-label">레이아웃</div>
       <select id="layoutSelect">
@@ -185,7 +186,7 @@
     </div>
 
     <div class="opt-group">
-      <div class="opt-label">이미지 비율</div>
+      <div class="opt-label">이미지 비율 (프레임 기준)</div>
       <select id="ratioSelect">
         <option value="5:3">5:3</option>
         <option value="5:2">5:2</option>
@@ -210,13 +211,13 @@
 
     <div class="opt-group">
       <div class="opt-label">구분선 두께 (px)</div>
-      <input type="number" id="borderWidth" class="text-input" value="0" min="0" max="200" />
+      <input type="number" id="borderWidth" class="text-input" value="0" min="0" max="500" />
     </div>
 
     <div class="opt-group">
       <div class="opt-label">구분선 색상</div>
       <div class="color-row" id="colorRow" onclick="document.getElementById('colorPicker').click()">
-        <div class="color-swatch" id="colorSwatch"></div>
+        <div class="color-swatch" id="colorSwatch" style="background:#000000;"></div>
         <span id="colorLabel">#000000</span>
       </div>
       <input type="color" id="colorPicker" value="#000000" style="display:none" />
@@ -226,30 +227,25 @@
 
     <div class="opt-group">
       <div class="opt-label">생성 이미지 가로 크기 (px)</div>
-      <input type="number" id="saveWidth" class="text-input" value="3000" min="100" max="20000" />
+      <input type="number" id="saveWidth" class="text-input" value="300" min="100" max="20000" />
     </div>
 
     <button class="gen-btn" id="genBtn">⬇ 이미지 생성하기</button>
-
   </div>
 </div>
 
-<!-- 숨김 파일 입력 -->
 <input type="file" id="fileInput" accept=".jpg,.jpeg,.png,.gif,.webp,.bmp,.JPG,.JPEG,.PNG,.GIF,.WEBP,.BMP" style="display:none" />
 
-<footer>버무림 Web Version 1.0 &nbsp;|&nbsp; 2025 👾⚡✨☢️</footer>
+<footer>버무림 Web Version 1.1 &nbsp;|&nbsp; 2025 👾⚡✨☢️ &nbsp;|&nbsp; 각 프레임 비율 기준으로 저장됩니다</footer>
 
 <script>
-// ──────────────────────────────────────────────
-//  BurMoorim Web  ·  Single-file Canvas App
-// ──────────────────────────────────────────────
 class BurMoorim {
   constructor() {
     this.canvas  = document.getElementById("mainCanvas");
     this.ctx     = this.canvas.getContext("2d");
 
-    this.imagesData  = {};   // { index: { img, posX, posY, zoom } }
-    this.frameRects  = [];   // { x, y, w, h } per frame index
+    this.imagesData  = {};
+    this.frameRects  = [];
     this.frameWidth  = 0;
     this.frameHeight = 0;
     this.borderColor = "#000000";
@@ -262,30 +258,28 @@ class BurMoorim {
     this._onOptionChange();
   }
 
-  // ── 캔버스 초기 크기 설정 ──
+  // ── 캔버스 크기 초기화 + ResizeObserver ──
   _initCanvas() {
     const wrapper = this.canvas.parentElement;
     const ro = new ResizeObserver(() => {
-      this.canvas.width  = wrapper.clientWidth  - 32;
-      this.canvas.height = wrapper.clientHeight - 32;
+      this.canvas.width  = Math.max(1, wrapper.clientWidth  - 32);
+      this.canvas.height = Math.max(1, wrapper.clientHeight - 32);
       this._drawPreview();
     });
     ro.observe(wrapper);
-    this.canvas.width  = wrapper.clientWidth  - 32;
-    this.canvas.height = wrapper.clientHeight - 32;
+    this.canvas.width  = Math.max(1, wrapper.clientWidth  - 32);
+    this.canvas.height = Math.max(1, wrapper.clientHeight - 32);
   }
 
   // ── 이벤트 바인딩 ──
   _bindEvents() {
-    const ids = ["layoutSelect","ratioSelect","frameSlider","borderWidth","saveWidth"];
-    ids.forEach(id => {
+    ["layoutSelect","ratioSelect","frameSlider","borderWidth","saveWidth"].forEach(id => {
       const el = document.getElementById(id);
       el.addEventListener("input",  () => this._onOptionChange());
       el.addEventListener("change", () => this._onOptionChange());
     });
     document.getElementById("customRatio").addEventListener("input", () => this._drawPreview());
 
-    // 슬라이더 배지 업데이트 + 그라디언트
     const slider = document.getElementById("frameSlider");
     slider.addEventListener("input", () => {
       document.getElementById("frameSliderVal").textContent = slider.value;
@@ -293,16 +287,13 @@ class BurMoorim {
     });
     this._updateSliderTrack(slider);
 
-    // 색상 피커
     document.getElementById("colorPicker").addEventListener("input", e => {
       this.borderColor = e.target.value;
       document.getElementById("colorSwatch").style.background = this.borderColor;
       document.getElementById("colorLabel").textContent = this.borderColor.toUpperCase();
       this._drawPreview();
     });
-    document.getElementById("colorSwatch").style.background = this.borderColor;
 
-    // 캔버스 이벤트
     this.canvas.addEventListener("mousedown",  e => this._onMouseDown(e));
     this.canvas.addEventListener("mousemove",  e => this._onMouseMove(e));
     this.canvas.addEventListener("mouseup",    () => this._onMouseUp());
@@ -310,47 +301,37 @@ class BurMoorim {
     this.canvas.addEventListener("wheel",      e => { e.preventDefault(); this._onWheel(e); }, { passive: false });
     this.canvas.addEventListener("contextmenu", e => e.preventDefault());
 
-    // 터치 이벤트
-    this.canvas.addEventListener("touchstart", e => { e.preventDefault(); if (e.touches.length===1) this._onMouseDown(this._touchToMouse(e.touches[0])); }, { passive: false });
-    this.canvas.addEventListener("touchmove",  e => { e.preventDefault(); if (e.touches.length===1) this._onMouseMove(this._touchToMouse(e.touches[0])); }, { passive: false });
+    this.canvas.addEventListener("touchstart", e => { e.preventDefault(); if (e.touches.length===1) this._onMouseDown(this._t2m(e.touches[0])); }, { passive: false });
+    this.canvas.addEventListener("touchmove",  e => { e.preventDefault(); if (e.touches.length===1) this._onMouseMove(this._t2m(e.touches[0])); }, { passive: false });
     this.canvas.addEventListener("touchend",   () => this._onMouseUp());
 
-    // 파일 선택
     document.getElementById("fileInput").addEventListener("change", e => this._onFileSelected(e));
-
-    // 생성 버튼
     document.getElementById("genBtn").addEventListener("click", () => this._saveImage());
   }
 
-  _touchToMouse(touch) { return { clientX: touch.clientX, clientY: touch.clientY }; }
+  _t2m(touch) { return { clientX: touch.clientX, clientY: touch.clientY }; }
 
   _updateSliderTrack(slider) {
-    const pct = ((slider.value - slider.min) / (slider.max - slider.min)) * 100;
+    const pct = ((+slider.value - +slider.min) / (+slider.max - +slider.min)) * 100;
     slider.style.setProperty("--pct", pct + "%");
   }
 
-  // ── 옵션 변경 핸들러 ──
+  // ── 옵션 변경 ──
   _onOptionChange() {
-    // 자유 입력 표시/숨김
     const ratioVal = document.getElementById("ratioSelect").value;
     document.getElementById("customRatioWrap").style.display = (ratioVal === "custom") ? "block" : "none";
 
-    // 슬라이더 라벨
     const { rows, cols, total } = this._getLayoutConfig();
     const layout = document.getElementById("layoutSelect").value;
     const lbl = document.getElementById("frameCountLabel");
-    if (layout === "1행") {
-      lbl.textContent = `프레임 수 (${total}개)`;
-    } else {
-      lbl.textContent = `열 개수 (${cols}열 / 총 ${total}개)`;
-    }
+    lbl.textContent = (layout === "1행") ? `프레임 수 (${total}개)` : `열 개수 (${cols}열 / 총 ${total}개)`;
+
     document.getElementById("frameSliderVal").textContent = cols;
     this._updateSliderTrack(document.getElementById("frameSlider"));
-
     this._drawPreview();
   }
 
-  // ── 레이아웃 설정 반환 ──
+  // ── 레이아웃 설정 ──
   _getLayoutConfig() {
     const layout = document.getElementById("layoutSelect").value;
     const cols   = parseInt(document.getElementById("frameSlider").value);
@@ -358,18 +339,19 @@ class BurMoorim {
     return { rows, cols, total: rows * cols };
   }
 
-  // ── 비율 반환 ──
+  // ── 비율 파싱 ──
   _getAspectRatio() {
     const sel = document.getElementById("ratioSelect").value;
-    const str = (sel === "custom") ? document.getElementById("customRatio").value : sel;
+    const str = (sel === "custom") ? document.getElementById("customRatio").value.trim() : sel;
     try {
-      const [w, h] = str.split(":").map(Number);
-      if (!w || !h || h === 0) return { w: 5, h: 3 };
+      const [ws, hs] = str.split(":");
+      const w = parseFloat(ws), h = parseFloat(hs);
+      if (!isFinite(w) || !isFinite(h) || w <= 0 || h <= 0) return { w: 5, h: 3 };
       return { w, h };
     } catch { return { w: 5, h: 3 }; }
   }
 
-  // ── 캔버스 내 마우스 좌표 (DPI 보정) ──
+  // ── 캔버스 좌표 변환 (DPI 대응) ──
   _canvasPos(e) {
     const rect = this.canvas.getBoundingClientRect();
     const sx = this.canvas.width  / rect.width;
@@ -377,7 +359,7 @@ class BurMoorim {
     return { x: (e.clientX - rect.left) * sx, y: (e.clientY - rect.top) * sy };
   }
 
-  // ── 좌표 → 프레임 인덱스 ──
+  // ── 프레임 인덱스 히트 테스트 ──
   _hitFrame(x, y) {
     for (let i = 0; i < this.frameRects.length; i++) {
       const r = this.frameRects[i];
@@ -386,9 +368,9 @@ class BurMoorim {
     return -1;
   }
 
-  // ── 삭제 버튼 히트 여부 ──
-  _hitDelete(index, x, y) {
-    const r = this.frameRects[index];
+  // ── 삭제 버튼 히트 테스트 ──
+  _hitDelete(idx, x, y) {
+    const r = this.frameRects[idx];
     if (!r) return false;
     return Math.abs(x - (r.x + r.w - 18)) < 16 && Math.abs(y - (r.y + 18)) < 16;
   }
@@ -398,7 +380,6 @@ class BurMoorim {
     const { x, y } = this._canvasPos(e);
     const idx = this._hitFrame(x, y);
     if (idx === -1) return;
-
     if (this.imagesData[idx]) {
       if (this._hitDelete(idx, x, y)) { this._deleteImage(idx); return; }
       this.dragState = { idx, sx: x, sy: y };
@@ -435,23 +416,23 @@ class BurMoorim {
     const idx = this._hitFrame(x, y);
     if (idx === -1 || !this.imagesData[idx]) return;
 
-    const data = this.imagesData[idx];
-    const rect = this.frameRects[idx];
-    const factor   = e.deltaY < 0 ? 1.05 : 1 / 1.05;
-    const oldZoom  = data.zoom;
-    const newZoom  = Math.max(0.05, Math.min(20, oldZoom * factor));
-    const mxf = x - rect.x;
-    const myf = y - rect.y;
-    const ratio = newZoom / oldZoom;
+    const data   = this.imagesData[idx];
+    const rect   = this.frameRects[idx];
+    const factor = e.deltaY < 0 ? 1.05 : 1 / 1.05;
+    const oldZ   = data.zoom;
+    const newZ   = Math.max(0.05, Math.min(20, oldZ * factor));
+    const r      = newZ / oldZ;
+    const mxf    = x - rect.x;
+    const myf    = y - rect.y;
 
-    let newPX = mxf - (mxf - data.posX) * ratio;
-    let newPY = myf - (myf - data.posY) * ratio;
-    const zw = data.img.width  * newZoom;
-    const zh = data.img.height * newZoom;
+    let newPX = mxf - (mxf - data.posX) * r;
+    let newPY = myf - (myf - data.posY) * r;
+    const zw = data.img.width  * newZ;
+    const zh = data.img.height * newZ;
     newPX = Math.min(0, Math.max(this.frameWidth  - zw, newPX));
     newPY = Math.min(0, Math.max(this.frameHeight - zh, newPY));
 
-    data.zoom = newZoom;
+    data.zoom = newZ;
     data.posX = newPX;
     data.posY = newPY;
     this._drawPreview();
@@ -475,12 +456,25 @@ class BurMoorim {
     reader.onload = ev => {
       const img = new Image();
       img.onload = () => {
-        const ia = img.width  / img.height;
+        // 이미지를 프레임에 꽉 차게 (cover) 초기 배치
+        const ia = img.width / img.height;
         const fa = this.frameWidth / this.frameHeight;
         const zoom = (ia > fa) ? this.frameHeight / img.height : this.frameWidth / img.width;
-        const posX = (this.frameWidth  - img.width  * zoom) / 2;
-        const posY = (this.frameHeight - img.height * zoom) / 2;
-        this.imagesData[idx] = { img, posX, posY, zoom };
+        data.posX = (this.frameWidth  - img.width  * zoom) / 2;
+        data.posY = (this.frameHeight - img.height * zoom) / 2;
+        data.zoom = zoom;
+        this._drawPreview();
+      };
+      const data = { img: null, posX: 0, posY: 0, zoom: 1 };
+      this.imagesData[idx] = data;
+      img.onload = () => {
+        const ia = img.width / img.height;
+        const fa = this.frameWidth / this.frameHeight;
+        const zoom = (ia > fa) ? this.frameHeight / img.height : this.frameWidth / img.width;
+        data.img  = img;
+        data.posX = (this.frameWidth  - img.width  * zoom) / 2;
+        data.posY = (this.frameHeight - img.height * zoom) / 2;
+        data.zoom = zoom;
         this._drawPreview();
       };
       img.src = ev.target.result;
@@ -494,7 +488,11 @@ class BurMoorim {
     this._drawPreview();
   }
 
-  // ── 미리보기 렌더링 ──
+  // ────────────────────────────────────────────────
+  //  미리보기 렌더링
+  //  ★ 핵심 수정: 프레임 비율을 aw:ah 기준으로 계산
+  //    (구분선 포함 시에도 각 프레임 비율 정확하게 유지)
+  // ────────────────────────────────────────────────
   _drawPreview() {
     const canvas = this.canvas;
     const ctx    = this.ctx;
@@ -505,23 +503,50 @@ class BurMoorim {
     ctx.fillRect(0, 0, cw, ch);
 
     const { w: aw, h: ah } = this._getAspectRatio();
-    const targetAsp = aw / ah;
+    const { rows, cols }   = this._getLayoutConfig();
 
-    let pw = cw - 40, ph = pw / targetAsp;
-    if (ph > ch - 40) { ph = ch - 40; pw = ph * targetAsp; }
+    const bpx = Math.max(0, parseInt(document.getElementById("borderWidth").value) || 0);
+    const sw  = Math.max(1, parseInt(document.getElementById("saveWidth").value)   || 300);
 
-    const sx = (cw - pw) / 2, sy = (ch - ph) / 2;
-    const bpx  = parseInt(document.getElementById("borderWidth").value) || 0;
-    const sw   = parseInt(document.getElementById("saveWidth").value)   || 300;
+    const maxW = cw - 40;
+    const maxH = ch - 40;
 
-    const { rows, cols } = this._getLayoutConfig();
-    const bScale  = pw / sw;
-    const bprev   = bpx * bScale;
+    // ──────────────────────────────────────────────
+    //  각 프레임이 정확히 aw:ah 비율이 되도록 계산
+    //
+    //  bprev = bpx * (pw / sw)   (저장 비율과 동일한 구분선 비율)
+    //  frameW = (pw - bprev*(cols-1)) / cols
+    //  frameH = frameW * ah / aw
+    //  totalH = frameH*rows + bprev*(rows-1)
+    //
+    //  totalH = pw * K  (K는 비율 상수)
+    //  K = [1 - bpx*(cols-1)/sw] * (ah/aw) * (rows/cols)
+    //      + bpx*(rows-1)/sw
+    //
+    //  pw = min(maxW, maxH / K)
+    // ──────────────────────────────────────────────
+    const bc  = bpx * (cols - 1) / sw;  // 구분선 cols 비율
+    const br  = bpx * (rows - 1) / sw;  // 구분선 rows 비율
+    const K   = (1 - bc) * (ah / aw) * (rows / cols) + br;
+
+    let pw;
+    if (K > 0 && isFinite(K)) {
+      pw = Math.min(maxW, maxH / K);
+    } else {
+      pw = maxW;
+    }
+    pw = Math.max(1, pw);
+
+    const bprev = bpx * (pw / sw);
     this.frameWidth  = (pw - bprev * (cols - 1)) / cols;
-    this.frameHeight = (ph - bprev * (rows - 1)) / rows;
-    this.frameRects  = new Array(rows * cols).fill(null);
+    this.frameHeight = this.frameWidth * ah / aw;
+    const ph = this.frameHeight * rows + bprev * (rows - 1);
 
+    this.frameRects = new Array(rows * cols).fill(null);
     if (this.frameWidth <= 0 || this.frameHeight <= 0) return;
+
+    const sx = (cw - pw) / 2;
+    const sy = (ch - ph) / 2;
 
     let cy = sy;
     for (let r = 0; r < rows; r++) {
@@ -530,7 +555,7 @@ class BurMoorim {
         const idx = r * cols + c;
         this.frameRects[idx] = { x: cx, y: cy, w: this.frameWidth, h: this.frameHeight };
 
-        if (this.imagesData[idx]) {
+        if (this.imagesData[idx] && this.imagesData[idx].img) {
           this._renderFrame(idx, cx, cy);
         } else {
           this._renderEmpty(cx, cy);
@@ -572,13 +597,14 @@ class BurMoorim {
   _renderFrame(idx, fx, fy) {
     const ctx  = this.ctx;
     const data = this.imagesData[idx];
-
     ctx.save();
     ctx.beginPath();
     ctx.rect(fx, fy, this.frameWidth, this.frameHeight);
     ctx.clip();
-    ctx.drawImage(data.img, fx + data.posX, fy + data.posY,
-                  data.img.width * data.zoom, data.img.height * data.zoom);
+    ctx.drawImage(data.img,
+      fx + data.posX, fy + data.posY,
+      data.img.width * data.zoom, data.img.height * data.zoom
+    );
     ctx.restore();
 
     // 삭제 버튼
@@ -596,40 +622,62 @@ class BurMoorim {
     ctx.restore();
   }
 
-  // ── 이미지 저장 ──
+  // ────────────────────────────────────────────────
+  //  이미지 저장 (고해상도)
+  //  ★ 핵심 수정: 각 프레임이 aw:ah 비율이 되도록
+  //    sfw / sfh를 직접 계산
+  // ────────────────────────────────────────────────
   _saveImage() {
     const { rows, cols, total } = this._getLayoutConfig();
-    const loaded = Object.keys(this.imagesData).length;
+    const loaded = Object.keys(this.imagesData).filter(k => this.imagesData[k] && this.imagesData[k].img).length;
+
     if (loaded !== total) {
       this._toast(`⚠️ ${total}개 이미지를 모두 채워주세요 (현재 ${loaded}개)`, "#f38ba8");
       return;
     }
 
-    const bw  = parseInt(document.getElementById("borderWidth").value) || 0;
-    const ow  = parseInt(document.getElementById("saveWidth").value) || 3000;
-    if (isNaN(ow) || ow <= 0) { this._toast("가로 크기를 올바르게 입력해주세요.", "#f38ba8"); return; }
+    const bw  = Math.max(0, parseInt(document.getElementById("borderWidth").value) || 0);
+    const ow  = parseInt(document.getElementById("saveWidth").value) || 300;
+    if (!ow || ow <= 0) { this._toast("가로 크기를 올바르게 입력해주세요.", "#f38ba8"); return; }
 
     const { w: aw, h: ah } = this._getAspectRatio();
-    const oh  = Math.round(ow / ((aw * cols) / (ah * rows)));
-    const off = document.createElement("canvas");
-    off.width = ow; off.height = oh;
-    const ctx = off.getContext("2d");
 
+    // ──────────────────────────────────────────────
+    //  각 프레임이 정확히 aw:ah 비율이 되도록 계산
+    //  sfw = (ow - bw*(cols-1)) / cols
+    //  sfh = sfw * ah / aw
+    //  output_h = sfh*rows + bw*(rows-1)
+    // ──────────────────────────────────────────────
+    const sfw = (ow - bw * (cols - 1)) / cols;
+    const sfh = sfw * ah / aw;
+    const oh  = Math.round(sfh * rows + bw * (rows - 1));
+
+    if (sfw <= 0 || sfh <= 0) {
+      this._toast("구분선이 너무 두꺼워 이미지 크기가 0 이하입니다.", "#f38ba8");
+      return;
+    }
+    if (this.frameWidth <= 0) {
+      this._toast("미리보기 프레임 너비가 0입니다. 옵션을 확인해주세요.", "#f38ba8");
+      return;
+    }
+
+    const offscreen = document.createElement("canvas");
+    offscreen.width  = ow;
+    offscreen.height = oh;
+    const ctx = offscreen.getContext("2d");
+
+    // 구분선 색상으로 채우기
     ctx.fillStyle = this.borderColor;
     ctx.fillRect(0, 0, ow, oh);
 
-    const tcw = ow - bw * (cols - 1);
-    const tch = oh - bw * (rows - 1);
-    if (tcw <= 0 || tch <= 0) { this._toast("구분선이 너무 두꺼워 이미지 크기가 0 이하입니다.", "#f38ba8"); return; }
-    if (this.frameWidth === 0) { this._toast("미리보기 프레임 너비가 0입니다.", "#f38ba8"); return; }
-
-    const sfw   = tcw / cols, sfh = tch / rows;
+    // 미리보기 → 저장 스케일 비율
     const scale = sfw / this.frameWidth;
 
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < cols; c++) {
         const idx  = r * cols + c;
         const data = this.imagesData[idx];
+
         const fz   = data.zoom * scale;
         const fpx  = data.posX * scale;
         const fpy  = data.posY * scale;
@@ -640,30 +688,34 @@ class BurMoorim {
         ctx.beginPath();
         ctx.rect(px, py, sfw, sfh);
         ctx.clip();
-        ctx.drawImage(data.img, px + fpx, py + fpy,
-                      data.img.width * fz, data.img.height * fz);
+        ctx.drawImage(data.img,
+          px + fpx, py + fpy,
+          data.img.width * fz, data.img.height * fz
+        );
         ctx.restore();
       }
     }
 
-    const now  = new Date();
-    const pad  = n => String(n).padStart(2, "0");
-    const ts   = `${now.getFullYear()}_${pad(now.getMonth()+1)}_${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
-    const link = document.createElement("a");
-    link.download = `bur_${ts}.jpg`;
-    link.href = off.toDataURL("image/jpeg", 0.95);
-    link.click();
-    this._toast("✅ 이미지가 생성되어 저장됩니다!");
+    const now = new Date();
+    const p   = n => String(n).padStart(2, "0");
+    const ts  = `${now.getFullYear()}_${p(now.getMonth()+1)}_${p(now.getDate())}_${p(now.getHours())}${p(now.getMinutes())}${p(now.getSeconds())}`;
+    const a   = document.createElement("a");
+    a.download = `bur_${ts}.jpg`;
+    a.href     = offscreen.toDataURL("image/jpeg", 0.95);
+    a.click();
+
+    this._toast(`✅ ${ow}×${oh}px 이미지가 생성되었습니다!`);
   }
 
+  // ── 토스트 알림 ──
   _toast(msg, bg = "#a6e3a1") {
     const el = document.createElement("div");
-    el.className = "toast";
+    el.className  = "toast";
     el.textContent = msg;
     el.style.background = bg;
-    el.style.color = bg === "#a6e3a1" ? "#1e1e2e" : "#fff";
+    el.style.color = (bg === "#a6e3a1") ? "#1e1e2e" : "#fff";
     document.body.appendChild(el);
-    setTimeout(() => el.remove(), 3200);
+    setTimeout(() => el.remove(), 3000);
   }
 }
 
