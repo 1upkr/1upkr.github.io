@@ -3,6 +3,14 @@
 lang: ko-KR        # 또는 ko
 timezone: Asia/Seoul
 
+title: "1UP.kr :: 1up your vibe"
+description: "1UP은 삶의 태도다. 다음 판은 네 거다."
+url: "https://1up.kr"
+logo: "/assets/favicon-96x96.png"
+author:
+  name: "N3RD"
+  url: "https://1up.kr"
+
 header_pages:
   - index.md
   - about.md
