@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>1up :: 👻 레전드 스카우트 시뮬레이터 ⚾</title>
+<title>👻 레전드 스카우트 시뮬레이터 ⚾</title>
 <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -186,14 +186,14 @@ function go(n){return ORIGIN[n]||{t:n,e:'⭐'};}
 
 // ── 구장 ──
 const STADIUMS = [
-  {id:'jamsil_doosan',name:'잠실',team:'두산',emoji:'🐻'},
+  {id:'jamsil_doosan',name:'잠실(두산)',team:'두산',emoji:'🐻'},
   {id:'daegu',        name:'대구',team:'삼성',emoji:'🦁'},
   {id:'daejeon',      name:'대전',team:'한화',emoji:'🦅'},
   {id:'busan',        name:'부산',team:'롯데',emoji:'🕊️'},
   {id:'gwangju',      name:'광주',team:'KIA', emoji:'🐅'},
   {id:'gochuk',       name:'고척',team:'키움',emoji:'🦸'},
   {id:'incheon',      name:'인천',team:'SSG', emoji:'🛸'},
-  {id:'jamsil_lg',    name:'잠실',team:'LG',  emoji:'👯'},
+  {id:'jamsil_lg',    name:'잠실(LG)',team:'LG',  emoji:'👯'},
   {id:'changwon',     name:'창원',team:'NC',  emoji:'🦕'},
   {id:'suwon',        name:'수원',team:'KT',  emoji:'⚡'},
 ];
@@ -456,7 +456,7 @@ function selectStadium(s){
   document.querySelectorAll('.st-btn').forEach(b=>b.classList.toggle('sel',b.dataset.id===s.id));
   const btn=document.getElementById('scoutBtn');
   btn.disabled=false;
-  btn.textContent=`${s.emoji} ${s.name}(${s.team}) 레전드 뽑기! 🎉`;
+  btn.textContent=`${s.emoji} ${s.name} 레전드 뽑기! 🎉`;
   renderOdds(s.id);
 }
 
