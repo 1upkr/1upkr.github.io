@@ -8,10 +8,10 @@ robots: noindex
 # /about
 <br/>
 ```
-╔════════════════════════════════════╗
-             N / E / R / D            
-╠════════════════════════════════════╣
-     NERD:
+╔═════════════════════════════════╗
+             N / 3 / R / D            
+╠═════════════════════════════════╣
+     N3RD:
      ├─ HP [████████████] 999/999
      ├─ PP [██████████░░] 95/100
      └─ EXP MAX
@@ -19,22 +19,22 @@ robots: noindex
      ITEMS:
      ├─ VIBES …………………………………………… x9
      ├─ GOOD LUCK RIBBON ……………… x1 
-     └─ NERD PENDANT ………………………… x1
+     └─ N3RD PENDANT ………………………… x1
  
      PSI POWERS:
      ├─ PSI VIBE α
      ├─ PSI VIBE β
      └─ PSI VIBE Ω
-╠════════════════════════════════════╣
+╠═════════════════════════════════╣
    "It's dangerous to code alone.
    Take these good vibes with you!"
 
    $ PRAY
    > Your vibes were restored!
-╠════════════════════════════════════╣
+╠═════════════════════════════════╣
   © 2026 | Manufactured in Seoul, KR
   Status: 1UP | EarthBound Beginnings
   Connection established... _
-╚════════════════════════════════════╝
+╚═════════════════════════════════╝
 ```
 <br/>
