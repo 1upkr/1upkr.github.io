@@ -8,9 +8,9 @@ robots: noindex
 # /about
 <br/>
 ```
-╔═════════════════════════════════╗
+╔══════════════════════════════╗
              N / 3 / R / D            
-╠═════════════════════════════════╣
+╠══════════════════════════════╣
      N3RD:
      ├─ HP [████████████] 999/999
      ├─ PP [██████████░░] 95/100
@@ -25,16 +25,16 @@ robots: noindex
      ├─ PSI VIBE α
      ├─ PSI VIBE β
      └─ PSI VIBE Ω
-╠═════════════════════════════════╣
+╠══════════════════════════════╣
    "It's dangerous to code alone.
    Take these good vibes with you!"
 
    $ PRAY
    > Your vibes were restored!
-╠═════════════════════════════════╣
+╠══════════════════════════════╣
   © 2026 | Manufactured in Seoul, KR
   Status: 1UP | EarthBound Beginnings
   Connection established... _
-╚═════════════════════════════════╝
+╚══════════════════════════════╝
 ```
 <br/>
