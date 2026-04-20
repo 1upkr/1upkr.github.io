@@ -25,4 +25,4 @@ permalink: /
 
 *다음 판은 네 거다.*
 
-# 1UP YOUR VIBE.
+# 1UP YOUR VIBE<a href="https://1up.kr/util/burmoorim.html" target="_blank" style="text-decoration: none; color: inherit;">.</a>
