@@ -24,7 +24,7 @@ robots: noindex
      PSI POWERS:
      ├─ PSI VIBE α
      ├─ PSI VIBE β
-     └─ PSI VIBE <a href="https://1up.kr/util/burmoorim.html" target="_blank" style="text-decoration: none; color: inherit;">Ω</a>
+     └─ PSI VIBE Ω
 ╠══════════════════════════════╣
    "It's dangerous to code alone.
    Take these good vibes with you!"
