@@ -18,9 +18,9 @@ N3RD:
 - EXP: MAX	
 	
 ITEMS:	
-- VIBES ................................ x9	
-- GOOD LUCK RIBBON ..................... x1	
-- N3RD PENDANT ......................... x1	
+- VIBES ........................ x9	
+- GOOD LUCK RIBBON ............. x1	
+- N3RD PENDANT ................. x1	
 	
 PSI POWERS:	
 - PSI VIBE A	
