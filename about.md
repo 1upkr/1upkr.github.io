@@ -9,7 +9,8 @@ robots: noindex
 <br/>
 ```
 +------------------------------------------------------------+
-               N / 3 / R / D
+               1 / U / P / : / N / 3 / R / D
++------------------------------------------------------------+
 
 N3RD:	
 - HP : [████████████] 999 / 999	
@@ -25,15 +26,15 @@ PSI POWERS:
 - PSI VIBE A	
 - PSI VIBE B	
 - PSI VIBE O	
-------------------------------------------------------------	
++------------------------------------------------------------+
 "It's dangerous to code alone.	
 Take these good vibes with you!"	
 	
 $ PRAY	
 > Your vibes were restored!	
-------------------------------------------------------------	
-© 2026	Manufactured in Seoul, KR
-Status: 1UP	EarthBound Beginnings
++------------------------------------------------------------+
+© 2026 | Manufactured in Seoul, KR
+Status: 1UP | EarthBound Beginnings
 Connection established... _	
 +------------------------------------------------------------+
 ```
