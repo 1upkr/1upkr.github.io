@@ -22,6 +22,7 @@ permalink: /
 끊긴 흐름을 다시 잇는 것. 바닥에서부터 판을 다시 짜는 것. 쓰러진 자리가 곧 스타팅 포인트가 되는 것. 한 번 죽었다고 끝이 아니다 — 그걸 아는 사람이 결국 마지막 스테이지까지 간다. 위대한 플레이어는 처음 클리어할 때 만들어지지 않는다. **다시 컨트롤러를 집어 드는 순간** 완성된다.
 
 1UP은 삶의 태도다.
+
 *다음 판은 네 거다.*
 
 # 1UP YOUR VIBE<a href="https://1up.kr/util/burmoorim.html" target="_blank" class="no-underline">.</a>
