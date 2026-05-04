@@ -222,8 +222,6 @@
 (function () {
   'use strict';
 
-  // ── 1. 이메일 난독화: Base64 인코딩된 값을 런타임에 복원
-  //    원본: aka.herlock@gmail.com
   const _e = atob('YWthLmhlcmxvY2tAZ21haWwuY29t');
   const btn = document.getElementById('contact-btn');
   // 이벤트 시점에만 href 할당 (정적 파싱 회피)
@@ -233,8 +231,7 @@
   });
   btn.style.cursor = 'pointer';
 
-  // ── 2. domainMap: 키=SHA-256 해시, 값=Base64 인코딩
-  //    URL은 ?from=평문키 대신 #해시12자리 방식 사용
+
   const _map = {
     'ee2312fda43f': atob('YmF0ZS5jby5rciAmIGJhdGUua3I='),
     '44f16b9c6f28': atob('c3VnYXJjcmFmdC5jby5rciAmIHN1Z2FyY3JhZnQua3I='),
@@ -242,7 +239,7 @@
     '18ac3e7343f0': atob('RG9tYWluLUQuY29t'),
   };
 
-  // ── 3. URL 해시(#) 파라미터 사용 → 서버 로그 미기록
+
   const raw = (location.hash || '').replace('#', '').toLowerCase().slice(0, 12);
 
   if (raw && Object.prototype.hasOwnProperty.call(_map, raw)) {
