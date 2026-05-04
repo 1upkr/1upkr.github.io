@@ -43,7 +43,7 @@ Follow these four steps to complete your acquisition:
    We will respond promptly to establish mutually agreeable terms.
 
 3. **Secure Transaction**  
-   Transfer is facilitated through a trusted escrow service *(e.g., Escrow.com or Sedo)* to ensure a safe exchange for both parties.
+   Transfer is facilitated through a trusted service to ensure a safe exchange for both parties.
 
 4. **Domain Transfer**  
    Full ownership is transferred to your registrar of choice upon cleared payment.
