@@ -67,8 +67,7 @@ Whether you are a:
 
 ## Ready to Acquire This Domain?
 
-This domain is **exclusively listed** and available for immediate transfer.  
-Opportunities like this are limited — we encourage interested parties to act promptly.
+This domain is **exclusively listed** and available for immediate transfer. Opportunities like this are limited — we encourage interested parties to act promptly.
 
 ---
 
