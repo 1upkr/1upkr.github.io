@@ -67,13 +67,14 @@
   }
   @keyframes blink-border {
     0%, 100% { border-color: #00ff41; }
-    50% { border-color: transparent; }
+    50%       { border-color: transparent; }
   }
   #domain-banner span { color: #ffe600; text-shadow: 0 0 8px #ffe600; }
 
   .container { max-width: 860px; margin: 0 auto; padding: 52px 32px 88px; }
   @media (max-width: 600px) { .container { padding: 32px 16px 60px; } }
 
+  /* HERO */
   .hero {
     text-align: center; margin-bottom: 52px;
     padding: 40px 28px 44px;
@@ -94,10 +95,11 @@
     text-shadow: 0 0 10px #00ff41, 2px 2px 0 #005a1a;
     letter-spacing: 0.04em;
   }
-  .hero h1::after { content: '_'; animation: cursor-blink 0.8s step-end infinite; }
+  .hero h1::after { content: '_'; animation: cursor-blink 0.8s step-end infinite; color: #00ff41; }
   @keyframes cursor-blink { 0%,100%{opacity:1} 50%{opacity:0} }
   .hero p { font-size: var(--fs-body); color: #aaa; max-width: 600px; margin: 0 auto; line-height: 2.5; }
 
+  /* HEADINGS */
   h2 {
     font-size: var(--fs-h2); color: #ffe600;
     margin: 52px 0 18px; padding: 13px 18px;
@@ -107,19 +109,24 @@
   }
   h2::before { content: '> '; color: #00ff41; }
 
-  h3 { font-size: var(--fs-h3); color: #00cfff; margin: 32px 0 14px; text-shadow: 0 0 6px #00cfff; line-height: 1.9; }
+  h3 {
+    font-size: var(--fs-h3); color: #00cfff;
+    margin: 32px 0 14px; text-shadow: 0 0 6px #00cfff; line-height: 1.9;
+  }
   h3::before { content: '# '; color: #555; }
 
   p { font-size: var(--fs-body); margin-bottom: 16px; color: #ccc; line-height: 2.6; }
   strong { color: #fff; }
   hr { border: none; border-top: 2px dashed #333; margin: 52px 0; }
 
+  /* TABLE */
   table { width: 100%; border-collapse: collapse; margin: 18px 0 28px; font-size: var(--fs-small); border: 2px solid #333; }
   th { background: #111; color: #00ff41; padding: 13px 18px; text-align: left; font-weight: normal; border-bottom: 2px solid #00ff41; text-shadow: 0 0 4px #00ff41; line-height: 2; }
   td { padding: 13px 18px; border-bottom: 1px solid #222; color: #ccc; line-height: 2; }
   tr:nth-child(even) td { background: #0f0f0f; }
   tr:hover td { background: #001a0a; color: #00ff41; transition: all 0.1s; }
 
+  /* LISTS */
   ol { padding-left: 10px; margin: 16px 0 28px; counter-reset: pixel-counter; list-style: none; }
   ol li { counter-increment: pixel-counter; margin-bottom: 22px; color: #ccc; font-size: var(--fs-body); line-height: 2.6; padding-left: 44px; position: relative; }
   ol li::before { content: '[' counter(pixel-counter) ']'; position: absolute; left: 0; color: #00ff41; text-shadow: 0 0 4px #00ff41; }
@@ -128,12 +135,33 @@
   ul li { padding: 12px 0 12px 6px; border-bottom: 1px solid #1e1e1e; color: #ccc; font-size: var(--fs-body); line-height: 2.3; }
   ul li::before { content: '>> '; color: #00ff41; text-shadow: 0 0 4px #00ff41; }
 
-  .note { background: #0a0a00; border: 2px solid #ffe600; border-left: 6px solid #ffe600; padding: 16px 20px; margin: 24px 0; color: #bba; font-size: var(--fs-body); line-height: 2.5; box-shadow: 4px 4px 0 #3a3000; }
+  /* NOTE */
+  .note {
+    background: #0a0a00; border: 2px solid #ffe600; border-left: 6px solid #ffe600;
+    padding: 16px 20px; margin: 24px 0; color: #bba;
+    font-size: var(--fs-body); line-height: 2.5; box-shadow: 4px 4px 0 #3a3000;
+  }
   .note::before { content: '[!] '; color: #ffe600; text-shadow: 0 0 4px #ffe600; }
 
-  .cta-box { background: #000; border: 4px solid #00ff41; box-shadow: 8px 8px 0 #005a1a; padding: 44px 36px; text-align: center; margin-top: 56px; position: relative; }
-  .cta-box::before { content: '★ ACQUIRE NOW ★'; position: absolute; top: -13px; left: 50%; transform: translateX(-50%); background: #000; color: #00ff41; font-size: var(--fs-xsmall); padding: 0 14px; letter-spacing: 0.1em; text-shadow: 0 0 8px #00ff41; white-space: nowrap; }
-  .cta-box h2 { border: none; padding: 0; color: #ffe600; font-size: calc(var(--fs-h2) + 2px); margin: 0 0 18px; background: transparent; box-shadow: none; text-shadow: 0 0 8px #ffe600; line-height: 1.9; }
+  /* CTA */
+  .cta-box {
+    background: #000; border: 4px solid #00ff41;
+    box-shadow: 8px 8px 0 #005a1a; padding: 44px 36px;
+    text-align: center; margin-top: 56px; position: relative;
+  }
+  .cta-box::before {
+    content: '°5 ACQUIRE NOW °5';
+    position: absolute; top: -13px; left: 50%; transform: translateX(-50%);
+    background: #000; color: #00ff41;
+    font-size: var(--fs-xsmall); padding: 0 14px;
+    letter-spacing: 0.1em; text-shadow: 0 0 8px #00ff41; white-space: nowrap;
+  }
+  .cta-box h2 {
+    border: none; padding: 0; color: #ffe600;
+    font-size: calc(var(--fs-h2) + 2px);
+    margin: 0 0 18px; background: transparent; box-shadow: none;
+    text-shadow: 0 0 8px #ffe600; line-height: 1.9;
+  }
   .cta-box h2::before { content: ''; }
   .cta-box p { color: #888; margin-bottom: 28px; }
 
@@ -148,13 +176,17 @@
   .cta-box a.email-btn:active { transform: translate(4px,4px); box-shadow: none; }
   .cta-box .lock-note { margin-top: 20px; font-size: var(--fs-xsmall); color: #555; line-height: 2.2; }
 
-  footer { text-align: center; margin-top: 68px; color: #444; font-size: var(--fs-xsmall); line-height: 2.5; border-top: 2px dashed #222; padding-top: 24px; }
+  footer {
+    text-align: center; margin-top: 68px; color: #444;
+    font-size: var(--fs-xsmall); line-height: 2.5;
+    border-top: 2px dashed #222; padding-top: 24px;
+  }
   footer::before { display: block; content: '[ EOF ]'; color: #333; margin-bottom: 8px; }
 </style>
 </head>
 <body>
 
-<div id="domain-banner">► <span id="domain-label"></span> ◄</div>
+<div id="domain-banner">&#9658; <span id="domain-label"></span> &#9668;</div>
 
 <div class="container">
   <div class="hero">
@@ -176,7 +208,7 @@
     <tr><td>[MEM] MEMORABILITY</td><td>Short, intuitive, easy to recall</td></tr>
     <tr><td>[SEO] SEO VALUE</td><td>Strong SEO potential and type-in traffic</td></tr>
     <tr><td>[VRS] VERSATILITY</td><td>Suitable for wide range of industries</td></tr>
-    <tr><td>[XFR] FAST TRANSFER</td><td>Transferable within 24–48 hours</td></tr>
+    <tr><td>[XFR] FAST TRANSFER</td><td>Transferable within 24&#8211;48 hours</td></tr>
   </table>
 
   <hr>
@@ -184,10 +216,10 @@
   <h2>HOW TO PROCEED</h2>
   <p>Follow these four steps to complete your acquisition:</p>
   <ol>
-    <li><strong>SUBMIT AN INQUIRY</strong> — Contact us with your intended use and proposed offer.</li>
-    <li><strong>NEGOTIATE &amp; AGREE</strong> — We will respond promptly to establish mutually agreeable terms.</li>
-    <li><strong>SECURE TRANSACTION</strong> — Transfer is facilitated through a trusted escrow service.</li>
-    <li><strong>DOMAIN TRANSFER</strong> — Full ownership is transferred to your registrar upon cleared payment.</li>
+    <li><strong>SUBMIT AN INQUIRY</strong> &#8212; Contact us with your intended use and proposed offer.</li>
+    <li><strong>NEGOTIATE &amp; AGREE</strong> &#8212; We will respond promptly to establish mutually agreeable terms.</li>
+    <li><strong>SECURE TRANSACTION</strong> &#8212; Transfer is facilitated through a trusted escrow service.</li>
+    <li><strong>DOMAIN TRANSFER</strong> &#8212; Full ownership is transferred to your registrar upon cleared payment.</li>
   </ol>
 
   <hr>
@@ -199,9 +231,10 @@
     <li><strong>ENTERPRISE</strong> seeking a strategic digital asset</li>
     <li><strong>INVESTOR</strong> expanding your domain portfolio</li>
   </ul>
-  <p>— we are open to discussing a <strong>fair and competitive acquisition price</strong>.</p>
+  <p>&#8212; we are open to discussing a <strong>fair and competitive acquisition price</strong>.</p>
   <div class="note">
-    For pricing details or to initiate a confidential discussion, please reach out via the contact information below.
+    For pricing details or to initiate a confidential discussion,
+    please reach out via the contact information below.
   </div>
 
   <hr>
@@ -209,45 +242,39 @@
   <div class="cta-box">
     <h2>READY TO ACQUIRE?</h2>
     <p>This domain is exclusively listed and available for immediate transfer.<br>
-    Opportunities like this are limited — act promptly.</p>
-    <!-- 이메일 버튼: JS가 런타임에 href 주입 -->
-    <a id="contact-btn" class="email-btn">► CONTACT US</a>
+    Opportunities like this are limited &#8212; act promptly.</p>
+    <a id="contact-btn" class="email-btn">&#9658; CONTACT US</a>
     <div class="lock-note">[LOCK] All inquiries are handled with strict confidentiality.</div>
   </div>
 
-  <footer><p>&copy; DOMAIN OWNER &nbsp;·&nbsp; ALL RIGHTS RESERVED</p></footer>
+  <footer><p>&#169; 1UP your vibe! &nbsp;&#183;&nbsp; ALL RIGHTS RESERVED :D 2026</p></footer>
 </div>
 
 <script>
 (function () {
   'use strict';
 
-  const _e = atob('YWthLmhlcmxvY2tAZ21haWwuY29t');
-  const btn = document.getElementById('contact-btn');
-  // 이벤트 시점에만 href 할당 (정적 파싱 회피)
-  btn.addEventListener('click', function (ev) {
-    ev.preventDefault();
-    window.location.href = 'mai' + 'lto:' + _e;
-  });
-  btn.style.cursor = 'pointer';
+
+  var _e = atob('YWthLmhlcmxvY2tAZ21haWwuY29t');
+  var btn = document.getElementById('contact-btn');
+  btn.setAttribute('href', 'mai' + 'lto:' + _e);
 
 
-  const _map = {
+  var _map = {
     'ee2312fda43f': atob('YmF0ZS5jby5rciAmIGJhdGUua3I='),
     '44f16b9c6f28': atob('c3VnYXJjcmFmdC5jby5rciAmIHN1Z2FyY3JhZnQua3I='),
     '7653097b0a56': atob('ZnJlYWsuY28ua3IgJiBmcmVhay5rcg=='),
-    '18ac3e7343f0': atob('RG9tYWluLUQuY29t'),
+	'b7586caaecb2': atob('aHVmZi5jby5rciAmIGh1ZmYua3I='),
+    '18ac3e7343f0': atob('RG9tYWluLUQuY29t')
   };
 
-
-  const raw = (location.hash || '').replace('#', '').toLowerCase().slice(0, 12);
+  var raw = (window.location.hash || '').replace('#', '').toLowerCase().slice(0, 12);
 
   if (raw && Object.prototype.hasOwnProperty.call(_map, raw)) {
-    const domainName = _map[raw];
-
-    const banner = document.getElementById('domain-banner');
-    const label  = document.getElementById('domain-label');
-    const title  = document.getElementById('main-title');
+    var domainName = _map[raw];
+    var banner = document.getElementById('domain-banner');
+    var label  = document.getElementById('domain-label');
+    var title  = document.getElementById('main-title');
 
     label.textContent = domainName + ' — AVAILABLE FOR ACQUISITION';
     banner.style.display = 'block';
@@ -256,19 +283,19 @@
   }
 
 
-  let _dt = false;
-  const _threshold = 160;
+  var _dt = false;
   setInterval(function () {
-    if (
-      window.outerWidth - window.innerWidth > _threshold ||
-      window.outerHeight - window.innerHeight > _threshold
-    ) {
-      if (!_dt) {
-        _dt = true;
-        console.clear();
-        console.log('%c[!] Unauthorized access attempt logged.', 'color:#ff4444;font-size:14px;font-weight:bold;');
-      }
-    } else {
+    var open =
+      window.outerWidth  - window.innerWidth  > 160 ||
+      window.outerHeight - window.innerHeight > 160;
+    if (open && !_dt) {
+      _dt = true;
+      console.clear();
+      console.log(
+        '%c[!] Unauthorized access attempt logged.',
+        'color:#ff4444;font-size:14px;font-weight:bold;'
+      );
+    } else if (!open) {
       _dt = false;
     }
   }, 1000);
