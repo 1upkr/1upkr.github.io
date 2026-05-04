@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Domain For Sale</title>
+<title> Available for Acquisition</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -160,7 +160,6 @@
 </head>
 <body>
 
-<!-- 도메인 배너: 파라미터 있을 때만 표시 -->
 <div id="domain-banner">
   🌐 <span id="domain-label"></span>
 </div>
@@ -168,7 +167,7 @@
 <div class="container">
 
   <div class="hero">
-    <h1>✔️ This Domain Is Available for Acquisition</h1>
+    <h1 id="main-title">✔️ This Domain Is Available for Acquisition</h1>
     <p>A premium domain name is one of the most valuable digital assets a business can own. Secure your brand's online identity before someone else does.</p>
   </div>
 
@@ -230,27 +229,25 @@
 
   const domainMap = {
     'bate': 'bate.co.kr & bate.kr',
-    'sugarcraft': 'sugarcraft.cokr & sugarcraft.kr',
-    'C': 'Domain-C.com',
-    'D': 'Domain-D.com'
+    'sugarcraft': 'sugarcraft.co.kr & sugarcraft.kr',
+    'c': 'Domain-C.com',
+    'd': 'Domain-D.com'
   };
 
-  if (fromParam && domainMap[fromParam.toUpperCase()]) {
-    const domainName = domainMap[fromParam.toUpperCase()];
-    const banner = document.getElementById('domain-banner');
-    const label = document.getElementById('domain-label');
+  if (fromParam) {
+    const key = fromParam.toLowerCase();
+    const domainName = domainMap[key];
 
-    label.textContent = domainName + ' is available for acquisition';
-    banner.style.display = 'block';
+    if (domainName) {
+      const banner = document.getElementById('domain-banner');
+      const label = document.getElementById('domain-label');
+      const title = document.getElementById('main-title');
 
-    // h1 타이틀에도 도메인명 반영
-    const h1 = document.querySelector('.hero h1');
-    if (h1) {
-      h1.textContent = '✔️ ' + domainName + ' Is Available for Acquisition';
+      label.textContent = domainName + ' is available for acquisition';
+      banner.style.display = 'block';
+      title.textContent = '✔️ ' + domainName + ' Is Available for Acquisition';
+      document.title = domainName + ' — For Sale';
     }
-
-    // 페이지 타이틀도 변경
-    document.title = domainName + ' — For Sale';
   }
 </script>
 
