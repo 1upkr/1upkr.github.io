@@ -176,6 +176,34 @@
   .cta-box a.email-btn:active { transform: translate(4px,4px); box-shadow: none; }
   .cta-box .lock-note { margin-top: 20px; font-size: var(--fs-xsmall); color: #555; line-height: 2.2; }
 
+  /* COPY TOAST */
+  #copy-toast {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 12px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #00ff41;
+    color: #000;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
+    padding: 10px 18px;
+    white-space: nowrap;
+    box-shadow: 3px 3px 0 #005a1a;
+    animation: none;
+    z-index: 100;
+  }
+  #copy-toast.show {
+    display: block;
+    animation: toast-in-out 2s forwards;
+  }
+  @keyframes toast-in-out {
+    0%   { opacity: 0; transform: translateX(-50%) translateY(6px); }
+    15%  { opacity: 1; transform: translateX(-50%) translateY(0); }
+    75%  { opacity: 1; transform: translateX(-50%) translateY(0); }
+    100% { opacity: 0; transform: translateX(-50%) translateY(-6px); }
+  }
+
   footer {
     text-align: center; margin-top: 68px; color: #444;
     font-size: var(--fs-xsmall); line-height: 2.5;
@@ -243,7 +271,10 @@
     <h2>READY TO ACQUIRE?</h2>
     <p>This domain is exclusively listed and available for immediate transfer.<br>
     Opportunities like this are limited &#8212; act promptly.</p>
-    <a id="contact-btn" class="email-btn">&#9658; CONTACT US</a>
+    <div style="position:relative;display:inline-block;">
+      <a id="contact-btn" class="email-btn">&#9658; CONTACT US</a>
+      <div id="copy-toast">&#10003; EMAIL COPIED!</div>
+    </div>
     <div class="lock-note">[LOCK] All inquiries are handled with strict confidentiality.</div>
   </div>
 
@@ -257,15 +288,42 @@
 
   var _e = atob('YWthLmhlcmxvY2tAZ21haWwuY29t');
   var btn = document.getElementById('contact-btn');
-  btn.setAttribute('href', 'mai' + 'lto:' + _e);
+
+  btn.removeAttribute('href');
+  btn.style.cursor = 'pointer';
+  btn.addEventListener('click', function () {
+    var toast = document.getElementById('copy-toast');
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(_e).then(function () {
+        showToast(toast);
+      });
+    } else {
+
+      var tmp = document.createElement('textarea');
+      tmp.value = _e;
+      tmp.style.cssText = 'position:fixed;opacity:0;';
+      document.body.appendChild(tmp);
+      tmp.select();
+      document.execCommand('copy');
+      document.body.removeChild(tmp);
+      showToast(toast);
+    }
+  });
+
+  function showToast(el) {
+    el.classList.remove('show');
+    void el.offsetWidth;
+    el.classList.add('show');
+    setTimeout(function () { el.classList.remove('show'); }, 2000);
+  }
 
 
   var _map = {
     'ee2312fda43f': atob('YmF0ZS5jby5rciAmIGJhdGUua3I='),
     '44f16b9c6f28': atob('c3VnYXJjcmFmdC5jby5rciAmIHN1Z2FyY3JhZnQua3I='),
     '7653097b0a56': atob('ZnJlYWsuY28ua3IgJiBmcmVhay5rcg=='),
-	'b7586caaecb2': atob('aHVmZi5jby5rciAmIGh1ZmYua3I='),
-    '18ac3e7343f0': atob('RG9tYWluLUQuY29t')
+    '18ac3e7343f0': atob('RG9tYWluLUQuY29t'),
+    'b7586caaecb2': atob('aHVmZi5jby5rciAmIGh1ZmYua3I=')
   };
 
   var raw = (window.location.hash || '').replace('#', '').toLowerCase().slice(0, 12);
