@@ -1,0 +1,56 @@
+---
+title: /acquisition
+layout: default
+permalink: /acquisition.html
+robots: noindex
+---
+
+# /about
+<br/>
+
+This Domain Is Available for Acquisition
+
+A premium domain name is one of the most valuable digital assets a business can own. Secure your brand's online identity before someone else does.
+
+Own the Address That Defines Your Brand
+
+A strong domain name establishes instant credibility, drives direct traffic, and creates a lasting first impression with customers, partners, and investors. This domain represents a rare opportunity to acquire a concise, memorable, and highly brandable web address.
+
+Short, intuitive, and easy to recall
+
+Strong SEO potential and type-in traffic value
+
+Suitable for a wide range of industries and business models
+
+Transferable within 24–48 hours upon confirmed payment
+
+How to Proceed
+
+    Submit an Inquiry — Contact us with your intended use and proposed offer
+
+    Negotiate & Agree — We will respond promptly to establish mutually agreeable terms
+
+    Secure Transaction — Transfer is facilitated through a trusted escrow service (e.g., Escrow.com or Sedo) to ensure a safe exchange for both parties
+
+    Domain Transfer — Full ownership is transferred to your registrar of choice upon cleared payment
+
+
+We welcome all serious inquiries. Whether you are a startup building a new brand, an established enterprise seeking a strategic asset, or an investor expanding your domain portfolio, we are open to discussing a fair and competitive acquisition price.
+
+    For pricing details or to initiate a confidential discussion, please reach out via the contact form below.
+
+Ready to Acquire This Domain?
+
+This domain is exclusively listed and available for immediate transfer. Opportunities like this are limited — we encourage interested parties to act promptly.
+
+📩 Contact Us : aka.herlock@gmail.com
+🔒 All inquiries are handled with strict confidentiality.
+
+
++-----------------------------------------------+
+© 2026 | Manufactured in Seoul, KR
+Status: 1UP your vibe | EarthBound Beginnings
+Connection established... _	
++-----------------------------------------------+
+```
+<br/>
