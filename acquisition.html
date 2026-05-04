@@ -9,14 +9,6 @@
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
-  /*
-   * Font size strategy:
-   * Mobile  (<600px) : base 10px  — pixel font is dense, keep small
-   * Tablet  (600~960px): base 11px
-   * Desktop (>960px) : base 12px  — larger canvas, slightly bigger base
-   * All sizes use px so nesting never compounds.
-   */
-
   :root {
     --fs-hero:   20px;
     --fs-h2:     13px;
@@ -30,27 +22,17 @@
 
   @media (max-width: 960px) {
     :root {
-      --fs-hero:   16px;
-      --fs-h2:     11px;
-      --fs-h3:     10px;
-      --fs-body:   10px;
-      --fs-small:  9px;
-      --fs-xsmall: 8px;
-      --fs-btn:    9px;
-      --fs-banner: 10px;
+      --fs-hero: 16px; --fs-h2: 11px; --fs-h3: 10px;
+      --fs-body: 10px; --fs-small: 9px; --fs-xsmall: 8px;
+      --fs-btn: 9px; --fs-banner: 10px;
     }
   }
 
   @media (max-width: 600px) {
     :root {
-      --fs-hero:   13px;
-      --fs-h2:     10px;
-      --fs-h3:     9px;
-      --fs-body:   9px;
-      --fs-small:  8px;
-      --fs-xsmall: 7px;
-      --fs-btn:    8px;
-      --fs-banner: 9px;
+      --fs-hero: 13px; --fs-h2: 10px; --fs-h3: 9px;
+      --fs-body: 9px; --fs-small: 8px; --fs-xsmall: 7px;
+      --fs-btn: 8px; --fs-banner: 9px;
     }
   }
 
@@ -64,15 +46,11 @@
 
   body::before {
     content: '';
-    position: fixed;
-    top: 0; left: 0;
+    position: fixed; top: 0; left: 0;
     width: 100%; height: 100%;
     background: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      rgba(0,0,0,0.15) 2px,
-      rgba(0,0,0,0.15) 4px
+      0deg, transparent, transparent 2px,
+      rgba(0,0,0,0.15) 2px, rgba(0,0,0,0.15) 4px
     );
     pointer-events: none;
     z-index: 9999;
@@ -80,323 +58,105 @@
 
   #domain-banner {
     display: none;
-    background: #000;
-    color: #00ff41;
-    text-align: center;
-    padding: 14px 20px;
-    font-size: var(--fs-banner);
-    letter-spacing: 0.08em;
+    background: #000; color: #00ff41;
+    text-align: center; padding: 14px 20px;
+    font-size: var(--fs-banner); letter-spacing: 0.08em;
     border-bottom: 4px solid #00ff41;
     text-shadow: 0 0 8px #00ff41;
     animation: blink-border 1.5s step-end infinite;
   }
-
   @keyframes blink-border {
     0%, 100% { border-color: #00ff41; }
     50% { border-color: transparent; }
   }
-
   #domain-banner span { color: #ffe600; text-shadow: 0 0 8px #ffe600; }
 
-  .container {
-    max-width: 860px;
-    margin: 0 auto;
-    padding: 52px 32px 88px;
-  }
+  .container { max-width: 860px; margin: 0 auto; padding: 52px 32px 88px; }
+  @media (max-width: 600px) { .container { padding: 32px 16px 60px; } }
 
-  @media (max-width: 600px) {
-    .container { padding: 32px 16px 60px; }
-  }
-
-  /* HERO */
   .hero {
-    text-align: center;
-    margin-bottom: 52px;
+    text-align: center; margin-bottom: 52px;
     padding: 40px 28px 44px;
     border: 4px solid #00ff41;
     box-shadow: 6px 6px 0 #00ff41, inset 0 0 40px rgba(0,255,65,0.04);
     position: relative;
   }
-
   .hero::before {
     content: '[ DOMAIN FOR SALE ]';
-    position: absolute;
-    top: -12px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #0a0a0a;
-    color: #ffe600;
-    font-size: var(--fs-xsmall);
-    padding: 0 14px;
-    letter-spacing: 0.1em;
-    text-shadow: 0 0 6px #ffe600;
-    white-space: nowrap;
+    position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+    background: #0a0a0a; color: #ffe600;
+    font-size: var(--fs-xsmall); padding: 0 14px;
+    letter-spacing: 0.1em; text-shadow: 0 0 6px #ffe600; white-space: nowrap;
   }
-
   .hero h1 {
-    font-size: var(--fs-hero);
-    color: #00ff41;
-    margin-bottom: 22px;
-    line-height: 1.9;
+    font-size: var(--fs-hero); color: #00ff41;
+    margin-bottom: 22px; line-height: 1.9;
     text-shadow: 0 0 10px #00ff41, 2px 2px 0 #005a1a;
     letter-spacing: 0.04em;
   }
+  .hero h1::after { content: '_'; animation: cursor-blink 0.8s step-end infinite; }
+  @keyframes cursor-blink { 0%,100%{opacity:1} 50%{opacity:0} }
+  .hero p { font-size: var(--fs-body); color: #aaa; max-width: 600px; margin: 0 auto; line-height: 2.5; }
 
-  .hero h1::after {
-    content: '_';
-    animation: cursor-blink 0.8s step-end infinite;
-    color: #00ff41;
-  }
-
-  @keyframes cursor-blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0; }
-  }
-
-  .hero p {
-    font-size: var(--fs-body);
-    color: #aaa;
-    max-width: 600px;
-    margin: 0 auto;
-    line-height: 2.5;
-  }
-
-  /* H2 */
   h2 {
-    font-size: var(--fs-h2);
-    color: #ffe600;
-    margin: 52px 0 18px;
-    padding: 13px 18px;
-    background: #111;
-    border: 2px solid #ffe600;
-    border-left: 6px solid #ffe600;
-    box-shadow: 4px 4px 0 #5a4800;
-    text-shadow: 0 0 6px #ffe600;
-    letter-spacing: 0.05em;
-    line-height: 1.9;
+    font-size: var(--fs-h2); color: #ffe600;
+    margin: 52px 0 18px; padding: 13px 18px;
+    background: #111; border: 2px solid #ffe600; border-left: 6px solid #ffe600;
+    box-shadow: 4px 4px 0 #5a4800; text-shadow: 0 0 6px #ffe600;
+    letter-spacing: 0.05em; line-height: 1.9;
   }
-
   h2::before { content: '> '; color: #00ff41; }
 
-  /* H3 */
-  h3 {
-    font-size: var(--fs-h3);
-    color: #00cfff;
-    margin: 32px 0 14px;
-    text-shadow: 0 0 6px #00cfff;
-    line-height: 1.9;
-  }
-
+  h3 { font-size: var(--fs-h3); color: #00cfff; margin: 32px 0 14px; text-shadow: 0 0 6px #00cfff; line-height: 1.9; }
   h3::before { content: '# '; color: #555; }
 
-  p {
-    font-size: var(--fs-body);
-    margin-bottom: 16px;
-    color: #ccc;
-    line-height: 2.6;
-  }
-
+  p { font-size: var(--fs-body); margin-bottom: 16px; color: #ccc; line-height: 2.6; }
   strong { color: #fff; }
+  hr { border: none; border-top: 2px dashed #333; margin: 52px 0; }
 
-  hr {
-    border: none;
-    border-top: 2px dashed #333;
-    margin: 52px 0;
-  }
-
-  /* TABLE */
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 18px 0 28px;
-    font-size: var(--fs-small);
-    border: 2px solid #333;
-  }
-
-  th {
-    background: #111;
-    color: #00ff41;
-    padding: 13px 18px;
-    text-align: left;
-    font-weight: normal;
-    letter-spacing: 0.04em;
-    border-bottom: 2px solid #00ff41;
-    text-shadow: 0 0 4px #00ff41;
-    line-height: 2;
-  }
-
-  td {
-    padding: 13px 18px;
-    border-bottom: 1px solid #222;
-    color: #ccc;
-    line-height: 2;
-  }
-
+  table { width: 100%; border-collapse: collapse; margin: 18px 0 28px; font-size: var(--fs-small); border: 2px solid #333; }
+  th { background: #111; color: #00ff41; padding: 13px 18px; text-align: left; font-weight: normal; border-bottom: 2px solid #00ff41; text-shadow: 0 0 4px #00ff41; line-height: 2; }
+  td { padding: 13px 18px; border-bottom: 1px solid #222; color: #ccc; line-height: 2; }
   tr:nth-child(even) td { background: #0f0f0f; }
   tr:hover td { background: #001a0a; color: #00ff41; transition: all 0.1s; }
 
-  /* OL */
-  ol {
-    padding-left: 10px;
-    margin: 16px 0 28px;
-    counter-reset: pixel-counter;
-    list-style: none;
-  }
+  ol { padding-left: 10px; margin: 16px 0 28px; counter-reset: pixel-counter; list-style: none; }
+  ol li { counter-increment: pixel-counter; margin-bottom: 22px; color: #ccc; font-size: var(--fs-body); line-height: 2.6; padding-left: 44px; position: relative; }
+  ol li::before { content: '[' counter(pixel-counter) ']'; position: absolute; left: 0; color: #00ff41; text-shadow: 0 0 4px #00ff41; }
 
-  ol li {
-    counter-increment: pixel-counter;
-    margin-bottom: 22px;
-    color: #ccc;
-    font-size: var(--fs-body);
-    line-height: 2.6;
-    padding-left: 44px;
-    position: relative;
-  }
+  ul { list-style: none; padding: 0; margin: 16px 0 24px; }
+  ul li { padding: 12px 0 12px 6px; border-bottom: 1px solid #1e1e1e; color: #ccc; font-size: var(--fs-body); line-height: 2.3; }
+  ul li::before { content: '>> '; color: #00ff41; text-shadow: 0 0 4px #00ff41; }
 
-  ol li::before {
-    content: '[' counter(pixel-counter) ']';
-    position: absolute;
-    left: 0;
-    color: #00ff41;
-    text-shadow: 0 0 4px #00ff41;
-  }
-
-  /* UL */
-  ul {
-    list-style: none;
-    padding: 0;
-    margin: 16px 0 24px;
-  }
-
-  ul li {
-    padding: 12px 0 12px 6px;
-    border-bottom: 1px solid #1e1e1e;
-    color: #ccc;
-    font-size: var(--fs-body);
-    line-height: 2.3;
-  }
-
-  ul li::before {
-    content: '>> ';
-    color: #00ff41;
-    text-shadow: 0 0 4px #00ff41;
-  }
-
-  /* NOTE */
-  .note {
-    background: #0a0a00;
-    border: 2px solid #ffe600;
-    border-left: 6px solid #ffe600;
-    padding: 16px 20px;
-    margin: 24px 0;
-    color: #bba;
-    font-size: var(--fs-body);
-    line-height: 2.5;
-    box-shadow: 4px 4px 0 #3a3000;
-  }
-
+  .note { background: #0a0a00; border: 2px solid #ffe600; border-left: 6px solid #ffe600; padding: 16px 20px; margin: 24px 0; color: #bba; font-size: var(--fs-body); line-height: 2.5; box-shadow: 4px 4px 0 #3a3000; }
   .note::before { content: '[!] '; color: #ffe600; text-shadow: 0 0 4px #ffe600; }
 
-  /* CTA */
-  .cta-box {
-    background: #000;
-    border: 4px solid #00ff41;
-    box-shadow: 8px 8px 0 #005a1a, 0 0 30px rgba(0,255,65,0.08);
-    padding: 44px 36px;
-    text-align: center;
-    margin-top: 56px;
-    position: relative;
-  }
-
-  .cta-box::before {
-    content: '★ ACQUIRE NOW ★';
-    position: absolute;
-    top: -13px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #000;
-    color: #00ff41;
-    font-size: var(--fs-xsmall);
-    padding: 0 14px;
-    letter-spacing: 0.1em;
-    text-shadow: 0 0 8px #00ff41;
-    white-space: nowrap;
-  }
-
-  .cta-box h2 {
-    border: none;
-    padding: 0;
-    color: #ffe600;
-    font-size: calc(var(--fs-h2) + 2px);
-    margin: 0 0 18px;
-    background: transparent;
-    box-shadow: none;
-    text-shadow: 0 0 8px #ffe600;
-    line-height: 1.9;
-  }
-
+  .cta-box { background: #000; border: 4px solid #00ff41; box-shadow: 8px 8px 0 #005a1a; padding: 44px 36px; text-align: center; margin-top: 56px; position: relative; }
+  .cta-box::before { content: '★ ACQUIRE NOW ★'; position: absolute; top: -13px; left: 50%; transform: translateX(-50%); background: #000; color: #00ff41; font-size: var(--fs-xsmall); padding: 0 14px; letter-spacing: 0.1em; text-shadow: 0 0 8px #00ff41; white-space: nowrap; }
+  .cta-box h2 { border: none; padding: 0; color: #ffe600; font-size: calc(var(--fs-h2) + 2px); margin: 0 0 18px; background: transparent; box-shadow: none; text-shadow: 0 0 8px #ffe600; line-height: 1.9; }
   .cta-box h2::before { content: ''; }
   .cta-box p { color: #888; margin-bottom: 28px; }
 
   .cta-box a.email-btn {
-    display: inline-block;
-    background: #00ff41;
-    color: #000;
-    text-decoration: none;
-    font-family: 'Press Start 2P', monospace;
-    padding: 16px 32px;
-    font-size: var(--fs-btn);
-    letter-spacing: 0.04em;
-    box-shadow: 4px 4px 0 #005a1a;
-    cursor: pointer;
-    transition: all 0.05s;
-    line-height: 1.8;
+    display: inline-block; background: #00ff41; color: #000;
+    text-decoration: none; font-family: 'Press Start 2P', monospace;
+    padding: 16px 32px; font-size: var(--fs-btn);
+    letter-spacing: 0.04em; box-shadow: 4px 4px 0 #005a1a;
+    cursor: pointer; transition: all 0.05s; line-height: 1.8;
   }
+  .cta-box a.email-btn:hover { background: #ffe600; box-shadow: 2px 2px 0 #5a4800; transform: translate(2px,2px); }
+  .cta-box a.email-btn:active { transform: translate(4px,4px); box-shadow: none; }
+  .cta-box .lock-note { margin-top: 20px; font-size: var(--fs-xsmall); color: #555; line-height: 2.2; }
 
-  .cta-box a.email-btn:hover {
-    background: #ffe600;
-    box-shadow: 2px 2px 0 #5a4800;
-    transform: translate(2px, 2px);
-  }
-
-  .cta-box a.email-btn:active {
-    transform: translate(4px, 4px);
-    box-shadow: none;
-  }
-
-  .cta-box .lock-note {
-    margin-top: 20px;
-    font-size: var(--fs-xsmall);
-    color: #555;
-    line-height: 2.2;
-  }
-
-  footer {
-    text-align: center;
-    margin-top: 68px;
-    color: #444;
-    font-size: var(--fs-xsmall);
-    line-height: 2.5;
-    border-top: 2px dashed #222;
-    padding-top: 24px;
-  }
-
-  footer::before {
-    display: block;
-    content: '[ EOF ]';
-    color: #333;
-    margin-bottom: 8px;
-  }
+  footer { text-align: center; margin-top: 68px; color: #444; font-size: var(--fs-xsmall); line-height: 2.5; border-top: 2px dashed #222; padding-top: 24px; }
+  footer::before { display: block; content: '[ EOF ]'; color: #333; margin-bottom: 8px; }
 </style>
 </head>
 <body>
 
-<div id="domain-banner">
-  ► <span id="domain-label"></span> ◄
-</div>
+<div id="domain-banner">► <span id="domain-label"></span> ◄</div>
 
 <div class="container">
-
   <div class="hero">
     <h1 id="main-title">THIS DOMAIN IS<br>AVAILABLE FOR ACQUISITION</h1>
     <p>A premium domain name is one of the most valuable digital assets<br>
@@ -450,42 +210,73 @@
     <h2>READY TO ACQUIRE?</h2>
     <p>This domain is exclusively listed and available for immediate transfer.<br>
     Opportunities like this are limited — act promptly.</p>
-    <a href="mailto:aka.herlock@gmail.com" class="email-btn">► CONTACT: aka.herlock@gmail.com</a>
+    <!-- 이메일 버튼: JS가 런타임에 href 주입 -->
+    <a id="contact-btn" class="email-btn">► CONTACT US</a>
     <div class="lock-note">[LOCK] All inquiries are handled with strict confidentiality.</div>
   </div>
 
-  <footer>
-    <p>&copy; DOMAIN OWNER &nbsp;·&nbsp; ALL RIGHTS RESERVED</p>
-  </footer>
-
+  <footer><p>&copy; DOMAIN OWNER &nbsp;·&nbsp; ALL RIGHTS RESERVED</p></footer>
 </div>
 
 <script>
-  const params = new URLSearchParams(window.location.search);
-  const fromParam = params.get('from');
+(function () {
+  'use strict';
 
-  const domainMap = {
-    'bate': 'bate.co.kr & bate.kr',
-    'sugarcraft': 'sugarcraft.co.kr & sugarcraft.kr',
-    'freak': 'freak.co.kr & freak.kr',
-    'd': 'Domain-D.com'
+  // ── 1. 이메일 난독화: Base64 인코딩된 값을 런타임에 복원
+  //    원본: aka.herlock@gmail.com
+  const _e = atob('YWthLmhlcmxvY2tAZ21haWwuY29t');
+  const btn = document.getElementById('contact-btn');
+  // 이벤트 시점에만 href 할당 (정적 파싱 회피)
+  btn.addEventListener('click', function (ev) {
+    ev.preventDefault();
+    window.location.href = 'mai' + 'lto:' + _e;
+  });
+  btn.style.cursor = 'pointer';
+
+  // ── 2. domainMap: 키=SHA-256 해시, 값=Base64 인코딩
+  //    URL은 ?from=평문키 대신 #해시12자리 방식 사용
+  const _map = {
+    'ee2312fda43f': atob('YmF0ZS5jby5rciAmIGJhdGUua3I='),
+    '44f16b9c6f28': atob('c3VnYXJjcmFmdC5jby5rciAmIHN1Z2FyY3JhZnQua3I='),
+    '7653097b0a56': atob('ZnJlYWsuY28ua3IgJiBmcmVhay5rcg=='),
+    '18ac3e7343f0': atob('RG9tYWluLUQuY29t'),
   };
 
-  if (fromParam) {
-    const key = fromParam.toLowerCase();
-    const domainName = domainMap[key];
+  // ── 3. URL 해시(#) 파라미터 사용 → 서버 로그 미기록
+  const raw = (location.hash || '').replace('#', '').toLowerCase().slice(0, 12);
 
-    if (domainName) {
-      const banner = document.getElementById('domain-banner');
-      const label = document.getElementById('domain-label');
-      const title = document.getElementById('main-title');
+  if (raw && Object.prototype.hasOwnProperty.call(_map, raw)) {
+    const domainName = _map[raw];
 
-      label.textContent = domainName + ' — AVAILABLE FOR ACQUISITION';
-      banner.style.display = 'block';
-      title.textContent = domainName.toUpperCase() + ' IS AVAILABLE\nFOR ACQUISITION';
-      document.title = domainName + ' — FOR SALE';
-    }
+    const banner = document.getElementById('domain-banner');
+    const label  = document.getElementById('domain-label');
+    const title  = document.getElementById('main-title');
+
+    label.textContent = domainName + ' — AVAILABLE FOR ACQUISITION';
+    banner.style.display = 'block';
+    title.textContent = domainName.toUpperCase() + ' IS AVAILABLE FOR ACQUISITION';
+    document.title = domainName + ' — FOR SALE';
   }
+
+  // ── 4. 개발자도구 열기 감지 → 경고 (선택적 억제)
+  let _dt = false;
+  const _threshold = 160;
+  setInterval(function () {
+    if (
+      window.outerWidth - window.innerWidth > _threshold ||
+      window.outerHeight - window.innerHeight > _threshold
+    ) {
+      if (!_dt) {
+        _dt = true;
+        console.clear();
+        console.log('%c[!] Unauthorized access attempt logged.', 'color:#ff4444;font-size:14px;font-weight:bold;');
+      }
+    } else {
+      _dt = false;
+    }
+  }, 1000);
+
+})();
 </script>
 
 </body>
