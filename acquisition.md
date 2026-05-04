@@ -73,7 +73,7 @@ This domain is **exclusively listed** and available for immediate transfer. Oppo
 
 ## 📩 **Contact Us:** [aka.herlock@gmail.com](mailto:aka.herlock@gmail.com)  
 
-
+<br/>
 +-----------------------------------------------+
 © 2026 | Manufactured in Seoul, KR
 Status: 1UP your vibe | EarthBound Beginnings
