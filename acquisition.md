@@ -61,7 +61,7 @@ Whether you are a:
 
 — we are open to discussing a **fair and competitive acquisition price**.
 
-> 💬 For pricing details or to initiate a confidential discussion, please reach out via the contact information below.
+🔒 For pricing details or to initiate a confidential discussion, please reach out via the contact information below.
 
 ---
 
@@ -72,8 +72,6 @@ This domain is **exclusively listed** and available for immediate transfer. Oppo
 ---
 
 ## 📩 **Contact Us:** [aka.herlock@gmail.com](mailto:aka.herlock@gmail.com)  
-
-🔒 *All inquiries are handled with strict confidentiality.*
 
 
 +-----------------------------------------------+
