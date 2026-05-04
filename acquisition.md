@@ -16,9 +16,7 @@ A premium domain name is one of the most valuable digital assets a business can 
 
 ## Own the Address That Defines Your Brand
 
-A strong domain name establishes **instant credibility**, drives direct traffic, and creates a lasting first impression with customers, partners, and investors.
-
-This domain represents a **rare opportunity** to acquire a concise, memorable, and highly brandable web address.
+A strong domain name establishes **instant credibility**, drives direct traffic, and creates a lasting first impression with customers, partners, and investors. This domain represents a **rare opportunity** to acquire a concise, memorable, and highly brandable web address.
 
 ### Key Advantages
 
@@ -35,17 +33,13 @@ This domain represents a **rare opportunity** to acquire a concise, memorable, a
 
 Follow these four steps to complete your acquisition:
 
-1. **Submit an Inquiry**  
-   Contact us with your intended use and proposed offer.
+1. **Submit an Inquiry** - Contact us with your intended use and proposed offer.
 
-2. **Negotiate & Agree**  
-   We will respond promptly to establish mutually agreeable terms.
+2. **Negotiate & Agree** - We will respond promptly to establish mutually agreeable terms.
 
-3. **Secure Transaction**  
-   Transfer is facilitated through a trusted service to ensure a safe exchange for both parties.
+3. **Secure Transaction** - Transfer is facilitated through a trusted service to ensure a safe exchange for both parties.
 
-4. **Domain Transfer**  
-   Full ownership is transferred to your registrar of choice upon cleared payment.
+4. **Domain Transfer** - Full ownership is transferred to your registrar of choice upon cleared payment.
 
 ---
 
