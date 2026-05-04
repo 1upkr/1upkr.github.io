@@ -5,7 +5,7 @@ permalink: /acquisition.html
 robots: noindex
 ---
 
-# /about
+# /Strategic Digital Asset
 <br/>
 
 This Domain Is Available for Acquisition
