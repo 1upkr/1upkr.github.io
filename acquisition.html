@@ -9,6 +9,51 @@
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
+  /*
+   * Font size strategy:
+   * Mobile  (<600px) : base 10px  — pixel font is dense, keep small
+   * Tablet  (600~960px): base 11px
+   * Desktop (>960px) : base 12px  — larger canvas, slightly bigger base
+   * All sizes use px so nesting never compounds.
+   */
+
+  :root {
+    --fs-hero:   20px;
+    --fs-h2:     13px;
+    --fs-h3:     12px;
+    --fs-body:   11px;
+    --fs-small:  10px;
+    --fs-xsmall: 9px;
+    --fs-btn:    11px;
+    --fs-banner: 11px;
+  }
+
+  @media (max-width: 960px) {
+    :root {
+      --fs-hero:   16px;
+      --fs-h2:     11px;
+      --fs-h3:     10px;
+      --fs-body:   10px;
+      --fs-small:  9px;
+      --fs-xsmall: 8px;
+      --fs-btn:    9px;
+      --fs-banner: 10px;
+    }
+  }
+
+  @media (max-width: 600px) {
+    :root {
+      --fs-hero:   13px;
+      --fs-h2:     10px;
+      --fs-h3:     9px;
+      --fs-body:   9px;
+      --fs-small:  8px;
+      --fs-xsmall: 7px;
+      --fs-btn:    8px;
+      --fs-banner: 9px;
+    }
+  }
+
   body {
     font-family: 'Press Start 2P', monospace;
     background: #0a0a0a;
@@ -17,7 +62,6 @@
     image-rendering: pixelated;
   }
 
-  /* Scanline overlay */
   body::before {
     content: '';
     position: fixed;
@@ -40,7 +84,7 @@
     color: #00ff41;
     text-align: center;
     padding: 14px 20px;
-    font-size: 0.65em;
+    font-size: var(--fs-banner);
     letter-spacing: 0.08em;
     border-bottom: 4px solid #00ff41;
     text-shadow: 0 0 8px #00ff41;
@@ -52,22 +96,23 @@
     50% { border-color: transparent; }
   }
 
-  #domain-banner span {
-    color: #ffe600;
-    text-shadow: 0 0 8px #ffe600;
-  }
+  #domain-banner span { color: #ffe600; text-shadow: 0 0 8px #ffe600; }
 
   .container {
-    max-width: 780px;
+    max-width: 860px;
     margin: 0 auto;
-    padding: 48px 24px 80px;
+    padding: 52px 32px 88px;
+  }
+
+  @media (max-width: 600px) {
+    .container { padding: 32px 16px 60px; }
   }
 
   /* HERO */
   .hero {
     text-align: center;
-    margin-bottom: 48px;
-    padding: 32px 20px 36px;
+    margin-bottom: 52px;
+    padding: 40px 28px 44px;
     border: 4px solid #00ff41;
     box-shadow: 6px 6px 0 #00ff41, inset 0 0 40px rgba(0,255,65,0.04);
     position: relative;
@@ -76,35 +121,27 @@
   .hero::before {
     content: '[ DOMAIN FOR SALE ]';
     position: absolute;
-    top: -14px;
+    top: -12px;
     left: 50%;
     transform: translateX(-50%);
     background: #0a0a0a;
     color: #ffe600;
-    font-size: 0.55em;
-    padding: 0 12px;
+    font-size: var(--fs-xsmall);
+    padding: 0 14px;
     letter-spacing: 0.1em;
     text-shadow: 0 0 6px #ffe600;
+    white-space: nowrap;
   }
 
   .hero h1 {
-    font-size: 1em;
+    font-size: var(--fs-hero);
     color: #00ff41;
-    margin-bottom: 20px;
-    line-height: 1.8;
+    margin-bottom: 22px;
+    line-height: 1.9;
     text-shadow: 0 0 10px #00ff41, 2px 2px 0 #005a1a;
     letter-spacing: 0.04em;
   }
 
-  .hero p {
-    font-size: 0.5em;
-    color: #aaa;
-    max-width: 580px;
-    margin: 0 auto;
-    line-height: 2.2;
-  }
-
-  /* CURSOR blink */
   .hero h1::after {
     content: '_';
     animation: cursor-blink 0.8s step-end infinite;
@@ -116,36 +153,47 @@
     50% { opacity: 0; }
   }
 
-  /* SECTION HEADERS */
+  .hero p {
+    font-size: var(--fs-body);
+    color: #aaa;
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 2.5;
+  }
+
+  /* H2 */
   h2 {
-    font-size: 0.7em;
+    font-size: var(--fs-h2);
     color: #ffe600;
-    margin: 48px 0 16px;
-    padding: 10px 16px;
+    margin: 52px 0 18px;
+    padding: 13px 18px;
     background: #111;
     border: 2px solid #ffe600;
     border-left: 6px solid #ffe600;
     box-shadow: 4px 4px 0 #5a4800;
     text-shadow: 0 0 6px #ffe600;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.05em;
+    line-height: 1.9;
   }
 
   h2::before { content: '> '; color: #00ff41; }
 
+  /* H3 */
   h3 {
-    font-size: 0.58em;
+    font-size: var(--fs-h3);
     color: #00cfff;
-    margin: 28px 0 12px;
+    margin: 32px 0 14px;
     text-shadow: 0 0 6px #00cfff;
+    line-height: 1.9;
   }
 
   h3::before { content: '# '; color: #555; }
 
   p {
-    font-size: 0.5em;
-    margin-bottom: 14px;
+    font-size: var(--fs-body);
+    margin-bottom: 16px;
     color: #ccc;
-    line-height: 2.4;
+    line-height: 2.6;
   }
 
   strong { color: #fff; }
@@ -153,7 +201,7 @@
   hr {
     border: none;
     border-top: 2px dashed #333;
-    margin: 44px 0;
+    margin: 52px 0;
   }
 
   /* TABLE */
@@ -161,31 +209,33 @@
     width: 100%;
     border-collapse: collapse;
     margin: 18px 0 28px;
-    font-size: 0.48em;
+    font-size: var(--fs-small);
     border: 2px solid #333;
   }
 
   th {
     background: #111;
     color: #00ff41;
-    padding: 12px 16px;
+    padding: 13px 18px;
     text-align: left;
     font-weight: normal;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.04em;
     border-bottom: 2px solid #00ff41;
     text-shadow: 0 0 4px #00ff41;
+    line-height: 2;
   }
 
   td {
-    padding: 12px 16px;
+    padding: 13px 18px;
     border-bottom: 1px solid #222;
     color: #ccc;
+    line-height: 2;
   }
 
   tr:nth-child(even) td { background: #0f0f0f; }
   tr:hover td { background: #001a0a; color: #00ff41; transition: all 0.1s; }
 
-  /* ORDERED LIST */
+  /* OL */
   ol {
     padding-left: 10px;
     margin: 16px 0 28px;
@@ -195,11 +245,11 @@
 
   ol li {
     counter-increment: pixel-counter;
-    margin-bottom: 16px;
+    margin-bottom: 22px;
     color: #ccc;
-    font-size: 0.48em;
-    line-height: 2.4;
-    padding-left: 36px;
+    font-size: var(--fs-body);
+    line-height: 2.6;
+    padding-left: 44px;
     position: relative;
   }
 
@@ -211,7 +261,7 @@
     text-shadow: 0 0 4px #00ff41;
   }
 
-  /* UL LIST */
+  /* UL */
   ul {
     list-style: none;
     padding: 0;
@@ -219,11 +269,11 @@
   }
 
   ul li {
-    padding: 10px 0 10px 6px;
+    padding: 12px 0 12px 6px;
     border-bottom: 1px solid #1e1e1e;
     color: #ccc;
-    font-size: 0.48em;
-    line-height: 2.2;
+    font-size: var(--fs-body);
+    line-height: 2.3;
   }
 
   ul li::before {
@@ -232,64 +282,61 @@
     text-shadow: 0 0 4px #00ff41;
   }
 
-  /* NOTE BOX */
+  /* NOTE */
   .note {
     background: #0a0a00;
     border: 2px solid #ffe600;
     border-left: 6px solid #ffe600;
-    padding: 14px 18px;
+    padding: 16px 20px;
     margin: 24px 0;
     color: #bba;
-    font-size: 0.48em;
-    line-height: 2.2;
+    font-size: var(--fs-body);
+    line-height: 2.5;
     box-shadow: 4px 4px 0 #3a3000;
   }
 
-  .note::before {
-    content: '[!] ';
-    color: #ffe600;
-    text-shadow: 0 0 4px #ffe600;
-  }
+  .note::before { content: '[!] '; color: #ffe600; text-shadow: 0 0 4px #ffe600; }
 
-  /* CTA BOX */
+  /* CTA */
   .cta-box {
     background: #000;
     border: 4px solid #00ff41;
     box-shadow: 8px 8px 0 #005a1a, 0 0 30px rgba(0,255,65,0.08);
-    padding: 36px 28px;
+    padding: 44px 36px;
     text-align: center;
-    margin-top: 52px;
+    margin-top: 56px;
     position: relative;
   }
 
   .cta-box::before {
     content: '★ ACQUIRE NOW ★';
     position: absolute;
-    top: -14px;
+    top: -13px;
     left: 50%;
     transform: translateX(-50%);
     background: #000;
     color: #00ff41;
-    font-size: 0.45em;
-    padding: 0 12px;
+    font-size: var(--fs-xsmall);
+    padding: 0 14px;
     letter-spacing: 0.1em;
     text-shadow: 0 0 8px #00ff41;
+    white-space: nowrap;
   }
 
   .cta-box h2 {
     border: none;
     padding: 0;
     color: #ffe600;
-    font-size: 0.75em;
-    margin: 0 0 16px;
+    font-size: calc(var(--fs-h2) + 2px);
+    margin: 0 0 18px;
     background: transparent;
     box-shadow: none;
     text-shadow: 0 0 8px #ffe600;
+    line-height: 1.9;
   }
 
   .cta-box h2::before { content: ''; }
-
-  .cta-box p { color: #888; margin-bottom: 24px; }
+  .cta-box p { color: #888; margin-bottom: 28px; }
 
   .cta-box a.email-btn {
     display: inline-block;
@@ -297,15 +344,13 @@
     color: #000;
     text-decoration: none;
     font-family: 'Press Start 2P', monospace;
-    font-weight: normal;
-    padding: 14px 28px;
-    font-size: 0.5em;
+    padding: 16px 32px;
+    font-size: var(--fs-btn);
     letter-spacing: 0.04em;
-    border: none;
     box-shadow: 4px 4px 0 #005a1a;
     cursor: pointer;
     transition: all 0.05s;
-    image-rendering: pixelated;
+    line-height: 1.8;
   }
 
   .cta-box a.email-btn:hover {
@@ -320,21 +365,20 @@
   }
 
   .cta-box .lock-note {
-    margin-top: 18px;
-    font-size: 0.42em;
+    margin-top: 20px;
+    font-size: var(--fs-xsmall);
     color: #555;
-    line-height: 2;
+    line-height: 2.2;
   }
 
-  /* FOOTER */
   footer {
     text-align: center;
-    margin-top: 60px;
+    margin-top: 68px;
     color: #444;
-    font-size: 0.4em;
+    font-size: var(--fs-xsmall);
     line-height: 2.5;
     border-top: 2px dashed #222;
-    padding-top: 20px;
+    padding-top: 24px;
   }
 
   footer::before {
@@ -342,14 +386,6 @@
     content: '[ EOF ]';
     color: #333;
     margin-bottom: 8px;
-  }
-
-  /* Pixel corners decoration */
-  .pixel-corner {
-    display: inline-block;
-    width: 8px; height: 8px;
-    background: #00ff41;
-    margin: 0 4px;
   }
 </style>
 </head>
@@ -363,7 +399,9 @@
 
   <div class="hero">
     <h1 id="main-title">THIS DOMAIN IS<br>AVAILABLE FOR ACQUISITION</h1>
-    <p>A premium domain name is one of the most valuable digital assets<br>a business can own. Secure your brand's online identity<br>before someone else does.</p>
+    <p>A premium domain name is one of the most valuable digital assets<br>
+    a business can own. Secure your brand's online identity<br>
+    before someone else does.</p>
   </div>
 
   <h2>OWN THE ADDRESS THAT DEFINES YOUR BRAND</h2>
