@@ -286,21 +286,27 @@
   'use strict';
 
 
-  var _e = atob('YWthLmhlcmxvY2tAZ21haWwuY29t');
+  function _d(arr) {
+    return arr.map(function(c) { return String.fromCharCode(c); }).join('');
+  }
+
+
+  var _eArr = [0x61, 0x6b, 0x61, 0x2e, 0x68, 0x65, 0x72, 0x6c, 0x6f, 0x63, 0x6b, 0x40, 0x67, 0x6d, 0x61, 0x69, 0x6c, 0x2e, 0x63, 0x6f, 0x6d];
   var btn = document.getElementById('contact-btn');
 
   btn.removeAttribute('href');
   btn.style.cursor = 'pointer';
   btn.addEventListener('click', function () {
     var toast = document.getElementById('copy-toast');
+    var _realE = _d(_eArr); // 클릭 시점에 조립
+    
     if (navigator.clipboard && window.isSecureContext) {
-      navigator.clipboard.writeText(_e).then(function () {
+      navigator.clipboard.writeText(_realE).then(function () {
         showToast(toast);
       });
     } else {
-
       var tmp = document.createElement('textarea');
-      tmp.value = _e;
+      tmp.value = _realE;
       tmp.style.cssText = 'position:fixed;opacity:0;';
       document.body.appendChild(tmp);
       tmp.select();
@@ -319,11 +325,11 @@
 
 
   var _map = {
-    'ee2312fda43f': atob('YmF0ZS5jby5rciAmIGJhdGUua3I='),
-    '44f16b9c6f28': atob('c3VnYXJjcmFmdC5jby5rciAmIHN1Z2FyY3JhZnQua3I='),
-    '7653097b0a56': atob('ZnJlYWsuY28ua3IgJiBmcmVhay5rcg=='),
-    '18ac3e7343f0': atob('RG9tYWluLUQuY29t'),
-    'b7586caaecb2': atob('aHVmZi5jby5rciAmIGh1ZmYua3I=')
+    'ee2312fda43f': _d([98, 97, 116, 101, 46, 99, 111, 46, 107, 114, 32, 38, 32, 98, 97, 116, 101, 46, 107, 114]),
+    '44f16b9c6f28': _d([115, 117, 103, 97, 114, 99, 114, 97, 102, 116, 46, 99, 111, 46, 107, 114, 32, 38, 32, 115, 117, 103, 97, 114, 99, 114, 97, 102, 116, 46, 107, 114]),
+    '7653097b0a56': _d([102, 114, 101, 97, 107, 46, 99, 111, 46, 107, 114, 32, 38, 32, 102, 114, 101, 97, 107, 46, 107, 114]),
+    '18ac3e7343f0': _d([68, 111, 109, 97, 105, 110, 45, 68, 46, 99, 111, 109]),
+    'b7586caaecb2': _d([104, 117, 102, 102, 46, 99, 111, 46, 107, 114, 32, 38, 32, 104, 117, 102, 102, 46, 107, 114])
   };
 
   var raw = (window.location.hash || '').replace('#', '').toLowerCase().slice(0, 12);
@@ -346,17 +352,15 @@
     var open =
       window.outerWidth  - window.innerWidth  > 160 ||
       window.outerHeight - window.innerHeight > 160;
-    if (open && !_dt) {
+    
+    if (open) {
       _dt = true;
+      (function() { return false; }['constructor']('debugger')()); // 함정 발동
       console.clear();
-      console.log(
-        '%c[!] Unauthorized access attempt logged.',
-        'color:#ff4444;font-size:14px;font-weight:bold;'
-      );
-    } else if (!open) {
+    } else {
       _dt = false;
     }
-  }, 1000);
+  }, 500);
 
 })();
 </script>
