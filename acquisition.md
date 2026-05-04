@@ -10,8 +10,7 @@ robots: noindex
 
 # ✔️ This Domain Is Available for Acquisition
 
-A premium domain name is one of the most valuable digital assets a business can own.  
-Secure your brand's online identity before someone else does.
+A premium domain name is one of the most valuable digital assets a business can own. Secure your brand's online identity before someone else does.
 
 ---
 
