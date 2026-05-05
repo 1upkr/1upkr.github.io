@@ -17,14 +17,13 @@
     --fs-small:  10px;
     --fs-xsmall: 9px;
     --fs-btn:    11px;
-    --fs-banner: 11px;
   }
 
   @media (max-width: 960px) {
     :root {
       --fs-hero: 16px; --fs-h2: 11px; --fs-h3: 10px;
       --fs-body: 10px; --fs-small: 9px; --fs-xsmall: 8px;
-      --fs-btn: 9px; --fs-banner: 10px;
+      --fs-btn: 9px;
     }
   }
 
@@ -32,7 +31,7 @@
     :root {
       --fs-hero: 13px; --fs-h2: 10px; --fs-h3: 9px;
       --fs-body: 9px; --fs-small: 8px; --fs-xsmall: 7px;
-      --fs-btn: 8px; --fs-banner: 9px;
+      --fs-btn: 8px;
     }
   }
 
@@ -55,21 +54,6 @@
     pointer-events: none;
     z-index: 9999;
   }
-
-  #domain-banner {
-    display: none;
-    background: #000; color: #00ff41;
-    text-align: center; padding: 14px 20px;
-    font-size: var(--fs-banner); letter-spacing: 0.08em;
-    border-bottom: 4px solid #00ff41;
-    text-shadow: 0 0 8px #00ff41;
-    animation: blink-border 1.5s step-end infinite;
-  }
-  @keyframes blink-border {
-    0%, 100% { border-color: #00ff41; }
-    50%       { border-color: transparent; }
-  }
-  #domain-banner span { color: #ffe600; text-shadow: 0 0 8px #ffe600; }
 
   .container { max-width: 860px; margin: 0 auto; padding: 52px 32px 88px; }
   @media (max-width: 600px) { .container { padding: 32px 16px 60px; } }
@@ -150,7 +134,7 @@
     text-align: center; margin-top: 56px; position: relative;
   }
   .cta-box::before {
-    content: '°5 ACQUIRE NOW °5';
+    content: '[ ACQUIRE NOW ]';
     position: absolute; top: -13px; left: 50%; transform: translateX(-50%);
     background: #000; color: #00ff41;
     font-size: var(--fs-xsmall); padding: 0 14px;
@@ -176,34 +160,6 @@
   .cta-box a.email-btn:active { transform: translate(4px,4px); box-shadow: none; }
   .cta-box .lock-note { margin-top: 20px; font-size: var(--fs-xsmall); color: #555; line-height: 2.2; }
 
-  /* COPY TOAST */
-  #copy-toast {
-    display: none;
-    position: absolute;
-    bottom: calc(100% + 12px);
-    left: 50%;
-    transform: translateX(-50%);
-    background: #00ff41;
-    color: #000;
-    font-family: 'Press Start 2P', monospace;
-    font-size: 9px;
-    padding: 10px 18px;
-    white-space: nowrap;
-    box-shadow: 3px 3px 0 #005a1a;
-    animation: none;
-    z-index: 100;
-  }
-  #copy-toast.show {
-    display: block;
-    animation: toast-in-out 2s forwards;
-  }
-  @keyframes toast-in-out {
-    0%   { opacity: 0; transform: translateX(-50%) translateY(6px); }
-    15%  { opacity: 1; transform: translateX(-50%) translateY(0); }
-    75%  { opacity: 1; transform: translateX(-50%) translateY(0); }
-    100% { opacity: 0; transform: translateX(-50%) translateY(-6px); }
-  }
-
   footer {
     text-align: center; margin-top: 68px; color: #444;
     font-size: var(--fs-xsmall); line-height: 2.5;
@@ -214,11 +170,9 @@
 </head>
 <body>
 
-<div id="domain-banner">&#9658; <span id="domain-label"></span> &#9668;</div>
-
 <div class="container">
   <div class="hero">
-    <h1 id="main-title">THIS DOMAIN IS<br>AVAILABLE FOR ACQUISITION</h1>
+    <h1>THIS DOMAIN IS<br>AVAILABLE FOR ACQUISITION</h1>
     <p>A premium domain name is one of the most valuable digital assets<br>
     a business can own. Secure your brand's online identity<br>
     before someone else does.</p>
@@ -271,99 +225,12 @@
     <h2>READY TO ACQUIRE?</h2>
     <p>This domain is exclusively listed and available for immediate transfer.<br>
     Opportunities like this are limited &#8212; act promptly.</p>
-    <div style="position:relative;display:inline-block;">
-      <a id="contact-btn" class="email-btn">&#9658; CONTACT US</a>
-      <div id="copy-toast">&#10003; EMAIL COPIED!</div>
-    </div>
+    <a class="email-btn" href="mailto:aka.herlock@gmail.com">&#9658; CONTACT US</a>
     <div class="lock-note">[LOCK] All inquiries are handled with strict confidentiality.</div>
   </div>
 
   <footer><p>&#169; 1UP your vibe! &nbsp;&#183;&nbsp; ALL RIGHTS RESERVED :D 2026</p></footer>
 </div>
-
-<script>
-(function () {
-  'use strict';
-
-
-  function _d(arr) {
-    return arr.map(function(c) { return String.fromCharCode(c); }).join('');
-  }
-
-
-  var _eArr = [0x61, 0x6b, 0x61, 0x2e, 0x68, 0x65, 0x72, 0x6c, 0x6f, 0x63, 0x6b, 0x40, 0x67, 0x6d, 0x61, 0x69, 0x6c, 0x2e, 0x63, 0x6f, 0x6d];
-  var btn = document.getElementById('contact-btn');
-
-  btn.removeAttribute('href');
-  btn.style.cursor = 'pointer';
-  btn.addEventListener('click', function () {
-    var toast = document.getElementById('copy-toast');
-    var _realE = _d(_eArr); // 클릭 시점에 조립
-    
-    if (navigator.clipboard && window.isSecureContext) {
-      navigator.clipboard.writeText(_realE).then(function () {
-        showToast(toast);
-      });
-    } else {
-      var tmp = document.createElement('textarea');
-      tmp.value = _realE;
-      tmp.style.cssText = 'position:fixed;opacity:0;';
-      document.body.appendChild(tmp);
-      tmp.select();
-      document.execCommand('copy');
-      document.body.removeChild(tmp);
-      showToast(toast);
-    }
-  });
-
-  function showToast(el) {
-    el.classList.remove('show');
-    void el.offsetWidth;
-    el.classList.add('show');
-    setTimeout(function () { el.classList.remove('show'); }, 2000);
-  }
-
-
-  var _map = {
-    'ee2312fda43f': _d([98, 97, 116, 101, 46, 99, 111, 46, 107, 114, 32, 38, 32, 98, 97, 116, 101, 46, 107, 114]),
-    '44f16b9c6f28': _d([115, 117, 103, 97, 114, 99, 114, 97, 102, 116, 46, 99, 111, 46, 107, 114, 32, 38, 32, 115, 117, 103, 97, 114, 99, 114, 97, 102, 116, 46, 107, 114]),
-    '7653097b0a56': _d([102, 114, 101, 97, 107, 46, 99, 111, 46, 107, 114, 32, 38, 32, 102, 114, 101, 97, 107, 46, 107, 114]),
-    '18ac3e7343f0': _d([68, 111, 109, 97, 105, 110, 45, 68, 46, 99, 111, 109]),
-    'b7586caaecb2': _d([104, 117, 102, 102, 46, 99, 111, 46, 107, 114, 32, 38, 32, 104, 117, 102, 102, 46, 107, 114])
-  };
-
-  var raw = (window.location.hash || '').replace('#', '').toLowerCase().slice(0, 12);
-
-  if (raw && Object.prototype.hasOwnProperty.call(_map, raw)) {
-    var domainName = _map[raw];
-    var banner = document.getElementById('domain-banner');
-    var label  = document.getElementById('domain-label');
-    var title  = document.getElementById('main-title');
-
-    label.textContent = domainName + ' — AVAILABLE FOR ACQUISITION';
-    banner.style.display = 'block';
-    title.textContent = domainName.toUpperCase() + ' IS AVAILABLE FOR ACQUISITION';
-    document.title = domainName + ' — FOR SALE';
-  }
-
-
-  var _dt = false;
-  setInterval(function () {
-    var open =
-      window.outerWidth  - window.innerWidth  > 160 ||
-      window.outerHeight - window.innerHeight > 160;
-    
-    if (open) {
-      _dt = true;
-      (function() { return false; }['constructor']('debugger')()); // 함정 발동
-      console.clear();
-    } else {
-      _dt = false;
-    }
-  }, 500);
-
-})();
-</script>
 
 </body>
 </html>
