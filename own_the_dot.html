@@ -531,21 +531,25 @@
        우선순위: ?d= 쿼리스트링 > hostname (커스텀 도메인)
     ═══════════════════════════════════════════ */
     function getDomainInfo() {
-      const params = new URLSearchParams(window.location.search);
-      const qd = params.get('d');
-      const host = window.location.hostname;
+     const params = new URLSearchParams(window.location.search);
+     const qd = params.get('d');
+     const host = window.location.hostname;
+     const proto = window.location.protocol;
 
       // ?d= 파라미터가 있으면 → 판매 페이지
       if (qd && qd.trim() !== '') return { domain: qd.trim(), forSale: true };
 
-      // GitHub Pages 자체 도메인 / 로컬 → 판매 아님
-      if (host.includes('github.io') || host === 'localhost' || host === '127.0.0.1') {
-        return { domain: null, forSale: false };
-      }
+      // file:// 로컬 파일 직접 열기
+      if (proto === 'file:') return { domain: null, forSale: false };
 
-      // 커스텀 도메인 직접 연결 → 판매 페이지
-      return { domain: host, forSale: true };
-    }
+      // GitHub Pages 자체 도메인 / 로컬 서버 / 빈 hostname
+      if (host === '' || host.includes('github.io') || host === 'localhost' || host === '127.0.0.1') {
+      return { domain: null, forSale: false };
+  }
+
+  // 커스텀 도메인 직접 연결 → 판매 페이지
+  return { domain: host, forSale: true };
+}
 
     const { domain: DOMAIN, forSale: FOR_SALE } = getDomainInfo();
 
