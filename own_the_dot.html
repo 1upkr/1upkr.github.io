@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>:: Own the Dot @1up your vibe ::</title>
+
+  <!-- Neo둥근모 웹폰트 (한글 픽셀폰트) -->
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/neodgm/neodgm-webfont@1.600/neodgm/style.css">
+  <!-- Press Start 2P (영문 8비트 폰트) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
+  <style>
+    /* ─────────────────────────────────────
+       CONFIG-DRIVEN CSS VARIABLES
+    ───────────────────────────────────── */
+    :root {
+      --bg:        #0a0a1a;
+      --bg2:       #0d0d2b;
+      --green:     #00ff41;
+      --yellow:    #ffff00;
+      --cyan:      #00e5ff;
+      --white:     #e0e0e0;
+      --dimgray:   #444466;
+      --border:    #00ff41;
+      --font-en:   'Press Start 2P', monospace;
+      --font-kr:   'NeoDunggeunmo', 'Press Start 2P', monospace;
+    }
+
+    /* ─────────────────────────────────────
+       RESET & BASE
+    ───────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background-color: var(--bg);
+      color: var(--green);
+      font-family: var(--font-kr);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      overflow-x: hidden;
+
+      /* 도트 그리드 배경 */
+      background-image:
+        radial-gradient(circle, #1a1a3a 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+
+    /* ─────────────────────────────────────
+       SCANLINE OVERLAY
+    ───────────────────────────────────── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        to bottom,
+        transparent 0px,
+        transparent 3px,
+        rgba(0,0,0,0.18) 3px,
+        rgba(0,0,0,0.18) 4px
+      );
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    /* ─────────────────────────────────────
+       ANIMATIONS
+    ───────────────────────────────────── */
+    @keyframes blink {
+      0%, 49% { opacity: 1; }
+      50%, 100% { opacity: 0; }
+    }
+
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes glitch {
+      0%   { text-shadow: 2px 0 #ff0055, -2px 0 #00e5ff; }
+      20%  { text-shadow: -2px 0 #ff0055, 2px 0 #00e5ff; }
+      40%  { text-shadow: 2px 2px #ff0055, -2px -2px #00e5ff; }
+      60%  { text-shadow: -2px 0 #ff0055, 2px 0 #00e5ff; }
+      80%  { text-shadow: 0 0 #ff0055, 0 0 #00e5ff; }
+      100% { text-shadow: 2px 0 #ff0055, -2px 0 #00e5ff; }
+    }
+
+    @keyframes pixelPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(0,255,65,0.4); }
+      50%       { box-shadow: 0 0 0 8px rgba(0,255,65,0); }
+    }
+
+    @keyframes marqueeScroll {
+      from { transform: translateX(100%); }
+      to   { transform: translateX(-100%); }
+    }
+
+    /* ─────────────────────────────────────
+       PIXEL BOX MIXIN (via class)
+    ───────────────────────────────────── */
+    .pixel-box {
+      border: 4px solid var(--border);
+      image-rendering: pixelated;
+      position: relative;
+    }
+    /* 코너 픽셀 장식 */
+    .pixel-box::before,
+    .pixel-box::after {
+      content: '';
+      position: absolute;
+      width: 8px; height: 8px;
+      background: var(--bg);
+      border: 4px solid var(--border);
+    }
+    .pixel-box::before { top: -4px; left: -4px; }
+    .pixel-box::after  { bottom: -4px; right: -4px; }
+
+    /* ─────────────────────────────────────
+       HEADER / NAV BAR
+    ───────────────────────────────────── */
+    header {
+      width: 100%;
+      background: var(--bg2);
+      border-bottom: 4px solid var(--green);
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      animation: fadeInDown 0.5s ease;
+    }
+
+    .logo {
+      font-family: var(--font-en);
+      font-size: 10px;
+      color: var(--yellow);
+      letter-spacing: 2px;
+    }
+
+    .status-bar {
+      font-size: 9px;
+      color: var(--dimgray);
+      font-family: var(--font-en);
+    }
+
+    .status-bar .online-dot {
+      display: inline-block;
+      width: 8px; height: 8px;
+      background: var(--green);
+      margin-right: 6px;
+      animation: blink 1s step-start infinite;
+    }
+
+    /* ─────────────────────────────────────
+       MARQUEE TICKER
+    ───────────────────────────────────── */
+    .ticker {
+      width: 100%;
+      background: #000;
+      border-bottom: 2px solid var(--dimgray);
+      overflow: hidden;
+      padding: 6px 0;
+    }
+
+    .ticker-inner {
+      white-space: nowrap;
+      display: inline-block;
+      font-family: var(--font-en);
+      font-size: 8px;
+      color: var(--cyan);
+      animation: marqueeScroll 22s linear infinite;
+    }
+
+    /* ─────────────────────────────────────
+       MAIN CONTAINER
+    ───────────────────────────────────── */
+    main {
+      width: 100%;
+      max-width: 760px;
+      padding: 40px 20px 60px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 32px;
+    }
+
+    /* ─────────────────────────────────────
+       HERO: DOMAIN NAME DISPLAY
+    ───────────────────────────────────── */
+    .hero {
+      width: 100%;
+      text-align: center;
+    }
+
+    .hero-label {
+      font-family: var(--font-en);
+      font-size: 9px;
+      color: var(--dimgray);
+      letter-spacing: 4px;
+      margin-bottom: 16px;
+      display: block;
+    }
+
+    .domain-display {
+      font-family: var(--font-en);
+      font-size: clamp(18px, 4vw, 32px);
+      color: var(--yellow);
+      word-break: break-all;
+      line-height: 1.4;
+      animation: glitch 4s infinite;
+      min-height: 1.4em;
+    }
+
+    .domain-display .cursor {
+      display: inline-block;
+      width: 16px; height: 3px;
+      background: var(--yellow);
+      vertical-align: middle;
+      margin-left: 4px;
+      animation: blink 0.8s step-start infinite;
+    }
+
+    .for-sale-badge {
+      margin-top: 16px;
+      display: inline-block;
+      font-family: var(--font-en);
+      font-size: clamp(8px, 1.8vw, 11px);
+      color: var(--green);
+      letter-spacing: 3px;
+      padding: 8px 16px;
+      border: 4px solid var(--green);
+      animation: pixelPulse 2s ease infinite;
+    }
+
+    /* ─────────────────────────────────────
+       RPG DIALOG BOX
+    ───────────────────────────────────── */
+    .rpg-box {
+      width: 100%;
+      background: #050510;
+      border: 4px solid var(--green);
+      padding: 20px 24px 20px 20px;
+      position: relative;
+      image-rendering: pixelated;
+    }
+
+    /* 코너 장식 */
+    .rpg-box .corner {
+      position: absolute;
+      width: 12px; height: 12px;
+      border: 4px solid var(--green);
+      background: var(--bg);
+    }
+    .rpg-box .corner.tl { top: -4px; left: -4px; }
+    .rpg-box .corner.tr { top: -4px; right: -4px; }
+    .rpg-box .corner.bl { bottom: -4px; left: -4px; }
+    .rpg-box .corner.br { bottom: -4px; right: -4px; }
+
+    .rpg-speaker {
+      font-family: var(--font-en);
+      font-size: 8px;
+      color: var(--cyan);
+      margin-bottom: 12px;
+      letter-spacing: 2px;
+    }
+
+    .rpg-text {
+      font-family: var(--font-kr);
+      font-size: 13px;
+      line-height: 2;
+      color: var(--white);
+    }
+
+    .rpg-arrow {
+      text-align: right;
+      color: var(--yellow);
+      font-size: 14px;
+      animation: blink 1s step-start infinite;
+      margin-top: 8px;
+    }
+
+    /* ─────────────────────────────────────
+       PRICE SECTION
+    ───────────────────────────────────── */
+    .price-section {
+      width: 100%;
+      text-align: center;
+    }
+
+    .price-label {
+      font-family: var(--font-en);
+      font-size: 9px;
+      color: var(--dimgray);
+      letter-spacing: 3px;
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    .price-value {
+      font-family: var(--font-en);
+      font-size: clamp(22px, 5vw, 36px);
+      color: var(--yellow);
+    }
+
+    .price-note {
+      font-size: 10px;
+      color: var(--dimgray);
+      margin-top: 8px;
+      font-family: var(--font-en);
+    }
+
+    /* ─────────────────────────────────────
+       FEATURES LIST
+    ───────────────────────────────────── */
+    .features {
+      width: 100%;
+      background: #050510;
+      border: 4px solid var(--dimgray);
+      padding: 20px 24px;
+      position: relative;
+    }
+
+    .features-title {
+      font-family: var(--font-en);
+      font-size: 9px;
+      color: var(--cyan);
+      letter-spacing: 3px;
+      margin-bottom: 16px;
+      display: block;
+    }
+
+    .feature-item {
+      font-family: var(--font-kr);
+      font-size: 13px;
+      color: var(--white);
+      padding: 8px 0;
+      border-bottom: 1px dashed var(--dimgray);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .feature-item:last-child { border-bottom: none; }
+
+    .feature-item .star {
+      color: var(--yellow);
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    /* ─────────────────────────────────────
+       CTA BUTTON
+    ───────────────────────────────────── */
+    .cta-wrap {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn-offer {
+      display: inline-block;
+      font-family: var(--font-en);
+      font-size: clamp(9px, 2vw, 12px);
+      color: #000;
+      background: var(--yellow);
+      border: 4px solid var(--white);
+      padding: 16px 28px;
+      cursor: pointer;
+      text-decoration: none;
+      letter-spacing: 2px;
+      image-rendering: pixelated;
+      transition: transform 0.1s, background 0.1s;
+      /* 픽셀 드롭 섀도우 */
+      box-shadow: 4px 4px 0 #aa8800, 8px 8px 0 #554400;
+    }
+
+    .btn-offer:hover {
+      background: #fff;
+      transform: translate(-2px, -2px);
+      box-shadow: 6px 6px 0 #aa8800, 10px 10px 0 #554400;
+    }
+
+    .btn-offer:active {
+      transform: translate(4px, 4px);
+      box-shadow: none;
+    }
+
+    .escrow-note {
+      font-family: var(--font-en);
+      font-size: 8px;
+      color: var(--dimgray);
+      letter-spacing: 1px;
+      text-align: center;
+    }
+
+    .escrow-note span {
+      color: var(--green);
+    }
+
+    /* ─────────────────────────────────────
+       FOOTER
+    ───────────────────────────────────── */
+    footer {
+      width: 100%;
+      background: var(--bg2);
+      border-top: 4px solid var(--dimgray);
+      padding: 16px;
+      text-align: center;
+      font-family: var(--font-en);
+      font-size: 8px;
+      color: var(--dimgray);
+      letter-spacing: 2px;
+    }
+
+    /* ─────────────────────────────────────
+       RESPONSIVE
+    ───────────────────────────────────── */
+    @media (max-width: 480px) {
+      .logo { font-size: 8px; }
+      .status-bar { display: none; }
+      .rpg-text { font-size: 12px; }
+      .feature-item { font-size: 12px; }
+      .btn-offer { padding: 14px 18px; }
+      main { padding: 24px 14px 48px; gap: 24px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── HEADER ── -->
+  <header>
+    <span class="logo">★ PIXEL DOMAIN SHOP</span>
+    <span class="status-bar">
+      <span class="online-dot"></span>ONLINE &nbsp;|&nbsp; INSERT COIN
+    </span>
+  </header>
+
+  <!-- ── TICKER ── -->
+  <div class="ticker">
+    <span class="ticker-inner">
+      &nbsp;&nbsp;&nbsp;
+      ★ PREMIUM DOMAIN FOR SALE &nbsp;★&nbsp;
+      BUY THIS DOMAIN &nbsp;★&nbsp;
+      MAKE AN OFFER TODAY &nbsp;★&nbsp;
+      SECURE ESCROW TRANSFER &nbsp;★&nbsp;
+      PREMIUM DOMAIN FOR SALE &nbsp;★&nbsp;
+      CONTACT US NOW &nbsp;★&nbsp;
+    </span>
+  </div>
+
+  <!-- ── MAIN ── -->
+  <main>
+
+    <!-- HERO: 도메인명 -->
+    <section class="hero">
+      <span class="hero-label">// DOMAIN DETECTED //</span>
+      <div class="domain-display" id="domainName">
+        <!-- 타이핑 애니메이션으로 채워짐 -->
+        <span class="cursor"></span>
+      </div>
+      <div class="for-sale-badge">THIS DOMAIN IS FOR SALE</div>
+    </section>
+
+    <!-- RPG DIALOG BOX -->
+    <div class="rpg-box">
+      <div class="corner tl"></div>
+      <div class="corner tr"></div>
+      <div class="corner bl"></div>
+      <div class="corner br"></div>
+      <div class="rpg-speaker">▶ SYSTEM MSG</div>
+      <p class="rpg-text" id="rpgMessage">
+        이 도메인을 찾아냈군! 이 도메인은 현재 판매 중이야.
+        브랜딩, 스타트업, 또는 프로젝트에 딱 맞는 도메인을 지금 바로 손에 넣을 수 있어.
+        아래 버튼을 눌러서 오퍼를 보내봐!
+      </p>
+      <div class="rpg-arrow">▼</div>
+    </div>
+
+    <!-- PRICE -->
+    <section class="price-section pixel-box" id="priceSection" style="padding: 24px;">
+      <span class="price-label">// ASKING PRICE //</span>
+      <div class="price-value" id="priceDisplay">MAKE AN OFFER</div>
+      <div class="price-note" id="priceNote"></div>
+    </section>
+
+    <!-- FEATURES -->
+    <div class="features">
+      <span class="features-title">// DOMAIN FEATURES //</span>
+      <div class="feature-item"><span class="star">★</span> Premium Domain Name</div>
+      <div class="feature-item"><span class="star">★</span> Short &amp; Memorable</div>
+      <div class="feature-item"><span class="star">★</span> High Branding Potential</div>
+      <div class="feature-item"><span class="star">★</span> Secure Escrow Transfer Available</div>
+    </div>
+
+    <!-- CTA -->
+    <div class="cta-wrap">
+      <a class="btn-offer" id="ctaBtn" href="#" target="_blank" rel="noopener">
+        [ ▶ MAKE AN OFFER ]
+      </a>
+      <div class="escrow-note" id="escrowNote"></div>
+    </div>
+
+  </main>
+
+  <!-- ── FOOTER ── -->
+  <footer id="footerText">© 2026 PIXEL DOMAIN SHOP — ALL RIGHTS RESERVED</footer>
+
+  <script>
+    /* ═══════════════════════════════════════════
+       ★ 설정 변수 — 여기만 수정하세요!
+    ═══════════════════════════════════════════ */
+    const CONFIG = {
+      contactUrl:  "https://forms.gle/YOUR_FORM_ID",  // 구글폼 URL (또는 "mailto:your@email.com")
+      askingPrice: "$2,500",   // 희망가격. 빈 문자열 "" 이면 "MAKE AN OFFER" 표시
+      ownerName:   "Domain Owner",
+      escrow:      true        // 에스크로 안내 표시 여부
+    };
+
+    /* ═══════════════════════════════════════════
+       도메인 감지 로직
+       우선순위: ?d= 쿼리스트링 > window.location.hostname
+    ═══════════════════════════════════════════ */
+    function getTargetDomain() {
+      const params = new URLSearchParams(window.location.search);
+      const qd = params.get('d');
+      if (qd && qd.trim() !== '') return qd.trim();
+      const host = window.location.hostname;
+      // GitHub Pages 자체 도메인이면 예시 표시
+      if (host.includes('github.io') || host === 'localhost' || host === '127.0.0.1') {
+        return 'yourdomain.com';
+      }
+      return host;
+    }
+
+    const DOMAIN = getTargetDomain();
+
+    /* ═══════════════════════════════════════════
+       타이핑 애니메이션 (보너스)
+    ═══════════════════════════════════════════ */
+    function typeWriter(element, text, speed = 80) {
+      element.innerHTML = '';  // 초기화
+      const cursor = document.createElement('span');
+      cursor.className = 'cursor';
+      let i = 0;
+
+      function type() {
+        if (i < text.length) {
+          element.insertBefore(document.createTextNode(text[i]), cursor);
+          i++;
+          playBeep(880, 30);  // 타이핑 비프음
+          setTimeout(type, speed);
+        } else {
+          // 완료 후 커서 유지
+        }
+      }
+
+      element.appendChild(cursor);
+      setTimeout(type, 400);
+    }
+
+    /* ═══════════════════════════════════════════
+       Web Audio API 8비트 비프음
+    ═══════════════════════════════════════════ */
+    let audioCtx = null;
+
+    function getAudioCtx() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      return audioCtx;
+    }
+
+    function playBeep(freq = 440, duration = 60, vol = 0.08) {
+      try {
+        const ctx = getAudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'square';  // 8비트 파형
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+        gain.gain.setValueAtTime(vol, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration / 1000);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + duration / 1000);
+      } catch(e) { /* 오디오 미지원 무시 */ }
+    }
+
+    /* CTA 버튼 hover 비프음 */
+    const ctaBtn = document.getElementById('ctaBtn');
+    ctaBtn.addEventListener('mouseenter', () => playBeep(523, 80, 0.12));
+    ctaBtn.addEventListener('click',      () => playBeep(1046, 120, 0.15));
+
+    /* ═══════════════════════════════════════════
+       페이지 콘텐츠 렌더링
+    ═══════════════════════════════════════════ */
+    // 1. 도메인 타이핑 효과
+    typeWriter(document.getElementById('domainName'), DOMAIN, 90);
+
+    // 2. 가격 표시
+    const priceDisplay = document.getElementById('priceDisplay');
+    const priceNote    = document.getElementById('priceNote');
+    if (CONFIG.askingPrice && CONFIG.askingPrice.trim() !== '') {
+      priceDisplay.textContent = CONFIG.askingPrice;
+      priceNote.textContent    = '* 가격 협의 가능 / Negotiable';
+    } else {
+      priceDisplay.textContent = 'MAKE AN OFFER';
+    }
+
+    // 3. CTA 버튼 URL 연결
+    ctaBtn.href = CONFIG.contactUrl;
+
+    // 4. 에스크로 안내
+    if (CONFIG.escrow) {
+      document.getElementById('escrowNote').innerHTML =
+        '<span>✔ SECURE</span> ESCROW TRANSFER GUARANTEED &nbsp;|&nbsp; SAFE &amp; TRUSTED';
+    }
+
+    // 5. 페이지 타이틀 동적 변경
+    document.title = DOMAIN + ' — For Sale';
+
+    // 6. RPG 메시지에 도메인명 삽입
+    document.getElementById('rpgMessage').innerHTML =
+      `<strong style="color:var(--yellow)">${DOMAIN}</strong> 을(를) 찾아냈군!<br>
+      이 도메인은 현재 판매 중이야. 브랜딩, 스타트업, 프로젝트에 딱 맞는 도메인을 지금 바로 손에 넣을 수 있어. 아래 버튼을 눌러서 오퍼를 보내봐!`;
+
+    // 7. 푸터 소유자 표시
+    document.getElementById('footerText').textContent =
+      `© 2026 ${CONFIG.ownerName.toUpperCase()} — ALL RIGHTS RESERVED`;
+  </script>
+</body>
+</html>
