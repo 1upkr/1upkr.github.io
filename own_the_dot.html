@@ -520,7 +520,7 @@
     ═══════════════════════════════════════════ */
     const CONFIG = {
       contactUrl:  "https://docs.google.com/forms/d/e/1FAIpQLSc9-EOGYFLedsH8a7nAKVY2ua23VB8nCAlsXrwP6ZadzjoWvQ/viewform?usp=header",  // 구글폼 URL (또는 "mailto:your@email.com")
-      askingPrice: "",   // 희망가격. 빈 문자열 "" 이면 "MAKE AN OFFER" 표시
+      askingPrice: "$2500",   // 희망가격. 빈 문자열 "" 이면 "MAKE AN OFFER" 표시
       ownerName:   "1UP YOUR VIBE",
       escrow:      true        // 에스크로 안내 표시 여부
     };
@@ -544,7 +544,7 @@
     const DOMAIN = getTargetDomain();
 
     /* ═══════════════════════════════════════════
-       타이핑 애니메이션 (보너스)
+       타이핑 애니메이션
     ═══════════════════════════════════════════ */
     function typeWriter(element, text, speed = 80) {
       element.innerHTML = '';  // 초기화
@@ -620,16 +620,16 @@
     // 4. 에스크로 안내
     if (CONFIG.escrow) {
       document.getElementById('escrowNote').innerHTML =
-        '<span>✔ SECURE</span> ESCROW TRANSFER GUARANTEED &nbsp;|&nbsp; SAFE &amp; TRUSTED';
+        '<span>✔ SECURE ESCROW TRANSFER GUARANTEED &nbsp;|&nbsp; SAFE &amp; TRUSTED</span>';
     }
 
     // 5. 페이지 타이틀 동적 변경
-    document.title = DOMAIN + ' — For Sale';
+    document.title = DOMAIN + ' — Own the Dot';
 
     // 6. RPG 메시지에 도메인명 삽입
     document.getElementById('rpgMessage').innerHTML =
       `<strong style="color:var(--yellow)">${DOMAIN}</strong> 을 찾아냈군!<br>
-      이 도메인은 현재 판매 중이며 브랜딩, 스타트업, 프로젝트에 딱 맞는 도메인을 지금 바로 손에 넣을 수 있음. 아래 버튼을 눌러서 오퍼를 보내!`;
+      브랜딩, 스타트업, 프로젝트에 딱 맞는 도메인을 지금 바로 손에 넣을 수 있음. 아래 버튼을 눌러서 오퍼!!`;
 
     // 7. 푸터 소유자 표시
     document.getElementById('footerText').textContent =
