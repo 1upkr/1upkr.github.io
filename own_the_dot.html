@@ -5,12 +5,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>:: Own the Dot @1up your vibe ::</title>
 
-  <!-- OG / SEO 메타태그 (JS로 동적 업데이트됨) -->
-  <meta name="description"   content="Premium domain for sale. Make an offer today." />
-  <meta property="og:type"   content="website" />
-  <meta property="og:title"  id="og-title"  content="Domain For Sale — Own the Dot" />
-  <meta property="og:description" id="og-desc" content="Premium domain for sale. Make an offer today." />
-  <meta property="og:url"    id="og-url"   content="" />
+  <!-- SEO 기본 -->
+  <meta name="description"        content="Premium domain for sale. Make an offer today." />
+  <meta name="robots"             content="index, follow" />
+
+  <!-- OG (Facebook / KakaoTalk / 네이버 블로그 등) -->
+  <meta property="og:type"        content="website" />
+  <meta property="og:title"       id="og-title"   content="Domain For Sale — Own the Dot" />
+  <meta property="og:description" id="og-desc"    content="Premium domain for sale. Make an offer today." />
+  <meta property="og:url"         id="og-url"     content="" />
+  <meta property="og:image"       content="https://1up.kr/og-image.png" /><!-- 선택: 1200×630 이미지 -->
+
+  <!-- Twitter / X 카드 -->
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:title"       id="tw-title" content="Domain For Sale — Own the Dot" />
+  <meta name="twitter:description" id="tw-desc"  content="Premium domain for sale. Make an offer today." />
+  <meta name="twitter:image"       content="https://1up.kr/og-image.png" /><!-- 선택 -->
+
+  <!-- 보안 헤더 (GitHub Pages는 CSP 미지원이므로 meta로 대체) -->
+  <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+  <meta http-equiv="Referrer-Policy"        content="strict-origin-when-cross-origin" />
 
   <!-- Neo둥근모 웹폰트 -->
   <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/neodgm/neodgm-webfont@1.600/neodgm/style.css">
@@ -19,12 +33,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
-  <!-- JS 미지원 안내 -->
-  <noscript>
-    <style>.js-required { display: none !important; }</style>
-  </noscript>
+  <!-- JS 미지원 시 main 숨김 -->
+  <noscript><style>#mainContent { display: none !important; } .noscript-warn { display: flex !important; }</style></noscript>
 
   <style>
+    /* ── CSS 변수 ── */
     :root {
       --bg:       #0a0a1a;
       --bg2:      #0d0d2b;
@@ -33,9 +46,11 @@
       --cyan:     #00e5ff;
       --white:    #e0e0e0;
       --dimgray:  #444466;
+      --red:      #ff4444;
       --border:   #00ff41;
       --font-en:  'Press Start 2P', monospace;
       --font-kr:  'NeoDunggeunmo', 'Press Start 2P', monospace;
+      --focus-ring: 3px solid var(--yellow);
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -49,13 +64,18 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-start;
       overflow-x: hidden;
       background-image: radial-gradient(circle, #1a1a3a 1px, transparent 1px);
       background-size: 24px 24px;
     }
 
-    /* 스캔라인 오버레이 */
+    /* 전역 키보드 포커스 링 (접근성 ++) */
+    :focus-visible {
+      outline: var(--focus-ring);
+      outline-offset: 4px;
+    }
+
+    /* 스캔라인 */
     body::before {
       content: '';
       position: fixed;
@@ -79,28 +99,40 @@
       to   { opacity: 1; transform: translateY(0); }
     }
     @keyframes glitch {
-      0%   { text-shadow: 2px 0 #ff0055, -2px 0 #00e5ff; }
-      20%  { text-shadow: -2px 0 #ff0055,  2px 0 #00e5ff; }
-      40%  { text-shadow: 2px 2px #ff0055, -2px -2px #00e5ff; }
-      60%  { text-shadow: -2px 0 #ff0055,  2px 0 #00e5ff; }
-      80%  { text-shadow: 0 0 #ff0055, 0 0 #00e5ff; }
-      100% { text-shadow: 2px 0 #ff0055, -2px 0 #00e5ff; }
+      0%   { text-shadow:  2px  0   #ff0055, -2px  0   #00e5ff; }
+      20%  { text-shadow: -2px  0   #ff0055,  2px  0   #00e5ff; }
+      40%  { text-shadow:  2px  2px #ff0055, -2px -2px #00e5ff; }
+      60%  { text-shadow: -2px  0   #ff0055,  2px  0   #00e5ff; }
+      80%  { text-shadow:  0    0   #ff0055,  0    0   #00e5ff; }
+      100% { text-shadow:  2px  0   #ff0055, -2px  0   #00e5ff; }
     }
     @keyframes pixelPulse {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(0,255,65,0.4); }
-      50%       { box-shadow: 0 0 0 8px rgba(0,255,65,0); }
+      0%, 100% { box-shadow: 0 0 0 0   rgba(0,255,65,0.4); }
+      50%       { box-shadow: 0 0 0 8px rgba(0,255,65,0);   }
     }
     @keyframes marqueeScroll {
       0%   { transform: translateX(0); }
       100% { transform: translateX(-50%); }
     }
     @keyframes errorFlicker {
-      0%, 90%, 100% { opacity: 1; }
+      0%, 90%, 100% { opacity: 1;   }
       92%            { opacity: 0.4; }
       96%            { opacity: 0.7; }
     }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0);   }
+    }
 
-    /* ── 픽셀 박스 (코너 장식 통일) ── */
+    /* 접근성: 모션 감소 설정 존중 */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    /* ── 픽셀 박스 (통일된 코너 장식) ── */
     .pixel-box {
       border: 4px solid var(--border);
       image-rendering: pixelated;
@@ -130,24 +162,27 @@
     }
     .logo {
       font-family: var(--font-en);
-      font-size: 10px;
+      font-size: clamp(7px, 1.5vw, 10px);
       color: var(--yellow);
       letter-spacing: 2px;
     }
     .status-bar {
+      font-family: var(--font-en);
       font-size: 9px;
       color: var(--dimgray);
-      font-family: var(--font-en);
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
-    .status-bar .online-dot {
+    .online-dot {
       display: inline-block;
       width: 8px; height: 8px;
       background: var(--green);
-      margin-right: 6px;
+      border-radius: 0;
       animation: blink 1s step-start infinite;
     }
 
-    /* ── TICKER (마퀴 공백 수정: 텍스트 2회 반복, translateX(-50%) 로 루프) ── */
+    /* ── TICKER ── */
     .ticker {
       width: 100%;
       background: #000;
@@ -166,6 +201,22 @@
       font-size: 8px;
       color: var(--cyan);
       padding-right: 40px;
+    }
+
+    /* ── NOSCRIPT 경고 ── */
+    .noscript-warn {
+      display: none;
+      width: 100%;
+      max-width: 760px;
+      margin: 40px 20px;
+      padding: 24px;
+      border: 4px solid var(--yellow);
+      font-family: var(--font-en);
+      font-size: 9px;
+      color: var(--yellow);
+      text-align: center;
+      line-height: 2.4;
+      animation: fadeIn 0.5s ease;
     }
 
     /* ── MAIN ── */
@@ -218,7 +269,7 @@
       animation: pixelPulse 2s ease infinite;
     }
 
-    /* ── RPG BOX (pixel-box 패턴으로 통일, corner div 제거) ── */
+    /* ── RPG BOX ── */
     .rpg-box {
       width: 100%;
       background: #050510;
@@ -234,7 +285,7 @@
     .rpg-text {
       font-family: var(--font-kr);
       font-size: clamp(11px, 2vw, 13px);
-      line-height: 2;
+      line-height: 2.2;
       color: var(--white);
     }
     .rpg-arrow {
@@ -319,11 +370,13 @@
       transition: transform 0.1s, background 0.1s;
       box-shadow: 4px 4px 0 #aa8800, 8px 8px 0 #554400;
     }
-    .btn-offer:hover, .btn-offer:focus {
+    .btn-offer:hover,
+    .btn-offer:focus-visible {
       background: #fff;
       transform: translate(-2px, -2px);
       box-shadow: 6px 6px 0 #aa8800, 10px 10px 0 #554400;
-      outline: none;
+      outline: var(--focus-ring);
+      outline-offset: 4px;
     }
     .btn-offer:active {
       transform: translate(4px, 4px);
@@ -338,26 +391,13 @@
     }
     .escrow-note span { color: var(--green); }
 
-    /* ── NOSCRIPT 안내 ── */
-    .noscript-warn {
-      width: 100%;
-      max-width: 760px;
-      margin: 40px 20px;
-      padding: 20px;
-      border: 4px solid var(--yellow);
-      font-family: var(--font-en);
-      font-size: 9px;
-      color: var(--yellow);
-      text-align: center;
-      line-height: 2;
-    }
-
     /* ── ERROR 화면 ── */
     .error-wrap {
       width: 100%;
       display: flex;
       justify-content: center;
       padding-top: 48px;
+      animation: fadeIn 0.4s ease;
     }
     .error-rpg-box {
       --border: #ff4444;
@@ -368,7 +408,7 @@
     .error-code {
       font-family: var(--font-en);
       font-size: clamp(24px, 6vw, 40px);
-      color: #ff4444;
+      color: var(--red);
       display: block;
       margin-bottom: 24px;
       animation: errorFlicker 3s infinite;
@@ -397,7 +437,6 @@
 
     /* ── RESPONSIVE ── */
     @media (max-width: 480px) {
-      .logo        { font-size: 7px; }
       .status-bar  { display: none; }
       .btn-offer   { padding: 14px 18px; }
       main         { padding: 24px 14px 48px; gap: 24px; }
@@ -409,12 +448,13 @@
   <!-- ── HEADER ── -->
   <header>
     <span class="logo" lang="en">★ OWN the DOT - First Impression Starts Here</span>
-    <span class="status-bar" lang="en">
-      <span class="online-dot" aria-hidden="true"></span>ONLINE &nbsp;|&nbsp; INSERT COIN
-    </span>
+    <div class="status-bar" lang="en" aria-label="서버 상태: 온라인">
+      <span class="online-dot" role="img" aria-label="온라인"></span>
+      ONLINE &nbsp;|&nbsp; INSERT COIN
+    </div>
   </header>
 
-  <!-- ── TICKER (텍스트 2회 반복으로 끊김 없는 루프) ── -->
+  <!-- ── TICKER ── -->
   <div class="ticker" id="ticker" aria-hidden="true">
     <div class="ticker-track">
       <span class="ticker-unit" lang="en">
@@ -424,7 +464,6 @@
         SECURE ESCROW TRANSFER &nbsp;★&nbsp;
         CONTACT US NOW &nbsp;★&nbsp;
       </span>
-      <!-- 공백 없는 루프를 위해 동일 텍스트 반복 -->
       <span class="ticker-unit" lang="en" aria-hidden="true">
         ★ PREMIUM DOMAIN FOR SALE &nbsp;★&nbsp;
         BUY THIS DOMAIN &nbsp;★&nbsp;
@@ -437,99 +476,116 @@
 
   <!-- ── NOSCRIPT 폴백 ── -->
   <noscript>
-    <div class="noscript-warn">
-      ⚠ JAVASCRIPT REQUIRED<br>
+    <div class="noscript-warn" role="alert">
+      ⚠ JAVASCRIPT REQUIRED<br><br>
       이 페이지는 JavaScript가 필요합니다.<br>
-      브라우저 설정에서 JS를 활성화해주세요.
+      브라우저 설정에서 JS를 활성화해주세요.<br><br>
+      <span style="color:var(--dimgray); font-size:8px;" lang="en">
+        PLEASE ENABLE JAVASCRIPT TO VIEW THIS PAGE.
+      </span>
     </div>
   </noscript>
 
   <!-- ── MAIN ── -->
-  <main id="mainContent" class="js-required">
+  <main id="mainContent">
 
     <!-- HERO -->
-    <section class="hero">
+    <section class="hero" aria-labelledby="domainName">
       <span class="hero-label" lang="en">// DOMAIN DETECTED //</span>
-      <div class="domain-display" id="domainName" aria-label="판매 도메인명">
+      <div class="domain-display"
+           id="domainName"
+           role="heading"
+           aria-level="1"
+           aria-label="판매 도메인명 로딩 중">
         <span class="cursor" aria-hidden="true"></span>
       </div>
-      <div class="for-sale-badge" lang="en">THIS DOMAIN IS FOR SALE</div>
+      <div class="for-sale-badge" lang="en" aria-label="이 도메인은 판매 중입니다">
+        THIS DOMAIN IS FOR SALE
+      </div>
     </section>
 
-    <!-- RPG DIALOG BOX -->
-    <div class="rpg-box pixel-box" role="region" aria-label="판매 안내">
-      <div class="rpg-speaker" lang="en">▶ SYSTEM MSG</div>
+    <!-- RPG DIALOG -->
+    <div class="rpg-box pixel-box"
+         role="region"
+         aria-label="판매 안내 메시지">
+      <div class="rpg-speaker" lang="en" aria-hidden="true">▶ SYSTEM MSG</div>
       <p class="rpg-text" id="rpgMessage"></p>
       <div class="rpg-arrow" aria-hidden="true">▼</div>
     </div>
 
     <!-- PRICE -->
-    <section class="price-section pixel-box" style="padding: 24px;" aria-label="가격 정보">
+    <section class="price-section pixel-box"
+             style="padding: 24px;"
+             aria-label="도메인 판매 가격">
       <span class="price-label" lang="en">// ASKING PRICE //</span>
       <div class="price-value" id="priceDisplay" lang="en">MAKE AN OFFER</div>
       <div class="price-note"  id="priceNote"></div>
     </section>
 
     <!-- FEATURES -->
-    <div class="features" role="list" aria-label="도메인 특징">
+    <section class="features" aria-label="도메인 특징">
       <span class="features-title" lang="en">// DOMAIN FEATURES //</span>
-      <div class="feature-item" role="listitem" lang="en"><span class="star" aria-hidden="true">★</span> Premium Domain Name</div>
-      <div class="feature-item" role="listitem" lang="en"><span class="star" aria-hidden="true">★</span> Short &amp; Memorable</div>
-      <div class="feature-item" role="listitem" lang="en"><span class="star" aria-hidden="true">★</span> High Branding Potential</div>
-      <div class="feature-item" role="listitem" lang="en"><span class="star" aria-hidden="true">★</span> Secure Escrow Transfer Available</div>
-    </div>
+      <ul style="list-style:none;">
+        <li class="feature-item" lang="en"><span class="star" aria-hidden="true">★</span> Premium Domain Name</li>
+        <li class="feature-item" lang="en"><span class="star" aria-hidden="true">★</span> Short &amp; Memorable</li>
+        <li class="feature-item" lang="en"><span class="star" aria-hidden="true">★</span> High Branding Potential</li>
+        <li class="feature-item" lang="en"><span class="star" aria-hidden="true">★</span> Secure Escrow Transfer Available</li>
+      </ul>
+    </section>
 
     <!-- CTA -->
     <div class="cta-wrap">
-      <a class="btn-offer" id="ctaBtn"
+      <a class="btn-offer"
+         id="ctaBtn"
          href="#"
          target="_blank"
          rel="noopener noreferrer"
          lang="en"
-         aria-label="도메인 구매 문의하기">
+         aria-label="이 도메인 구매 문의하기 — 새 탭에서 열림">
         [ ▶ MAKE AN OFFER ]
       </a>
-      <div class="escrow-note" id="escrowNote" lang="en"></div>
+      <div class="escrow-note" id="escrowNote" lang="en" aria-live="polite"></div>
     </div>
 
   </main>
 
   <!-- ── FOOTER ── -->
-  <footer id="footerText" lang="en">© 1UP your vibe! · ALL RIGHTS RESERVED :D · 2026</footer>
+  <footer id="footerText" role="contentinfo" lang="en">
+    © 1UP your vibe! · ALL RIGHTS RESERVED :D · 2026
+  </footer>
 
   <script>
-  (function () {   /* ← IIFE: 전역 스코프 오염 방지 */
+  (function () {
 
-    /* ═══════════════════════════════════════════
+    /* ═══════════════════════════════════════
        ★ 설정 변수 — 여기만 수정하세요!
-    ═══════════════════════════════════════════ */
+    ═══════════════════════════════════════ */
     const CONFIG = {
       contactUrl:  "https://docs.google.com/forms/d/e/1FAIpQLSc9-EOGYFLedsH8a7nAKVY2ua23VB8nCAlsXrwP6ZadzjoWvQ/viewform?usp=header",
-      askingPrice: "$2500",       // 빈 문자열이면 "MAKE AN OFFER" 표시
+      askingPrice: "$2500",     // 빈 문자열 "" → "MAKE AN OFFER"
       ownerName:   "1UP YOUR VIBE",
       escrow:      true,
-      hostDomain:  "1up.kr"       // 호스팅 서버 도메인 (판매 대상 아님)
+      hostDomain:  "1up.kr"    // 호스팅 서버 도메인 (판매 대상 아님)
     };
 
-    /* ═══════════════════════════════════════════
+    /* ═══════════════════════════════════════
        XSS 방어 — 도메인 화이트리스트 필터
-       허용: 영숫자, 하이픈, 점, 콜론(포트용)
-    ═══════════════════════════════════════════ */
+    ═══════════════════════════════════════ */
     function sanitizeDomain(raw) {
-      return raw.replace(/[^a-zA-Z0-9.\-:]/g, '').slice(0, 253);
+      return String(raw).replace(/[^a-zA-Z0-9.\-:]/g, '').slice(0, 253);
     }
 
-    /* ═══════════════════════════════════════════
+    /* ═══════════════════════════════════════
        도메인 감지
-    ═══════════════════════════════════════════ */
+    ═══════════════════════════════════════ */
     function getDomainInfo() {
       const params = new URLSearchParams(window.location.search);
-      const qd     = params.get('d');
-      const host   = window.location.hostname;
-      const proto  = window.location.protocol;
+      const qd    = params.get('d');
+      const host  = window.location.hostname;
+      const proto = window.location.protocol;
 
-      if (qd && qd.trim() !== '') return { domain: sanitizeDomain(qd.trim()), forSale: true };
-      if (proto === 'file:')       return { domain: null, forSale: false };
+      if (qd && qd.trim() !== '')  return { domain: sanitizeDomain(qd.trim()), forSale: true };
+      if (proto === 'file:')        return { domain: null, forSale: false };
 
       const notForSale =
         host === '' ||
@@ -539,62 +595,73 @@
         host === '127.0.0.1';
 
       if (notForSale) return { domain: null, forSale: false };
-
       return { domain: sanitizeDomain(host), forSale: true };
     }
 
     const { domain: DOMAIN, forSale: FOR_SALE } = getDomainInfo();
 
-    /* ═══════════════════════════════════════════
+    /* ═══════════════════════════════════════
        판매 안 함 → ERROR 화면
-    ═══════════════════════════════════════════ */
+    ═══════════════════════════════════════ */
     if (!FOR_SALE) {
       document.getElementById('ticker').style.display = 'none';
       document.getElementById('mainContent').innerHTML = `
         <div class="error-wrap">
-          <div class="rpg-box pixel-box error-rpg-box" role="alert">
-            <div class="rpg-speaker" style="color:#ff4444;" lang="en">▶ SYSTEM ERR</div>
+          <div class="rpg-box pixel-box error-rpg-box" role="alert" aria-live="assertive">
+            <div class="rpg-speaker" style="color:var(--red);" lang="en">▶ SYSTEM ERR</div>
             <p class="rpg-text" style="text-align:center; line-height:2.4;">
               <span class="error-code" lang="en">ERROR 404</span>
               이 도메인은 판매 목록에 없음.<br>
               <span class="error-sub" lang="en">THIS DOMAIN IS NOT LISTED FOR SALE.</span>
             </p>
-            <div class="rpg-arrow" style="animation:none; opacity:0.3; color:#ff4444;" aria-hidden="true">■</div>
+            <div class="rpg-arrow" style="animation:none; opacity:0.3; color:var(--red);" aria-hidden="true">■</div>
           </div>
         </div>
       `;
       document.title = '404 — Not Listed For Sale';
-      return;   /* 이하 실행 중단 */
+      return;
     }
 
-    /* ═══════════════════════════════════════════
-       판매 모드 — 초기화
-    ═══════════════════════════════════════════ */
+    /* ═══════════════════════════════════════
+       판매 모드 — CTA href 선설정
+    ═══════════════════════════════════════ */
+    const ctaBtn = document.getElementById('ctaBtn');
+    ctaBtn.href = CONFIG.contactUrl;
 
-    /* CTA href 선(先) 설정 — JS 오류 발생 시에도 링크 동작 보장 */
-    document.getElementById('ctaBtn').href = CONFIG.contactUrl;
+    /* ═══════════════════════════════════════
+       메타태그 동적 업데이트
+    ═══════════════════════════════════════ */
+    const metaTitle = `${DOMAIN} — For Sale | Own the Dot`;
+    const metaDesc  = `${DOMAIN} 도메인이 판매 중입니다. 브랜딩·스타트업·프로젝트에 딱 맞는 프리미엄 도메인을 지금 손에 넣으세요.`;
 
-    /* OG 메타태그 동적 업데이트 */
-    document.getElementById('og-title').setAttribute('content', `${DOMAIN} — For Sale | Own the Dot`);
-    document.getElementById('og-desc').setAttribute('content', `${DOMAIN} 도메인이 판매 중입니다. 지금 오퍼를 보내세요!`);
-    document.getElementById('og-url').setAttribute('content', window.location.href);
-
-    /* 페이지 타이틀 */
     document.title = `${DOMAIN} — Own the Dot`;
+    document.querySelector('meta[name="description"]').setAttribute('content', metaDesc);
+    document.getElementById('og-title').setAttribute('content', metaTitle);
+    document.getElementById('og-desc').setAttribute('content', metaDesc);
+    document.getElementById('og-url').setAttribute('content', window.location.href);
+    document.getElementById('tw-title').setAttribute('content', metaTitle);
+    document.getElementById('tw-desc').setAttribute('content', metaDesc);
 
-    /* ── Web Audio API (사용자 인터랙션 후 활성화) ── */
-    let audioCtx  = null;
+    /* aria-label 업데이트 */
+    document.getElementById('domainName').setAttribute('aria-label', `판매 도메인: ${DOMAIN}`);
+
+    /* ═══════════════════════════════════════
+       Web Audio (사용자 인터랙션 후 활성화)
+    ═══════════════════════════════════════ */
+    let audioCtx   = null;
     let audioReady = false;
 
     function unlockAudio() {
       if (audioReady) return;
-      audioCtx   = new (window.AudioContext || window.webkitAudioContext)();
-      audioReady = true;
+      try {
+        audioCtx   = new (window.AudioContext || window.webkitAudioContext)();
+        audioReady = true;
+      } catch(e) {}
     }
 
-    document.addEventListener('click',     unlockAudio, { once: false });
-    document.addEventListener('keydown',   unlockAudio, { once: false });
-    document.addEventListener('touchstart',unlockAudio, { once: false });
+    ['click', 'keydown', 'touchstart'].forEach(ev =>
+      document.addEventListener(ev, unlockAudio, { passive: true })
+    );
 
     function playBeep(freq = 440, duration = 60, vol = 0.08) {
       if (!audioReady || !audioCtx) return;
@@ -612,33 +679,38 @@
       } catch(e) {}
     }
 
-    /* CTA 버튼 사운드 */
-    const ctaBtn = document.getElementById('ctaBtn');
-    ctaBtn.addEventListener('mouseenter', () => playBeep(523, 80, 0.12));
+    ctaBtn.addEventListener('mouseenter', () => playBeep(523,  80, 0.12));
     ctaBtn.addEventListener('click',      () => playBeep(1046, 120, 0.15));
 
-    /* ── 타이핑 애니메이션 ── */
+    /* ═══════════════════════════════════════
+       타이핑 애니메이션
+    ═══════════════════════════════════════ */
     function typeWriter(element, text, speed = 80) {
       element.innerHTML = '';
       const cursor = document.createElement('span');
-      cursor.className  = 'cursor';
+      cursor.className = 'cursor';
       cursor.setAttribute('aria-hidden', 'true');
-      let i = 0;
       element.appendChild(cursor);
+
+      let i = 0;
       const timer = setInterval(() => {
         if (i < text.length) {
-          element.insertBefore(document.createTextNode(text[i]), cursor);
-          playBeep(880, 30);
-          i++;
+          element.insertBefore(document.createTextNode(text[i++]), cursor);
+          playBeep(880, 30, 0.06);
         } else {
           clearInterval(timer);
         }
       }, speed);
     }
 
-    /* ── 렌더링 ── */
+    /* ═══════════════════════════════════════
+       렌더링
+    ═══════════════════════════════════════ */
+
+    // 1. 도메인 타이핑
     typeWriter(document.getElementById('domainName'), DOMAIN, 90);
 
+    // 2. 가격
     const priceDisplay = document.getElementById('priceDisplay');
     const priceNote    = document.getElementById('priceNote');
     if (CONFIG.askingPrice && CONFIG.askingPrice.trim() !== '') {
@@ -648,25 +720,29 @@
       priceDisplay.textContent = 'MAKE AN OFFER';
     }
 
+    // 3. 에스크로
     if (CONFIG.escrow) {
       document.getElementById('escrowNote').innerHTML =
         '<span>✔ SECURE ESCROW TRANSFER GUARANTEED</span>';
     }
 
-    /* textContent로 XSS 없이 도메인명 삽입 후 나머지 메시지 구성 */
-    const rpgMsg = document.getElementById('rpgMessage');
-    const strong = document.createElement('strong');
+    // 4. RPG 메시지 (XSS 안전: textContent 사용)
+    const rpgMsg  = document.getElementById('rpgMessage');
+    const strong  = document.createElement('strong');
     strong.style.color = 'var(--yellow)';
-    strong.textContent = DOMAIN;   /* ← innerHTML 아닌 textContent 사용 */
+    strong.textContent = DOMAIN;
     rpgMsg.appendChild(strong);
     rpgMsg.appendChild(document.createTextNode(' 을 찾아냈군!'));
     rpgMsg.appendChild(document.createElement('br'));
-    rpgMsg.appendChild(document.createTextNode('브랜딩, 스타트업, 프로젝트에 딱 맞는 도메인을 지금 바로 손에 넣을 수 있음. 아래 버튼을 눌러서 오퍼!!'));
+    rpgMsg.appendChild(document.createTextNode(
+      '브랜딩, 스타트업, 프로젝트에 딱 맞는 도메인을 지금 바로 손에 넣을 수 있음. 아래 버튼을 눌러서 오퍼!!'
+    ));
 
+    // 5. 푸터
     document.getElementById('footerText').textContent =
       `© 2026 ${CONFIG.ownerName.toUpperCase()} — ALL RIGHTS RESERVED`;
 
-  })();  /* IIFE 종료 */
+  })();
   </script>
 </body>
 </html>
