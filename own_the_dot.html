@@ -672,41 +672,59 @@
     document.getElementById('tw-desc').setAttribute('content',  metaDesc);
     document.getElementById('domainName').setAttribute('aria-label', `판매 도메인: ${DOMAIN}`);
 
-    /* ══════════════════════════════════════
-       Web Audio (첫 인터랙션 후 활성화)
-    ══════════════════════════════════════ */
-    let audioCtx   = null;
-    let audioReady = false;
+   /* ══════════════════════════════════════
+   Web Audio — 인터랙션 없이도 hover에서 작동
+══════════════════════════════════════ */
+let audioCtx = null;
 
-    function unlockAudio() {
-      if (audioReady) return;
-      try {
-        audioCtx   = new (window.AudioContext || window.webkitAudioContext)();
-        audioReady = true;
-      } catch(e) {}
-    }
-    ['click', 'keydown', 'touchstart'].forEach(ev =>
-      document.addEventListener(ev, unlockAudio, { passive: true })
-    );
+// AudioContext를 즉시 생성 (suspended 상태로 시작)
+// 브라우저 정책상 생성 자체는 허용, resume은 인터랙션 필요
+function getAudioCtx() {
+  if (!audioCtx) {
+    try {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    } catch(e) {}
+  }
+  return audioCtx;
+}
 
-    function playBeep(freq = 440, duration = 60, vol = 0.08) {
-      if (!audioReady || !audioCtx) return;
-      try {
-        const osc  = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.type = 'square';
-        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-        gain.gain.setValueAtTime(vol, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration / 1000);
-        osc.start(audioCtx.currentTime);
-        osc.stop(audioCtx.currentTime + duration / 1000);
-      } catch(e) {}
-    }
+// 페이지 로드 시 즉시 AudioContext 준비
+getAudioCtx();
 
-    ctaBtn.addEventListener('mouseenter', () => playBeep(523,  80,  0.12));
-    ctaBtn.addEventListener('click',      () => playBeep(1046, 120, 0.15));
+// 첫 mousemove에서 resume() 시도 — 브라우저가 허용하는 가장 이른 시점
+document.addEventListener('mousemove', function resumeOnMove() {
+  const ctx = getAudioCtx();
+  if (ctx && ctx.state === 'suspended') {
+    ctx.resume();
+  }
+  // 한 번만 실행하면 충분
+  document.removeEventListener('mousemove', resumeOnMove);
+}, { passive: true });
+
+// click/keydown/touchstart도 유지 (모바일 대응)
+['click', 'keydown', 'touchstart'].forEach(ev =>
+  document.addEventListener(ev, () => {
+    const ctx = getAudioCtx();
+    if (ctx && ctx.state === 'suspended') ctx.resume();
+  }, { passive: true })
+);
+
+function playBeep(freq = 440, duration = 60, vol = 0.08) {
+  const ctx = getAudioCtx();
+  if (!ctx || ctx.state !== 'running') return;
+  try {
+    const osc  = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(freq, ctx.currentTime);
+    gain.gain.setValueAtTime(vol, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration / 1000);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + duration / 1000);
+  } catch(e) {}
+}
 
     /* ══════════════════════════════════════
        타이핑 애니메이션
