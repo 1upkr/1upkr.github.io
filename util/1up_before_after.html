@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>:: Before & After :: 1up N3RD ::</title>
+    <style>
+        /* 모던 CMS 디자인 변수 */
+        :root {
+            --bg-body: #f4f4f5;
+            --bg-panel: #ffffff;
+            --border: #e4e4e7;
+            --text-main: #09090b;
+            --text-muted: #71717a;
+            --primary: #18181b;
+            --primary-hover: #27272a;
+            --primary-fg: #fafafa;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        * { box-sizing: border-box; }
+        
+        body {
+            font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.5;
+        }
+
+        /* 메인 레이아웃 (좌측 패널, 우측 프리뷰) */
+        .app-header {
+            background-color: var(--bg-panel);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 32px;
+            font-weight: 700;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .layout {
+            display: flex;
+            gap: 24px;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px 32px;
+            align-items: flex-start;
+        }
+
+        /* 좌측 설정 패널 */
+        .sidebar {
+            width: 380px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .panel {
+            background-color: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .panel-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+            margin-top: 0;
+            letter-spacing: 0.05em;
+        }
+
+        /* 폼 요소 스타일링 */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group:last-child { margin-bottom: 0; }
+        
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .input-text {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            font-size: 0.875rem;
+            transition: border-color 0.2s;
+            background-color: #fafafa;
+        }
+        .input-text:focus {
+            outline: none;
+            border-color: var(--text-main);
+            background-color: #fff;
+        }
+
+        .file-upload-wrapper {
+            position: relative;
+            margin-bottom: 8px;
+        }
+        .file-upload-wrapper input[type="file"] {
+            position: absolute;
+            width: 0; height: 0; opacity: 0;
+        }
+        .btn-upload {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: var(--bg-body);
+            border: 1px dashed #a1a1aa;
+            border-radius: var(--radius-md);
+            text-align: center;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text-muted);
+        }
+        .btn-upload:hover {
+            border-color: var(--text-main);
+            color: var(--text-main);
+            background-color: #f4f4f5;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin: 12px 0;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid var(--border);
+        }
+        .divider:not(:empty)::before { margin-right: .5em; }
+        .divider:not(:empty)::after { margin-left: .5em; }
+
+        .btn-primary {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary);
+            color: var(--primary-fg);
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-primary:hover { background-color: var(--primary-hover); }
+
+        /* 퍼가기 설정 (사이즈 조정) */
+        .embed-settings {
+            display: none;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+        .size-inputs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .size-inputs .form-group { flex: 1; margin-bottom: 0; }
+        
+        textarea.embed-code {
+            width: 100%;
+            height: 90px;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            font-size: 0.8125rem;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            resize: none;
+            background-color: #fafafa;
+            color: #3f3f46;
+            margin-bottom: 8px;
+        }
+
+        .btn-secondary {
+            width: 100%;
+            padding: 10px;
+            background-color: #fff;
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-secondary:hover { background-color: var(--bg-body); }
+
+        /* 우측 프리뷰 영역 */
+        .preview-area {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .preview-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .slider-container {
+            background-color: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* 슬라이더 핵심 로직 */
+        .slider-wrapper {
+            position: relative;
+            width: 100%;
+            /* 초기 비율, JS로 이미지 원본 비율에 맞춰 업데이트 됨 */
+            aspect-ratio: 16/9; 
+            background: #e4e4e7;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            touch-action: none;
+            cursor: ew-resize;
+            box-shadow: 0 0 0 1px rgba(0,0,0,0.05);
+        }
+        .img-layer {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            object-fit: cover;
+            pointer-events: none;
+        }
+        .after-img { z-index: 1; }
+        .before-img-wrapper {
+            position: absolute;
+            top: 0; left: 0;
+            width: 50%; height: 100%;
+            overflow: hidden;
+            z-index: 2;
+            pointer-events: none; 
+            border-right: 2px solid white;
+        }
+        .before-img {
+            width: 100vw;
+            height: 100%;
+            object-fit: cover;
+            /* JS에서 컨테이너 가로폭에 맞춰 업데이트 */
+        }
+        .slider-handle {
+            position: absolute;
+            top: 0; left: 50%;
+            width: 32px; height: 100%;
+            margin-left: -16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3;
+            pointer-events: none;
+        }
+        .slider-button {
+            width: 36px; height: 36px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .slider-button::after {
+            content: "↔";
+            font-weight: 700;
+            color: #52525b;
+            font-size: 14px;
+        }
+
+        /* 위젯 모드 (퍼가기 시 렌더링 형태) */
+        body.widget-mode {
+            padding: 0; background-color: transparent;
+        }
+        body.widget-mode .app-header, 
+        body.widget-mode .sidebar, 
+        body.widget-mode .preview-header {
+            display: none !important;
+        }
+        body.widget-mode .layout {
+            padding: 0; margin: 0; max-width: none; width: 100vw; height: 100vh;
+        }
+        body.widget-mode .preview-area { gap: 0; }
+        body.widget-mode .slider-container {
+            padding: 0; border: none; border-radius: 0; box-shadow: none; width: 100vw; height: 100vh; background: transparent;
+        }
+        body.widget-mode .slider-wrapper {
+            border-radius: 0; aspect-ratio: auto !important; height: 100vh; width: 100vw; border: none; box-shadow: none;
+        }
+
+        /* 반응형 */
+        @media (max-width: 900px) {
+            .layout { flex-direction: column; padding: 16px; }
+            .sidebar { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="app-header">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12H3"/><path d="M16 6l-6 6 6 6"/></svg>
+    Visual Slider CMS
+</header>
+
+<div class="layout">
+    <!-- 좌측 컨트롤 패널 -->
+    <aside class="sidebar" id="controlPanel">
+        <!-- 1. 미디어 설정 -->
+        <div class="panel">
+            <h2 class="panel-title">Media Sources</h2>
+            
+            <div class="form-group">
+                <label class="form-label">Before 이미지</label>
+                <div class="file-upload-wrapper">
+                    <label for="beforeUpload" class="btn-upload">📁 기기에서 파일 선택</label>
+                    <input type="file" id="beforeUpload" accept="image/*">
+                </div>
+                <div class="divider">URL</div>
+                <input type="url" id="beforeUrl" class="input-text" placeholder="https://example.com/before.jpg">
+            </div>
+
+            <div style="height: 1px; background: var(--border); margin: 24px 0;"></div>
+
+            <div class="form-group">
+                <label class="form-label">After 이미지</label>
+                <div class="file-upload-wrapper">
+                    <label for="afterUpload" class="btn-upload">📁 기기에서 파일 선택</label>
+                    <input type="file" id="afterUpload" accept="image/*">
+                </div>
+                <div class="divider">URL</div>
+                <input type="url" id="afterUrl" class="input-text" placeholder="https://example.com/after.jpg">
+            </div>
+        </div>
+
+        <!-- 2. 퍼가기 설정 -->
+        <div class="panel">
+            <h2 class="panel-title">Publish & Embed</h2>
+            <button class="btn-primary" id="generateBtn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+                퍼가기 코드 생성
+            </button>
+
+            <div class="embed-settings" id="embedContainer">
+                <label class="form-label">위젯 사이즈 조정</label>
+                <div class="size-inputs">
+                    <div class="form-group">
+                        <label style="font-size: 11px; color: var(--text-muted);">Width (px / %)</label>
+                        <input type="text" id="embedWidth" class="input-text" value="100%">
+                    </div>
+                    <div class="form-group">
+                        <label style="font-size: 11px; color: var(--text-muted);">Height (px)</label>
+                        <input type="text" id="embedHeight" class="input-text" value="400">
+                    </div>
+                </div>
+                
+                <label class="form-label" style="margin-top: 16px;">Iframe 코드</label>
+                <textarea id="embedCode" class="embed-code" readonly></textarea>
+                <button class="btn-secondary" id="copyBtn">복사하기</button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- 우측 미리보기 영역 -->
+    <main class="preview-area">
+        <div class="preview-header">
+            <h2 class="preview-title">Live Preview</h2>
+            <span style="font-size: 12px; color: var(--text-muted); background: #e4e4e7; padding: 4px 8px; border-radius: 12px;">Responsive</span>
+        </div>
+        <div class="slider-container">
+            <div class="slider-wrapper" id="sliderWrapper">
+                <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1200&auto=format&fit=crop" id="afterImage" class="img-layer after-img" alt="After" crossorigin="anonymous">
+                <div class="before-img-wrapper" id="beforeWrapper">
+                    <img src="https://images.unsplash.com/photo-1618005198919-d3d4b5a92ead?q=80&w=1200&auto=format&fit=crop" id="beforeImage" class="img-layer before-img" alt="Before" crossorigin="anonymous">
+                </div>
+                <div class="slider-handle" id="sliderHandle">
+                    <div class="slider-button"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    const beforeImg = document.getElementById('beforeImage');
+    const afterImg = document.getElementById('afterImage');
+    const sliderWrapper = document.getElementById('sliderWrapper');
+    const beforeWrapper = document.getElementById('beforeWrapper');
+    const sliderHandle = document.getElementById('sliderHandle');
+    
+    // --- 1. 퍼가기(Iframe) 로드 확인 (위젯 모드) ---
+    const urlParams = new URLSearchParams(window.location.search);
+    const paramBefore = urlParams.get('before');
+    const paramAfter = urlParams.get('after');
+
+    if (paramBefore || paramAfter) {
+        if (paramBefore) beforeImg.src = paramBefore;
+        if (paramAfter) afterImg.src = paramAfter;
+        document.body.classList.add('widget-mode');
+    }
+
+    // --- 2. 원본 이미지 로드 시 비율 및 사이즈 세팅 ---
+    function handleImageLoad() {
+        if (!document.body.classList.contains('widget-mode')) {
+            // 원본 이미지 비율에 맞춰 프리뷰 비율 조정
+            const natWidth = beforeImg.naturalWidth || 800;
+            const natHeight = beforeImg.naturalHeight || 600;
+            sliderWrapper.style.aspectRatio = `${natWidth} / ${natHeight}`;
+            
+            // 퍼가기 설정 패널의 초기값을 원본 사이즈로 자동 세팅 (최초 생성 시)
+            document.getElementById('embedWidth').value = natWidth;
+            document.getElementById('embedHeight').value = natHeight;
+            
+            // 이미 열려있다면 코드 실시간 업데이트
+            if (document.getElementById('embedContainer').style.display === 'block') {
+                updateEmbedCode();
+            }
+        }
+        resizeBeforeImage();
+    }
+    beforeImg.addEventListener('load', handleImageLoad);
+
+    // --- 3. 이미지 업로드/URL 처리 ---
+    function setupFileInput(inputId, imgElement, urlInputId) {
+        document.getElementById(inputId).addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    imgElement.src = event.target.result;
+                    document.getElementById(urlInputId).value = '';
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+    setupFileInput('beforeUpload', beforeImg, 'beforeUrl');
+    setupFileInput('afterUpload', afterImg, 'afterUrl');
+
+    function setupUrlInput(inputId, imgElement) {
+        document.getElementById(inputId).addEventListener('input', function(e) {
+            const url = e.target.value.trim();
+            if (url) imgElement.src = url;
+        });
+    }
+    setupUrlInput('beforeUrl', beforeImg);
+    setupUrlInput('afterUrl', afterImg);
+
+    // --- 4. 슬라이더 터치/드래그 로직 ---
+    let isSliding = false;
+
+    function moveSlider(e) {
+        if (!isSliding) return;
+        const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+        const rect = sliderWrapper.getBoundingClientRect();
+        let x = clientX - rect.left;
+        
+        if (x < 0) x = 0;
+        if (x > rect.width) x = rect.width;
+        
+        const percentage = (x / rect.width) * 100;
+        beforeWrapper.style.width = percentage + '%';
+        sliderHandle.style.left = percentage + '%';
+    }
+
+    sliderWrapper.addEventListener('mousedown', (e) => { isSliding = true; moveSlider(e); });
+    window.addEventListener('mouseup', () => isSliding = false);
+    window.addEventListener('mousemove', moveSlider);
+
+    sliderWrapper.addEventListener('touchstart', (e) => { isSliding = true; moveSlider(e); }, {passive: true});
+    window.addEventListener('touchend', () => isSliding = false);
+    window.addEventListener('touchmove', moveSlider, {passive: true});
+
+    function resizeBeforeImage() {
+        // before 이미지의 가로 크기를 항상 래퍼 전체 크기와 동일하게 유지
+        const rect = sliderWrapper.getBoundingClientRect();
+        document.querySelector('.before-img').style.width = rect.width + 'px';
+    }
+    window.addEventListener('resize', resizeBeforeImage);
+
+    // --- 5. 퍼가기 코드 생성 로직 ---
+    function updateEmbedCode() {
+        let w = document.getElementById('embedWidth').value.trim();
+        let h = document.getElementById('embedHeight').value.trim();
+        
+        // 숫자만 입력했을 경우 px 추가, %나 다른 단위가 있으면 그대로 유지
+        const formatSize = (val) => /^\d+$/.test(val) ? `${val}px` : val;
+        
+        const bSrc = beforeImg.src;
+        const aSrc = afterImg.src;
+        const siteUrl = window.location.href.split('?')[0]; 
+        const embedUrl = `${siteUrl}?before=${encodeURIComponent(bSrc)}&after=${encodeURIComponent(aSrc)}`;
+        
+        const iframeHtml = `<iframe src="${embedUrl}" width="${formatSize(w)}" height="${formatSize(h)}" frameborder="0" style="border: none; border-radius: 12px; overflow: hidden; background: transparent;"></iframe>`;
+        
+        document.getElementById('embedCode').value = iframeHtml;
+    }
+
+    document.getElementById('generateBtn').addEventListener('click', () => {
+        const bSrc = beforeImg.src;
+        const aSrc = afterImg.src;
+
+        if (bSrc.startsWith('data:') || aSrc.startsWith('data:')) {
+            alert('경고: 기기에서 앨범으로 올린 사진은 로컬 파일이므로 외부 사이트에 퍼갈 수 없습니다.\n외부 이미지 URL을 입력해야 퍼가기가 정상 작동합니다.');
+            return;
+        }
+
+        // 컨테이너 보이기 및 코드 최초 1회 업데이트
+        document.getElementById('embedContainer').style.display = 'block';
+        updateEmbedCode();
+    });
+
+    // Width, Height 인풋 변경 시 실시간으로 Iframe 코드 업데이트
+    document.getElementById('embedWidth').addEventListener('input', updateEmbedCode);
+    document.getElementById('embedHeight').addEventListener('input', updateEmbedCode);
+
+    // 복사 버튼 기능
+    document.getElementById('copyBtn').addEventListener('click', () => {
+        const code = document.getElementById('embedCode');
+        code.select();
+        document.execCommand('copy');
+        
+        const btn = document.getElementById('copyBtn');
+        btn.textContent = '복사 완료! ✓';
+        btn.style.backgroundColor = '#f4f4f5';
+        setTimeout(() => {
+            btn.textContent = '복사하기';
+            btn.style.backgroundColor = '#fff';
+        }, 2000);
+    });
+</script>
+
+</body>
+</html>
