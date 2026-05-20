@@ -6,6 +6,9 @@
     <title>::1UP YOUR VIBE :: finance ::</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
+    <!-- 모바일 드래그 앤 드롭 지원을 위한 가벼운 외부 라이브러리 추가 -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+
     <style>
         :root {
             /* Light Theme */
@@ -27,6 +30,7 @@
             --flash-red: rgba(235, 15, 41, 0.2);
             --shadow-sm: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03);
             --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+            --drag-bg: rgba(0,0,0,0.02);
         }
 
         [data-theme="dark"] {
@@ -47,6 +51,7 @@
             --btn-text: #000000;
             --flash-green: rgba(0, 200, 83, 0.3);
             --flash-red: rgba(255, 69, 58, 0.3);
+            --drag-bg: rgba(255,255,255,0.05);
         }
 
         * {
@@ -117,35 +122,37 @@
             transition: transform 0.2s, box-shadow 0.2s;
         }
 
+        /* Drag & Drop Styles (SortableJS 적용) */
+        .drag-handle {
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-secondary); cursor: grab; padding: 0.5rem;
+            margin-right: 0.5rem; opacity: 0.4; transition: opacity 0.2s;
+            touch-action: none; /* 핵심: 터치 시 스크롤 방지 */
+        }
+        .drag-handle:active { cursor: grabbing; }
+        .drag-handle:hover { opacity: 1; }
+        .drag-handle svg { width: 18px; height: 18px; }
+
+        .sortable-ghost {
+            opacity: 0.6; background-color: var(--drag-bg) !important;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.05);
+        }
+        .sortable-drag {
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            background-color: var(--card-bg) !important;
+            cursor: grabbing !important;
+        }
+
         .section-header {
             padding: 1.25rem 1.5rem; display: flex; justify-content: space-between;
             align-items: center; border-bottom: 1px solid var(--border-color); user-select: none;
         }
-        .section-header-left { display: flex; align-items: center; gap: 0.5rem; }
-        .section-header h2 { font-size: 1.125rem; font-weight: 600; cursor: pointer; margin-left: 0.25rem; }
+        .section-header-left { display: flex; align-items: center; }
+        .section-header h2 { font-size: 1.125rem; font-weight: 600; cursor: pointer; }
 
         .section-toggle svg { width: 20px; height: 20px; color: var(--text-secondary); transition: transform 0.3s ease; cursor: pointer; }
         .collapsed .section-toggle svg { transform: rotate(-180deg); }
         .collapsed .section-body { display: none; }
-
-        /* --- UI 순서 변경 (Up/Down) 버튼 --- */
-        .order-btns { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
-        .sec-order-btns { flex-direction: row; gap: 4px; }
-        .order-btn {
-            background: var(--input-bg); border: none; color: var(--text-secondary);
-            cursor: pointer; padding: 4px 6px; border-radius: 4px;
-            display: flex; align-items: center; justify-content: center; transition: all 0.1s;
-            touch-action: manipulation; 
-        }
-        .order-btn:hover { background: var(--border-color); color: var(--text-primary); }
-        .order-btn svg { width: 14px; height: 14px; }
-
-        tbody tr:first-child .btn-up, 
-        tbody tr:last-child .btn-down,
-        #dashboard .section-container:first-child .sec-btn-up,
-        #dashboard .section-container:last-child .sec-btn-down {
-            opacity: 0.2; pointer-events: none;
-        }
 
         /* --- Form & Search Style --- */
         .add-ticker-form {
@@ -169,7 +176,7 @@
         
         th { color: var(--text-secondary); font-size: 0.75rem; font-weight: 500; text-transform: uppercase; }
         th.left-align, td.left-align { text-align: left; }
-        th.order-col, td.order-col { width: 40px; padding-right: 0; padding-left: 1rem; text-align: center; }
+        th.handle-col, td.handle-col { width: 40px; padding-right: 0; padding-left: 0.5rem; text-align: center; }
         
         tbody tr { transition: background-color 0.15s; }
         tbody tr:hover { background-color: var(--hover-bg); }
@@ -186,7 +193,7 @@
         .badge.up { background-color: var(--green-bg); color: var(--green); }
         .badge.down { background-color: var(--red-bg); color: var(--red); }
         .sub-data { color: var(--text-primary); font-weight: 500; font-variant-numeric: tabular-nums; }
-        .arrow { font-size: 0.7rem; margin-right: 0.2rem; }
+        .arrow { font-size: 0.7rem; margin-right: 0.2rem; stroke-width: 3; }
 
         .btn-remove { background: none; color: var(--text-secondary); padding: 0.4rem; border-radius: 50%; cursor: pointer; border: none; display: inline-flex; }
         .btn-remove svg { width: 16px; height: 16px; }
@@ -207,7 +214,7 @@
             .header-controls { width: 100%; justify-content: space-between; }
             main { padding: 1rem; }
             th, td { padding: 0.75rem 1rem; }
-            th.order-col, td.order-col { padding-left: 0.5rem; }
+            th.handle-col, td.handle-col { padding-left: 0; width: 30px; }
             .search-wrapper { max-width: 100%; }
             .add-ticker-form { flex-direction: column; align-items: stretch; }
         }
@@ -217,7 +224,7 @@
 
     <header>
         <div class="header-left">
-            <h1>✔️ finance 1up</h1>
+            <h1>✔️ finance</h1>
         </div>
         <div class="header-controls">
             <div class="timer">
@@ -228,12 +235,10 @@
                 <button id="btn-refresh" class="icon-btn" title="Force Refresh">
                     <svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
                 </button>
-                <!-- 설정 톱니바퀴 대신 직관적인 복구(되돌리기 시계) 아이콘 적용 -->
                 <button id="btn-reset" class="icon-btn" title="Reset to Defaults">
                     <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
                 </button>
                 <button id="btn-theme" class="icon-btn" title="Toggle Theme">
-                    <!-- 다크/라이트 모드 상태에 따라 달과 해 스위칭 -->
                     <svg class="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="6.34" y2="6.34"/><line x1="17.66" y1="17.66" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="6.34" y2="17.66"/><line x1="17.66" y1="6.34" x2="19.78" y2="4.22"/></svg>
                     <svg class="icon-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
                 </button>
@@ -254,9 +259,8 @@
 
         const GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbzHIRkgH2Sqc_X0RxxrmKrWWdGyF67IW-S5jNL0mTRZ2vGwKT1rbfDzOveoUSg6cH5k/exec";
         
-        // 심플하고 세련된 화살표, 휴지통 아이콘 정의
-        const UP_ICON = `<svg viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg>`;
-        const DOWN_ICON = `<svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>`;
+        // 심플한 모던 아이콘들 (Grip, Trash, Chevron, Search)
+        const DRAG_ICON = `<svg viewBox="0 0 24 24"><circle cx="9" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="5" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="19" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="5" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="19" r="1" fill="currentColor" stroke="none"/></svg>`;
         const TRASH_ICON = `<svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>`;
         const CHEVRON_ICON = `<svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>`;
         const SEARCH_ICON = `<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`;
@@ -271,6 +275,7 @@
         };
 
         const rowNodes = new Map(); 
+        let sortables = []; // 생성된 Sortable 인스턴스들을 관리하기 위한 배열
         
         function init() {
             if (!state.sectionOrder || state.sectionOrder.length === 0) {
@@ -295,6 +300,10 @@
             const dashboard = document.getElementById('dashboard');
             dashboard.innerHTML = ''; rowNodes.clear();
 
+            // 기존 Sortable 인스턴스 초기화 (중복 방지)
+            sortables.forEach(s => s.destroy());
+            sortables = [];
+
             state.sectionOrder.forEach(sectionId => {
                 const sectionData = state.watchlists[sectionId];
                 if (!sectionData) return;
@@ -308,10 +317,7 @@
                 sectionContainer.innerHTML = `
                     <div class="section-header" onclick="toggleSection(event, '${sectionId}')">
                         <div class="section-header-left">
-                            <div class="order-btns sec-order-btns">
-                                <button class="order-btn sec-btn-up" onclick="moveSection(event, '${sectionId}', -1)" title="Move Section Up">${UP_ICON}</button>
-                                <button class="order-btn sec-btn-down" onclick="moveSection(event, '${sectionId}', 1)" title="Move Section Down">${DOWN_ICON}</button>
-                            </div>
+                            <div class="drag-handle" title="Drag to reorder section">${DRAG_ICON}</div>
                             <h2>${sectionData.title}</h2>
                         </div>
                         <span class="section-toggle">${CHEVRON_ICON}</span>
@@ -328,7 +334,7 @@
                             <table>
                                 <thead>
                                     <tr>
-                                        <th class="order-col"></th>
+                                        <th class="handle-col"></th>
                                         <th class="left-align">Asset</th>
                                         <th>Price</th>
                                         <th>Change</th>
@@ -348,6 +354,9 @@
                 dashboard.appendChild(sectionContainer);
                 sectionData.tickers.forEach(ticker => cacheRowNodes(ticker));
             });
+
+            // 레이아웃이 렌더링 된 직후 드래그 앤 드롭 다시 바인딩
+            initDragAndDrop();
         }
 
         function generateRowHTML(ticker, sectionId) {
@@ -360,11 +369,8 @@
 
             return `
                 <tr id="row-${safeId}" data-ticker="${ticker}">
-                    <td class="order-col">
-                        <div class="order-btns">
-                            <button class="order-btn btn-up" onclick="moveRow('${sectionId}', '${ticker}', -1)" title="Move Up">${UP_ICON}</button>
-                            <button class="order-btn btn-down" onclick="moveRow('${sectionId}', '${ticker}', 1)" title="Move Down">${DOWN_ICON}</button>
-                        </div>
+                    <td class="handle-col">
+                        <div class="drag-handle" title="Drag to reorder row">${DRAG_ICON}</div>
                     </td>
                     <td class="left-align">
                         <div class="asset-col">
@@ -404,50 +410,49 @@
             });
         }
 
-        /** --- UI ORDERING LOGIC --- */
-        function moveSection(event, sectionId, direction) {
-            event.stopPropagation();
+        /** --- DRAG AND DROP LOGIC (SortableJS + Mobile Optimized) --- */
+        function initDragAndDrop() {
+            const dashboard = document.getElementById('dashboard');
             
-            const arr = state.sectionOrder;
-            const idx = arr.indexOf(sectionId);
-            
-            if ((direction === -1 && idx === 0) || (direction === 1 && idx === arr.length - 1)) return;
+            // 섹션 순서 드래그 앤 드롭
+            const sectionSortable = Sortable.create(dashboard, {
+                handle: '.drag-handle',
+                animation: 200,
+                ghostClass: 'sortable-ghost',
+                delay: 100, // 모바일에서 스크롤과 구분을 위한 0.1초 딜레이
+                delayOnTouchOnly: true, // PC 마우스는 딜레이 없이 즉각 반응
+                onEnd: function () {
+                    const newOrder = Array.from(dashboard.querySelectorAll('.section-container')).map(el => el.dataset.id);
+                    state.sectionOrder = newOrder;
+                    localStorage.setItem('marketdash_sectionOrder', JSON.stringify(state.sectionOrder));
+                }
+            });
+            sortables.push(sectionSortable);
 
-            const newIdx = idx + direction;
-            [arr[idx], arr[newIdx]] = [arr[newIdx], arr[idx]];
-            localStorage.setItem('marketdash_sectionOrder', JSON.stringify(state.sectionOrder));
-
-            const sec = document.getElementById(`section-${sectionId}`);
-            if (direction === -1) {
-                sec.parentNode.insertBefore(sec, sec.previousElementSibling);
-            } else {
-                sec.parentNode.insertBefore(sec.nextElementSibling, sec);
-            }
+            // 행(종목) 순서 드래그 앤 드롭
+            state.sectionOrder.forEach(sectionId => {
+                const tbody = document.getElementById(`tbody-${sectionId}`);
+                if (tbody) {
+                    const rowSortable = Sortable.create(tbody, {
+                        handle: '.drag-handle',
+                        animation: 200,
+                        ghostClass: 'sortable-ghost',
+                        delay: 100, // 모바일 스크롤 충돌 방지용 딜레이
+                        delayOnTouchOnly: true,
+                        onEnd: function () {
+                            const newTickers = Array.from(tbody.querySelectorAll('tr')).map(el => el.dataset.ticker);
+                            state.watchlists[sectionId].tickers = newTickers;
+                            saveWatchlists();
+                        }
+                    });
+                    sortables.push(rowSortable);
+                }
+            });
         }
-
-        function moveRow(sectionId, ticker, direction) {
-            const arr = state.watchlists[sectionId].tickers;
-            const idx = arr.indexOf(ticker);
-            
-            if ((direction === -1 && idx === 0) || (direction === 1 && idx === arr.length - 1)) return;
-
-            const newIdx = idx + direction;
-            [arr[idx], arr[newIdx]] = [arr[newIdx], arr[idx]];
-            saveWatchlists();
-
-            const safeId = ticker.replace(/\^|=/g, '');
-            const row = document.getElementById(`row-${safeId}`);
-            if (direction === -1) {
-                row.parentNode.insertBefore(row, row.previousElementSibling);
-            } else {
-                row.parentNode.insertBefore(row.nextElementSibling, row);
-            }
-        }
-
 
         /** --- ACTIONS --- */
         function toggleSection(e, sectionId) {
-            if (e.target.closest('.order-btn')) return; 
+            if (e.target.closest('.drag-handle')) return; 
             
             const container = document.getElementById(`section-${sectionId}`);
             container.classList.toggle('collapsed');
