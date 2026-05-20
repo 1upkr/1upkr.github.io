@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>::1UP YOUR VIBE :: finance ::</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- 모바일 드래그 앤 드롭 지원을 위한 가벼운 외부 라이브러리 추가 -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+
     <style>
         :root {
             /* Light Theme */
@@ -103,18 +107,21 @@
             transition: transform 0.2s, box-shadow 0.2s;
         }
 
-        /* Drag & Drop Styles */
-        .draggable { cursor: grab; }
-        .draggable:active { cursor: grabbing; }
-        .dragging { opacity: 0.5; background-color: var(--drag-bg) !important; box-shadow: 0 8px 16px rgba(0,0,0,0.1); }
-        
+        /* Drag & Drop Styles (SortableJS 적용) */
         .drag-handle {
             display: flex; align-items: center; justify-content: center;
             color: var(--text-secondary); cursor: grab; padding: 0.25rem;
             margin-right: 0.5rem; opacity: 0.6; transition: opacity 0.2s;
+            touch-action: none; /* 핵심: 모바일에서 핸들을 터치했을 때 화면 스크롤 방지 */
         }
+        .drag-handle:active { cursor: grabbing; }
         .drag-handle:hover { opacity: 1; }
         .drag-handle svg { width: 16px; height: 16px; fill: currentColor; }
+
+        .sortable-ghost {
+            opacity: 0.5; background-color: var(--drag-bg) !important;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
+        }
 
         .section-header {
             padding: 1.25rem 1.5rem; display: flex; justify-content: space-between;
@@ -152,9 +159,9 @@
         th.handle-col, td.handle-col { width: 40px; padding-right: 0; padding-left: 1rem; text-align: center; }
         
         tbody tr { transition: background-color 0.15s; }
-        tbody tr:not(.dragging):hover { background-color: var(--hover-bg); }
+        tbody tr:hover { background-color: var(--hover-bg); }
 
-        /* Data formatting (업데이트: 글자 넘침 방지 처리 강화) */
+        /* Data formatting */
         .asset-col { display: flex; flex-direction: column; gap: 0.1rem; max-width: 200px; }
         .symbol { font-weight: 600; font-size: 0.95rem; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .name { color: var(--text-secondary); font-size: 0.75rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -226,7 +233,7 @@
     <script>
         const DEFAULT_WATCHLISTS = {
             indicators: { title: '📈 Market', tickers: ['^GSPC', '^IXIC', '^DJI', '^KS11', '^KQ11', 'GC=F', 'CL=F', 'BTC-USD'] },
-            us: { title: '🇺🇸 US', tickers: ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'TSLA', 'META'] },
+            us: { title: ' US', tickers: ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'TSLA', 'META'] },
             kr: { title: '🇰🇷 KR', tickers: ['005930.KS', '000660.KS', '035420.KS', '005380.KS', '035720.KS'] }
         };
 
@@ -275,10 +282,8 @@
 
                 const isExpanded = state.expanded[sectionId];
                 const sectionContainer = document.createElement('div');
-                sectionContainer.className = `section-container draggable ${isExpanded ? '' : 'collapsed'}`;
+                sectionContainer.className = `section-container ${isExpanded ? '' : 'collapsed'}`;
                 sectionContainer.id = `section-${sectionId}`;
-                sectionContainer.setAttribute('draggable', 'true');
-                sectionContainer.dataset.type = 'section';
                 sectionContainer.dataset.id = sectionId;
 
                 sectionContainer.innerHTML = `
@@ -326,7 +331,6 @@
         function generateRowHTML(ticker, sectionId) {
             const safeId = ticker.replace(/\^|=/g, '');
             
-            // 핵심 업데이트: 국장(KR)인 경우 회사명을 크고 진하게(위로), 코드를 작고 연하게(아래로) 배치
             let assetHTML = '';
             if (sectionId === 'kr') {
                 assetHTML = `
@@ -341,7 +345,7 @@
             }
 
             return `
-                <tr id="row-${safeId}" class="draggable" draggable="true" data-type="row" data-section="${sectionId}" data-ticker="${ticker}">
+                <tr id="row-${safeId}" data-ticker="${ticker}">
                     <td class="handle-col"><span class="drag-handle" title="Drag to reorder row">${DRAG_ICON}</span></td>
                     <td class="left-align">
                         <div class="asset-col">
@@ -381,67 +385,35 @@
             });
         }
 
-        /** --- DRAG AND DROP LOGIC --- */
+        /** --- DRAG AND DROP LOGIC (SortableJS) --- */
         function initDragAndDrop() {
-            let draggedItem = null;
-
-            document.addEventListener('dragstart', (e) => {
-                const target = e.target.closest('.draggable');
-                if (!target) return;
-                
-                draggedItem = target;
-                e.dataTransfer.effectAllowed = 'move';
-                setTimeout(() => target.classList.add('dragging'), 0);
-            });
-
-            document.addEventListener('dragend', (e) => {
-                if (draggedItem) {
-                    draggedItem.classList.remove('dragging');
-                    draggedItem = null;
-                }
-            });
-
-            document.addEventListener('dragover', (e) => {
-                e.preventDefault(); 
-                if (!draggedItem) return;
-
-                const type = draggedItem.dataset.type;
-                
-                if (type === 'section') {
-                    const container = document.getElementById('dashboard');
-                    const targetSection = e.target.closest('.section-container');
-                    if (targetSection && targetSection !== draggedItem) {
-                        const rect = targetSection.getBoundingClientRect();
-                        const next = (e.clientY - rect.top) / (rect.bottom - rect.top) > 0.5;
-                        container.insertBefore(draggedItem, next ? targetSection.nextSibling : targetSection);
-                    }
-                } else if (type === 'row') {
-                    const container = draggedItem.closest('tbody');
-                    const targetRow = e.target.closest('tr[data-type="row"]');
-                    if (targetRow && targetRow !== draggedItem && targetRow.closest('tbody') === container) {
-                        const rect = targetRow.getBoundingClientRect();
-                        const next = (e.clientY - rect.top) / (rect.bottom - rect.top) > 0.5;
-                        container.insertBefore(draggedItem, next ? targetRow.nextSibling : targetRow);
-                    }
-                }
-            });
-
-            document.addEventListener('drop', (e) => {
-                e.preventDefault();
-                if (!draggedItem) return;
-
-                const type = draggedItem.dataset.type;
-                
-                if (type === 'section') {
-                    const newOrder = Array.from(document.querySelectorAll('.section-container')).map(el => el.dataset.id);
+            // 섹션 그룹 순서 변경
+            const dashboard = document.getElementById('dashboard');
+            Sortable.create(dashboard, {
+                handle: '.drag-handle', // 손잡이를 잡아야만 이동 (스크롤 간섭 방지)
+                animation: 150,         // 부드러운 이동 애니메이션 (ms)
+                ghostClass: 'sortable-ghost',
+                onEnd: function () {
+                    const newOrder = Array.from(dashboard.querySelectorAll('.section-container')).map(el => el.dataset.id);
                     state.sectionOrder = newOrder;
                     localStorage.setItem('marketdash_sectionOrder', JSON.stringify(state.sectionOrder));
-                } else if (type === 'row') {
-                    const sectionId = draggedItem.dataset.section;
-                    const tbody = document.getElementById(`tbody-${sectionId}`);
-                    const newTickers = Array.from(tbody.querySelectorAll('tr[data-type="row"]')).map(el => el.dataset.ticker);
-                    state.watchlists[sectionId].tickers = newTickers;
-                    saveWatchlists();
+                }
+            });
+
+            // 각 그룹 내부의 종목 순서 변경
+            state.sectionOrder.forEach(sectionId => {
+                const tbody = document.getElementById(`tbody-${sectionId}`);
+                if (tbody) {
+                    Sortable.create(tbody, {
+                        handle: '.drag-handle',
+                        animation: 150,
+                        ghostClass: 'sortable-ghost',
+                        onEnd: function () {
+                            const newTickers = Array.from(tbody.querySelectorAll('tr')).map(el => el.dataset.ticker);
+                            state.watchlists[sectionId].tickers = newTickers;
+                            saveWatchlists();
+                        }
+                    });
                 }
             });
         }
@@ -481,6 +453,8 @@
                 tbody.insertAdjacentHTML('beforeend', generateRowHTML(ticker, sectionId));
                 cacheRowNodes(ticker);
 
+                // 종목을 새로 추가한 후 해당 섹션의 드래그앤드롭 이벤트를 재연결하기 위해 
+                // 전체 레이아웃을 다시 그리는 대신, SortableJS는 자동 인식하므로 UI만 업데이트합니다.
                 updateDOMWithData([data[0]]);
                 inputEl.value = '';
             } catch (err) {
@@ -505,7 +479,9 @@
                 localStorage.removeItem('marketdash_sectionOrder');
                 state.watchlists = JSON.parse(JSON.stringify(DEFAULT_WATCHLISTS));
                 state.sectionOrder = ['indicators', 'us', 'kr'];
-                renderLayout(); forceRefresh();
+                renderLayout(); 
+                initDragAndDrop(); // 레이아웃 재작성 후 D&D 다시 연결
+                forceRefresh();
             }
         }
 
