@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Light Theme */
+            --bg-color: #f3f4f8;
+            --text-primary: #1d1e20;
+            --text-secondary: #5a5b60;
+            --card-bg: #ffffff;
+            --border-color: #e0e3eb;
+            --green: #00873c;
+            --green-bg: #e6f4ea;
+            --red: #eb0f29;
+            --red-bg: #fce8ea;
+            --header-bg: #ffffff;
+            --hover-bg: #f8f9fa;
+            --btn-bg: #e0e3eb;
+            --btn-text: #1d1e20;
+            --flash-green: rgba(0, 135, 60, 0.3);
+            --flash-red: rgba(235, 15, 41, 0.3);
+        }
+
+        [data-theme="dark"] {
+            /* Dark Theme */
+            --bg-color: #0f0f0f;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --card-bg: #1c1c1e;
+            --border-color: #333333;
+            --green: #00c853;
+            --green-bg: rgba(0, 200, 83, 0.15);
+            --red: #ff3b30;
+            --red-bg: rgba(255, 59, 48, 0.15);
+            --header-bg: #1c1c1e;
+            --hover-bg: #2c2c2e;
+            --btn-bg: #333333;
+            --btn-text: #ffffff;
+            --flash-green: rgba(0, 200, 83, 0.4);
+            --flash-red: rgba(255, 59, 48, 0.4);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            transition: background-color 0.3s, color 0.3s;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Header Navigation */
+        header {
+            background-color: var(--header-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .header-left h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.875rem;
+        }
+
+        .timer {
+            color: var(--text-secondary);
+            font-variant-numeric: tabular-nums;
+        }
+
+        button {
+            background-color: var(--btn-bg);
+            color: var(--btn-text);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: opacity 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        button:hover { opacity: 0.8; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .btn-icon {
+            padding: 0.5rem;
+            border-radius: 50%;
+        }
+
+        /* Main Content */
+        main {
+            padding: 2rem 5%;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Section Container */
+        .section-container {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        }
+
+        .section-header {
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border-color);
+            user-select: none;
+            background-color: var(--card-bg);
+        }
+
+        .section-header h2 {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .section-toggle {
+            transition: transform 0.3s;
+            color: var(--text-secondary);
+        }
+        .collapsed .section-toggle { transform: rotate(-90deg); }
+
+        .section-body {
+            display: block;
+        }
+        .collapsed .section-body { display: none; }
+
+        /* Add Ticker Form */
+        .add-ticker-form {
+            display: flex;
+            padding: 1rem 1.5rem;
+            gap: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+            background-color: var(--hover-bg);
+        }
+
+        .add-ticker-form input {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background-color: var(--card-bg);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            flex: 1;
+            max-width: 200px;
+            text-transform: uppercase;
+        }
+
+        .add-ticker-form input:focus {
+            outline: none;
+            border-color: #0056d2;
+        }
+
+        /* Table Styles */
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        th, td {
+            padding: 0.875rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            background-color: var(--card-bg);
+        }
+
+        th:first-child, td:first-child { text-align: left; }
+        th:nth-child(2), td:nth-child(2) { text-align: left; }
+
+        tbody tr { transition: background-color 0.2s; }
+        tbody tr:hover { background-color: var(--hover-bg); }
+
+        /* Data formatting */
+        .symbol { font-weight: 600; color: var(--text-primary); }
+        .name { color: var(--text-secondary); font-size: 0.875rem; max-width: 150px; overflow: hidden; text-overflow: ellipsis; }
+        .price { font-weight: 600; font-variant-numeric: tabular-nums; }
+        
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            font-variant-numeric: tabular-nums;
+            gap: 0.25rem;
+        }
+
+        .up { color: var(--green); }
+        .down { color: var(--red); }
+        .badge.up { background-color: var(--green-bg); color: var(--green); }
+        .badge.down { background-color: var(--red-bg); color: var(--red); }
+
+        .btn-remove {
+            background: none;
+            color: var(--text-secondary);
+            font-size: 1.25rem;
+            padding: 0;
+            line-height: 1;
+            cursor: pointer;
+            border: none;
+        }
+        .btn-remove:hover { color: var(--red); }
+
+        /* Flashing Animation for Updates */
+        @keyframes flashGreen { 0% { background-color: var(--flash-green); } 100% { background-color: transparent; } }
+        @keyframes flashRed { 0% { background-color: var(--flash-red); } 100% { background-color: transparent; } }
+        .flash-up { animation: flashGreen 1s ease-out; }
+        .flash-down { animation: flashRed 1s ease-out; }
+
+        /* Loading Skeletons */
+        .skeleton {
+            background: linear-gradient(90deg, var(--border-color) 25%, var(--hover-bg) 50%, var(--border-color) 75%);
+            background-size: 200% 100%;
+            animation: skeletonLoading 1.5s infinite;
+            border-radius: 4px;
+            height: 1rem;
+            width: 100%;
+            display: inline-block;
+        }
+        @keyframes skeletonLoading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+        .error-text { color: var(--red); font-size: 0.875rem; display: flex; align-items: center; gap: 0.25rem; justify-content: flex-end; }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .hide-mobile { display: none; }
+            header { flex-direction: column; gap: 1rem; padding: 1rem; }
+            .header-controls { flex-wrap: wrap; justify-content: center; width: 100%; }
+            main { padding: 1rem; }
+            th, td { padding: 0.75rem 1rem; }
+            .name { max-width: 100px; }
+            .add-ticker-form { flex-direction: column; }
+            .add-ticker-form input { max-width: 100%; }
+            .add-ticker-form button { width: 100%; justify-content: center; padding: 0.75rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-left">
+            <h1>📉 MarketDash</h1>
+        </div>
+        <div class="header-controls">
+            <span class="timer">Refreshes in: <span id="countdown">60</span>s</span>
+            <button id="btn-refresh" title="Manual Refresh">🔄 Refresh</button>
+            <button id="btn-reset" title="Reset to Defaults">⚙️ Reset</button>
+            <button id="btn-theme" class="btn-icon" title="Toggle Theme">🌓</button>
+        </div>
+    </header>
+
+    <main id="dashboard">
+        <!-- Sections will be injected here via JS -->
+    </main>
+
+    <script>
+        /** --- CONFIGURATION & STATE --- **/
+        const DEFAULT_WATCHLISTS = {
+            indicators: { title: '📈 Market Indicators', tickers: ['^GSPC', '^IXIC', '^DJI', '^KS11', '^KQ11', 'GC=F', 'CL=F', 'BTC-USD'] },
+            us: { title: '🇺🇸 US Stocks', tickers: ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'TSLA', 'META'] },
+            kr: { title: '🇰🇷 Korean Stocks', tickers: ['005930.KS', '000660.KS', '035420.KS', '005380.KS', '035720.KS'] }
+        };
+
+        const YAHOO_URL = "https://query1.finance.yahoo.com/v7/finance/quote?symbols=";
+        const PROXIES = [
+            "https://corsproxy.io/?",
+            "https://api.allorigins.win/raw?url="
+        ];
+
+        let state = {
+            watchlists: JSON.parse(localStorage.getItem('marketdash_watchlists')) || JSON.parse(JSON.stringify(DEFAULT_WATCHLISTS)),
+            expanded: JSON.parse(localStorage.getItem('marketdash_expanded')) || { indicators: true, us: true, kr: true },
+            theme: localStorage.getItem('marketdash_theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'),
+            countdown: 60,
+            intervalId: null
+        };
+
+        // DOM nodes cache for efficient updates
+        const rowNodes = new Map(); // key: ticker, value: { rowEl, priceEl, changeEl, pctEl, volEl, capEl, rangeEl }
+        
+        /** --- INITIALIZATION --- **/
+        function init() {
+            applyTheme();
+            renderLayout();
+            startTimer();
+            fetchData(); // Initial load
+
+            // Event Listeners
+            document.getElementById('btn-theme').addEventListener('click', toggleTheme);
+            document.getElementById('btn-refresh').addEventListener('click', forceRefresh);
+            document.getElementById('btn-reset').addEventListener('click', resetToDefaults);
+        }
+
+        /** --- THEME MANAGEMENT --- **/
+        function applyTheme() {
+            document.documentElement.setAttribute('data-theme', state.theme);
+        }
+
+        function toggleTheme() {
+            state.theme = state.theme === 'dark' ? 'light' : 'dark';
+            localStorage.setItem('marketdash_theme', state.theme);
+            applyTheme();
+        }
+
+        /** --- DOM RENDERERS --- **/
+        function renderLayout() {
+            const dashboard = document.getElementById('dashboard');
+            dashboard.innerHTML = '';
+            rowNodes.clear();
+
+            for (const [sectionId, sectionData] of Object.entries(state.watchlists)) {
+                const isExpanded = state.expanded[sectionId];
+                
+                const sectionContainer = document.createElement('div');
+                sectionContainer.className = `section-container ${isExpanded ? '' : 'collapsed'}`;
+                sectionContainer.id = `section-${sectionId}`;
+
+                sectionContainer.innerHTML = `
+                    <div class="section-header" onclick="toggleSection('${sectionId}')">
+                        <h2>${sectionData.title}</h2>
+                        <span class="section-toggle">▼</span>
+                    </div>
+                    <div class="section-body">
+                        <form class="add-ticker-form" onsubmit="handleAddTicker(event, '${sectionId}')">
+                            <input type="text" id="input-${sectionId}" placeholder="Enter ticker (e.g. AAPL)" required autocomplete="off">
+                            <button type="submit" id="btn-add-${sectionId}">Add</button>
+                        </form>
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Symbol</th>
+                                        <th>Name</th>
+                                        <th>Price</th>
+                                        <th>Change</th>
+                                        <th>% Change</th>
+                                        <th class="hide-mobile">Volume</th>
+                                        <th class="hide-mobile">Market Cap</th>
+                                        <th class="hide-mobile">52W Range</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbody-${sectionId}">
+                                    ${sectionData.tickers.map(ticker => generateRowHTML(ticker, sectionId)).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+                dashboard.appendChild(sectionContainer);
+
+                // Cache nodes
+                sectionData.tickers.forEach(ticker => cacheRowNodes(ticker));
+            }
+        }
+
+        function generateRowHTML(ticker, sectionId) {
+            return `
+                <tr id="row-${ticker.replace(/\^|=/g, '')}">
+                    <td class="symbol">${ticker}</td>
+                    <td class="name" id="name-${ticker}"><span class="skeleton"></span></td>
+                    <td class="price" id="price-${ticker}"><span class="skeleton"></span></td>
+                    <td id="change-${ticker}"><span class="skeleton"></span></td>
+                    <td id="pct-${ticker}"><span class="skeleton"></span></td>
+                    <td class="hide-mobile" id="vol-${ticker}"><span class="skeleton"></span></td>
+                    <td class="hide-mobile" id="cap-${ticker}"><span class="skeleton"></span></td>
+                    <td class="hide-mobile" id="range-${ticker}"><span class="skeleton"></span></td>
+                    <td><button class="btn-remove" onclick="removeTicker('${sectionId}', '${ticker}')" title="Remove">×</button></td>
+                </tr>
+            `;
+        }
+
+        function cacheRowNodes(ticker) {
+            const safeId = ticker.replace(/\^|=/g, '');
+            rowNodes.set(ticker, {
+                row: document.getElementById(`row-${safeId}`),
+                name: document.getElementById(`name-${ticker}`),
+                price: document.getElementById(`price-${ticker}`),
+                change: document.getElementById(`change-${ticker}`),
+                pct: document.getElementById(`pct-${ticker}`),
+                vol: document.getElementById(`vol-${ticker}`),
+                cap: document.getElementById(`cap-${ticker}`),
+                range: document.getElementById(`range-${ticker}`)
+            });
+        }
+
+        /** --- ACTIONS & EVENTS --- **/
+        function toggleSection(sectionId) {
+            const container = document.getElementById(`section-${sectionId}`);
+            container.classList.toggle('collapsed');
+            
+            state.expanded[sectionId] = !container.classList.contains('collapsed');
+            localStorage.setItem('marketdash_expanded', JSON.stringify(state.expanded));
+
+            // Lazy fetch if expanding
+            if (state.expanded[sectionId]) forceRefresh();
+        }
+
+        async function handleAddTicker(e, sectionId) {
+            e.preventDefault();
+            const inputEl = document.getElementById(`input-${sectionId}`);
+            const btnEl = document.getElementById(`btn-add-${sectionId}`);
+            const ticker = inputEl.value.trim().toUpperCase();
+            
+            if (!ticker || state.watchlists[sectionId].tickers.includes(ticker)) {
+                inputEl.value = '';
+                return;
+            }
+
+            // Debounce/UI lock
+            btnEl.disabled = true;
+            btnEl.textContent = '...';
+
+            try {
+                // Validate via API
+                const data = await fetchYahooFinance([ticker]);
+                if (!data || data.length === 0 || !data[0].regularMarketPrice) {
+                    alert(`Ticker ${ticker} not found.`);
+                    return;
+                }
+
+                // Add to state
+                state.watchlists[sectionId].tickers.push(ticker);
+                saveWatchlists();
+
+                // Inject Row directly without full re-render
+                const tbody = document.getElementById(`tbody-${sectionId}`);
+                tbody.insertAdjacentHTML('beforeend', generateRowHTML(ticker, sectionId));
+                cacheRowNodes(ticker);
+
+                // Update data immediately
+                updateDOMWithData([data[0]]);
+                inputEl.value = '';
+
+            } catch (err) {
+                alert(`Error adding ticker: ${err.message}`);
+            } finally {
+                btnEl.disabled = false;
+                btnEl.textContent = 'Add';
+            }
+        }
+
+        function removeTicker(sectionId, ticker) {
+            state.watchlists[sectionId].tickers = state.watchlists[sectionId].tickers.filter(t => t !== ticker);
+            saveWatchlists();
+            
+            const safeId = ticker.replace(/\^|=/g, '');
+            const row = document.getElementById(`row-${safeId}`);
+            if (row) row.remove();
+            rowNodes.delete(ticker);
+        }
+
+        function resetToDefaults() {
+            if(confirm("Are you sure you want to reset all watchlists to default?")) {
+                localStorage.removeItem('marketdash_watchlists');
+                state.watchlists = JSON.parse(JSON.stringify(DEFAULT_WATCHLISTS));
+                renderLayout();
+                forceRefresh();
+            }
+        }
+
+        function saveWatchlists() {
+            localStorage.setItem('marketdash_watchlists', JSON.stringify(state.watchlists));
+        }
+
+        /** --- DATA FETCHING & FORMATTING --- **/
+        async function fetchYahooFinance(symbols) {
+            if (symbols.length === 0) return [];
+            
+            // Format array into comma separated string
+            const symbolsStr = symbols.join(',');
+            const targetUrl = YAHOO_URL + symbolsStr;
+
+            for (const proxy of PROXIES) {
+                try {
+                    // CORS Proxies require URL encoding
+                    const fetchUrl = proxy.includes('corsproxy') 
+                        ? proxy + encodeURIComponent(targetUrl)
+                        : proxy + encodeURIComponent(targetUrl);
+                        
+                    const response = await fetch(fetchUrl);
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    
+                    const data = await response.json();
+                    if (data && data.quoteResponse && data.quoteResponse.result) {
+                        return data.quoteResponse.result;
+                    }
+                } catch (e) {
+                    console.warn(`Proxy failed: ${proxy}`, e);
+                    // continue to next proxy
+                }
+            }
+            throw new Error("All CORS proxies failed to retrieve data.");
+        }
+
+        async function fetchData() {
+            // Gather all symbols that are in currently expanded sections
+            let symbolsToFetch = [];
+            for (const [sectionId, sectionData] of Object.entries(state.watchlists)) {
+                if (state.expanded[sectionId]) {
+                    symbolsToFetch = symbolsToFetch.concat(sectionData.tickers);
+                }
+            }
+
+            if (symbolsToFetch.length === 0) return;
+
+            // Batch into chunks of 100 max just in case of URL length limits
+            const chunkSize = 50;
+            for (let i = 0; i < symbolsToFetch.length; i += chunkSize) {
+                const chunk = symbolsToFetch.slice(i, i + chunkSize);
+                try {
+                    const results = await fetchYahooFinance(chunk);
+                    updateDOMWithData(results);
+                    markMissingData(chunk, results);
+                } catch (error) {
+                    console.error("Data fetch error:", error);
+                    markAllError(chunk);
+                }
+            }
+        }
+
+        function forceRefresh() {
+            state.countdown = 60;
+            document.getElementById('countdown').textContent = state.countdown;
+            fetchData();
+        }
+
+        function startTimer() {
+            if (state.intervalId) clearInterval(state.intervalId);
+            state.intervalId = setInterval(() => {
+                state.countdown--;
+                if (state.countdown <= 0) {
+                    forceRefresh();
+                } else {
+                    document.getElementById('countdown').textContent = state.countdown;
+                }
+            }, 1000);
+        }
+
+        /** --- DOM UPDATES --- **/
+        function updateDOMWithData(quotes) {
+            // Use requestAnimationFrame for batching DOM updates
+            requestAnimationFrame(() => {
+                quotes.forEach(quote => {
+                    const ticker = quote.symbol;
+                    const nodes = rowNodes.get(ticker);
+                    if (!nodes || !nodes.row) return;
+
+                    const price = quote.regularMarketPrice || 0;
+                    const change = quote.regularMarketChange || 0;
+                    const pct = quote.regularMarketChangePercent || 0;
+                    const isUp = change >= 0;
+                    const sign = isUp ? '+' : '';
+                    const colorClass = isUp ? 'up' : 'down';
+                    
+                    // Handle Animation
+                    const oldPriceStr = nodes.price.getAttribute('data-price');
+                    const oldPrice = oldPriceStr ? parseFloat(oldPriceStr) : null;
+                    if (oldPrice !== null && oldPrice !== price) {
+                        nodes.row.classList.remove('flash-up', 'flash-down');
+                        void nodes.row.offsetWidth; // trigger reflow
+                        nodes.row.classList.add(price > oldPrice ? 'flash-up' : 'flash-down');
+                    }
+                    nodes.price.setAttribute('data-price', price);
+
+                    // Update Text
+                    nodes.name.textContent = quote.shortName || quote.longName || ticker;
+                    nodes.price.textContent = formatNum(price);
+                    
+                    nodes.change.innerHTML = `<span class="${colorClass}">${sign}${formatNum(change)}</span>`;
+                    nodes.pct.innerHTML = `<span class="badge ${colorClass}">${sign}${formatNum(pct)}%</span>`;
+                    
+                    nodes.vol.textContent = formatCompact(quote.regularMarketVolume);
+                    nodes.cap.textContent = formatCompact(quote.marketCap);
+                    
+                    if (quote.fiftyTwoWeekLow && quote.fiftyTwoWeekHigh) {
+                        nodes.range.textContent = `${formatNum(quote.fiftyTwoWeekLow)} - ${formatNum(quote.fiftyTwoWeekHigh)}`;
+                    } else {
+                        nodes.range.textContent = 'N/A';
+                    }
+                });
+            });
+        }
+
+        function markMissingData(requestedSymbols, results) {
+            const returnedSymbols = new Set(results.map(r => r.symbol));
+            requestedSymbols.forEach(sym => {
+                if (!returnedSymbols.has(sym)) {
+                    setErrorState(sym, '⚠ Data unavailable');
+                }
+            });
+        }
+
+        function markAllError(symbols) {
+            symbols.forEach(sym => setErrorState(sym, '⚠ Error fetching'));
+        }
+
+        function setErrorState(ticker, msg) {
+            const nodes = rowNodes.get(ticker);
+            if (!nodes) return;
+            requestAnimationFrame(() => {
+                nodes.name.textContent = 'Unknown';
+                nodes.price.innerHTML = `<span class="error-text">${msg}</span>`;
+                nodes.change.textContent = '-';
+                nodes.pct.textContent = '-';
+                nodes.vol.textContent = '-';
+                nodes.cap.textContent = '-';
+                nodes.range.textContent = '-';
+            });
+        }
+
+        /** --- UTILITIES --- **/
+        function formatNum(num) {
+            if (num === undefined || num === null || isNaN(num)) return '-';
+            // Determine decimal places dynamically
+            const abs = Math.abs(num);
+            let decimals = 2;
+            if (abs > 0 && abs < 0.1) decimals = 4;
+            else if (abs > 1000) decimals = 0; // Don't show decimals for high prices (like BTC, KOSPI)
+            
+            return new Intl.NumberFormat('en-US', {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals
+            }).format(num);
+        }
+
+        function formatCompact(num) {
+            if (!num || isNaN(num)) return '-';
+            const format = new Intl.NumberFormat('en-US', {
+                notation: 'compact',
+                compactDisplay: 'short',
+                maximumFractionDigits: 2
+            });
+            return format.format(num);
+        }
+
+        // Bootstrap App
+        document.addEventListener('DOMContentLoaded', init);
+
+    </script>
+</body>
+</html>
