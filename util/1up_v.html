@@ -223,12 +223,11 @@
         /* --- Mobile Responsiveness --- */
         @media (max-width: 768px) {
             .hide-mobile { display: none; }
-            header { position: static; flex-direction: column; gap: 1rem; padding: 1rem; } /* 모바일 헤더 고정 해제 */
+            header { position: static; flex-direction: column; gap: 1rem; padding: 1rem; }
             .header-controls { width: 100%; justify-content: space-between; }
             main { padding: 1rem 3%; }
             .section-header { padding: 1rem; }
             
-            /* 가로 스크롤 방지를 위한 여백 및 크기 축소 */
             th, td { padding: 0.75rem 0.5rem; font-size: 0.85rem; }
             th.handle-col, td.handle-col { width: 30px; padding-left: 0; padding-right: 0; }
             th.actions-col, td.actions-col { width: 30px; padding-right: 0; padding-left: 0; }
@@ -328,7 +327,6 @@
             sortables.forEach(s => s.destroy());
             sortables = [];
 
-            // 퍼포먼스 향상을 위해 DocumentFragment 사용
             const fragment = document.createDocumentFragment();
 
             state.sectionOrder.forEach(sectionId => {
@@ -382,10 +380,19 @@
                     </div>
                 `;
                 fragment.appendChild(sectionContainer);
-                sectionData.tickers.forEach(ticker => cacheRowNodes(ticker));
             });
 
+            // 요소를 DOM에 먼저 붙여야 document.getElementById로 캐싱이 가능합니다.
             dashboard.appendChild(fragment);
+
+            // 요소가 DOM에 렌더링 된 이후 캐싱 진행
+            state.sectionOrder.forEach(sectionId => {
+                const sectionData = state.watchlists[sectionId];
+                if (sectionData) {
+                    sectionData.tickers.forEach(ticker => cacheRowNodes(ticker));
+                }
+            });
+
             initDragAndDrop();
         }
 
