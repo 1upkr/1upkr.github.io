@@ -9,7 +9,6 @@
             --bg-color: #0f1115;
             --card-bg: #1a1d24;
             --text-color: #e3e6eb;
-            --accent-color: #2962ff;
         }
 
         body {
@@ -59,28 +58,28 @@
         .card {
             background-color: var(--card-bg);
             border-radius: 8px;
-            padding: 10px;
+            padding: 15px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            height: 220px;
+            height: 250px; /* 차트 높이 확보 */
             box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
         }
 
-        .card-title {
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 8px;
-            padding-left: 5px;
-            color: #ef5350; /* 기본 포인트 컬러 */
-        }
-
-        /* 카테고리별 헤더 스타일링 (선택 사항) */
         .grid-section-title {
             grid-column: 1 / -1;
             font-size: 18px;
             font-weight: 600;
-            margin-top: 15px;
+            margin-top: 20px;
             margin-bottom: 5px;
             color: #848e9c;
+        }
+
+        /* 차트 컨테이너 크기 지정 */
+        .chart-container {
+            flex-grow: 1;
+            width: 100%;
+            height: 100%;
         }
     </style>
 </head>
@@ -88,10 +87,10 @@
 
     <header>
         <h1>Market Overview</h1>
-        <div class="update-time" id="live-clock">실시간 연결 중...</div>
+        <div class="update-time" id="live-clock">시간 로딩 중...</div>
     </header>
 
-    <!-- 상단 흐르는 실시간 지수 (티커 테이프) -->
+    <!-- 상단 흐르는 실시간 지수 -->
     <div class="ticker-tape-container">
         <div class="tradingview-widget-container">
             <div class="tradingview-widget-container__widget"></div>
@@ -106,9 +105,9 @@
             ],
             "showSymbolLogo": true,
             "colorTheme": "dark",
-            "isTransparent": false,
+            "isTransparent": true,
             "displayMode": "adaptive",
-            "locale": "ko"
+            "locale": "kr"
             }
             </script>
         </div>
@@ -119,94 +118,99 @@
         
         <!-- 1. 국내 지수 및 환율/금 -->
         <div class="grid-section-title">국내 시장 & 거시 지표</div>
-        <div class="card"><div id="tv-kospi"></div></div>
-        <div class="card"><div id="tv-kosdaq"></div></div>
-        <div class="card"><div id="tv-usdkrw"></div></div>
-        <div class="card"><div id="tv-krwgold"></div></div>
-        <div class="card"><div id="tv-kr10y"></div></div>
+        <div class="card"><div id="tv-kospi" class="chart-container"></div></div>
+        <div class="card"><div id="tv-kosdaq" class="chart-container"></div></div>
+        <div class="card"><div id="tv-usdkrw" class="chart-container"></div></div>
+        <div class="card"><div id="tv-krwgold" class="chart-container"></div></div>
+        <div class="card"><div id="tv-kr10y" class="chart-container"></div></div>
 
         <!-- 2. 국내 주요 주식 -->
         <div class="grid-section-title">국내 주요 기업</div>
-        <div class="card"><div id="tv-samsung"></div></div>
-        <div class="card"><div id="tv-hynix"></div></div>
-        <div class="card"><div id="tv-lge"></div></div>
-        <div class="card"><div id="tv-hyundai"></div></div>
+        <div class="card"><div id="tv-samsung" class="chart-container"></div></div>
+        <div class="card"><div id="tv-hynix" class="chart-container"></div></div>
+        <div class="card"><div id="tv-lge" class="chart-container"></div></div>
+        <div class="card"><div id="tv-hyundai" class="chart-container"></div></div>
 
         <!-- 3. 글로벌 지수 및 선물/원자재 -->
         <div class="grid-section-title">글로벌 지수 & 원자재</div>
-        <div class="card"><div id="tv-ndxfut"></div></div>
-        <div class="card"><div id="tv-nasdaq"></div></div>
-        <div class="card"><div id="tv-sp500"></div></div>
-        <div class="card"><div id="tv-dow"></div></div>
-        <div class="card"><div id="tv-wti"></div></div>
-        <div class="card"><div id="tv-us10y"></div></div>
+        <div class="card"><div id="tv-ndxfut" class="chart-container"></div></div>
+        <div class="card"><div id="tv-nasdaq" class="chart-container"></div></div>
+        <div class="card"><div id="tv-sp500" class="chart-container"></div></div>
+        <div class="card"><div id="tv-dow" class="chart-container"></div></div>
+        <div class="card"><div id="tv-wti" class="chart-container"></div></div>
+        <div class="card"><div id="tv-us10y" class="chart-container"></div></div>
 
         <!-- 4. 미국 주요 주식 및 ETF -->
         <div class="grid-section-title">미국 주식 & ETF & 크립토</div>
-        <div class="card"><div id="tv-nvda"></div></div>
-        <div class="card"><div id="tv-tsla"></div></div>
-        <div class="card"><div id="tv-aapl"></div></div>
-        <div class="card"><div id="tv-tqqq"></div></div>
-        <div class="card"><div id="tv-spy"></div></div>
-        <div class="card"><div id="tv-soxl"></div></div>
-        <div class="card"><div id="tv-btc"></div></div>
+        <div class="card"><div id="tv-nvda" class="chart-container"></div></div>
+        <div class="card"><div id="tv-tsla" class="chart-container"></div></div>
+        <div class="card"><div id="tv-aapl" class="chart-container"></div></div>
+        <div class="card"><div id="tv-tqqq" class="chart-container"></div></div>
+        <div class="card"><div id="tv-spy" class="chart-container"></div></div>
+        <div class="card"><div id="tv-soxl" class="chart-container"></div></div>
+        <div class="card"><div id="tv-btc" class="chart-container"></div></div>
 
     </div>
 
-    <!-- 트레이딩뷰 실시간 미니 차트 로드 스크립트 -->
-    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
-    <script type="text/javascript">
-        function createMiniChart(containerId, symbol, displayName) {
-            new TradingView.MiniWidget({
-                "container_id": containerId,
-                "symbol": symbol,
+    <script>
+        // 트레이딩뷰 위젯 동적 생성 함수
+        const assets = [
+            { id: "tv-kospi", symbol: "KRX:KOSPI" },
+            { id: "tv-kosdaq", symbol: "KRX:KOSDAQ" },
+            { id: "tv-usdkrw", symbol: "FX_IDC:USDKRW" },
+            { id: "tv-krwgold", symbol: "FX_IDC:XAUKRW" },
+            { id: "tv-kr10y", symbol: "TVC:KR10Y" },
+            { id: "tv-samsung", symbol: "KRX:005930" },
+            { id: "tv-hynix", symbol: "KRX:000660" },
+            { id: "tv-lge", symbol: "KRX:066570" },
+            { id: "tv-hyundai", symbol: "KRX:005380" },
+            { id: "tv-ndxfut", symbol: "CME:NQ1!" },
+            { id: "tv-nasdaq", symbol: "NASDAQ:IXIC" },
+            { id: "tv-sp500", symbol: "SP:SPX" },
+            { id: "tv-dow", symbol: "DJ:DJI" },
+            { id: "tv-wti", symbol: "TVC:USOIL" },
+            { id: "tv-us10y", symbol: "TVC:US10Y" },
+            { id: "tv-nvda", symbol: "NASDAQ:NVDA" },
+            { id: "tv-tsla", symbol: "NASDAQ:TSLA" },
+            { id: "tv-aapl", symbol: "NASDAQ:AAPL" },
+            { id: "tv-tqqq", symbol: "NASDAQ:TQQQ" },
+            { id: "tv-spy", symbol: "AMEX:SPY" },
+            { id: "tv-soxl", symbol: "AMEX:SOXL" },
+            { id: "tv-btc", symbol: "BINANCE:BTCUSD" }
+        ];
+
+        assets.forEach(asset => {
+            const container = document.getElementById(asset.id);
+            if (!container) return;
+
+            // 위젯 HTML 구조 세팅
+            container.innerHTML = `
+                <div class="tradingview-widget-container" style="height: 100%; width: 100%;">
+                    <div class="tradingview-widget-container__widget" style="height: 100%; width: 100%;"></div>
+                </div>
+            `;
+
+            // 실제 트레이딩뷰 스크립트 주입 (Mini Symbol Overview)
+            const script = document.createElement('script');
+            script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js';
+            script.type = 'text/javascript';
+            script.async = true;
+            script.innerHTML = JSON.stringify({
+                "symbol": asset.symbol,
                 "width": "100%",
                 "height": "100%",
-                "locale": "ko",
+                "locale": "kr",
                 "dateRange": "1M",
                 "colorTheme": "dark",
-                "trendLineColor": "rgba(41, 98, 255, 1)",
-                "underLineColor": "rgba(41, 98, 255, 0.3)",
-                "underLineBottomColor": "rgba(41, 98, 255, 0)",
                 "isTransparent": true,
-                "autosize": false,
+                "autosize": true,
                 "largeChartUrl": ""
             });
-        }
 
-        // 22개 자산 매핑 실행
-        // 국내 시장 & 거시
-        createMiniChart("tv-kospi", "KRX:KOSPI");
-        createMiniChart("tv-kosdaq", "KRX:KOSDAQ");
-        createMiniChart("tv-usdkrw", "FX_IDC:USDKRW");
-        createMiniChart("tv-krwgold", "FX_IDC:XAUKRW"); // KRW 금현물 대체
-        createMiniChart("tv-kr10y", "TVC:KR10Y"); // 국고채 10년
+            container.querySelector('.tradingview-widget-container').appendChild(script);
+        });
 
-        // 국내 기업
-        createMiniChart("tv-samsung", "KRX:005930");
-        createMiniChart("tv-hynix", "KRX:000660");
-        createMiniChart("tv-lge", "KRX:066570");
-        createMiniChart("tv-hyundai", "KRX:005380");
-
-        // 글로벌 지수 & 원자재
-        createMiniChart("tv-ndxfut", "CME:NQ1!"); // 나스닥 100 선물
-        createMiniChart("tv-nasdaq", "NASDAQ:IXIC");
-        createMiniChart("tv-sp500", "SP:SPX");
-        createMiniChart("tv-dow", "DJ:DJI");
-        createMiniChart("tv-wti", "TVC:USOIL"); // WTI 원유
-        createMiniChart("tv-us10y", "TVC:US10Y"); // 미국채 10년
-
-        // 미국 주식 & ETF & 크립토
-        createMiniChart("tv-nvda", "NASDAQ:NVDA");
-        createMiniChart("tv-tsla", "NASDAQ:TSLA");
-        createMiniChart("tv-aapl", "NASDAQ:AAPL");
-        createMiniChart("tv-tqqq", "NASDAQ:TQQQ");
-        createMiniChart("tv-spy", "AMEX:SPY");
-        createMiniChart("tv-soxl", "AMEX:SOXL");
-        createMiniChart("tv-btc", "BINANCE:BTCUSD");
-
-
-        // 상단 시계 기능
+        // 실시간 시계 업데이트 로직
         function updateClock() {
             const now = new Date();
             document.getElementById('live-clock').innerText = "현재 시간: " + now.toLocaleString('ko-KR');
