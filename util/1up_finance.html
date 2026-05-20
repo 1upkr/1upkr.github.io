@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Light Theme */
+            --bg-color: #f3f4f8;
+            --text-primary: #18191a;
+            --text-secondary: #5f6368;
+            --card-bg: #ffffff;
+            --border-color: #e2e6eb;
+            --green: #00873c;
+            --green-bg: #e6f4ea;
+            --red: #eb0f29;
+            --red-bg: #fce8ea;
+            --header-bg: #ffffff;
+            --hover-bg: #f7f9fa;
+            --input-bg: #f0f3f6;
+            --btn-bg: #000000;
+            --btn-text: #ffffff;
+            --flash-green: rgba(0, 135, 60, 0.2);
+            --flash-red: rgba(235, 15, 41, 0.2);
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+            --drag-bg: rgba(0,0,0,0.03);
+        }
+
+        [data-theme="dark"] {
+            /* Dark Theme */
+            --bg-color: #121212;
+            --text-primary: #e3e3e3;
+            --text-secondary: #a0a4a8;
+            --card-bg: #1e1e1e;
+            --border-color: #2b2b2b;
+            --green: #00c853;
+            --green-bg: rgba(0, 200, 83, 0.15);
+            --red: #ff453a;
+            --red-bg: rgba(255, 69, 58, 0.15);
+            --header-bg: #1e1e1e;
+            --hover-bg: #2a2a2a;
+            --input-bg: #2b2b2b;
+            --btn-bg: #ffffff;
+            --btn-text: #000000;
+            --flash-green: rgba(0, 200, 83, 0.3);
+            --flash-red: rgba(255, 69, 58, 0.3);
+            --drag-bg: rgba(255,255,255,0.05);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            transition: background-color 0.2s, color 0.2s;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* --- Header Navigation --- */
+        header {
+            background-color: var(--header-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0.875rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .header-left h1 {
+            font-size: 1.25rem; font-weight: 700;
+            display: flex; align-items: center; gap: 0.5rem; letter-spacing: -0.02em;
+        }
+
+        .header-controls { display: flex; align-items: center; gap: 1.5rem; font-size: 0.875rem; font-weight: 500; }
+        .timer { color: var(--text-secondary); font-variant-numeric: tabular-nums; display: flex; align-items: center; gap: 0.3rem; }
+        .action-btns { display: flex; flex-direction: row; align-items: center; gap: 0.5rem; }
+
+        .icon-btn {
+            background: none; border: none; color: var(--text-secondary); cursor: pointer;
+            padding: 0.5rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+        }
+        .icon-btn:hover { background-color: var(--hover-bg); color: var(--text-primary); }
+        .icon-btn svg { width: 20px; height: 20px; fill: currentColor; }
+
+        /* --- Main Content & Cards --- */
+        main { padding: 2rem 5%; max-width: 1400px; margin: 0 auto; }
+
+        .section-container {
+            background-color: var(--card-bg); border: 1px solid var(--border-color);
+            border-radius: 12px; margin-bottom: 2rem; overflow: hidden; box-shadow: var(--shadow-md);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        /* Drag & Drop Styles */
+        .draggable { cursor: grab; }
+        .draggable:active { cursor: grabbing; }
+        .dragging { opacity: 0.5; background-color: var(--drag-bg) !important; box-shadow: 0 8px 16px rgba(0,0,0,0.1); }
+        
+        .drag-handle {
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-secondary); cursor: grab; padding: 0.25rem;
+            margin-right: 0.5rem; opacity: 0.6; transition: opacity 0.2s;
+        }
+        .drag-handle:hover { opacity: 1; }
+        .drag-handle svg { width: 16px; height: 16px; fill: currentColor; }
+
+        .section-header {
+            padding: 1.25rem 1.5rem; display: flex; justify-content: space-between;
+            align-items: center; border-bottom: 1px solid var(--border-color); user-select: none;
+        }
+        .section-header-left { display: flex; align-items: center; }
+        .section-header h2 { font-size: 1.125rem; font-weight: 600; cursor: pointer; }
+
+        .section-toggle svg { width: 20px; height: 20px; fill: var(--text-secondary); transition: transform 0.3s ease; cursor: pointer; }
+        .collapsed .section-toggle svg { transform: rotate(-180deg); }
+        .collapsed .section-body { display: none; }
+
+        /* --- Form & Search Style --- */
+        .add-ticker-form {
+            display: flex; padding: 0.75rem 1.5rem; gap: 0.75rem;
+            border-bottom: 1px solid var(--border-color); background-color: var(--card-bg); align-items: center;
+        }
+        .search-wrapper { position: relative; flex: 1; max-width: 240px; }
+        .search-wrapper svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; fill: var(--text-secondary); }
+        .add-ticker-form input {
+            width: 100%; padding: 0.5rem 0.75rem 0.5rem 2.2rem; border: 1px solid transparent; border-radius: 8px;
+            background-color: var(--input-bg); color: var(--text-primary); font-size: 0.875rem; font-weight: 500; text-transform: uppercase;
+        }
+        .add-ticker-form input:focus { outline: none; border-color: #0056d2; background-color: var(--card-bg); }
+        .add-ticker-form button { background-color: var(--btn-bg); color: var(--btn-text); border: none; padding: 0.5rem 1.25rem; border-radius: 8px; cursor: pointer; font-size: 0.875rem; font-weight: 600; }
+
+        /* --- Table Styling --- */
+        .table-wrapper { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: right; white-space: nowrap; }
+        th, td { padding: 0.875rem 1.5rem; border-bottom: 1px solid var(--border-color); }
+        tr:last-child td { border-bottom: none; }
+        
+        th { color: var(--text-secondary); font-size: 0.75rem; font-weight: 500; text-transform: uppercase; }
+        th.left-align, td.left-align { text-align: left; }
+        th.handle-col, td.handle-col { width: 40px; padding-right: 0; padding-left: 1rem; text-align: center; }
+        
+        tbody tr { transition: background-color 0.15s; }
+        tbody tr:not(.dragging):hover { background-color: var(--hover-bg); }
+
+        /* Data formatting (업데이트: 글자 넘침 방지 처리 강화) */
+        .asset-col { display: flex; flex-direction: column; gap: 0.1rem; max-width: 200px; }
+        .symbol { font-weight: 600; font-size: 0.95rem; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .name { color: var(--text-secondary); font-size: 0.75rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        
+        .price { font-weight: 600; font-size: 1.05rem; font-variant-numeric: tabular-nums; color: var(--text-primary); }
+        .change-cell { display: flex; flex-direction: column; align-items: flex-end; font-variant-numeric: tabular-nums; font-weight: 500; font-size: 0.95rem; }
+        .up { color: var(--green); } .down { color: var(--red); }
+        .badge { display: inline-flex; align-items: center; padding: 0.2rem 0.4rem; border-radius: 4px; font-weight: 600; font-size: 0.8rem; margin-top: 0.1rem; }
+        .badge.up { background-color: var(--green-bg); color: var(--green); }
+        .badge.down { background-color: var(--red-bg); color: var(--red); }
+        .sub-data { color: var(--text-primary); font-weight: 500; font-variant-numeric: tabular-nums; }
+        .arrow { font-size: 0.7rem; margin-right: 0.2rem; }
+
+        .btn-remove { background: none; color: var(--text-secondary); padding: 0.4rem; border-radius: 50%; cursor: pointer; border: none; display: inline-flex; }
+        .btn-remove svg { width: 16px; height: 16px; fill: currentColor; }
+        .btn-remove:hover { color: var(--red); background-color: var(--red-bg); }
+
+        @keyframes flashGreen { 0% { background-color: var(--flash-green); } 100% { background-color: transparent; } }
+        @keyframes flashRed { 0% { background-color: var(--flash-red); } 100% { background-color: transparent; } }
+        .flash-up { animation: flashGreen 1s ease-out; } .flash-down { animation: flashRed 1s ease-out; }
+
+        .skeleton { background: linear-gradient(90deg, var(--border-color) 25%, var(--hover-bg) 50%, var(--border-color) 75%); background-size: 200% 100%; animation: skeletonLoading 1.5s infinite; border-radius: 4px; height: 1rem; width: 100%; display: inline-block; }
+        .skeleton.sm { height: 0.7rem; width: 60%; }
+        @keyframes skeletonLoading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        .error-text { color: var(--red); font-size: 0.75rem; font-weight: 600; white-space: pre-wrap; line-height: 1.2; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hide-mobile { display: none; }
+            header { flex-direction: column; gap: 1rem; padding: 1rem; }
+            .header-controls { width: 100%; justify-content: space-between; }
+            main { padding: 1rem; }
+            th, td { padding: 0.75rem 1rem; }
+            th.handle-col, td.handle-col { padding-left: 0.5rem; }
+            .search-wrapper { max-width: 100%; }
+            .add-ticker-form { flex-direction: column; align-items: stretch; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-left">
+            <h1>📉 MarketDash</h1>
+        </div>
+        <div class="header-controls">
+            <div class="timer">
+                <svg width="14" height="14" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 14H11V7h2v9z"/></svg>
+                <span id="countdown">60</span>s
+            </div>
+            <div class="action-btns">
+                <button id="btn-refresh" class="icon-btn" title="Force Refresh">
+                    <svg viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+                </button>
+                <button id="btn-reset" class="icon-btn" title="Reset to Defaults">
+                    <svg viewBox="0 0 24 24"><path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49-.12-.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/></svg>
+                </button>
+                <button id="btn-theme" class="icon-btn" title="Toggle Theme">
+                    <svg viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-3.03 0-5.5-2.47-5.5-5.5 0-1.82.89-3.42 2.26-4.4C12.92 3.04 12.46 3 12 3m0-2c.17 0 .34.01.51.03C8.73 1.66 5.5 4.9 5.5 8.75c0 3.86 3.23 7.09 7.01 7.09 3.85 0 7.09-3.23 7.09-7.01 0-.17-.01-.34-.03-.51 1.32 1.48 2.13 3.42 2.13 5.55 0 4.67-3.79 8.46-8.46 8.46S3.29 18.53 3.29 13.86 7.08 5.4 11.75 5.4c.08 0 .17.01.25.01L12 1z"/></svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main id="dashboard">
+        <!-- Sections will be injected here via JS -->
+    </main>
+
+    <script>
+        const DEFAULT_WATCHLISTS = {
+            indicators: { title: '📈 Market Indicators', tickers: ['^GSPC', '^IXIC', '^DJI', '^KS11', '^KQ11', 'GC=F', 'CL=F', 'BTC-USD'] },
+            us: { title: '🇺🇸 US Equities', tickers: ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'TSLA', 'META'] },
+            kr: { title: '🇰🇷 KR Equities', tickers: ['005930.KS', '000660.KS', '035420.KS', '005380.KS', '035720.KS'] }
+        };
+
+        const GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbzHIRkgH2Sqc_X0RxxrmKrWWdGyF67IW-S5jNL0mTRZ2vGwKT1rbfDzOveoUSg6cH5k/exec";
+        
+        // Grip icon SVG
+        const DRAG_ICON = `<svg viewBox="0 0 24 24"><path d="M8 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm0 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm0 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm6-12a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm0 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm0 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0z"/></svg>`;
+
+        let state = {
+            watchlists: JSON.parse(localStorage.getItem('marketdash_watchlists')) || JSON.parse(JSON.stringify(DEFAULT_WATCHLISTS)),
+            sectionOrder: JSON.parse(localStorage.getItem('marketdash_sectionOrder')) || ['indicators', 'us', 'kr'],
+            expanded: JSON.parse(localStorage.getItem('marketdash_expanded')) || { indicators: true, us: true, kr: true },
+            theme: localStorage.getItem('marketdash_theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'),
+            countdown: 60,
+            intervalId: null
+        };
+
+        const rowNodes = new Map(); 
+        
+        function init() {
+            if (!state.sectionOrder || state.sectionOrder.length === 0) {
+                state.sectionOrder = Object.keys(state.watchlists);
+            }
+
+            applyTheme(); renderLayout(); initDragAndDrop(); startTimer(); fetchData(); 
+            
+            document.getElementById('btn-theme').addEventListener('click', toggleTheme);
+            document.getElementById('btn-refresh').addEventListener('click', forceRefresh);
+            document.getElementById('btn-reset').addEventListener('click', resetToDefaults);
+        }
+
+        function applyTheme() { document.documentElement.setAttribute('data-theme', state.theme); }
+        function toggleTheme() {
+            state.theme = state.theme === 'dark' ? 'light' : 'dark';
+            localStorage.setItem('marketdash_theme', state.theme); applyTheme();
+        }
+
+        /** --- DOM RENDERER --- */
+        function renderLayout() {
+            const dashboard = document.getElementById('dashboard');
+            dashboard.innerHTML = ''; rowNodes.clear();
+
+            state.sectionOrder.forEach(sectionId => {
+                const sectionData = state.watchlists[sectionId];
+                if (!sectionData) return;
+
+                const isExpanded = state.expanded[sectionId];
+                const sectionContainer = document.createElement('div');
+                sectionContainer.className = `section-container draggable ${isExpanded ? '' : 'collapsed'}`;
+                sectionContainer.id = `section-${sectionId}`;
+                sectionContainer.setAttribute('draggable', 'true');
+                sectionContainer.dataset.type = 'section';
+                sectionContainer.dataset.id = sectionId;
+
+                sectionContainer.innerHTML = `
+                    <div class="section-header" onclick="toggleSection(event, '${sectionId}')">
+                        <div class="section-header-left">
+                            <span class="drag-handle" title="Drag to reorder section">${DRAG_ICON}</span>
+                            <h2>${sectionData.title}</h2>
+                        </div>
+                        <span class="section-toggle"><svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg></span>
+                    </div>
+                    <div class="section-body">
+                        <form class="add-ticker-form" onsubmit="handleAddTicker(event, '${sectionId}')">
+                            <div class="search-wrapper">
+                                <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                                <input type="text" id="input-${sectionId}" placeholder="Add Symbol" required autocomplete="off">
+                            </div>
+                            <button type="submit" id="btn-add-${sectionId}">Add</button>
+                        </form>
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th class="handle-col"></th>
+                                        <th class="left-align">Asset</th>
+                                        <th>Price</th>
+                                        <th>Change</th>
+                                        <th class="hide-mobile">Volume</th>
+                                        <th class="hide-mobile">Market Cap</th>
+                                        <th class="hide-mobile">52W Range</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbody-${sectionId}">
+                                    ${sectionData.tickers.map(ticker => generateRowHTML(ticker, sectionId)).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+                dashboard.appendChild(sectionContainer);
+                sectionData.tickers.forEach(ticker => cacheRowNodes(ticker));
+            });
+        }
+
+        function generateRowHTML(ticker, sectionId) {
+            const safeId = ticker.replace(/\^|=/g, '');
+            
+            // 핵심 업데이트: 국장(KR)인 경우 회사명을 크고 진하게(위로), 코드를 작고 연하게(아래로) 배치
+            let assetHTML = '';
+            if (sectionId === 'kr') {
+                assetHTML = `
+                    <span class="symbol" id="name-${ticker}" title="${ticker}"><span class="skeleton sm"></span></span>
+                    <span class="name">${ticker}</span>
+                `;
+            } else {
+                assetHTML = `
+                    <span class="symbol">${ticker}</span>
+                    <span class="name" id="name-${ticker}"><span class="skeleton sm"></span></span>
+                `;
+            }
+
+            return `
+                <tr id="row-${safeId}" class="draggable" draggable="true" data-type="row" data-section="${sectionId}" data-ticker="${ticker}">
+                    <td class="handle-col"><span class="drag-handle" title="Drag to reorder row">${DRAG_ICON}</span></td>
+                    <td class="left-align">
+                        <div class="asset-col">
+                            ${assetHTML}
+                        </div>
+                    </td>
+                    <td class="price" id="price-${ticker}"><span class="skeleton"></span></td>
+                    <td id="change-cell-${ticker}">
+                        <div class="change-cell">
+                            <div id="change-${ticker}"><span class="skeleton"></span></div>
+                            <div id="pct-${ticker}"><span class="skeleton sm"></span></div>
+                        </div>
+                    </td>
+                    <td class="hide-mobile sub-data" id="vol-${ticker}">-</td>
+                    <td class="hide-mobile sub-data" id="cap-${ticker}">-</td>
+                    <td class="hide-mobile sub-data" id="range-${ticker}">-</td>
+                    <td>
+                        <button class="btn-remove" onclick="removeTicker('${sectionId}', '${ticker}')" title="Remove">
+                            <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }
+
+        function cacheRowNodes(ticker) {
+            const safeId = ticker.replace(/\^|=/g, '');
+            rowNodes.set(ticker, {
+                row: document.getElementById(`row-${safeId}`),
+                name: document.getElementById(`name-${ticker}`),
+                price: document.getElementById(`price-${ticker}`),
+                change: document.getElementById(`change-${ticker}`),
+                pct: document.getElementById(`pct-${ticker}`),
+                vol: document.getElementById(`vol-${ticker}`),
+                cap: document.getElementById(`cap-${ticker}`),
+                range: document.getElementById(`range-${ticker}`)
+            });
+        }
+
+        /** --- DRAG AND DROP LOGIC --- */
+        function initDragAndDrop() {
+            let draggedItem = null;
+
+            document.addEventListener('dragstart', (e) => {
+                const target = e.target.closest('.draggable');
+                if (!target) return;
+                
+                draggedItem = target;
+                e.dataTransfer.effectAllowed = 'move';
+                setTimeout(() => target.classList.add('dragging'), 0);
+            });
+
+            document.addEventListener('dragend', (e) => {
+                if (draggedItem) {
+                    draggedItem.classList.remove('dragging');
+                    draggedItem = null;
+                }
+            });
+
+            document.addEventListener('dragover', (e) => {
+                e.preventDefault(); 
+                if (!draggedItem) return;
+
+                const type = draggedItem.dataset.type;
+                
+                if (type === 'section') {
+                    const container = document.getElementById('dashboard');
+                    const targetSection = e.target.closest('.section-container');
+                    if (targetSection && targetSection !== draggedItem) {
+                        const rect = targetSection.getBoundingClientRect();
+                        const next = (e.clientY - rect.top) / (rect.bottom - rect.top) > 0.5;
+                        container.insertBefore(draggedItem, next ? targetSection.nextSibling : targetSection);
+                    }
+                } else if (type === 'row') {
+                    const container = draggedItem.closest('tbody');
+                    const targetRow = e.target.closest('tr[data-type="row"]');
+                    if (targetRow && targetRow !== draggedItem && targetRow.closest('tbody') === container) {
+                        const rect = targetRow.getBoundingClientRect();
+                        const next = (e.clientY - rect.top) / (rect.bottom - rect.top) > 0.5;
+                        container.insertBefore(draggedItem, next ? targetRow.nextSibling : targetRow);
+                    }
+                }
+            });
+
+            document.addEventListener('drop', (e) => {
+                e.preventDefault();
+                if (!draggedItem) return;
+
+                const type = draggedItem.dataset.type;
+                
+                if (type === 'section') {
+                    const newOrder = Array.from(document.querySelectorAll('.section-container')).map(el => el.dataset.id);
+                    state.sectionOrder = newOrder;
+                    localStorage.setItem('marketdash_sectionOrder', JSON.stringify(state.sectionOrder));
+                } else if (type === 'row') {
+                    const sectionId = draggedItem.dataset.section;
+                    const tbody = document.getElementById(`tbody-${sectionId}`);
+                    const newTickers = Array.from(tbody.querySelectorAll('tr[data-type="row"]')).map(el => el.dataset.ticker);
+                    state.watchlists[sectionId].tickers = newTickers;
+                    saveWatchlists();
+                }
+            });
+        }
+
+        /** --- ACTIONS --- */
+        function toggleSection(e, sectionId) {
+            if (e.target.closest('.drag-handle')) return;
+            const container = document.getElementById(`section-${sectionId}`);
+            container.classList.toggle('collapsed');
+            state.expanded[sectionId] = !container.classList.contains('collapsed');
+            localStorage.setItem('marketdash_expanded', JSON.stringify(state.expanded));
+            if (state.expanded[sectionId]) forceRefresh();
+        }
+
+        async function handleAddTicker(e, sectionId) {
+            e.preventDefault();
+            const inputEl = document.getElementById(`input-${sectionId}`);
+            const btnEl = document.getElementById(`btn-add-${sectionId}`);
+            const ticker = inputEl.value.trim().toUpperCase();
+            
+            if (!ticker || state.watchlists[sectionId].tickers.includes(ticker)) {
+                inputEl.value = ''; return;
+            }
+
+            btnEl.disabled = true; btnEl.textContent = '...';
+
+            try {
+                const data = await fetchYahooFinance([ticker]);
+                if (!data || data.length === 0 || !data[0].regularMarketPrice) {
+                    alert(`Ticker ${ticker} not found.`); return;
+                }
+
+                state.watchlists[sectionId].tickers.push(ticker);
+                saveWatchlists();
+
+                const tbody = document.getElementById(`tbody-${sectionId}`);
+                tbody.insertAdjacentHTML('beforeend', generateRowHTML(ticker, sectionId));
+                cacheRowNodes(ticker);
+
+                updateDOMWithData([data[0]]);
+                inputEl.value = '';
+            } catch (err) {
+                alert(`${err.message}`);
+            } finally {
+                btnEl.disabled = false; btnEl.textContent = 'Add';
+            }
+        }
+
+        function removeTicker(sectionId, ticker) {
+            state.watchlists[sectionId].tickers = state.watchlists[sectionId].tickers.filter(t => t !== ticker);
+            saveWatchlists();
+            const safeId = ticker.replace(/\^|=/g, '');
+            const row = document.getElementById(`row-${safeId}`);
+            if (row) row.remove();
+            rowNodes.delete(ticker);
+        }
+
+        function resetToDefaults() {
+            if(confirm("Are you sure you want to restore default watchlists?")) {
+                localStorage.removeItem('marketdash_watchlists');
+                localStorage.removeItem('marketdash_sectionOrder');
+                state.watchlists = JSON.parse(JSON.stringify(DEFAULT_WATCHLISTS));
+                state.sectionOrder = ['indicators', 'us', 'kr'];
+                renderLayout(); forceRefresh();
+            }
+        }
+
+        function saveWatchlists() { localStorage.setItem('marketdash_watchlists', JSON.stringify(state.watchlists)); }
+
+        /** --- ROBUST API DATA FETCHING --- */
+        async function fetchYahooFinance(symbols) {
+            if (symbols.length === 0) return [];
+            
+            const symbolsStr = symbols.join(',');
+            const targetUrl = `${GAS_PROXY_URL}?symbols=${encodeURIComponent(symbolsStr)}`;
+
+            try {
+                const response = await fetch(targetUrl);
+                const text = await response.text();
+
+                if (text.trim().startsWith('<')) {
+                    throw new Error("GAS 권한 오류: 배포 시 [모든 사용자]로 설정했는지 확인하세요.");
+                }
+
+                const data = JSON.parse(text);
+                
+                if (data && data.quoteResponse && data.quoteResponse.result) {
+                    return data.quoteResponse.result;
+                } else if (data && data.finance && data.finance.error) {
+                    throw new Error(`야후 차단: ${data.finance.error.code}`);
+                } else if (data && data.error) {
+                    throw new Error(`GAS 에러: ${data.error}`);
+                }
+                
+                throw new Error("데이터 구조가 올바르지 않습니다.");
+            } catch (e) {
+                console.error("데이터 가져오기 실패:", e);
+                throw e; 
+            }
+        }
+
+        async function fetchData() {
+            let symbolsToFetch = [];
+            for (const sectionId of state.sectionOrder) {
+                if (state.expanded[sectionId]) {
+                    symbolsToFetch = symbolsToFetch.concat(state.watchlists[sectionId].tickers);
+                }
+            }
+
+            if (symbolsToFetch.length === 0) return;
+
+            const chunkSize = 40;
+            for (let i = 0; i < symbolsToFetch.length; i += chunkSize) {
+                const chunk = symbolsToFetch.slice(i, i + chunkSize);
+                try {
+                    const results = await fetchYahooFinance(chunk);
+                    updateDOMWithData(results);
+                    markMissingData(chunk, results);
+                } catch (error) {
+                    console.error("Fetch Chunk Error:", chunk, error);
+                    markAllError(chunk, error.message);
+                }
+            }
+        }
+
+        function forceRefresh() {
+            state.countdown = 60;
+            document.getElementById('countdown').textContent = state.countdown;
+            fetchData();
+        }
+
+        function startTimer() {
+            if (state.intervalId) clearInterval(state.intervalId);
+            state.intervalId = setInterval(() => {
+                state.countdown--;
+                if (state.countdown <= 0) forceRefresh();
+                else document.getElementById('countdown').textContent = state.countdown;
+            }, 1000);
+        }
+
+        function updateDOMWithData(quotes) {
+            requestAnimationFrame(() => {
+                quotes.forEach(quote => {
+                    const ticker = quote.symbol;
+                    const nodes = rowNodes.get(ticker);
+                    if (!nodes || !nodes.row) return;
+
+                    const price = quote.regularMarketPrice || 0;
+                    const change = quote.regularMarketChange || 0;
+                    const pct = quote.regularMarketChangePercent || 0;
+                    const isUp = change >= 0;
+                    
+                    const colorClass = isUp ? 'up' : 'down';
+                    const sign = isUp ? '+' : '';
+                    const arrow = isUp ? '▲' : '▼';
+                    
+                    const oldPriceStr = nodes.price.getAttribute('data-price');
+                    const oldPrice = oldPriceStr ? parseFloat(oldPriceStr) : null;
+                    if (oldPrice !== null && oldPrice !== price) {
+                        nodes.row.classList.remove('flash-up', 'flash-down');
+                        void nodes.row.offsetWidth; 
+                        nodes.row.classList.add(price > oldPrice ? 'flash-up' : 'flash-down');
+                    }
+                    nodes.price.setAttribute('data-price', price);
+
+                    nodes.name.textContent = quote.shortName || quote.longName || ticker;
+                    nodes.price.textContent = formatNum(price);
+                    
+                    nodes.change.innerHTML = `<span class="${colorClass}">${sign}${formatNum(change)}</span>`;
+                    nodes.pct.innerHTML = `<span class="badge ${colorClass}"><span class="arrow">${arrow}</span>${formatNum(Math.abs(pct))}%</span>`;
+                    
+                    nodes.vol.textContent = formatCompact(quote.regularMarketVolume);
+                    nodes.cap.textContent = formatCompact(quote.marketCap);
+                    
+                    if (quote.fiftyTwoWeekLow && quote.fiftyTwoWeekHigh) {
+                        nodes.range.textContent = `${formatNum(quote.fiftyTwoWeekLow)} - ${formatNum(quote.fiftyTwoWeekHigh)}`;
+                    } else {
+                        nodes.range.textContent = '-';
+                    }
+                });
+            });
+        }
+
+        function markMissingData(requestedSymbols, results) {
+            const returnedSymbols = new Set(results.map(r => r.symbol));
+            requestedSymbols.forEach(sym => {
+                if (!returnedSymbols.has(sym)) setErrorState(sym, 'No Data');
+            });
+        }
+
+        function markAllError(symbols, errMsg) {
+            symbols.forEach(sym => setErrorState(sym, errMsg));
+        }
+
+        function setErrorState(ticker, msg) {
+            const nodes = rowNodes.get(ticker);
+            if (!nodes) return;
+            requestAnimationFrame(() => {
+                nodes.name.textContent = 'Error';
+                nodes.price.innerHTML = `<span class="error-text">${msg}</span>`;
+                nodes.change.innerHTML = '';
+                nodes.pct.innerHTML = '';
+                nodes.vol.textContent = '-';
+                nodes.cap.textContent = '-';
+                nodes.range.textContent = '-';
+            });
+        }
+
+        function formatNum(num) {
+            if (num === undefined || num === null || isNaN(num)) return '-';
+            const abs = Math.abs(num);
+            let decimals = 2;
+            if (abs > 0 && abs < 0.1) decimals = 4;
+            else if (abs > 1000) decimals = 0; 
+            
+            return new Intl.NumberFormat('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals }).format(num);
+        }
+
+        function formatCompact(num) {
+            if (!num || isNaN(num)) return '-';
+            return new Intl.NumberFormat('en-US', { notation: 'compact', compactDisplay: 'short', maximumFractionDigits: 2 }).format(num);
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
