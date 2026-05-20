@@ -389,15 +389,8 @@
             kr: { title: '🇰🇷 KR Equities', tickers: ['005930.KS', '000660.KS', '035420.KS', '005380.KS', '035720.KS'] }
         };
 
-        // Yahoo Finance v7 API (query2 helps bypass some blocks)
-        const YAHOO_URL = "https://query2.finance.yahoo.com/v7/finance/quote?symbols=";
-        
-        // Robust CORS Proxies
-        const PROXIES = [
-            "https://api.codetabs.com/v1/proxy?quest=", 
-            "https://api.allorigins.win/get?url=",      
-            "https://corsproxy.io/?"                    
-        ];
+        // Google Apps Script Proxy URL (Your specific deployment)
+        const GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbybo06eCbjgCfc1ZF-ENTW6NXMMJzMCDCVXRygQ8wJQ3MnJW1mtZmL7k3MH6eZ0o58i/exec";
 
         let state = {
             watchlists: JSON.parse(localStorage.getItem('marketdash_watchlists')) || JSON.parse(JSON.stringify(DEFAULT_WATCHLISTS)),
@@ -569,7 +562,7 @@
                 updateDOMWithData([data[0]]);
                 inputEl.value = '';
             } catch (err) {
-                alert(`Error adding ticker. (Network or Proxy issue)`);
+                alert(`Error adding ticker: ${err.message}`);
             } finally {
                 btnEl.disabled = false;
                 btnEl.textContent = 'Add';
@@ -599,35 +592,35 @@
             localStorage.setItem('marketdash_watchlists', JSON.stringify(state.watchlists));
         }
 
-        /** --- API DATA FETCHING (CORS PROXY IMPLEMENTATION) --- **/
+        /** --- API DATA FETCHING (GOOGLE APPS SCRIPT PROXY) --- **/
         async function fetchYahooFinance(symbols) {
             if (symbols.length === 0) return [];
             
             const symbolsStr = symbols.join(',');
-            const targetUrl = YAHOO_URL + symbolsStr;
+            // Append symbols as a query parameter to your GAS URL
+            const targetUrl = `${GAS_PROXY_URL}?symbols=${encodeURIComponent(symbolsStr)}`;
 
-            for (const proxy of PROXIES) {
-                try {
-                    const fetchUrl = proxy + encodeURIComponent(targetUrl);
-                    const response = await fetch(fetchUrl);
-                    
-                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                    
-                    let data = await response.json();
-                    
-                    // allorigins proxy wraps the response in a 'contents' string
-                    if (proxy.includes("allorigins.win/get") && data.contents) {
-                        data = JSON.parse(data.contents);
-                    }
-                    
-                    if (data && data.quoteResponse && data.quoteResponse.result) {
-                        return data.quoteResponse.result;
-                    }
-                } catch (e) {
-                    console.warn(`Proxy failed: ${proxy}`, e);
+            try {
+                const response = await fetch(targetUrl);
+                
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                
+                const data = await response.json();
+                
+                // If Google successfully fetched from Yahoo
+                if (data && data.quoteResponse && data.quoteResponse.result) {
+                    return data.quoteResponse.result;
+                } 
+                // If Google's server encountered an error fetching from Yahoo
+                else if (data && data.error) {
+                    throw new Error(`Proxy Error: ${data.error}`);
                 }
+            } catch (e) {
+                console.error("데이터 가져오기 실패:", e);
+                throw e; // Pass to the caller to handle error state
             }
-            throw new Error("All CORS proxies failed to retrieve data.");
+            
+            throw new Error("데이터를 가져오지 못했습니다.");
         }
 
         async function fetchData() {
@@ -640,6 +633,7 @@
 
             if (symbolsToFetch.length === 0) return;
 
+            // GAS has URL length limits, keep chunks reasonable
             const chunkSize = 40;
             for (let i = 0; i < symbolsToFetch.length; i += chunkSize) {
                 const chunk = symbolsToFetch.slice(i, i + chunkSize);
@@ -648,7 +642,7 @@
                     updateDOMWithData(results);
                     markMissingData(chunk, results);
                 } catch (error) {
-                    console.error("Data fetch error:", error);
+                    console.error("Data fetch error for chunk:", chunk, error);
                     markAllError(chunk);
                 }
             }
