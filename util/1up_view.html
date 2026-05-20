@@ -1,222 +1,349 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>실시간 금융 시장 대시보드</title>
-    <style>
-        :root {
-            --bg-color: #0f1115;
-            --card-bg: #1a1d24;
-            --text-color: #e3e6eb;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Real-Time Stock Market Dashboard</title>
+  <meta
+    name="description"
+    content="Yahoo Finance–inspired real-time stock dashboard with Korean stocks, US stocks, and market indicators."
+  />
+  <style>
+    :root {
+      --bg: #0b0f17;
+      --bg-elevated: #121927;
+      --panel: #141c2c;
+      --panel-2: #0f1522;
+      --border: rgba(255, 255, 255, 0.08);
+      --border-strong: rgba(255, 255, 255, 0.14);
+      --text: #edf2ff;
+      --muted: #9aa7bd;
+      --muted-2: #7f8ca3;
+      --green: #00c076;
+      --red: #ff5b6e;
+      --amber: #ffbe55;
+      --blue: #5aa2ff;
+      --shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+      --chip: rgba(255, 255, 255, 0.06);
+      --input-bg: rgba(255, 255, 255, 0.04);
+      --skeleton-a: rgba(255, 255, 255, 0.06);
+      --skeleton-b: rgba(255, 255, 255, 0.12);
+    }
 
-        body {
-            margin: 0;
-            padding: 20px;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        }
+    html[data-theme="light"] {
+      --bg: #f4f7fb;
+      --bg-elevated: #ffffff;
+      --panel: #ffffff;
+      --panel-2: #f9fbff;
+      --border: rgba(15, 23, 42, 0.08);
+      --border-strong: rgba(15, 23, 42, 0.12);
+      --text: #122033;
+      --muted: #5f6f86;
+      --muted-2: #7b8ba3;
+      --green: #0a9b5d;
+      --red: #d94d60;
+      --amber: #c78512;
+      --blue: #286cff;
+      --shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+      --chip: rgba(15, 23, 42, 0.05);
+      --input-bg: rgba(15, 23, 42, 0.03);
+      --skeleton-a: rgba(15, 23, 42, 0.05);
+      --skeleton-b: rgba(15, 23, 42, 0.10);
+    }
 
-        header {
-            max-width: 1400px;
-            margin: 0 auto 20px auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #2a2e39;
-            padding-bottom: 15px;
-        }
+    * {
+      box-sizing: border-box;
+    }
 
-        h1 {
-            margin: 0;
-            font-size: 24px;
-            font-weight: 700;
-        }
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100%;
+      background:
+        radial-gradient(circle at top left, rgba(90, 162, 255, 0.10), transparent 28%),
+        radial-gradient(circle at top right, rgba(0, 192, 118, 0.08), transparent 28%),
+        var(--bg);
+      color: var(--text);
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
 
-        .update-time {
-            font-size: 14px;
-            color: #848e9c;
-        }
+    body {
+      padding: 20px;
+    }
 
-        /* 상단 티커 테이프 */
-        .ticker-tape-container {
-            max-width: 1400px;
-            margin: 0 auto 20px auto;
-        }
+    .app {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
 
-        /* 메인 대시보드 그리드 */
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 20px;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 16px 18px;
+      margin-bottom: 18px;
+      background: color-mix(in srgb, var(--bg-elevated) 88%, transparent);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+    }
 
-        .card {
-            background-color: var(--card-bg);
-            border-radius: 8px;
-            padding: 15px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            height: 250px; /* 차트 높이 확보 */
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-        }
+    .brand {
+      min-width: 0;
+    }
 
-        .grid-section-title {
-            grid-column: 1 / -1;
-            font-size: 18px;
-            font-weight: 600;
-            margin-top: 20px;
-            margin-bottom: 5px;
-            color: #848e9c;
-        }
+    .brand-kicker {
+      margin: 0 0 4px;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
 
-        /* 차트 컨테이너 크기 지정 */
-        .chart-container {
-            flex-grow: 1;
-            width: 100%;
-            height: 100%;
-        }
-    </style>
-</head>
-<body>
+    .brand h1 {
+      margin: 0;
+      font-size: 28px;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+    }
 
-    <header>
-        <h1>Market Overview</h1>
-        <div class="update-time" id="live-clock">시간 로딩 중...</div>
-    </header>
+    .brand p {
+      margin: 6px 0 0;
+      font-size: 14px;
+      color: var(--muted);
+    }
 
-    <!-- 상단 흐르는 실시간 지수 -->
-    <div class="ticker-tape-container">
-        <div class="tradingview-widget-container">
-            <div class="tradingview-widget-container__widget"></div>
-            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
-            {
-            "symbols": [
-                {"proName": "KRX:KOSPI", "title": "코스피"},
-                {"proName": "KRX:KOSDAQ", "title": "코스닥"},
-                {"proName": "NASDAQ:IXIC", "title": "나스닥"},
-                {"proName": "SP:SPX", "title": "S&P500"},
-                {"proName": "FX_IDC:USDKRW", "title": "원/달러"}
-            ],
-            "showSymbolLogo": true,
-            "colorTheme": "dark",
-            "isTransparent": true,
-            "displayMode": "adaptive",
-            "locale": "kr"
-            }
-            </script>
-        </div>
-    </div>
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
 
-    <!-- 대시보드 본문 -->
-    <div class="dashboard-grid">
-        
-        <!-- 1. 국내 지수 및 환율/금 -->
-        <div class="grid-section-title">국내 시장 & 거시 지표</div>
-        <div class="card"><div id="tv-kospi" class="chart-container"></div></div>
-        <div class="card"><div id="tv-kosdaq" class="chart-container"></div></div>
-        <div class="card"><div id="tv-usdkrw" class="chart-container"></div></div>
-        <div class="card"><div id="tv-krwgold" class="chart-container"></div></div>
-        <div class="card"><div id="tv-kr10y" class="chart-container"></div></div>
+    .chip,
+    .btn,
+    .theme-toggle {
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--chip);
+      color: var(--text);
+      height: 42px;
+    }
 
-        <!-- 2. 국내 주요 주식 -->
-        <div class="grid-section-title">국내 주요 기업</div>
-        <div class="card"><div id="tv-samsung" class="chart-container"></div></div>
-        <div class="card"><div id="tv-hynix" class="chart-container"></div></div>
-        <div class="card"><div id="tv-lge" class="chart-container"></div></div>
-        <div class="card"><div id="tv-hyundai" class="chart-container"></div></div>
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 0 14px;
+      font-size: 14px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
 
-        <!-- 3. 글로벌 지수 및 선물/원자재 -->
-        <div class="grid-section-title">글로벌 지수 & 원자재</div>
-        <div class="card"><div id="tv-ndxfut" class="chart-container"></div></div>
-        <div class="card"><div id="tv-nasdaq" class="chart-container"></div></div>
-        <div class="card"><div id="tv-sp500" class="chart-container"></div></div>
-        <div class="card"><div id="tv-dow" class="chart-container"></div></div>
-        <div class="card"><div id="tv-wti" class="chart-container"></div></div>
-        <div class="card"><div id="tv-us10y" class="chart-container"></div></div>
+    .btn,
+    .theme-toggle,
+    .icon-btn {
+      appearance: none;
+      cursor: pointer;
+      transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+    }
 
-        <!-- 4. 미국 주요 주식 및 ETF -->
-        <div class="grid-section-title">미국 주식 & ETF & 크립토</div>
-        <div class="card"><div id="tv-nvda" class="chart-container"></div></div>
-        <div class="card"><div id="tv-tsla" class="chart-container"></div></div>
-        <div class="card"><div id="tv-aapl" class="chart-container"></div></div>
-        <div class="card"><div id="tv-tqqq" class="chart-container"></div></div>
-        <div class="card"><div id="tv-spy" class="chart-container"></div></div>
-        <div class="card"><div id="tv-soxl" class="chart-container"></div></div>
-        <div class="card"><div id="tv-btc" class="chart-container"></div></div>
+    .btn:hover,
+    .theme-toggle:hover,
+    .icon-btn:hover,
+    .section-toggle:hover {
+      transform: translateY(-1px);
+      border-color: var(--border-strong);
+    }
 
-    </div>
+    .btn:disabled,
+    .theme-toggle:disabled,
+    .icon-btn:disabled {
+      opacity: 0.6;
+      cursor: wait;
+      transform: none;
+    }
 
-    <script>
-        // 트레이딩뷰 위젯 동적 생성 함수
-        const assets = [
-            { id: "tv-kospi", symbol: "KRX:KOSPI" },
-            { id: "tv-kosdaq", symbol: "KRX:KOSDAQ" },
-            { id: "tv-usdkrw", symbol: "FX_IDC:USDKRW" },
-            { id: "tv-krwgold", symbol: "FX_IDC:XAUKRW" },
-            { id: "tv-kr10y", symbol: "TVC:KR10Y" },
-            { id: "tv-samsung", symbol: "KRX:005930" },
-            { id: "tv-hynix", symbol: "KRX:000660" },
-            { id: "tv-lge", symbol: "KRX:066570" },
-            { id: "tv-hyundai", symbol: "KRX:005380" },
-            { id: "tv-ndxfut", symbol: "CME:NQ1!" },
-            { id: "tv-nasdaq", symbol: "NASDAQ:IXIC" },
-            { id: "tv-sp500", symbol: "SP:SPX" },
-            { id: "tv-dow", symbol: "DJ:DJI" },
-            { id: "tv-wti", symbol: "TVC:USOIL" },
-            { id: "tv-us10y", symbol: "TVC:US10Y" },
-            { id: "tv-nvda", symbol: "NASDAQ:NVDA" },
-            { id: "tv-tsla", symbol: "NASDAQ:TSLA" },
-            { id: "tv-aapl", symbol: "NASDAQ:AAPL" },
-            { id: "tv-tqqq", symbol: "NASDAQ:TQQQ" },
-            { id: "tv-spy", symbol: "AMEX:SPY" },
-            { id: "tv-soxl", symbol: "AMEX:SOXL" },
-            { id: "tv-btc", symbol: "BINANCE:BTCUSD" }
-        ];
+    .btn,
+    .theme-toggle {
+      padding: 0 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+    }
 
-        assets.forEach(asset => {
-            const container = document.getElementById(asset.id);
-            if (!container) return;
+    .btn-primary {
+      background: linear-gradient(180deg, rgba(90, 162, 255, 0.22), rgba(90, 162, 255, 0.12));
+      border-color: rgba(90, 162, 255, 0.35);
+    }
 
-            // 위젯 HTML 구조 세팅
-            container.innerHTML = `
-                <div class="tradingview-widget-container" style="height: 100%; width: 100%;">
-                    <div class="tradingview-widget-container__widget" style="height: 100%; width: 100%;"></div>
-                </div>
-            `;
+    .theme-toggle .icon {
+      font-size: 16px;
+    }
 
-            // 실제 트레이딩뷰 스크립트 주입 (Mini Symbol Overview)
-            const script = document.createElement('script');
-            script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js';
-            script.type = 'text/javascript';
-            script.async = true;
-            script.innerHTML = JSON.stringify({
-                "symbol": asset.symbol,
-                "width": "100%",
-                "height": "100%",
-                "locale": "kr",
-                "dateRange": "1M",
-                "colorTheme": "dark",
-                "isTransparent": true,
-                "autosize": true,
-                "largeChartUrl": ""
-            });
+    .sections {
+      display: grid;
+      gap: 18px;
+    }
 
-            container.querySelector('.tradingview-widget-container').appendChild(script);
-        });
+    .panel {
+      background: linear-gradient(180deg, var(--panel), var(--panel-2));
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
 
-        // 실시간 시계 업데이트 로직
-        function updateClock() {
-            const now = new Date();
-            document.getElementById('live-clock').innerText = "현재 시간: " + now.toLocaleString('ko-KR');
-        }
-        setInterval(updateClock, 1000);
-        updateClock();
-    </script>
-</body>
-</html>
+    .section-toggle {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 18px 18px 16px;
+      background: transparent;
+      color: var(--text);
+      border: 0;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .section-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      background: rgba(90, 162, 255, 0.12);
+      border: 1px solid rgba(90, 162, 255, 0.18);
+      font-size: 18px;
+    }
+
+    .section-title-wrap h2 {
+      margin: 0;
+      font-size: 20px;
+      letter-spacing: -0.02em;
+    }
+
+    .section-title-wrap p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .section-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .section-count {
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: var(--chip);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .chevron {
+      font-size: 18px;
+      color: var(--muted);
+      transition: transform 0.2s ease;
+    }
+
+    .panel[data-expanded="false"] .chevron {
+      transform: rotate(-90deg);
+    }
+
+    .section-body {
+      padding: 0 18px 18px;
+    }
+
+    .panel[data-expanded="false"] .section-body {
+      display: none;
+    }
+
+    .section-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .add-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      width: 100%;
+    }
+
+    .input-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1 1 420px;
+      min-width: 0;
+    }
+
+    .ticker-input {
+      flex: 1;
+      min-width: 0;
+      height: 44px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--input-bg);
+      color: var(--text);
+      padding: 0 14px;
+      outline: none;
+      font-size: 14px;
+    }
+
+    .ticker-input:focus {
+      border-color: rgba(90, 162, 255, 0.45);
+      box-shadow: 0 0 0 3px rgba(90, 162, 255, 0.12);
+    }
+
+    .status-text {
+      min-height: 20px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .status-text.success {
+      color: var(--green);
+    }
+
+    .status-text.error {
+      color: var(--red);
+    }
+
+    .status-text.pending {
+      color: var(--amber);
+    }
+
+    .grid-head,
+    .ticker-row {
+      display: grid;
+      grid-template-columns: minmax(200px, 2.3fr) minmax(110px, 1fr) minmax(140px, 1.1fr) minmax(110px, 0.9fr) minmax(120px, 1fr) minmax(130px, 1.1fr) 52px;
+      gap: 12px;
+      align-items: center;
+    
