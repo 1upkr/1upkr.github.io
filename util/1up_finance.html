@@ -112,7 +112,7 @@
             display: flex; align-items: center; justify-content: center;
             color: var(--text-secondary); cursor: grab; padding: 0.25rem;
             margin-right: 0.5rem; opacity: 0.6; transition: opacity 0.2s;
-            touch-action: none; /* 핵심: 모바일에서 핸들을 터치했을 때 화면 스크롤 방지 */
+            touch-action: none;
         }
         .drag-handle:active { cursor: grabbing; }
         .drag-handle:hover { opacity: 1; }
@@ -205,7 +205,7 @@
 
     <header>
         <div class="header-left">
-            <h1>✔️ finance :: 1up</h1>
+            <h1>✔️ finance</h1>
         </div>
         <div class="header-controls">
             <div class="timer">
@@ -233,7 +233,7 @@
     <script>
         const DEFAULT_WATCHLISTS = {
             indicators: { title: '📈 Market', tickers: ['^GSPC', '^IXIC', '^DJI', '^KS11', '^KQ11', 'GC=F', 'CL=F', 'BTC-USD'] },
-            us: { title: ' US', tickers: ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'TSLA', 'META'] },
+            us: { title: '🇺🇸 US', tickers: ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'TSLA', 'META'] },
             kr: { title: '🇰🇷 KR', tickers: ['005930.KS', '000660.KS', '035420.KS', '005380.KS', '035720.KS'] }
         };
 
@@ -317,7 +317,7 @@
                                     </tr>
                                 </thead>
                                 <tbody id="tbody-${sectionId}">
-                                    ${sectionData.tickers.map(ticker => generateRowHTML(ticker, sectionId)).join('')}
+                                    ${sectionData.tickers.map(ticker => generateRowHTML(ticker)).join('')}
                                 </tbody>
                             </table>
                         </div>
@@ -328,21 +328,14 @@
             });
         }
 
-        function generateRowHTML(ticker, sectionId) {
+        function generateRowHTML(ticker) {
             const safeId = ticker.replace(/\^|=/g, '');
             
-            let assetHTML = '';
-            if (sectionId === 'kr') {
-                assetHTML = `
-                    <span class="symbol" id="name-${ticker}" title="${ticker}"><span class="skeleton sm"></span></span>
-                    <span class="name">${ticker}</span>
-                `;
-            } else {
-                assetHTML = `
-                    <span class="symbol">${ticker}</span>
-                    <span class="name" id="name-${ticker}"><span class="skeleton sm"></span></span>
-                `;
-            }
+            // 모든 섹션 통일: 회사명(지표명)을 크게(위로), 코드를 작게(아래로) 배치
+            let assetHTML = `
+                <span class="symbol" id="name-${ticker}" title="${ticker}"><span class="skeleton sm"></span></span>
+                <span class="name">${ticker}</span>
+            `;
 
             return `
                 <tr id="row-${safeId}" data-ticker="${ticker}">
@@ -363,7 +356,7 @@
                     <td class="hide-mobile sub-data" id="cap-${ticker}">-</td>
                     <td class="hide-mobile sub-data" id="range-${ticker}">-</td>
                     <td>
-                        <button class="btn-remove" onclick="removeTicker('${sectionId}', '${ticker}')" title="Remove">
+                        <button class="btn-remove" onclick="removeTicker('${ticker}')" title="Remove">
                             <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
                         </button>
                     </td>
@@ -375,7 +368,7 @@
             const safeId = ticker.replace(/\^|=/g, '');
             rowNodes.set(ticker, {
                 row: document.getElementById(`row-${safeId}`),
-                name: document.getElementById(`name-${ticker}`),
+                name: document.getElementById(`name-${ticker}`), // 이제 이 id는 큰 텍스트(symbol) 요소에 매핑됨
                 price: document.getElementById(`price-${ticker}`),
                 change: document.getElementById(`change-${ticker}`),
                 pct: document.getElementById(`pct-${ticker}`),
@@ -387,11 +380,10 @@
 
         /** --- DRAG AND DROP LOGIC (SortableJS) --- */
         function initDragAndDrop() {
-            // 섹션 그룹 순서 변경
             const dashboard = document.getElementById('dashboard');
             Sortable.create(dashboard, {
-                handle: '.drag-handle', // 손잡이를 잡아야만 이동 (스크롤 간섭 방지)
-                animation: 150,         // 부드러운 이동 애니메이션 (ms)
+                handle: '.drag-handle',
+                animation: 150,
                 ghostClass: 'sortable-ghost',
                 onEnd: function () {
                     const newOrder = Array.from(dashboard.querySelectorAll('.section-container')).map(el => el.dataset.id);
@@ -400,7 +392,6 @@
                 }
             });
 
-            // 각 그룹 내부의 종목 순서 변경
             state.sectionOrder.forEach(sectionId => {
                 const tbody = document.getElementById(`tbody-${sectionId}`);
                 if (tbody) {
@@ -450,11 +441,9 @@
                 saveWatchlists();
 
                 const tbody = document.getElementById(`tbody-${sectionId}`);
-                tbody.insertAdjacentHTML('beforeend', generateRowHTML(ticker, sectionId));
+                tbody.insertAdjacentHTML('beforeend', generateRowHTML(ticker));
                 cacheRowNodes(ticker);
 
-                // 종목을 새로 추가한 후 해당 섹션의 드래그앤드롭 이벤트를 재연결하기 위해 
-                // 전체 레이아웃을 다시 그리는 대신, SortableJS는 자동 인식하므로 UI만 업데이트합니다.
                 updateDOMWithData([data[0]]);
                 inputEl.value = '';
             } catch (err) {
@@ -464,9 +453,16 @@
             }
         }
 
-        function removeTicker(sectionId, ticker) {
-            state.watchlists[sectionId].tickers = state.watchlists[sectionId].tickers.filter(t => t !== ticker);
+        function removeTicker(ticker) {
+            // Find which section this ticker belongs to and remove it
+            for (const sectionId in state.watchlists) {
+                if (state.watchlists[sectionId].tickers.includes(ticker)) {
+                    state.watchlists[sectionId].tickers = state.watchlists[sectionId].tickers.filter(t => t !== ticker);
+                    break;
+                }
+            }
             saveWatchlists();
+            
             const safeId = ticker.replace(/\^|=/g, '');
             const row = document.getElementById(`row-${safeId}`);
             if (row) row.remove();
@@ -480,7 +476,7 @@
                 state.watchlists = JSON.parse(JSON.stringify(DEFAULT_WATCHLISTS));
                 state.sectionOrder = ['indicators', 'us', 'kr'];
                 renderLayout(); 
-                initDragAndDrop(); // 레이아웃 재작성 후 D&D 다시 연결
+                initDragAndDrop(); 
                 forceRefresh();
             }
         }
