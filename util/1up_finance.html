@@ -6,8 +6,6 @@
     <title>::1UP YOUR VIBE :: finance ::</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
-
     <style>
         :root {
             /* Light Theme */
@@ -29,7 +27,6 @@
             --flash-red: rgba(235, 15, 41, 0.2);
             --shadow-sm: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03);
             --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
-            --drag-bg: rgba(0,0,0,0.03);
         }
 
         [data-theme="dark"] {
@@ -50,7 +47,6 @@
             --btn-text: #000000;
             --flash-green: rgba(0, 200, 83, 0.3);
             --flash-red: rgba(255, 69, 58, 0.3);
-            --drag-bg: rgba(255,255,255,0.05);
         }
 
         * {
@@ -65,6 +61,15 @@
             color: var(--text-primary);
             transition: background-color 0.2s, color 0.2s;
             -webkit-font-smoothing: antialiased;
+        }
+
+        /* --- Global SVG Icon Style (Modern Stroke Style) --- */
+        svg {
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
         }
 
         /* --- Header Navigation --- */
@@ -87,7 +92,7 @@
         }
 
         .header-controls { display: flex; align-items: center; gap: 1.5rem; font-size: 0.875rem; font-weight: 500; }
-        .timer { color: var(--text-secondary); font-variant-numeric: tabular-nums; display: flex; align-items: center; gap: 0.3rem; }
+        .timer { color: var(--text-secondary); font-variant-numeric: tabular-nums; display: flex; align-items: center; gap: 0.4rem; }
         .action-btns { display: flex; flex-direction: row; align-items: center; gap: 0.5rem; }
 
         .icon-btn {
@@ -95,7 +100,13 @@
             padding: 0.5rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.2s;
         }
         .icon-btn:hover { background-color: var(--hover-bg); color: var(--text-primary); }
-        .icon-btn svg { width: 20px; height: 20px; fill: currentColor; }
+        .icon-btn svg { width: 18px; height: 18px; }
+
+        /* Dynamic Theme Icons */
+        .icon-sun { display: none; }
+        .icon-moon { display: block; }
+        [data-theme="dark"] .icon-sun { display: block; }
+        [data-theme="dark"] .icon-moon { display: none; }
 
         /* --- Main Content & Cards --- */
         main { padding: 2rem 5%; max-width: 1400px; margin: 0 auto; }
@@ -106,32 +117,35 @@
             transition: transform 0.2s, box-shadow 0.2s;
         }
 
-        /* Drag & Drop Styles (SortableJS 적용) */
-        .drag-handle {
-            display: flex; align-items: center; justify-content: center;
-            color: var(--text-secondary); cursor: grab; padding: 0.25rem;
-            margin-right: 0.5rem; opacity: 0.6; transition: opacity 0.2s;
-            touch-action: none;
-        }
-        .drag-handle:active { cursor: grabbing; }
-        .drag-handle:hover { opacity: 1; }
-        .drag-handle svg { width: 16px; height: 16px; fill: currentColor; }
-
-        .sortable-ghost {
-            opacity: 0.5; background-color: var(--drag-bg) !important;
-            box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
-        }
-
         .section-header {
             padding: 1.25rem 1.5rem; display: flex; justify-content: space-between;
             align-items: center; border-bottom: 1px solid var(--border-color); user-select: none;
         }
-        .section-header-left { display: flex; align-items: center; }
-        .section-header h2 { font-size: 1.125rem; font-weight: 600; cursor: pointer; }
+        .section-header-left { display: flex; align-items: center; gap: 0.5rem; }
+        .section-header h2 { font-size: 1.125rem; font-weight: 600; cursor: pointer; margin-left: 0.25rem; }
 
-        .section-toggle svg { width: 20px; height: 20px; fill: var(--text-secondary); transition: transform 0.3s ease; cursor: pointer; }
+        .section-toggle svg { width: 20px; height: 20px; color: var(--text-secondary); transition: transform 0.3s ease; cursor: pointer; }
         .collapsed .section-toggle svg { transform: rotate(-180deg); }
         .collapsed .section-body { display: none; }
+
+        /* --- UI 순서 변경 (Up/Down) 버튼 --- */
+        .order-btns { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+        .sec-order-btns { flex-direction: row; gap: 4px; }
+        .order-btn {
+            background: var(--input-bg); border: none; color: var(--text-secondary);
+            cursor: pointer; padding: 4px 6px; border-radius: 4px;
+            display: flex; align-items: center; justify-content: center; transition: all 0.1s;
+            touch-action: manipulation; 
+        }
+        .order-btn:hover { background: var(--border-color); color: var(--text-primary); }
+        .order-btn svg { width: 14px; height: 14px; }
+
+        tbody tr:first-child .btn-up, 
+        tbody tr:last-child .btn-down,
+        #dashboard .section-container:first-child .sec-btn-up,
+        #dashboard .section-container:last-child .sec-btn-down {
+            opacity: 0.2; pointer-events: none;
+        }
 
         /* --- Form & Search Style --- */
         .add-ticker-form {
@@ -139,7 +153,7 @@
             border-bottom: 1px solid var(--border-color); background-color: var(--card-bg); align-items: center;
         }
         .search-wrapper { position: relative; flex: 1; max-width: 240px; }
-        .search-wrapper svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; fill: var(--text-secondary); }
+        .search-wrapper svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--text-secondary); }
         .add-ticker-form input {
             width: 100%; padding: 0.5rem 0.75rem 0.5rem 2.2rem; border: 1px solid transparent; border-radius: 8px;
             background-color: var(--input-bg); color: var(--text-primary); font-size: 0.875rem; font-weight: 500; text-transform: uppercase;
@@ -155,7 +169,7 @@
         
         th { color: var(--text-secondary); font-size: 0.75rem; font-weight: 500; text-transform: uppercase; }
         th.left-align, td.left-align { text-align: left; }
-        th.handle-col, td.handle-col { width: 40px; padding-right: 0; padding-left: 1rem; text-align: center; }
+        th.order-col, td.order-col { width: 40px; padding-right: 0; padding-left: 1rem; text-align: center; }
         
         tbody tr { transition: background-color 0.15s; }
         tbody tr:hover { background-color: var(--hover-bg); }
@@ -175,7 +189,7 @@
         .arrow { font-size: 0.7rem; margin-right: 0.2rem; }
 
         .btn-remove { background: none; color: var(--text-secondary); padding: 0.4rem; border-radius: 50%; cursor: pointer; border: none; display: inline-flex; }
-        .btn-remove svg { width: 16px; height: 16px; fill: currentColor; }
+        .btn-remove svg { width: 16px; height: 16px; }
         .btn-remove:hover { color: var(--red); background-color: var(--red-bg); }
 
         @keyframes flashGreen { 0% { background-color: var(--flash-green); } 100% { background-color: transparent; } }
@@ -187,14 +201,13 @@
         @keyframes skeletonLoading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
         .error-text { color: var(--red); font-size: 0.75rem; font-weight: 600; white-space: pre-wrap; line-height: 1.2; }
 
-        /* Responsive */
         @media (max-width: 768px) {
             .hide-mobile { display: none; }
             header { flex-direction: column; gap: 1rem; padding: 1rem; }
             .header-controls { width: 100%; justify-content: space-between; }
             main { padding: 1rem; }
             th, td { padding: 0.75rem 1rem; }
-            th.handle-col, td.handle-col { padding-left: 0.5rem; }
+            th.order-col, td.order-col { padding-left: 0.5rem; }
             .search-wrapper { max-width: 100%; }
             .add-ticker-form { flex-direction: column; align-items: stretch; }
         }
@@ -204,22 +217,25 @@
 
     <header>
         <div class="header-left">
-            <h1>✔️ finance :D</h1>
+            <h1>✔️ finance</h1>
         </div>
         <div class="header-controls">
             <div class="timer">
-                <svg width="14" height="14" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 14H11V7h2v9z"/></svg>
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                 <span id="countdown">60</span>s
             </div>
             <div class="action-btns">
                 <button id="btn-refresh" class="icon-btn" title="Force Refresh">
-                    <svg viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+                    <svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
                 </button>
+                <!-- 설정 톱니바퀴 대신 직관적인 복구(되돌리기 시계) 아이콘 적용 -->
                 <button id="btn-reset" class="icon-btn" title="Reset to Defaults">
-                    <svg viewBox="0 0 24 24"><path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49-.12-.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/></svg>
+                    <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
                 </button>
                 <button id="btn-theme" class="icon-btn" title="Toggle Theme">
-                    <svg viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-3.03 0-5.5-2.47-5.5-5.5 0-1.82.89-3.42 2.26-4.4C12.92 3.04 12.46 3 12 3m0-2c.17 0 .34.01.51.03C8.73 1.66 5.5 4.9 5.5 8.75c0 3.86 3.23 7.09 7.01 7.09 3.85 0 7.09-3.23 7.09-7.01 0-.17-.01-.34-.03-.51 1.32 1.48 2.13 3.42 2.13 5.55 0 4.67-3.79 8.46-8.46 8.46S3.29 18.53 3.29 13.86 7.08 5.4 11.75 5.4c.08 0 .17.01.25.01L12 1z"/></svg>
+                    <!-- 다크/라이트 모드 상태에 따라 달과 해 스위칭 -->
+                    <svg class="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="6.34" y2="6.34"/><line x1="17.66" y1="17.66" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="6.34" y2="17.66"/><line x1="17.66" y1="6.34" x2="19.78" y2="4.22"/></svg>
+                    <svg class="icon-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
                 </button>
             </div>
         </div>
@@ -238,8 +254,12 @@
 
         const GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbzHIRkgH2Sqc_X0RxxrmKrWWdGyF67IW-S5jNL0mTRZ2vGwKT1rbfDzOveoUSg6cH5k/exec";
         
-        // Grip icon SVG
-        const DRAG_ICON = `<svg viewBox="0 0 24 24"><path d="M8 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm0 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm0 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm6-12a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm0 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm0 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0z"/></svg>`;
+        // 심플하고 세련된 화살표, 휴지통 아이콘 정의
+        const UP_ICON = `<svg viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg>`;
+        const DOWN_ICON = `<svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>`;
+        const TRASH_ICON = `<svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>`;
+        const CHEVRON_ICON = `<svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>`;
+        const SEARCH_ICON = `<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`;
 
         let state = {
             watchlists: JSON.parse(localStorage.getItem('marketdash_watchlists')) || JSON.parse(JSON.stringify(DEFAULT_WATCHLISTS)),
@@ -257,7 +277,7 @@
                 state.sectionOrder = Object.keys(state.watchlists);
             }
 
-            applyTheme(); renderLayout(); initDragAndDrop(); startTimer(); fetchData(); 
+            applyTheme(); renderLayout(); startTimer(); fetchData(); 
             
             document.getElementById('btn-theme').addEventListener('click', toggleTheme);
             document.getElementById('btn-refresh').addEventListener('click', forceRefresh);
@@ -288,15 +308,18 @@
                 sectionContainer.innerHTML = `
                     <div class="section-header" onclick="toggleSection(event, '${sectionId}')">
                         <div class="section-header-left">
-                            <span class="drag-handle" title="Drag to reorder section">${DRAG_ICON}</span>
+                            <div class="order-btns sec-order-btns">
+                                <button class="order-btn sec-btn-up" onclick="moveSection(event, '${sectionId}', -1)" title="Move Section Up">${UP_ICON}</button>
+                                <button class="order-btn sec-btn-down" onclick="moveSection(event, '${sectionId}', 1)" title="Move Section Down">${DOWN_ICON}</button>
+                            </div>
                             <h2>${sectionData.title}</h2>
                         </div>
-                        <span class="section-toggle"><svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg></span>
+                        <span class="section-toggle">${CHEVRON_ICON}</span>
                     </div>
                     <div class="section-body">
                         <form class="add-ticker-form" onsubmit="handleAddTicker(event, '${sectionId}')">
                             <div class="search-wrapper">
-                                <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                                ${SEARCH_ICON}
                                 <input type="text" id="input-${sectionId}" placeholder="Add Symbol" required autocomplete="off">
                             </div>
                             <button type="submit" id="btn-add-${sectionId}">Add</button>
@@ -305,7 +328,7 @@
                             <table>
                                 <thead>
                                     <tr>
-                                        <th class="handle-col"></th>
+                                        <th class="order-col"></th>
                                         <th class="left-align">Asset</th>
                                         <th>Price</th>
                                         <th>Change</th>
@@ -316,7 +339,7 @@
                                     </tr>
                                 </thead>
                                 <tbody id="tbody-${sectionId}">
-                                    ${sectionData.tickers.map(ticker => generateRowHTML(ticker)).join('')}
+                                    ${sectionData.tickers.map(ticker => generateRowHTML(ticker, sectionId)).join('')}
                                 </tbody>
                             </table>
                         </div>
@@ -327,10 +350,9 @@
             });
         }
 
-        function generateRowHTML(ticker) {
+        function generateRowHTML(ticker, sectionId) {
             const safeId = ticker.replace(/\^|=/g, '');
             
-            // 모든 섹션 통일: 회사명(지표명)을 크게(위로), 코드를 작게(아래로) 배치
             let assetHTML = `
                 <span class="symbol" id="name-${ticker}" title="${ticker}"><span class="skeleton sm"></span></span>
                 <span class="name">${ticker}</span>
@@ -338,7 +360,12 @@
 
             return `
                 <tr id="row-${safeId}" data-ticker="${ticker}">
-                    <td class="handle-col"><span class="drag-handle" title="Drag to reorder row">${DRAG_ICON}</span></td>
+                    <td class="order-col">
+                        <div class="order-btns">
+                            <button class="order-btn btn-up" onclick="moveRow('${sectionId}', '${ticker}', -1)" title="Move Up">${UP_ICON}</button>
+                            <button class="order-btn btn-down" onclick="moveRow('${sectionId}', '${ticker}', 1)" title="Move Down">${DOWN_ICON}</button>
+                        </div>
+                    </td>
                     <td class="left-align">
                         <div class="asset-col">
                             ${assetHTML}
@@ -356,7 +383,7 @@
                     <td class="hide-mobile sub-data" id="range-${ticker}">-</td>
                     <td>
                         <button class="btn-remove" onclick="removeTicker('${ticker}')" title="Remove">
-                            <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                            ${TRASH_ICON}
                         </button>
                     </td>
                 </tr>
@@ -367,7 +394,7 @@
             const safeId = ticker.replace(/\^|=/g, '');
             rowNodes.set(ticker, {
                 row: document.getElementById(`row-${safeId}`),
-                name: document.getElementById(`name-${ticker}`), // 이제 이 id는 큰 텍스트(symbol) 요소에 매핑됨
+                name: document.getElementById(`name-${ticker}`), 
                 price: document.getElementById(`price-${ticker}`),
                 change: document.getElementById(`change-${ticker}`),
                 pct: document.getElementById(`pct-${ticker}`),
@@ -377,40 +404,51 @@
             });
         }
 
-        /** --- DRAG AND DROP LOGIC (SortableJS) --- */
-        function initDragAndDrop() {
-            const dashboard = document.getElementById('dashboard');
-            Sortable.create(dashboard, {
-                handle: '.drag-handle',
-                animation: 150,
-                ghostClass: 'sortable-ghost',
-                onEnd: function () {
-                    const newOrder = Array.from(dashboard.querySelectorAll('.section-container')).map(el => el.dataset.id);
-                    state.sectionOrder = newOrder;
-                    localStorage.setItem('marketdash_sectionOrder', JSON.stringify(state.sectionOrder));
-                }
-            });
+        /** --- UI ORDERING LOGIC --- */
+        function moveSection(event, sectionId, direction) {
+            event.stopPropagation();
+            
+            const arr = state.sectionOrder;
+            const idx = arr.indexOf(sectionId);
+            
+            if ((direction === -1 && idx === 0) || (direction === 1 && idx === arr.length - 1)) return;
 
-            state.sectionOrder.forEach(sectionId => {
-                const tbody = document.getElementById(`tbody-${sectionId}`);
-                if (tbody) {
-                    Sortable.create(tbody, {
-                        handle: '.drag-handle',
-                        animation: 150,
-                        ghostClass: 'sortable-ghost',
-                        onEnd: function () {
-                            const newTickers = Array.from(tbody.querySelectorAll('tr')).map(el => el.dataset.ticker);
-                            state.watchlists[sectionId].tickers = newTickers;
-                            saveWatchlists();
-                        }
-                    });
-                }
-            });
+            const newIdx = idx + direction;
+            [arr[idx], arr[newIdx]] = [arr[newIdx], arr[idx]];
+            localStorage.setItem('marketdash_sectionOrder', JSON.stringify(state.sectionOrder));
+
+            const sec = document.getElementById(`section-${sectionId}`);
+            if (direction === -1) {
+                sec.parentNode.insertBefore(sec, sec.previousElementSibling);
+            } else {
+                sec.parentNode.insertBefore(sec.nextElementSibling, sec);
+            }
         }
+
+        function moveRow(sectionId, ticker, direction) {
+            const arr = state.watchlists[sectionId].tickers;
+            const idx = arr.indexOf(ticker);
+            
+            if ((direction === -1 && idx === 0) || (direction === 1 && idx === arr.length - 1)) return;
+
+            const newIdx = idx + direction;
+            [arr[idx], arr[newIdx]] = [arr[newIdx], arr[idx]];
+            saveWatchlists();
+
+            const safeId = ticker.replace(/\^|=/g, '');
+            const row = document.getElementById(`row-${safeId}`);
+            if (direction === -1) {
+                row.parentNode.insertBefore(row, row.previousElementSibling);
+            } else {
+                row.parentNode.insertBefore(row.nextElementSibling, row);
+            }
+        }
+
 
         /** --- ACTIONS --- */
         function toggleSection(e, sectionId) {
-            if (e.target.closest('.drag-handle')) return;
+            if (e.target.closest('.order-btn')) return; 
+            
             const container = document.getElementById(`section-${sectionId}`);
             container.classList.toggle('collapsed');
             state.expanded[sectionId] = !container.classList.contains('collapsed');
@@ -440,7 +478,7 @@
                 saveWatchlists();
 
                 const tbody = document.getElementById(`tbody-${sectionId}`);
-                tbody.insertAdjacentHTML('beforeend', generateRowHTML(ticker));
+                tbody.insertAdjacentHTML('beforeend', generateRowHTML(ticker, sectionId));
                 cacheRowNodes(ticker);
 
                 updateDOMWithData([data[0]]);
@@ -453,7 +491,6 @@
         }
 
         function removeTicker(ticker) {
-            // Find which section this ticker belongs to and remove it
             for (const sectionId in state.watchlists) {
                 if (state.watchlists[sectionId].tickers.includes(ticker)) {
                     state.watchlists[sectionId].tickers = state.watchlists[sectionId].tickers.filter(t => t !== ticker);
@@ -469,13 +506,12 @@
         }
 
         function resetToDefaults() {
-            if(confirm("Are you sure you want to restore default watchlists?")) {
+            if(confirm("기존 설정을 지우고 기본 대시보드로 초기화하시겠습니까?")) {
                 localStorage.removeItem('marketdash_watchlists');
                 localStorage.removeItem('marketdash_sectionOrder');
                 state.watchlists = JSON.parse(JSON.stringify(DEFAULT_WATCHLISTS));
                 state.sectionOrder = ['indicators', 'us', 'kr'];
                 renderLayout(); 
-                initDragAndDrop(); 
                 forceRefresh();
             }
         }
