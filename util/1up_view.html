@@ -346,4 +346,1145 @@
       grid-template-columns: minmax(200px, 2.3fr) minmax(110px, 1fr) minmax(140px, 1.1fr) minmax(110px, 0.9fr) minmax(120px, 1fr) minmax(130px, 1.1fr) 52px;
       gap: 12px;
       align-items: center;
-    
+    }
+
+    .grid-head {
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 10px;
+    }
+
+    .rows {
+      display: grid;
+      gap: 10px;
+    }
+
+    .ticker-row {
+      padding: 14px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      transition: border-color 0.15s ease, transform 0.15s ease, background 0.15s ease;
+    }
+
+    .ticker-row:hover {
+      border-color: var(--border-strong);
+      transform: translateY(-1px);
+    }
+
+    .ticker-row.unavailable {
+      opacity: 0.78;
+    }
+
+    .identity {
+      min-width: 0;
+    }
+
+    .symbol {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 4px;
+    }
+
+    .name {
+      font-size: 13px;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .mini-status {
+      margin-top: 5px;
+      font-size: 12px;
+      color: var(--amber);
+      min-height: 16px;
+    }
+
+    .metric {
+      min-width: 0;
+    }
+
+    .metric .label {
+      display: none;
+      margin-bottom: 4px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+    }
+
+    .metric .value {
+      display: block;
+      font-size: 15px;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .metric .sub {
+      display: block;
+      margin-top: 3px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .positive {
+      color: var(--green);
+    }
+
+    .negative {
+      color: var(--red);
+    }
+
+    .neutral {
+      color: var(--text);
+    }
+
+    .icon-btn {
+      width: 40px;
+      height: 40px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      background: var(--chip);
+      color: var(--muted);
+      font-size: 20px;
+      line-height: 1;
+    }
+
+    .icon-btn.remove:hover {
+      color: var(--red);
+      border-color: rgba(255, 91, 110, 0.28);
+    }
+
+    .empty-state {
+      padding: 18px;
+      border: 1px dashed var(--border-strong);
+      border-radius: 16px;
+      color: var(--muted);
+      text-align: center;
+      background: rgba(255, 255, 255, 0.025);
+    }
+
+    .skeleton-row {
+      position: relative;
+      overflow: hidden;
+      min-height: 84px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+    }
+
+    .skeleton-row::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent),
+        linear-gradient(var(--skeleton-a), var(--skeleton-a));
+      transform: translateX(-100%);
+      animation: shimmer 1.25s infinite;
+    }
+
+    .skeleton-grid {
+      display: grid;
+      grid-template-columns: minmax(200px, 2.3fr) minmax(110px, 1fr) minmax(140px, 1.1fr) minmax(110px, 0.9fr) minmax(120px, 1fr) minmax(130px, 1.1fr) 52px;
+      gap: 12px;
+      height: 100%;
+      padding: 14px;
+      align-items: center;
+    }
+
+    .skeleton-block {
+      height: 16px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--skeleton-a), var(--skeleton-b), var(--skeleton-a));
+      background-size: 200% 100%;
+      animation: pulse 1.4s infinite ease-in-out;
+    }
+
+    .skeleton-block.tall {
+      height: 22px;
+      width: 48%;
+    }
+
+    .skeleton-block.short {
+      width: 60%;
+    }
+
+    .skeleton-circle {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: linear-gradient(90deg, var(--skeleton-a), var(--skeleton-b), var(--skeleton-a));
+      background-size: 200% 100%;
+      animation: pulse 1.4s infinite ease-in-out;
+      justify-self: end;
+    }
+
+    .footer-note {
+      margin-top: 10px;
+      color: var(--muted-2);
+      font-size: 12px;
+    }
+
+    @keyframes shimmer {
+      100% {
+        transform: translateX(100%);
+      }
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        background-position: 0% 0%;
+      }
+      50% {
+        background-position: 100% 0%;
+      }
+    }
+
+    @media (max-width: 1024px) {
+      .topbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .toolbar {
+        justify-content: flex-start;
+      }
+    }
+
+    @media (max-width: 767px) {
+      body {
+        padding: 12px;
+      }
+
+      .topbar {
+        padding: 14px;
+        border-radius: 16px;
+      }
+
+      .brand h1 {
+        font-size: 23px;
+      }
+
+      .section-toggle {
+        padding: 16px 14px 14px;
+      }
+
+      .section-body {
+        padding: 0 14px 14px;
+      }
+
+      .section-toolbar {
+        margin-bottom: 12px;
+      }
+
+      .grid-head {
+        display: none;
+      }
+
+      .ticker-row,
+      .skeleton-grid {
+        grid-template-columns: 1.4fr 1fr 1fr 44px;
+        gap: 10px;
+      }
+
+      .hide-mobile {
+        display: none !important;
+      }
+
+      .metric .label {
+        display: block;
+      }
+
+      .ticker-row {
+        align-items: start;
+        padding: 12px;
+      }
+
+      .identity {
+        grid-column: 1 / -1;
+      }
+
+      .metric {
+        padding: 8px 10px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid var(--border);
+      }
+
+      .metric.price {
+        grid-column: span 1;
+      }
+
+      .metric.change {
+        grid-column: span 2;
+      }
+
+      .metric.volume {
+        grid-column: span 1;
+      }
+
+      .icon-btn {
+        width: 44px;
+        height: 44px;
+      }
+
+      .input-group {
+        flex: 1 1 100%;
+      }
+
+      .btn,
+      .theme-toggle {
+        height: 44px;
+      }
+
+      .chip {
+        height: 40px;
+        width: 100%;
+        justify-content: center;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .toolbar {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .toolbar .chip {
+        grid-column: 1 / -1;
+      }
+
+      .section-heading {
+        align-items: flex-start;
+      }
+
+      .section-title-wrap h2 {
+        font-size: 18px;
+      }
+
+      .section-title-wrap p {
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <p class="brand-kicker">Static Yahoo-style market board</p>
+        <h1>Real-Time Stock Dashboard</h1>
+        <p>Korean stocks, US stocks, and market indicators in one responsive view.</p>
+      </div>
+
+      <div class="toolbar">
+        <div class="chip" id="refreshChip" aria-live="polite">Refresh in <span id="countdown">60</span>s</div>
+        <button class="btn" id="refreshBtn" type="button">↻ Refresh</button>
+        <button class="btn" id="resetBtn" type="button">Reset to Defaults</button>
+        <button class="theme-toggle" id="themeBtn" type="button" aria-label="Toggle color theme">
+          <span class="icon" id="themeIcon">🌙</span>
+          <span id="themeLabel">Dark</span>
+        </button>
+      </div>
+    </header>
+
+    <main id="sections" class="sections" aria-live="polite"></main>
+  </div>
+
+  <script>
+    const DEFAULT_WATCHLISTS = {
+      indicators: ["^GSPC", "^IXIC", "^DJI", "^KS11", "^KQ11", "GC=F", "CL=F", "BTC-USD"],
+      us: ["AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "TSLA", "META"],
+      kr: ["005930.KS", "000660.KS", "035420.KS", "005380.KS", "035720.KS"]
+    };
+
+    const SECTIONS = [
+      {
+        id: "indicators",
+        icon: "📈",
+        title: "Market Indicators",
+        description: "Indices, commodities, and crypto",
+        placeholder: "Add symbol, e.g. ^RUT, SI=F, ETH-USD"
+      },
+      {
+        id: "us",
+        icon: "🇺🇸",
+        title: "US Stocks",
+        description: "Major US-listed equities",
+        placeholder: "Add symbol, e.g. AMD, NFLX, PLTR"
+      },
+      {
+        id: "kr",
+        icon: "🇰🇷",
+        title: "Korean Stocks",
+        description: "KOSPI and KOSDAQ tickers",
+        placeholder: "Add symbol, e.g. 051910.KS, 068270.KS"
+      }
+    ];
+
+    const STORAGE_KEYS = {
+      watchlists: "yahoo_style_dashboard_watchlists_v1",
+      theme: "yahoo_style_dashboard_theme_v1"
+    };
+
+    const REFRESH_INTERVAL = 60;
+    const VALIDATION_CACHE_TTL = 5 * 60 * 1000;
+    const REQUEST_TIMEOUT = 12000;
+
+    const state = {
+      theme: "dark",
+      watchlists: structuredClone(DEFAULT_WATCHLISTS),
+      expanded: {
+        indicators: true,
+        us: true,
+        kr: true
+      },
+      loaded: {
+        indicators: false,
+        us: false,
+        kr: false
+      },
+      loading: {
+        indicators: false,
+        us: false,
+        kr: false
+      },
+      countdown: REFRESH_INTERVAL
+    };
+
+    const dom = {
+      sections: null,
+      countdown: null,
+      refreshBtn: null,
+      resetBtn: null,
+      themeBtn: null,
+      themeLabel: null,
+      themeIcon: null
+    };
+
+    const validationCache = new Map();
+    const debounceTimers = {};
+    let refreshTicker = null;
+
+    document.addEventListener("DOMContentLoaded", init);
+
+    function init() {
+      dom.sections = document.getElementById("sections");
+      dom.countdown = document.getElementById("countdown");
+      dom.refreshBtn = document.getElementById("refreshBtn");
+      dom.resetBtn = document.getElementById("resetBtn");
+      dom.themeBtn = document.getElementById("themeBtn");
+      dom.themeLabel = document.getElementById("themeLabel");
+      dom.themeIcon = document.getElementById("themeIcon");
+
+      loadState();
+      applyTheme();
+      renderSections();
+      bindTopbar();
+      startRefreshClock();
+      refreshExpandedSections({ showSkeleton: true });
+    }
+
+    function loadState() {
+      const storedTheme = localStorage.getItem(STORAGE_KEYS.theme);
+      const preferredTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      state.theme = storedTheme || preferredTheme;
+
+      try {
+        const raw = localStorage.getItem(STORAGE_KEYS.watchlists);
+        if (!raw) {
+          state.watchlists = structuredClone(DEFAULT_WATCHLISTS);
+          return;
+        }
+
+        const parsed = JSON.parse(raw);
+        state.watchlists = {
+          indicators: sanitizeSymbols(parsed.indicators, DEFAULT_WATCHLISTS.indicators),
+          us: sanitizeSymbols(parsed.us, DEFAULT_WATCHLISTS.us),
+          kr: sanitizeSymbols(parsed.kr, DEFAULT_WATCHLISTS.kr)
+        };
+      } catch {
+        state.watchlists = structuredClone(DEFAULT_WATCHLISTS);
+      }
+    }
+
+    function bindTopbar() {
+      dom.refreshBtn.addEventListener("click", async () => {
+        resetCountdown();
+        await refreshExpandedSections({ force: true });
+      });
+
+      dom.resetBtn.addEventListener("click", () => {
+        localStorage.removeItem(STORAGE_KEYS.watchlists);
+        localStorage.removeItem(STORAGE_KEYS.theme);
+        location.reload();
+      });
+
+      dom.themeBtn.addEventListener("click", () => {
+        state.theme = state.theme === "dark" ? "light" : "dark";
+        localStorage.setItem(STORAGE_KEYS.theme, state.theme);
+        applyTheme();
+      });
+    }
+
+    function applyTheme() {
+      document.documentElement.setAttribute("data-theme", state.theme);
+      dom.themeLabel.textContent = state.theme === "dark" ? "Dark" : "Light";
+      dom.themeIcon.textContent = state.theme === "dark" ? "🌙" : "☀️";
+    }
+
+    function renderSections() {
+      dom.sections.innerHTML = "";
+      const fragment = document.createDocumentFragment();
+
+      for (const section of SECTIONS) {
+        fragment.appendChild(createSection(section));
+      }
+
+      dom.sections.appendChild(fragment);
+    }
+
+    function createSection(section) {
+      const panel = document.createElement("section");
+      panel.className = "panel";
+      panel.dataset.section = section.id;
+      panel.dataset.expanded = String(state.expanded[section.id]);
+
+      panel.innerHTML = `
+        <button class="section-toggle" type="button" aria-expanded="${state.expanded[section.id]}">
+          <div class="section-heading">
+            <div class="section-icon">${section.icon}</div>
+            <div class="section-title-wrap">
+              <h2>${section.title}</h2>
+              <p>${section.description}</p>
+            </div>
+          </div>
+          <div class="section-meta">
+            <span class="section-count" data-role="count">${state.watchlists[section.id].length} ticker${state.watchlists[section.id].length === 1 ? "" : "s"}</span>
+            <span class="chevron">⌄</span>
+          </div>
+        </button>
+
+        <div class="section-body">
+          <div class="section-toolbar">
+            <div class="add-wrap">
+              <div class="input-group">
+                <input
+                  class="ticker-input"
+                  data-role="input"
+                  type="text"
+                  inputmode="text"
+                  autocomplete="off"
+                  spellcheck="false"
+                  placeholder="${section.placeholder}"
+                  aria-label="Add ticker to ${section.title}"
+                />
+                <button class="btn btn-primary" data-role="add" type="button">Add</button>
+              </div>
+              <div class="status-text" data-role="status"></div>
+            </div>
+          </div>
+
+          <div class="grid-head">
+            <div>Ticker</div>
+            <div>Price</div>
+            <div>Change</div>
+            <div>Volume</div>
+            <div class="hide-mobile">Market Cap</div>
+            <div class="hide-mobile">52W Range</div>
+            <div></div>
+          </div>
+
+          <div class="rows" data-role="rows"></div>
+          <div class="footer-note">Auto-refresh runs every 60 seconds for expanded sections.</div>
+        </div>
+      `;
+
+      const toggleBtn = panel.querySelector(".section-toggle");
+      const addBtn = panel.querySelector('[data-role="add"]');
+      const input = panel.querySelector('[data-role="input"]');
+
+      toggleBtn.addEventListener("click", async () => {
+        state.expanded[section.id] = !state.expanded[section.id];
+        panel.dataset.expanded = String(state.expanded[section.id]);
+        toggleBtn.setAttribute("aria-expanded", String(state.expanded[section.id]));
+
+        if (state.expanded[section.id] && !state.loaded[section.id]) {
+          await loadSection(section.id, { showSkeleton: true });
+        }
+      });
+
+      addBtn.addEventListener("click", () => handleAddTicker(section.id));
+
+      input.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          handleAddTicker(section.id);
+        }
+      });
+
+      input.addEventListener("input", () => {
+        clearTimeout(debounceTimers[section.id]);
+        debounceTimers[section.id] = setTimeout(() => {
+          previewValidate(section.id);
+        }, 550);
+      });
+
+      return panel;
+    }
+
+    function startRefreshClock() {
+      resetCountdown();
+
+      if (refreshTicker) clearInterval(refreshTicker);
+
+      refreshTicker = setInterval(async () => {
+        state.countdown -= 1;
+        updateCountdown();
+
+        if (state.countdown <= 0) {
+          resetCountdown();
+          await refreshExpandedSections({ force: true });
+        }
+      }, 1000);
+    }
+
+    function resetCountdown() {
+      state.countdown = REFRESH_INTERVAL;
+      updateCountdown();
+    }
+
+    function updateCountdown() {
+      if (dom.countdown) dom.countdown.textContent = String(state.countdown);
+    }
+
+    function sanitizeSymbols(input, fallback) {
+      if (!Array.isArray(input)) return [...fallback];
+      const cleaned = input
+        .map(normalizeSymbol)
+        .filter(Boolean);
+
+      return cleaned.length ? [...new Set(cleaned)] : [...fallback];
+    }
+
+    function normalizeSymbol(value) {
+      return String(value || "").trim().replace(/\s+/g, "").toUpperCase();
+    }
+
+    function saveWatchlists() {
+      localStorage.setItem(STORAGE_KEYS.watchlists, JSON.stringify(state.watchlists));
+      for (const sectionId of Object.keys(state.watchlists)) {
+        const panel = getPanel(sectionId);
+        if (panel) {
+          const count = panel.querySelector('[data-role="count"]');
+          if (count) {
+            const total = state.watchlists[sectionId].length;
+            count.textContent = `${total} ticker${total === 1 ? "" : "s"}`;
+          }
+        }
+      }
+    }
+
+    async function refreshExpandedSections({ force = false, showSkeleton = false } = {}) {
+      const tasks = SECTIONS
+        .filter(section => state.expanded[section.id])
+        .map(section => loadSection(section.id, { force, showSkeleton }));
+
+      await Promise.allSettled(tasks);
+    }
+
+    async function loadSection(sectionId, { force = false, showSkeleton = false } = {}) {
+      if (state.loading[sectionId]) return;
+      if (!force && state.loaded[sectionId] && !state.expanded[sectionId]) return;
+
+      const panel = getPanel(sectionId);
+      const rowsEl = getSectionRows(sectionId);
+
+      if (!rowsEl) return;
+
+      const symbols = state.watchlists[sectionId];
+      if (!symbols.length) {
+        state.loaded[sectionId] = true;
+        renderEmpty(sectionId);
+        return;
+      }
+
+      state.loading[sectionId] = true;
+      if (showSkeleton || !state.loaded[sectionId]) renderSkeleton(sectionId);
+
+      try {
+        const quotes = await fetchQuotes(symbols);
+        requestAnimationFrame(() => reconcileSection(sectionId, symbols, quotes));
+      } catch {
+        requestAnimationFrame(() => reconcileSection(sectionId, symbols, new Map()));
+      } finally {
+        state.loading[sectionId] = false;
+        state.loaded[sectionId] = true;
+        if (panel) panel.removeAttribute("data-loading");
+      }
+    }
+
+    function getPanel(sectionId) {
+      return document.querySelector(`.panel[data-section="${sectionId}"]`);
+    }
+
+    function getSectionRows(sectionId) {
+      return getPanel(sectionId)?.querySelector('[data-role="rows"]') || null;
+    }
+
+    function getSectionInput(sectionId) {
+      return getPanel(sectionId)?.querySelector('[data-role="input"]') || null;
+    }
+
+    function getSectionAddButton(sectionId) {
+      return getPanel(sectionId)?.querySelector('[data-role="add"]') || null;
+    }
+
+    function getSectionStatus(sectionId) {
+      return getPanel(sectionId)?.querySelector('[data-role="status"]') || null;
+    }
+
+    function setStatus(sectionId, text = "", tone = "") {
+      const el = getSectionStatus(sectionId);
+      if (!el) return;
+      el.textContent = text;
+      el.className = `status-text ${tone}`.trim();
+    }
+
+    function renderEmpty(sectionId) {
+      const rowsEl = getSectionRows(sectionId);
+      if (!rowsEl) return;
+      rowsEl.innerHTML = `<div class="empty-state">No tickers yet. Add one above to start tracking.</div>`;
+    }
+
+    function renderSkeleton(sectionId) {
+      const rowsEl = getSectionRows(sectionId);
+      if (!rowsEl) return;
+
+      let html = "";
+      for (let i = 0; i < 3; i += 1) {
+        html += `
+          <div class="skeleton-row" aria-hidden="true">
+            <div class="skeleton-grid">
+              <div>
+                <div class="skeleton-block tall"></div>
+                <div class="skeleton-block short" style="margin-top:10px;"></div>
+              </div>
+              <div class="skeleton-block"></div>
+              <div class="skeleton-block"></div>
+              <div class="skeleton-block"></div>
+              <div class="skeleton-block hide-mobile"></div>
+              <div class="skeleton-block hide-mobile"></div>
+              <div class="skeleton-circle"></div>
+            </div>
+          </div>
+        `;
+      }
+      rowsEl.innerHTML = html;
+    }
+
+    function createTickerRow(symbol) {
+      const row = document.createElement("div");
+      row.className = "ticker-row";
+      row.dataset.symbol = symbol;
+
+      row.innerHTML = `
+        <div class="identity">
+          <div class="symbol" data-field="symbol">${symbol}</div>
+          <div class="name" data-field="name">Loading...</div>
+          <div class="mini-status" data-field="status"></div>
+        </div>
+
+        <div class="metric price">
+          <span class="label">Price</span>
+          <span class="value" data-field="price">—</span>
+          <span class="sub" data-field="currency">&nbsp;</span>
+        </div>
+
+        <div class="metric change">
+          <span class="label">Change</span>
+          <span class="value" data-field="change">—</span>
+          <span class="sub" data-field="changePct">&nbsp;</span>
+        </div>
+
+        <div class="metric volume">
+          <span class="label">Volume</span>
+          <span class="value" data-field="volume">—</span>
+          <span class="sub">Volume</span>
+        </div>
+
+        <div class="metric hide-mobile">
+          <span class="label">Market Cap</span>
+          <span class="value" data-field="marketCap">—</span>
+          <span class="sub">Market cap</span>
+        </div>
+
+        <div class="metric hide-mobile">
+          <span class="label">52W</span>
+          <span class="value" data-field="range">—</span>
+          <span class="sub">Low / High</span>
+        </div>
+
+        <button class="icon-btn remove" type="button" title="Remove ticker" aria-label="Remove ticker">×</button>
+      `;
+
+      return row;
+    }
+
+    function reconcileSection(sectionId, symbols, quoteMap) {
+      const rowsEl = getSectionRows(sectionId);
+      if (!rowsEl) return;
+
+      if (!symbols.length) {
+        renderEmpty(sectionId);
+        return;
+      }
+
+      const existingRows = new Map(
+        Array.from(rowsEl.querySelectorAll(".ticker-row")).map(row => [row.dataset.symbol, row])
+      );
+
+      symbols.forEach((symbol, index) => {
+        const normalized = normalizeSymbol(symbol);
+        let row = existingRows.get(normalized);
+
+        if (!row) {
+          row = createTickerRow(normalized);
+          row.querySelector(".remove").addEventListener("click", () => removeTicker(sectionId, normalized));
+        }
+
+        existingRows.delete(normalized);
+
+        const currentNodeAtIndex = rowsEl.children[index];
+        if (currentNodeAtIndex !== row) {
+          rowsEl.insertBefore(row, currentNodeAtIndex || null);
+        }
+
+        updateTickerRow(row, quoteMap.get(normalized) || null);
+      });
+
+      existingRows.forEach(row => row.remove());
+
+      if (!rowsEl.children.length) renderEmpty(sectionId);
+    }
+
+    function updateTickerRow(row, quote) {
+      const symbolEl = row.querySelector('[data-field="symbol"]');
+      const nameEl = row.querySelector('[data-field="name"]');
+      const statusEl = row.querySelector('[data-field="status"]');
+      const priceEl = row.querySelector('[data-field="price"]');
+      const currencyEl = row.querySelector('[data-field="currency"]');
+      const changeEl = row.querySelector('[data-field="change"]');
+      const changePctEl = row.querySelector('[data-field="changePct"]');
+      const volumeEl = row.querySelector('[data-field="volume"]');
+      const marketCapEl = row.querySelector('[data-field="marketCap"]');
+      const rangeEl = row.querySelector('[data-field="range"]');
+
+      const symbol = row.dataset.symbol;
+      setText(symbolEl, symbol);
+
+      if (!quote) {
+        row.classList.add("unavailable");
+        setText(nameEl, "Data unavailable");
+        setText(statusEl, "⚠ Data unavailable");
+        setText(priceEl, "—");
+        setText(currencyEl, "Unavailable");
+        setText(changeEl, "—");
+        setText(changePctEl, "");
+        setText(volumeEl, "—");
+        setText(marketCapEl, "—");
+        setText(rangeEl, "—");
+        applySignedTone(changeEl, null);
+        applySignedTone(changePctEl, null);
+        return;
+      }
+
+      row.classList.remove("unavailable");
+
+      const price = valueOrNull(quote.regularMarketPrice);
+      const change = valueOrNull(quote.regularMarketChange);
+      const changePct = valueOrNull(quote.regularMarketChangePercent);
+      const volume = valueOrNull(quote.regularMarketVolume);
+      const marketCap = valueOrNull(quote.marketCap);
+      const low52 = valueOrNull(quote.fiftyTwoWeekLow);
+      const high52 = valueOrNull(quote.fiftyTwoWeekHigh);
+      const name = quote.longName || quote.shortName || quote.displayName || symbol;
+      const currency = quote.currency || quote.financialCurrency || "";
+
+      setText(nameEl, name);
+      setText(statusEl, "");
+      setText(priceEl, formatPrice(price));
+      setText(currencyEl, currency ? currency : "\u00A0");
+      setText(changeEl, formatSignedNumber(change));
+      setText(changePctEl, changePct === null ? "" : `${formatSignedNumber(changePct)}%`);
+      setText(volumeEl, formatCompact(volume));
+      setText(marketCapEl, formatCompact(marketCap));
+      setText(rangeEl, formatRange(low52, high52));
+
+      applySignedTone(changeEl, change);
+      applySignedTone(changePctEl, changePct);
+    }
+
+    function setText(el, nextValue) {
+      const value = nextValue == null ? "" : String(nextValue);
+      if (el && el.textContent !== value) {
+        el.textContent = value;
+      }
+    }
+
+    function applySignedTone(el, value) {
+      if (!el) return;
+      el.classList.remove("positive", "negative", "neutral");
+      if (typeof value !== "number" || Number.isNaN(value)) {
+        el.classList.add("neutral");
+        return;
+      }
+      if (value > 0) el.classList.add("positive");
+      else if (value < 0) el.classList.add("negative");
+      else el.classList.add("neutral");
+    }
+
+    function valueOrNull(value) {
+      return typeof value === "number" && Number.isFinite(value) ? value : null;
+    }
+
+    function formatPrice(value) {
+      if (value === null) return "—";
+      const abs = Math.abs(value);
+      const digits = abs >= 1000 ? 0 : abs >= 100 ? 2 : abs >= 1 ? 2 : 4;
+      return new Intl.NumberFormat(undefined, {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: digits
+      }).format(value);
+    }
+
+    function formatSignedNumber(value) {
+      if (value === null) return "—";
+      const abs = Math.abs(value);
+      const digits = abs >= 1000 ? 0 : abs >= 100 ? 2 : abs >= 1 ? 2 : 4;
+      const formatted = new Intl.NumberFormat(undefined, {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: digits
+      }).format(value);
+      if (value > 0) return `+${formatted}`;
+      return formatted;
+    }
+
+    function formatCompact(value) {
+      if (value === null) return "—";
+      return new Intl.NumberFormat(undefined, {
+        notation: "compact",
+        maximumFractionDigits: 2
+      }).format(value);
+    }
+
+    function formatRange(low, high) {
+      if (low === null || high === null) return "—";
+      return `${formatPrice(low)} / ${formatPrice(high)}`;
+    }
+
+    async function handleAddTicker(sectionId) {
+      const input = getSectionInput(sectionId);
+      const addBtn = getSectionAddButton(sectionId);
+      if (!input || !addBtn) return;
+
+      const symbol = normalizeSymbol(input.value);
+      if (!symbol) {
+        setStatus(sectionId, "Enter a ticker symbol first.", "error");
+        return;
+      }
+
+      if (state.watchlists[sectionId].includes(symbol)) {
+        setStatus(sectionId, "That ticker is already in this section.", "error");
+        return;
+      }
+
+      addBtn.disabled = true;
+      setStatus(sectionId, "Validating ticker...", "pending");
+
+      try {
+        const valid = await validateTicker(symbol);
+        if (!valid) {
+          setStatus(sectionId, "Ticker not found.", "error");
+          return;
+        }
+
+        state.watchlists[sectionId].push(symbol);
+        saveWatchlists();
+        input.value = "";
+        setStatus(sectionId, `${symbol} added.`, "success");
+
+        if (state.expanded[sectionId]) {
+          await loadSection(sectionId, { force: true, showSkeleton: false });
+        } else {
+          state.loaded[sectionId] = false;
+        }
+      } catch {
+        setStatus(sectionId, "Unable to validate ticker right now.", "error");
+      } finally {
+        addBtn.disabled = false;
+      }
+    }
+
+    async function previewValidate(sectionId) {
+      const input = getSectionInput(sectionId);
+      if (!input) return;
+
+      const symbol = normalizeSymbol(input.value);
+      if (!symbol) {
+        setStatus(sectionId, "", "");
+        return;
+      }
+
+      if (state.watchlists[sectionId].includes(symbol)) {
+        setStatus(sectionId, "Already in this section.", "error");
+        return;
+      }
+
+      setStatus(sectionId, "Checking symbol...", "pending");
+
+      try {
+        const valid = await validateTicker(symbol);
+        const latest = normalizeSymbol(getSectionInput(sectionId)?.value || "");
+        if (latest !== symbol) return;
+        setStatus(sectionId, valid ? "Ticker looks valid." : "Ticker not found.", valid ? "success" : "error");
+      } catch {
+        const latest = normalizeSymbol(getSectionInput(sectionId)?.value || "");
+        if (latest !== symbol) return;
+        setStatus(sectionId, "Validation check failed.", "error");
+      }
+    }
+
+    function removeTicker(sectionId, symbol) {
+      state.watchlists[sectionId] = state.watchlists[sectionId].filter(item => item !== symbol);
+      saveWatchlists();
+
+      if (!state.watchlists[sectionId].length) {
+        renderEmpty(sectionId);
+        return;
+      }
+
+      if (state.expanded[sectionId]) {
+        loadSection(sectionId, { force: true, showSkeleton: false });
+      }
+    }
+
+    async function validateTicker(symbol) {
+      const cached = validationCache.get(symbol);
+      const now = Date.now();
+      if (cached && now - cached.timestamp < VALIDATION_CACHE_TTL) {
+        return cached.valid;
+      }
+
+      try {
+        const results = await fetchQuotes([symbol]);
+        const valid = results.has(symbol);
+        validationCache.set(symbol, { valid, timestamp: now });
+        return valid;
+      } catch {
+        validationCache.set(symbol, { valid: false, timestamp: now });
+        return false;
+      }
+    }
+
+    async function fetchQuotes(symbols) {
+      const uniqueSymbols = [...new Set(symbols.map(normalizeSymbol).filter(Boolean))];
+      const chunkSize = 25;
+      const chunks = [];
+
+      for (let i = 0; i < uniqueSymbols.length; i += chunkSize) {
+        chunks.push(uniqueSymbols.slice(i, i + chunkSize));
+      }
+
+      const results = await Promise.allSettled(chunks.map(chunk => fetchQuoteChunk(chunk)));
+      const quoteMap = new Map();
+
+      results.forEach((result) => {
+        if (result.status !== "fulfilled") return;
+        result.value.forEach((quote) => {
+          const symbol = normalizeSymbol(quote.symbol);
+          if (symbol) quoteMap.set(symbol, quote);
+        });
+      });
+
+      return quoteMap;
+    }
+
+    async function fetchQuoteChunk(symbols) {
+      const encodedSymbols = symbols.map(encodeURIComponent).join(",");
+      const targetUrl = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodedSymbols}`;
+      const data = await fetchJsonWithProxy(targetUrl);
+      return Array.isArray(data?.quoteResponse?.result) ? data.quoteResponse.result : [];
+    }
+
+    async function fetchJsonWithProxy(targetUrl) {
+      const proxyStrategies = [
+        {
+          name: "corsproxy",
+          url: `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`,
+          parser: async (response) => {
+            const text = await response.text();
+            return JSON.parse(text);
+          }
+        },
+        {
+          name: "allorigins",
+          url: `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`,
+          parser: async (response) => {
+            const wrapped = await response.json();
+            return JSON.parse(wrapped.contents);
+          }
+        }
+      ];
+
+      let lastError = null;
+
+      for (const proxy of proxyStrategies) {
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
+
+          const response = await fetch(proxy.url, {
+            method: "GET",
+            signal: controller.signal,
+            cache: "no-store"
+          });
+
+          clearTimeout(timeoutId);
+
+          if (!response.ok) {
+            throw new Error(`${proxy.name} failed with ${response.status}`);
+          }
+
+          const parsed = await proxy.parser(response);
+          if (!parsed || parsed.finance?.error) {
+            throw new Error(`${proxy.name} returned invalid payload`);
+          }
+
+          return parsed;
+        } catch (error) {
+          lastError = error;
+        }
+      }
+
+      throw lastError || new Error("All proxy requests failed");
+    }
+  </script>
+</body>
+</html>
