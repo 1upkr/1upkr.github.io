@@ -570,12 +570,12 @@
                 inputEl.value = ''; listEl.style.display = 'none'; return;
             }
 
-            btnEl.disabled = true; btnEl.textContent = 'adding'; listEl.style.display = 'none';
+            btnEl.disabled = true; btnEl.textContent = '~ing'; listEl.style.display = 'none';
 
             try {
                 const data = await fetchYahooFinance([ticker]);
                 if (!data || data.length === 0 || !data[0].regularMarketPrice) {
-                    alert(`해당 티커(${ticker})를 찾을 수 없거나 데이터가 없습니다.`); return;
+                    alert(`${ticker} not found. Search by Yahoo Finance ticker.`); return;
                 }
                 state.watchlists[sectionId].tickers.push(ticker);
                 saveWatchlists();
