@@ -369,7 +369,7 @@
                         <form class="add-ticker-form" onsubmit="handleAddTicker(event, '${sectionId}')">
                             <div class="search-wrapper">
                                 ${SEARCH_ICON}
-                                <input type="text" id="input-${sectionId}" placeholder="Look up quotes by ticker or company" autocomplete="off">
+                                <input type="text" id="input-${sectionId}" placeholder="Search Ticker or Company" autocomplete="off">
                                 <ul class="autocomplete-list" id="autocomplete-${sectionId}"></ul>
                             </div>
                             <button type="submit" id="btn-add-${sectionId}">Add</button>
@@ -570,7 +570,7 @@
                 inputEl.value = ''; listEl.style.display = 'none'; return;
             }
 
-            btnEl.disabled = true; btnEl.textContent = 'loading.'; listEl.style.display = 'none';
+            btnEl.disabled = true; btnEl.textContent = 'adding'; listEl.style.display = 'none';
 
             try {
                 const data = await fetchYahooFinance([ticker]);
