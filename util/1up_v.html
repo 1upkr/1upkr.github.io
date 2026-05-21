@@ -299,8 +299,8 @@
 
         let state = {
             watchlists: JSON.parse(localStorage.getItem('marketdash_watchlists')) || JSON.parse(JSON.stringify(DEFAULT_WATCHLISTS)),
-            sectionOrder: JSON.parse(localStorage.getItem('marketdash_sectionOrder')) || ['indicators', 'us', 'kr'],
-            expanded: JSON.parse(localStorage.getItem('marketdash_expanded')) || { indicators: true, us: true, kr: true },
+            sectionOrder: JSON.parse(localStorage.getItem('marketdash_sectionOrder')) || ['indicators', 'kr', 'us'],
+            expanded: JSON.parse(localStorage.getItem('marketdash_expanded')) || { indicators: true, kr: true, us: true },
             theme: localStorage.getItem('marketdash_theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'),
             countdown: 60,
             intervalId: null
@@ -578,7 +578,7 @@
                 localStorage.removeItem('marketdash_watchlists');
                 localStorage.removeItem('marketdash_sectionOrder');
                 state.watchlists = JSON.parse(JSON.stringify(DEFAULT_WATCHLISTS));
-                state.sectionOrder = ['indicators', 'us', 'kr'];
+                state.sectionOrder = ['indicators', 'kr', 'us'];
                 renderLayout(); 
                 forceRefresh();
             }
