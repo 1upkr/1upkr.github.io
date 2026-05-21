@@ -67,32 +67,14 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        svg {
-            fill: none;
-            stroke: currentColor;
-            stroke-width: 2;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-        }
+        svg { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
         header {
-            background-color: var(--header-bg);
-            border-bottom: 1px solid var(--border-color);
-            padding: 0.875rem 5%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: var(--shadow-sm);
+            background-color: var(--header-bg); border-bottom: 1px solid var(--border-color);
+            padding: 0.875rem 5%; display: flex; justify-content: space-between; align-items: center;
+            position: sticky; top: 0; z-index: 100; box-shadow: var(--shadow-sm);
         }
-
-        .header-left h1 {
-            font-size: 1.25rem; font-weight: 700;
-            display: flex; align-items: center; gap: 0.5rem; letter-spacing: -0.02em;
-        }
-
+        .header-left h1 { font-size: 1.25rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; letter-spacing: -0.02em; }
         .header-controls { display: flex; align-items: center; gap: 1.5rem; font-size: 0.875rem; font-weight: 500; }
         .timer { color: var(--text-secondary); font-variant-numeric: tabular-nums; display: flex; align-items: center; gap: 0.4rem; }
         .action-btns { display: flex; flex-direction: row; align-items: center; gap: 0.5rem; }
@@ -104,21 +86,14 @@
         .icon-btn:hover { background-color: var(--hover-bg); color: var(--text-primary); }
         .icon-btn svg { width: 18px; height: 18px; }
 
-        .icon-sun { display: none; }
-        .icon-moon { display: block; }
-        [data-theme="dark"] .icon-sun { display: block; }
-        [data-theme="dark"] .icon-moon { display: none; }
+        .icon-sun { display: none; } .icon-moon { display: block; }
+        [data-theme="dark"] .icon-sun { display: block; } [data-theme="dark"] .icon-moon { display: none; }
 
         main { padding: 2rem 5%; max-width: 1400px; margin: 0 auto; }
 
         .section-container {
-            background-color: var(--card-bg); 
-            border: 1px solid var(--border-color);
-            border-radius: 12px; 
-            margin-bottom: 2rem; 
-            overflow: visible; 
-            box-shadow: var(--shadow-md);
-            transition: transform 0.2s, box-shadow 0.2s;
+            background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; 
+            margin-bottom: 2rem; overflow: visible; box-shadow: var(--shadow-md); transition: transform 0.2s, box-shadow 0.2s;
         }
         .section-header { border-radius: 12px 12px 0 0; }
         .table-wrapper { border-radius: 0 0 12px 12px; overflow: hidden; }
@@ -242,12 +217,8 @@
                 <span id="countdown">60</span>s
             </div>
             <div class="action-btns">
-                <button id="btn-refresh" class="icon-btn" title="Force Refresh">
-                    <svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
-                </button>
-                <button id="btn-reset" class="icon-btn" title="Reset to Defaults">
-                    <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
-                </button>
+                <button id="btn-refresh" class="icon-btn" title="Force Refresh"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg></button>
+                <button id="btn-reset" class="icon-btn" title="Reset to Defaults"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg></button>
                 <button id="btn-theme" class="icon-btn" title="Toggle Theme">
                     <svg class="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="6.34" y2="6.34"/><line x1="17.66" y1="17.66" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="6.34" y2="17.66"/><line x1="17.66" y1="6.34" x2="19.78" y2="4.22"/></svg>
                     <svg class="icon-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
@@ -266,13 +237,31 @@
         };
 
         const GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbzHIRkgH2Sqc_X0RxxrmKrWWdGyF67IW-S5jNL0mTRZ2vGwKT1rbfDzOveoUSg6cH5k/exec";
+
+        // =====================================================================
+        // ✨ [한글 초성 추출 유틸리티]
+        // =====================================================================
+        const CHO_HANGUL = [
+            'ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 
+            'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'
+        ];
         
+        function getChosung(str) {
+            let result = '';
+            for (let i = 0; i < str.length; i++) {
+                let code = str.charCodeAt(i) - 44032; // '가'의 유니코드(44032)부터 시작
+                if (code > -1 && code < 11172) {
+                    result += CHO_HANGUL[Math.floor(code / 588)];
+                } else {
+                    result += str.charAt(i); // 한글이 아니면 그대로 유지(알파벳 등)
+                }
+            }
+            return result;
+        }
+
         // =====================================================================
         // 💎 [실시간 로컬 검색용 티커 JSON 리스트]
-        // 용량 절약을 위해 키를 축약: s(Symbol), n(Name), e(Exchange)
-        // 실제로는 외부 파일(tickers.json)을 로드하는 방식을 추천해.
         // =====================================================================
-        const TICKER_DB_URL = "tickers.json"; 
         let localTickerDB = [
             // 주요 지수 & 환율
             { s: "KRW=X", n: "원/달러 환율 (USD/KRW)", e: "Currency" },
@@ -283,7 +272,7 @@
             { s: "^GSPC", n: "S&P 500 지수", e: "Index" },
             { s: "BTC-USD", n: "비트코인 (Bitcoin)", e: "Crypto" },
 
-            // 한국 KOSPI / KOSDAQ 샘플 (상위권)
+            // 한국 KOSPI / KOSDAQ 샘플
             { s: "005930.KS", n: "삼성전자 (Samsung Electronics)", e: "KOSPI" },
             { s: "000660.KS", n: "SK하이닉스 (SK Hynix)", e: "KOSPI" },
             { s: "373220.KS", n: "LG에너지솔루션 (LG Energy Solution)", e: "KOSPI" },
@@ -300,7 +289,7 @@
             { s: "028300.KQ", n: "HLB (에이치엘비)", e: "KOSDAQ" },
             { s: "035900.KQ", n: "JYP Ent. (제이와이피)", e: "KOSDAQ" },
 
-            // 미국 US 샘플 (상위권)
+            // 미국 US 샘플
             { s: "AAPL", n: "Apple Inc. (애플)", e: "NASDAQ" },
             { s: "MSFT", n: "Microsoft Corporation (마이크로소프트)", e: "NASDAQ" },
             { s: "NVDA", n: "NVIDIA Corporation (엔비디아)", e: "NASDAQ" },
@@ -312,23 +301,21 @@
             { s: "LLY", n: "Eli Lilly and Company (일라이 릴리)", e: "NYSE" },
             { s: "AVGO", n: "Broadcom Inc. (브로드컴)", e: "NASDAQ" },
             { s: "JPM", n: "JPMorgan Chase & Co. (제이피모건)", e: "NYSE" },
-            { s: "V", n: "Visa Inc. (비자)", e: "NYSE" },
-            { s: "XOM", n: "Exxon Mobil Corp. (엑슨모빌)", e: "NYSE" },
-            { s: "UNH", n: "UnitedHealth Group (유나이티드헬스)", e: "NYSE" },
-            { s: "WMT", n: "Walmart Inc. (월마트)", e: "NYSE" }
+            { s: "V", n: "Visa Inc. (비자)", e: "NYSE" }
         ];
 
-        // 외부 파일 로드를 위한 함수 (실제로 2000개 파일이 준비되면 주석 해제하여 사용)
+        // ✨ DB 로딩 시 데이터에 초성(cs_s, cs_n) 필드를 자동으로 추가하여 가공
+        function processTickerDB(data) {
+            return data.map(q => ({
+                ...q,
+                cs_s: getChosung(q.s || '').toLowerCase(),
+                cs_n: getChosung(q.n || '').toLowerCase()
+            }));
+        }
+
         async function initTickerDB() {
-            try {
-                // const res = await fetch(TICKER_DB_URL);
-                // if (res.ok) {
-                //     localTickerDB = await res.json();
-                //     console.log(`Loaded ${localTickerDB.length} tickers successfully.`);
-                // }
-            } catch (error) {
-                console.warn("External DB load failed. Using built-in sample list.");
-            }
+            // 외부 파일 연동 시 이 곳에서 fetch 후 processTickerDB(data) 실행
+            localTickerDB = processTickerDB(localTickerDB);
         }
         // =====================================================================
 
@@ -347,9 +334,7 @@
             intervalId: null
         };
 
-        const rowNodes = new Map(); 
-        let sortables = []; 
-        
+        const rowNodes = new Map(); let sortables = []; 
         function getSafeId(ticker) { return 'id_' + ticker.replace(/[^a-zA-Z0-9]/g, '_'); }
 
         async function init() {
@@ -357,7 +342,7 @@
                 state.sectionOrder = Object.keys(state.watchlists);
             }
 
-            await initTickerDB(); // 티커 리스트 미리 로딩
+            await initTickerDB(); // DB 초성 추출 완료 대기
 
             applyTheme(); renderLayout(); startTimer(); fetchData(); 
             
@@ -365,7 +350,6 @@
             document.getElementById('btn-refresh').addEventListener('click', forceRefresh);
             document.getElementById('btn-reset').addEventListener('click', resetToDefaults);
 
-            // 검색창 밖 클릭 시 자동완성 닫기
             document.addEventListener('click', (e) => {
                 if (!e.target.closest('.search-wrapper')) {
                     document.querySelectorAll('.autocomplete-list').forEach(el => el.style.display = 'none');
@@ -448,10 +432,12 @@
                 
                 const inputEl = document.getElementById(`input-${sectionId}`);
                 if(inputEl) {
+                    // 키보드 타이핑 시 검색
                     inputEl.addEventListener('input', (e) => {
                         handleAutocomplete(e.target.value, sectionId);
                     });
                     
+                    // 인풋창 포커스 시 1글자라도 있으면 목록 열기
                     inputEl.addEventListener('focus', (e) => {
                         handleAutocomplete(e.target.value, sectionId);
                     });
@@ -462,24 +448,32 @@
         }
 
         // =====================================================================
-        // 🚀 [초고속 로컬 서치 엔진] API 딜레이 0초. 입력 즉시 렌더링.
+        // 🚀 [초고속 로컬 서치 엔진] 초성 + 알파벳 1글자 분리 검색
         // =====================================================================
         function handleAutocomplete(query, sectionId) {
             const list = document.getElementById(`autocomplete-${sectionId}`);
             query = query.trim().toLowerCase();
             
-            if (query.length < 2) {
+            // ✨ 1글자 이상이면 무조건 검색 수행!
+            if (query.length < 1) {
                 list.style.display = 'none';
                 return;
             }
 
             list.style.display = 'block';
 
-            // 입력값이 심볼이나 이름에 포함된 항목 필터링 (최대 8개 노출)
-            const matchedQuotes = localTickerDB.filter(q => 
-                q.s.toLowerCase().includes(query) || 
-                q.n.toLowerCase().includes(query)
-            ).slice(0, 8);
+            // 입력값에 자음(ㄱ-ㅎ)만 있고, 완성형 한글(가-힣)이 없는 경우 -> '초성 검색 모드'로 전환
+            const isChosungQuery = /[ㄱ-ㅎ]/.test(query) && !/[가-힣]/.test(query);
+
+            const matchedQuotes = localTickerDB.filter(q => {
+                if (isChosungQuery) {
+                    // 사용자가 자음만 쳤을 때는 'cs_n(초성변환된 이름)' 필드에서 검색 (ex. ㅅㅅ -> ㅅㅅㅈㅈ 매칭)
+                    return (q.cs_s && q.cs_s.includes(query)) || (q.cs_n && q.cs_n.includes(query));
+                } else {
+                    // 사용자가 알파벳이나 완성된 한글을 쳤을 때는 오리지널 문자열에서 검색 (ex. a -> apple 매칭)
+                    return (q.s && q.s.toLowerCase().includes(query)) || (q.n && q.n.toLowerCase().includes(query));
+                }
+            }).slice(0, 8); // 결과는 최대 8개까지만
 
             if (matchedQuotes.length > 0) {
                 list.innerHTML = matchedQuotes.map(q => `
@@ -492,7 +486,7 @@
                     </li>
                 `).join('');
             } else {
-                list.innerHTML = `<li style="justify-content:center; cursor:default;"><span class="ac-name">검색 결과가 없습니다. (직접 Add 버튼을 누르면 추가됩니다)</span></li>`;
+                list.innerHTML = `<li style="justify-content:center; cursor:default;"><span class="ac-name">검색 결과가 없습니다.</span></li>`;
             }
         }
 
@@ -503,7 +497,7 @@
             
             input.value = symbol;
             list.style.display = 'none';
-            btn.click(); // 리스트 선택 시 즉시 추가
+            btn.click(); 
         };
 
         function generateRowHTML(ticker) {
@@ -551,7 +545,6 @@
 
         function initDragAndDrop() {
             const dashboard = document.getElementById('dashboard');
-            
             Sortable.create(dashboard, {
                 handle: '.drag-handle', animation: 200, ghostClass: 'sortable-ghost', delay: 100, delayOnTouchOnly: true,
                 onEnd: function () {
@@ -670,9 +663,7 @@
                 if (data && data.quoteResponse && data.quoteResponse.result) return data.quoteResponse.result;
                 else if (data && data.error) throw new Error(data.error);
                 throw new Error("데이터 구조가 올바르지 않습니다.");
-            } catch (e) {
-                console.error("데이터 가져오기 실패:", e); throw e; 
-            }
+            } catch (e) { console.error("데이터 가져오기 실패:", e); throw e; }
         }
 
         async function fetchData() {
@@ -696,9 +687,7 @@
         }
 
         function forceRefresh() {
-            state.countdown = 60;
-            document.getElementById('countdown').textContent = state.countdown;
-            fetchData();
+            state.countdown = 60; document.getElementById('countdown').textContent = state.countdown; fetchData();
         }
 
         function startTimer() {
@@ -713,18 +702,12 @@
         function updateDOMWithData(quotes) {
             requestAnimationFrame(() => {
                 quotes.forEach(quote => {
-                    const ticker = quote.symbol;
-                    const nodes = rowNodes.get(ticker);
+                    const ticker = quote.symbol; const nodes = rowNodes.get(ticker);
                     if (!nodes || !nodes.row) return;
 
-                    const price = quote.regularMarketPrice || 0;
-                    const change = quote.regularMarketChange || 0;
-                    const pct = quote.regularMarketChangePercent || 0;
-                    const isUp = change >= 0;
-                    
-                    const colorClass = isUp ? 'up' : 'down';
-                    const sign = isUp ? '+' : '';
-                    const arrow = isUp ? '▲' : '▼';
+                    const price = quote.regularMarketPrice || 0; const change = quote.regularMarketChange || 0;
+                    const pct = quote.regularMarketChangePercent || 0; const isUp = change >= 0;
+                    const colorClass = isUp ? 'up' : 'down'; const sign = isUp ? '+' : ''; const arrow = isUp ? '▲' : '▼';
                     
                     const oldPriceStr = nodes.price.getAttribute('data-price');
                     const oldPrice = oldPriceStr ? parseFloat(oldPriceStr) : null;
@@ -746,9 +729,7 @@
                     
                     if (quote.fiftyTwoWeekLow && quote.fiftyTwoWeekHigh) {
                         nodes.range.textContent = `${formatNum(quote.fiftyTwoWeekLow)} - ${formatNum(quote.fiftyTwoWeekHigh)}`;
-                    } else {
-                        nodes.range.textContent = '-';
-                    }
+                    } else { nodes.range.textContent = '-'; }
                 });
             });
         }
