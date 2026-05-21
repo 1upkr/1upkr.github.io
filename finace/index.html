@@ -260,52 +260,10 @@
         }
 
         // =====================================================================
-        // 💎 [실시간 로컬 검색용 티커 JSON 리스트]
+        // 💎 [외부 JSON 파일 로딩 로직]
         // =====================================================================
-        let localTickerDB = [
-            // 주요 지수 & 환율
-            { s: "KRW=X", n: "원/달러 환율 (USD/KRW)", e: "Currency" },
-            { s: "^KS11", n: "KOSPI 종합주가지수", e: "Index" },
-            { s: "^KQ11", n: "KOSDAQ 종합지수", e: "Index" },
-            { s: "^IXIC", n: "NASDAQ 나스닥 종합지수", e: "Index" },
-            { s: "^DJI", n: "Dow Jones 다우 존스 산업평균", e: "Index" },
-            { s: "^GSPC", n: "S&P 500 지수", e: "Index" },
-            { s: "BTC-USD", n: "비트코인 (Bitcoin)", e: "Crypto" },
+        let localTickerDB = [];
 
-            // 한국 KOSPI / KOSDAQ 샘플
-            { s: "005930.KS", n: "삼성전자 (Samsung Electronics)", e: "KOSPI" },
-            { s: "000660.KS", n: "SK하이닉스 (SK Hynix)", e: "KOSPI" },
-            { s: "496080.KS", n: "TIGER 코리안 밸류업 (TIGER Korea Value-up)", e: "KOSPI" },            
-            { s: "373220.KS", n: "LG에너지솔루션 (LG Energy Solution)", e: "KOSPI" },
-            { s: "207940.KS", n: "삼성바이오로직스 (Samsung Biologics)", e: "KOSPI" },
-            { s: "005380.KS", n: "현대차 (Hyundai Motor)", e: "KOSPI" },
-            { s: "000270.KS", n: "기아 (Kia)", e: "KOSPI" },
-            { s: "068270.KS", n: "셀트리온 (Celltrion)", e: "KOSPI" },
-            { s: "005490.KS", n: "POSCO홀딩스 (POSCO Holdings)", e: "KOSPI" },
-            { s: "035420.KS", n: "NAVER (네이버)", e: "KOSPI" },
-            { s: "035720.KS", n: "카카오 (Kakao)", e: "KOSPI" },
-            { s: "247540.KQ", n: "에코프로비엠 (Ecopro BM)", e: "KOSDAQ" },
-            { s: "086520.KQ", n: "에코프로 (Ecopro)", e: "KOSDAQ" },
-            { s: "091990.KQ", n: "셀트리온헬스케어 (Celltrion Healthcare)", e: "KOSDAQ" },
-            { s: "028300.KQ", n: "HLB (에이치엘비)", e: "KOSDAQ" },
-            { s: "035900.KQ", n: "JYP Ent. (제이와이피)", e: "KOSDAQ" },
-
-            // 미국 US 샘플
-            { s: "AAPL", n: "Apple Inc. (애플)", e: "NASDAQ" },
-            { s: "MSFT", n: "Microsoft Corporation (마이크로소프트)", e: "NASDAQ" },
-            { s: "NVDA", n: "NVIDIA Corporation (엔비디아)", e: "NASDAQ" },
-            { s: "GOOGL", n: "Alphabet Inc. (구글)", e: "NASDAQ" },
-            { s: "AMZN", n: "Amazon.com Inc. (아마존)", e: "NASDAQ" },
-            { s: "META", n: "Meta Platforms Inc. (메타)", e: "NASDAQ" },
-            { s: "TSLA", n: "Tesla Inc. (테슬라)", e: "NASDAQ" },
-            { s: "BRK-B", n: "Berkshire Hathaway (버크셔 해서웨이)", e: "NYSE" },
-            { s: "LLY", n: "Eli Lilly and Company (일라이 릴리)", e: "NYSE" },
-            { s: "AVGO", n: "Broadcom Inc. (브로드컴)", e: "NASDAQ" },
-            { s: "JPM", n: "JPMorgan Chase & Co. (제이피모건)", e: "NYSE" },
-            { s: "V", n: "Visa Inc. (비자)", e: "NYSE" }
-        ];
-
-        // ✨ DB 로딩 시 데이터에 초성(cs_s, cs_n) 필드를 자동으로 추가하여 가공
         function processTickerDB(data) {
             return data.map(q => ({
                 ...q,
@@ -315,8 +273,23 @@
         }
 
         async function initTickerDB() {
-            // 외부 파일 연동 시 이 곳에서 fetch 후 processTickerDB(data) 실행
-            localTickerDB = processTickerDB(localTickerDB);
+            try {
+                const response = await fetch('./tickers.json');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const rawData = await response.json();
+                localTickerDB = processTickerDB(rawData);
+                console.log(`성공적으로 ${localTickerDB.length}개의 티커 데이터를 불러왔습니다.`);
+            } catch (error) {
+                console.error("티커 DB 로드 실패 (로컬 환경에서 직접 실행 시 CORS 에러가 발생할 수 있습니다. Live Server를 사용하세요):", error);
+                
+                // 에러 시 최소한의 임시 데이터를 삽입하여 프로그램이 깨지지 않도록 방어 로직 추가
+                localTickerDB = processTickerDB([
+                    { s: "AAPL", n: "Apple Inc.", e: "NASDAQ" },
+                    { s: "005930.KS", n: "삼성전자", e: "KOSPI" }
+                ]);
+            }
         }
         // =====================================================================
 
@@ -343,7 +316,7 @@
                 state.sectionOrder = Object.keys(state.watchlists);
             }
 
-            await initTickerDB(); // DB 초성 추출 완료 대기
+            await initTickerDB(); // DB 로딩 대기
 
             applyTheme(); renderLayout(); startTimer(); fetchData(); 
             
@@ -433,12 +406,10 @@
                 
                 const inputEl = document.getElementById(`input-${sectionId}`);
                 if(inputEl) {
-                    // 키보드 타이핑 시 검색
                     inputEl.addEventListener('input', (e) => {
                         handleAutocomplete(e.target.value, sectionId);
                     });
                     
-                    // 인풋창 포커스 시 1글자라도 있으면 목록 열기
                     inputEl.addEventListener('focus', (e) => {
                         handleAutocomplete(e.target.value, sectionId);
                     });
@@ -449,13 +420,12 @@
         }
 
         // =====================================================================
-        // 🚀 [초고속 로컬 서치 엔진] 초성 + 알파벳 1글자 분리 검색
+        // 🚀 [초고속 로컬 서치 엔진] 1글자 초성/알파벳 검색
         // =====================================================================
         function handleAutocomplete(query, sectionId) {
             const list = document.getElementById(`autocomplete-${sectionId}`);
             query = query.trim().toLowerCase();
             
-            // ✨ 1글자 이상이면 무조건 검색 수행!
             if (query.length < 1) {
                 list.style.display = 'none';
                 return;
@@ -463,18 +433,16 @@
 
             list.style.display = 'block';
 
-            // 입력값에 자음(ㄱ-ㅎ)만 있고, 완성형 한글(가-힣)이 없는 경우 -> '초성 검색 모드'로 전환
+            // 입력값에 자음(ㄱ-ㅎ)만 있고 완성형 한글이 없으면 초성 검색으로 분기
             const isChosungQuery = /[ㄱ-ㅎ]/.test(query) && !/[가-힣]/.test(query);
 
             const matchedQuotes = localTickerDB.filter(q => {
                 if (isChosungQuery) {
-                    // 사용자가 자음만 쳤을 때는 'cs_n(초성변환된 이름)' 필드에서 검색 (ex. ㅅㅅ -> ㅅㅅㅈㅈ 매칭)
                     return (q.cs_s && q.cs_s.includes(query)) || (q.cs_n && q.cs_n.includes(query));
                 } else {
-                    // 사용자가 알파벳이나 완성된 한글을 쳤을 때는 오리지널 문자열에서 검색 (ex. a -> apple 매칭)
                     return (q.s && q.s.toLowerCase().includes(query)) || (q.n && q.n.toLowerCase().includes(query));
                 }
-            }).slice(0, 8); // 결과는 최대 8개까지만
+            }).slice(0, 8); 
 
             if (matchedQuotes.length > 0) {
                 list.innerHTML = matchedQuotes.map(q => `
