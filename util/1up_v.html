@@ -278,20 +278,20 @@
     </header>
 
     <main id="dashboard">
-        </main>
+        <!-- Sections will be injected here via JS -->
+    </main>
 
     <script>
         const DEFAULT_WATCHLISTS = {
             indicators: { title: '📈 Market', tickers: ['KRW=X', '^KS11', '^KQ11', '^TNX', 'CL=F', 'GC=F', '^IXIC', '^DJI', '^GSPC', 'BTC-USD'] },
             kr: { title: '🇰🇷 KR', tickers: ['005930.KS', '000660.KS', '035420.KS', '005380.KS', '035720.KS'] },            
             us: { title: '🇺🇸 US', tickers: ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'TSLA', 'META'] }
-
         };
 
         const GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbzHIRkgH2Sqc_X0RxxrmKrWWdGyF67IW-S5jNL0mTRZ2vGwKT1rbfDzOveoUSg6cH5k/exec";
         
         // 일관된 Stroke 기반 아이콘
-        const DRAG_ICON = `<svg viewBox="0 0 24 24"><line x1="6" y1="6" x2="18" y2="6"/><line x1="6" y1="10" x2="18" y2="10"/><line x1="6" y1="14" x2="18" y2="14"/><line x1="6" y1="18" x2="18" y2="18"/></svg>`;// 네 줄 아이콘
+        const DRAG_ICON = `<svg viewBox="0 0 24 24"><line x1="6" y1="6" x2="18" y2="6"/><line x1="6" y1="10" x2="18" y2="10"/><line x1="6" y1="14" x2="18" y2="14"/><line x1="6" y1="18" x2="18" y2="18"/></svg>`;
         const TRASH_ICON = `<svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>`;
         const CHEVRON_ICON = `<svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>`;
         const SEARCH_ICON = `<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`;
@@ -309,6 +309,11 @@
         const rowNodes = new Map(); 
         let sortables = []; 
         
+        // 어떤 문자열이 들어와도 안전한 ID를 생성하는 유틸리티 함수
+        function getSafeId(ticker) {
+            return 'id_' + ticker.replace(/[^a-zA-Z0-9]/g, '_');
+        }
+
         function init() {
             if (!state.sectionOrder || state.sectionOrder.length === 0) {
                 state.sectionOrder = Object.keys(state.watchlists);
@@ -381,7 +386,7 @@
                                     </tr>
                                 </thead>
                                 <tbody id="tbody-${sectionId}">
-                                    ${sectionData.tickers.map(ticker => generateRowHTML(ticker, sectionId)).join('')}
+                                    ${sectionData.tickers.map(ticker => generateRowHTML(ticker)).join('')}
                                 </tbody>
                             </table>
                         </div>
@@ -404,31 +409,27 @@
             initDragAndDrop();
         }
 
-        function generateRowHTML(ticker, sectionId) {
-            const safeId = ticker.replace(/\^|=/g, '');
+        function generateRowHTML(ticker) {
+            const sid = getSafeId(ticker);
             
-            let assetHTML = `
-                <span class="symbol" id="name-${ticker}" title="${ticker}"><span class="skeleton sm"></span></span>
-                <span class="name">${ticker}</span>
-            `;
-
             return `
-                <tr id="row-${safeId}" data-ticker="${ticker}">
+                <tr id="row-${sid}" data-ticker="${ticker}">
                     <td class="left-align">
                         <div class="asset-col">
-                            ${assetHTML}
+                            <span class="symbol" id="symbol-${sid}" title="${ticker}">${ticker}</span>
+                            <span class="name" id="name-${sid}"><span class="skeleton sm"></span></span>
                         </div>
                     </td>
-                    <td class="price" id="price-${ticker}"><span class="skeleton"></span></td>
-                    <td id="change-cell-${ticker}">
+                    <td class="price" id="price-${sid}"><span class="skeleton"></span></td>
+                    <td id="change-cell-${sid}">
                         <div class="change-cell">
-                            <div id="change-${ticker}"><span class="skeleton"></span></div>
-                            <div id="pct-${ticker}"><span class="skeleton sm"></span></div>
+                            <div id="change-${sid}"><span class="skeleton"></span></div>
+                            <div id="pct-${sid}"><span class="skeleton sm"></span></div>
                         </div>
                     </td>
-                    <td class="hide-mobile sub-data" id="vol-${ticker}">-</td>
-                    <td class="hide-mobile sub-data" id="cap-${ticker}">-</td>
-                    <td class="hide-mobile sub-data" id="range-${ticker}">-</td>
+                    <td class="hide-mobile sub-data" id="vol-${sid}">-</td>
+                    <td class="hide-mobile sub-data" id="cap-${sid}">-</td>
+                    <td class="hide-mobile sub-data" id="range-${sid}">-</td>
                     <td class="actions-col">
                         <button class="action-icon-btn danger" onclick="removeTicker('${ticker}')" title="Remove">
                             ${TRASH_ICON}
@@ -442,16 +443,17 @@
         }
 
         function cacheRowNodes(ticker) {
-            const safeId = ticker.replace(/\^|=/g, '');
+            const sid = getSafeId(ticker);
             rowNodes.set(ticker, {
-                row: document.getElementById(`row-${safeId}`),
-                name: document.getElementById(`name-${ticker}`), 
-                price: document.getElementById(`price-${ticker}`),
-                change: document.getElementById(`change-${ticker}`),
-                pct: document.getElementById(`pct-${ticker}`),
-                vol: document.getElementById(`vol-${ticker}`),
-                cap: document.getElementById(`cap-${ticker}`),
-                range: document.getElementById(`range-${ticker}`)
+                row: document.getElementById(`row-${sid}`),
+                symbol: document.getElementById(`symbol-${sid}`),
+                name: document.getElementById(`name-${sid}`), 
+                price: document.getElementById(`price-${sid}`),
+                change: document.getElementById(`change-${sid}`),
+                pct: document.getElementById(`pct-${sid}`),
+                vol: document.getElementById(`vol-${sid}`),
+                cap: document.getElementById(`cap-${sid}`),
+                range: document.getElementById(`range-${sid}`)
             });
         }
 
@@ -495,7 +497,6 @@
 
         /** --- ACTIONS --- */
         function toggleSection(e, sectionId) {
-            // 버튼 요소 클릭시엔 섹션 접힘/펼침 방지 (이벤트 버블링 차단 목적)
             if (e.target.closest('.action-icon-btn') && !e.target.closest('.toggle-btn')) return; 
             
             const container = document.getElementById(`section-${sectionId}`);
@@ -510,7 +511,6 @@
             const container = document.getElementById(`section-${sectionId}`);
             const form = container.querySelector('.add-ticker-form');
             
-            // 만약 섹션이 접혀있다면 먼저 펼침
             if (container.classList.contains('collapsed')) {
                 container.classList.remove('collapsed');
                 state.expanded[sectionId] = true;
@@ -546,7 +546,7 @@
                 saveWatchlists();
 
                 const tbody = document.getElementById(`tbody-${sectionId}`);
-                tbody.insertAdjacentHTML('beforeend', generateRowHTML(ticker, sectionId));
+                tbody.insertAdjacentHTML('beforeend', generateRowHTML(ticker));
                 cacheRowNodes(ticker);
 
                 updateDOMWithData([data[0]]);
@@ -567,8 +567,8 @@
             }
             saveWatchlists();
             
-            const safeId = ticker.replace(/\^|=/g, '');
-            const row = document.getElementById(`row-${safeId}`);
+            const sid = getSafeId(ticker);
+            const row = document.getElementById(`row-${sid}`);
             if (row) row.remove();
             rowNodes.delete(ticker);
         }
@@ -591,7 +591,8 @@
             if (symbols.length === 0) return [];
             
             const symbolsStr = symbols.join(',');
-            const targetUrl = `${GAS_PROXY_URL}?symbols=${encodeURIComponent(symbolsStr)}`;
+            // 핵심 수정: API 요청 캐싱 방지 (항상 새로운 데이터를 가져오도록 타임스탬프 추가)
+            const targetUrl = `${GAS_PROXY_URL}?symbols=${encodeURIComponent(symbolsStr)}&t=${Date.now()}`;
 
             try {
                 const response = await fetch(targetUrl);
