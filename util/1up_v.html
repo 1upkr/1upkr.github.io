@@ -194,6 +194,15 @@
         .ac-symbol { font-weight: 600; color: var(--text-primary); font-size: 0.9rem;}
         .ac-name { font-size: 0.75rem; color: var(--text-secondary); max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .ac-exch { font-size: 0.65rem; padding: 0.15rem 0.35rem; background: var(--input-bg); border-radius: 4px; color: var(--text-secondary); font-weight: 500;}
+        
+        /* 로딩 스피너 애니메이션 */
+        .ac-loading { display: flex !important; justify-content: center; align-items: center; padding: 0.8rem !important; color: var(--text-secondary); font-size: 0.85rem; font-weight: 500; cursor: default !important; }
+        .ac-loading::after {
+            content: ''; width: 14px; height: 14px; margin-left: 8px;
+            border: 2px solid var(--border-color); border-top-color: var(--text-secondary);
+            border-radius: 50%; animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
         /* --- Table Styling --- */
         table { width: 100%; border-collapse: collapse; text-align: right; white-space: nowrap; background: var(--card-bg); }
@@ -309,12 +318,13 @@
 
         const rowNodes = new Map(); 
         let sortables = []; 
+        let searchControllers = {}; // 검색 통신 제어기 보관용
         
         function getSafeId(ticker) {
             return 'id_' + ticker.replace(/[^a-zA-Z0-9]/g, '_');
         }
 
-        // 유틸리티: 디바운스
+        // 반응성 향상을 위해 debounce 시간을 300ms -> 200ms 로 단축
         function debounce(func, wait) {
             let timeout;
             return function(...args) {
@@ -423,7 +433,7 @@
                 if(inputEl) {
                     const debouncedSearch = debounce((val) => {
                         handleAutocomplete(val, sectionId);
-                    }, 300);
+                    }, 200); // 200ms로 속도 향상
 
                     inputEl.addEventListener('input', (e) => {
                         const val = e.target.value;
@@ -446,7 +456,7 @@
             initDragAndDrop();
         }
 
-        // --- 자동완성 기능 로직 (Proxy Fallback 적용) ---
+        // --- 자동완성 기능 (성능 최적화 버전) ---
         async function handleAutocomplete(query, sectionId) {
             const list = document.getElementById(`autocomplete-${sectionId}`);
             const inputEl = document.getElementById(`input-${sectionId}`);
@@ -454,48 +464,51 @@
             
             if (query.length < 2) return;
 
+            // 이미 진행중인 이전 검색 요청이 있다면 강제 취소 (불필요한 데이터 낭비 방지)
+            if (searchControllers[sectionId]) {
+                searchControllers[sectionId].abort();
+            }
+            searchControllers[sectionId] = new AbortController();
+            const signal = searchControllers[sectionId].signal;
+
+            // 즉각적인 시각적 피드백 제공 (Searching...)
+            list.innerHTML = `<li class="ac-loading">Searching</li>`;
+            list.style.display = 'block';
+
+            // CORS 실패를 기다리지 않고 바로 raw proxy로 직행하여 1~2초 지연 시간 제거
             const targetUrl = `https://query2.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(query)}&quotesCount=6&newsCount=0`;
-            let data;
+            const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
 
             try {
-                // 1. 직접 호출 시도 (가장 빠르지만 종종 브라우저 정책에 의해 차단됨)
-                const res = await fetch(targetUrl);
-                if (!res.ok) throw new Error('CORS block or Network error');
-                data = await res.json();
-            } catch(err) {
-                // 2. 실패 시 프록시(allorigins)를 통한 우회 호출 시도
-                try {
-                    const fallbackUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
-                    const res = await fetch(fallbackUrl);
-                    const json = await res.json();
-                    data = JSON.parse(json.contents);
-                } catch(fallbackErr) {
-                    console.error("Autocomplete Proxy search error:", fallbackErr);
-                    return;
+                const res = await fetch(proxyUrl, { signal });
+                if (!res.ok) throw new Error('Network error');
+                const data = await res.json();
+
+                // 검색 중 사용자가 다른 곳을 클릭해 포커스를 잃었다면 띄우지 않음
+                if (document.activeElement !== inputEl) return;
+
+                if (data && data.quotes && data.quotes.length > 0) {
+                    list.innerHTML = data.quotes.map(q => {
+                        const name = q.shortname || q.longname || '-';
+                        const exch = q.exchDisp || q.exchange || '';
+                        return `
+                            <li onclick="selectAutocomplete('${q.symbol}', '${sectionId}')">
+                                <div class="ac-info">
+                                    <span class="ac-symbol">${q.symbol}</span>
+                                    <span class="ac-name">${name}</span>
+                                </div>
+                                ${exch ? `<span class="ac-exch">${exch}</span>` : ''}
+                            </li>
+                        `;
+                    }).join('');
+                } else {
+                    list.innerHTML = `<li style="justify-content:center; cursor:default;"><span class="ac-name">No results found</span></li>`;
                 }
-            }
-
-            // 요청을 기다리는 동안 사용자가 다른 곳을 클릭해 포커스를 잃었다면 리스트를 강제로 띄우지 않음
-            if (document.activeElement !== inputEl) return;
-
-            if (data && data.quotes && data.quotes.length > 0) {
-                list.innerHTML = data.quotes.map(q => {
-                    const name = q.shortname || q.longname || '-';
-                    const exch = q.exchDisp || q.exchange || '';
-                    return `
-                        <li onclick="selectAutocomplete('${q.symbol}', '${sectionId}')">
-                            <div class="ac-info">
-                                <span class="ac-symbol">${q.symbol}</span>
-                                <span class="ac-name">${name}</span>
-                            </div>
-                            ${exch ? `<span class="ac-exch">${exch}</span>` : ''}
-                        </li>
-                    `;
-                }).join('');
-                list.style.display = 'block';
-            } else {
-                list.innerHTML = `<li style="justify-content:center; cursor:default;"><span class="ac-name">No results found</span></li>`;
-                list.style.display = 'block';
+            } catch(err) {
+                // 사용자가 타자를 계속 쳐서 이전 요청이 의도적으로 취소된 경우 에러를 무시
+                if (err.name === 'AbortError') return; 
+                console.error("Autocomplete search error:", err);
+                list.innerHTML = `<li style="justify-content:center; cursor:default;"><span class="ac-name error-text">Search failed. Try again.</span></li>`;
             }
         }
 
@@ -556,7 +569,7 @@
             });
         }
 
-        /** --- DRAG AND DROP LOGIC (SortableJS + Mobile Optimized) --- */
+        /** --- DRAG AND DROP LOGIC --- */
         function initDragAndDrop() {
             const dashboard = document.getElementById('dashboard');
             
