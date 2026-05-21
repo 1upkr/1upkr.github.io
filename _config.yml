@@ -26,7 +26,7 @@ header_pages:
   - about.md
   - 404.md
 
-footer: 'root@n3rd:~$ sudo 1up your vibe --force | grep -i © 2026'
+footer: 'root@n3rd:~$ sudo 1up your vibe --force © 2026'
 
 plugins:
   - jekyll-seo-tag
