@@ -120,34 +120,20 @@
             border: 1px solid var(--border-color);
             border-radius: 12px; 
             margin-bottom: 2rem; 
-            /* 드롭다운 메뉴가 잘리지 않도록 overflow: visible 적용 */
-            overflow: visible; 
+            overflow: visible; /* 드롭다운 잘림 방지 */
             box-shadow: var(--shadow-md);
             transition: transform 0.2s, box-shadow 0.2s;
-            /* 라운드 테두리 처리를 위해 자식 요소에 clip 적용 대체 */
         }
-        /* 첫/마지막 요소 라운드 처리 */
         .section-header { border-radius: 12px 12px 0 0; }
         .table-wrapper { border-radius: 0 0 12px 12px; overflow: hidden; }
 
-        /* --- Unified Action Icons (+, Drag, Chevron, Trash) --- */
+        /* --- Unified Action Icons --- */
         .action-icon-btn {
-            background: none; 
-            border: none; 
-            color: var(--text-secondary); 
-            cursor: pointer;
-            padding: 0.4rem; 
-            border-radius: 6px; 
-            display: inline-flex; 
-            align-items: center; 
-            justify-content: center; 
-            transition: all 0.2s ease;
+            background: none; border: none; color: var(--text-secondary); cursor: pointer;
+            padding: 0.4rem; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s ease;
         }
         .action-icon-btn svg { width: 18px; height: 18px; }
-        .action-icon-btn:hover {
-            background-color: var(--hover-bg); 
-            color: var(--text-primary);
-        }
+        .action-icon-btn:hover { background-color: var(--hover-bg); color: var(--text-primary); }
 
         .action-icon-btn.drag-handle { cursor: grab; touch-action: none; opacity: 0.6; }
         .action-icon-btn.drag-handle:active { cursor: grabbing; opacity: 1; }
@@ -164,9 +150,7 @@
             box-shadow: inset 0 0 5px rgba(0,0,0,0.05);
         }
         .sortable-drag {
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-            background-color: var(--card-bg) !important;
-            cursor: grabbing !important;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1); background-color: var(--card-bg) !important; cursor: grabbing !important;
         }
 
         .section-header {
@@ -176,17 +160,15 @@
         }
         .section-header-left { flex: 1; display: flex; align-items: center; cursor: pointer; }
         .section-header h2 { font-size: 1.125rem; font-weight: 600; }
-        
         .section-header-right { display: flex; align-items: center; gap: 0.25rem; }
 
         /* --- Form & Search Style --- */
         .add-ticker-form {
-            display: none; 
-            padding: 0.75rem 1.5rem; gap: 0.75rem;
+            display: none; padding: 0.75rem 1.5rem; gap: 0.75rem;
             border-bottom: 1px solid var(--border-color); background-color: var(--hover-bg); align-items: center;
         }
         .add-ticker-form.active { display: flex; }
-        .search-wrapper { position: relative; flex: 1; max-width: 300px; }
+        .search-wrapper { position: relative; flex: 1; max-width: 300px; z-index: 10; }
         .search-wrapper svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--text-secondary); }
         .add-ticker-form input {
             width: 100%; padding: 0.5rem 0.75rem 0.5rem 2.2rem; border: 1px solid var(--border-color); border-radius: 8px;
@@ -197,30 +179,14 @@
 
         /* --- Autocomplete (자동완성) 스타일 --- */
         .autocomplete-list {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-top: none;
-            border-radius: 0 0 8px 8px;
-            box-shadow: var(--shadow-md);
-            max-height: 250px;
-            overflow-y: auto;
-            z-index: 1000;
-            list-style: none;
-            display: none;
-            margin-top: 2px;
+            position: absolute; top: 100%; left: 0; right: 0;
+            background: var(--card-bg); border: 1px solid var(--border-color); border-top: none;
+            border-radius: 0 0 8px 8px; box-shadow: var(--shadow-md); max-height: 250px; overflow-y: auto;
+            z-index: 1000; list-style: none; display: none; margin-top: 2px;
         }
         .autocomplete-list li {
-            padding: 0.6rem 1rem;
-            border-bottom: 1px solid var(--border-color);
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            text-transform: none; /* 자동완성은 원래 대소문자 유지 */
+            padding: 0.6rem 1rem; border-bottom: 1px solid var(--border-color); cursor: pointer;
+            display: flex; justify-content: space-between; align-items: center; text-transform: none; 
         }
         .autocomplete-list li:last-child { border-bottom: none; }
         .autocomplete-list li:hover { background: var(--hover-bg); }
@@ -229,7 +195,6 @@
         .ac-name { font-size: 0.75rem; color: var(--text-secondary); max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .ac-exch { font-size: 0.65rem; padding: 0.15rem 0.35rem; background: var(--input-bg); border-radius: 4px; color: var(--text-secondary); font-weight: 500;}
 
-
         /* --- Table Styling --- */
         table { width: 100%; border-collapse: collapse; text-align: right; white-space: nowrap; background: var(--card-bg); }
         th, td { padding: 0.875rem 1.5rem; border-bottom: 1px solid var(--border-color); }
@@ -237,7 +202,6 @@
         
         th { color: var(--text-secondary); font-size: 0.75rem; font-weight: 500; text-transform: uppercase; }
         th.left-align, td.left-align { text-align: left; }
-        
         th.actions-col, td.actions-col { width: 36px; padding-right: 0; padding-left: 0.5rem; text-align: center; }
         th.handle-col, td.handle-col { width: 36px; padding-right: 0.5rem; padding-left: 0; text-align: center; }
         
@@ -350,7 +314,7 @@
             return 'id_' + ticker.replace(/[^a-zA-Z0-9]/g, '_');
         }
 
-        // 유틸리티: 디바운스 (연속된 입력을 하나로 묶어 API 과부하 방지)
+        // 유틸리티: 디바운스
         function debounce(func, wait) {
             let timeout;
             return function(...args) {
@@ -370,7 +334,7 @@
             document.getElementById('btn-refresh').addEventListener('click', forceRefresh);
             document.getElementById('btn-reset').addEventListener('click', resetToDefaults);
 
-            // 바탕을 클릭하면 자동완성 목록 닫기
+            // 여백 클릭 시 자동완성 메뉴 닫기
             document.addEventListener('click', (e) => {
                 if (!e.target.closest('.search-wrapper')) {
                     document.querySelectorAll('.autocomplete-list').forEach(el => el.style.display = 'none');
@@ -450,22 +414,29 @@
 
             dashboard.appendChild(fragment);
 
-            // 랜더링 이후 이벤트 바인딩 및 노드 캐싱
             state.sectionOrder.forEach(sectionId => {
                 const sectionData = state.watchlists[sectionId];
                 if (sectionData) sectionData.tickers.forEach(ticker => cacheRowNodes(ticker));
                 
-                // 검색어 자동완성 이벤트 리스너 등록
+                // 검색어 자동완성 이벤트 리스너 (값만 추출하여 안전하게 전달)
                 const inputEl = document.getElementById(`input-${sectionId}`);
                 if(inputEl) {
-                    inputEl.addEventListener('input', debounce(async (e) => {
-                        handleAutocomplete(e.target.value, sectionId);
-                    }, 300));
+                    const debouncedSearch = debounce((val) => {
+                        handleAutocomplete(val, sectionId);
+                    }, 300);
+
+                    inputEl.addEventListener('input', (e) => {
+                        const val = e.target.value;
+                        if (val.trim().length < 2) {
+                            document.getElementById(`autocomplete-${sectionId}`).style.display = 'none';
+                        } else {
+                            debouncedSearch(val);
+                        }
+                    });
                     
-                    // 인풋창 포커스 시 이전 결과가 있으면 다시 보여주기
-                    inputEl.addEventListener('focus', () => {
+                    inputEl.addEventListener('focus', (e) => {
                         const list = document.getElementById(`autocomplete-${sectionId}`);
-                        if(list.children.length > 0 && inputEl.value.trim().length >= 2) {
+                        if(list.children.length > 0 && e.target.value.trim().length >= 2) {
                             list.style.display = 'block';
                         }
                     });
@@ -475,47 +446,59 @@
             initDragAndDrop();
         }
 
-        // --- 자동완성 기능 로직 ---
+        // --- 자동완성 기능 로직 (Proxy Fallback 적용) ---
         async function handleAutocomplete(query, sectionId) {
             const list = document.getElementById(`autocomplete-${sectionId}`);
+            const inputEl = document.getElementById(`input-${sectionId}`);
             query = query.trim();
             
-            if (query.length < 2) {
-                list.style.display = 'none';
-                return;
-            }
+            if (query.length < 2) return;
+
+            const targetUrl = `https://query2.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(query)}&quotesCount=6&newsCount=0`;
+            let data;
 
             try {
-                // 야후 파이낸스 Search API (클라이언트 단 직접 호출)
-                const res = await fetch(`https://query2.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(query)}&quotesCount=6&newsCount=0`);
-                const data = await res.json();
-                
-                if (data && data.quotes && data.quotes.length > 0) {
-                    list.innerHTML = data.quotes.map(q => {
-                        // 옵션, 뮤추얼 펀드 등 불필요한 자산군이 많다면 여기서 필터링 가능 (현재는 모두 표시)
-                        const name = q.shortname || q.longname || '-';
-                        const exch = q.exchDisp || q.exchange || '';
-                        return `
-                            <li onclick="selectAutocomplete('${q.symbol}', '${sectionId}')">
-                                <div class="ac-info">
-                                    <span class="ac-symbol">${q.symbol}</span>
-                                    <span class="ac-name">${name}</span>
-                                </div>
-                                ${exch ? `<span class="ac-exch">${exch}</span>` : ''}
-                            </li>
-                        `;
-                    }).join('');
-                    list.style.display = 'block';
-                } else {
-                    list.innerHTML = `<li style="justify-content:center;"><span class="ac-name">No results found</span></li>`;
-                    list.style.display = 'block';
-                }
+                // 1. 직접 호출 시도 (가장 빠르지만 종종 브라우저 정책에 의해 차단됨)
+                const res = await fetch(targetUrl);
+                if (!res.ok) throw new Error('CORS block or Network error');
+                data = await res.json();
             } catch(err) {
-                console.error("Autocomplete search error:", err);
+                // 2. 실패 시 프록시(allorigins)를 통한 우회 호출 시도
+                try {
+                    const fallbackUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
+                    const res = await fetch(fallbackUrl);
+                    const json = await res.json();
+                    data = JSON.parse(json.contents);
+                } catch(fallbackErr) {
+                    console.error("Autocomplete Proxy search error:", fallbackErr);
+                    return;
+                }
+            }
+
+            // 요청을 기다리는 동안 사용자가 다른 곳을 클릭해 포커스를 잃었다면 리스트를 강제로 띄우지 않음
+            if (document.activeElement !== inputEl) return;
+
+            if (data && data.quotes && data.quotes.length > 0) {
+                list.innerHTML = data.quotes.map(q => {
+                    const name = q.shortname || q.longname || '-';
+                    const exch = q.exchDisp || q.exchange || '';
+                    return `
+                        <li onclick="selectAutocomplete('${q.symbol}', '${sectionId}')">
+                            <div class="ac-info">
+                                <span class="ac-symbol">${q.symbol}</span>
+                                <span class="ac-name">${name}</span>
+                            </div>
+                            ${exch ? `<span class="ac-exch">${exch}</span>` : ''}
+                        </li>
+                    `;
+                }).join('');
+                list.style.display = 'block';
+            } else {
+                list.innerHTML = `<li style="justify-content:center; cursor:default;"><span class="ac-name">No results found</span></li>`;
+                list.style.display = 'block';
             }
         }
 
-        // 검색 결과 클릭 시 처리
         window.selectAutocomplete = function(symbol, sectionId) {
             const input = document.getElementById(`input-${sectionId}`);
             const list = document.getElementById(`autocomplete-${sectionId}`);
@@ -523,9 +506,7 @@
             
             input.value = symbol;
             list.style.display = 'none';
-            
-            // 입력창에 값을 채우고 자동으로 Add 버튼 클릭 트리거
-            btn.click();
+            btn.click(); // 자동 Add
         };
 
         function generateRowHTML(ticker) {
@@ -651,7 +632,7 @@
             
             if (!ticker || state.watchlists[sectionId].tickers.includes(ticker)) {
                 inputEl.value = ''; 
-                listEl.style.display = 'none'; // 제출 시 목록 숨김
+                listEl.style.display = 'none';
                 return;
             }
 
