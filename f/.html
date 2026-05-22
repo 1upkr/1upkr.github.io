@@ -318,7 +318,7 @@ layout: null
 
         async function initTickerDB() {
             try {
-                const response = await fetch('./tickers.json');
+                const response = await fetch('./f/tickers.json');
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
