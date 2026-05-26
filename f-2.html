@@ -1,0 +1,1080 @@
+---
+layout: null
+---
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ꜰ ɪ ɴ ᴀ ɴ ᴄ ᴇ : ¹ ᴜ ᴘ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="https://1up.kr/assets/pacman-svg.svg">
+
+      <meta property="og:title" content="📺 ꜰ ɪ ɴ ᴀ ɴ ᴄ ᴇ : ¹ ᴜ ᴘ " />
+      <meta property="og:description" content="ʙᴜɪʟᴅ ʏᴏᴜʀ ᴏᴡɴ ꜱᴛᴏᴄᴋ ᴅᴀꜱʜʙᴏᴀʀᴅ. ꜱᴇᴛ ᴄᴜꜱᴛᴏᴍ, ᴀɴᴅ ꜱᴛᴀʏ ᴀʜᴇᴀᴅ ᴏꜰ ᴛʜᴇ ᴍᴀʀᴋᴇᴛ ᴡɪᴛʜ 1ᴜᴘ." />
+      <meta property="og:image" content="https://1up.kr/assets/finance_1up.png" />
+      <meta property="og:url" content="https://1up.kr/f" />
+      <meta property="og:type" content="website" />
+      <meta property="og:image:width" content="1200" />
+      <meta property="og:image:height" content="630" />
+    
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+
+    <style>
+        :root {
+            /* Light Theme */
+            --bg-color: #f3f4f8;
+            --text-primary: #18191a;
+            --text-secondary: #5f6368;
+            --card-bg: #ffffff;
+            --border-color: #e2e6eb;
+            --green: #00873c;
+            --green-bg: #e6f4ea;
+            --red: #eb0f29;
+            --red-bg: #fce8ea;
+            --header-bg: #ffffff;
+            --hover-bg: #f7f9fa;
+            --input-bg: #f0f3f6;
+            --btn-bg: #ffffff;
+            --btn-text: #18191a;
+            --flash-green: rgba(0, 135, 60, 0.2);
+            --flash-red: rgba(235, 15, 41, 0.2);
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+            --drag-bg: rgba(0,0,0,0.02);
+            --modal-overlay: rgba(0, 0, 0, 0.4);
+        }
+
+        [data-theme="dark"] {
+            /* Dark Theme */
+            --bg-color: #121212;
+            --text-primary: #e3e3e3;
+            --text-secondary: #a0a4a8;
+            --card-bg: #1e1e1e;
+            --border-color: #2b2b2b;
+            --green: #00c853;
+            --green-bg: rgba(0, 200, 83, 0.15);
+            --red: #ff453a;
+            --red-bg: rgba(255, 69, 58, 0.15);
+            --header-bg: #1e1e1e;
+            --hover-bg: #2a2a2a;
+            --input-bg: #2b2b2b;
+            --btn-bg: #1e1e1e;
+            --btn-text: #e3e3e3;
+            --flash-green: rgba(0, 200, 83, 0.3);
+            --flash-red: rgba(255, 69, 58, 0.3);
+            --drag-bg: rgba(255,255,255,0.05);
+            --modal-overlay: rgba(0, 0, 0, 0.6);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            transition: background-color 0.2s, color 0.2s;
+            -webkit-font-smoothing: antialiased;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        svg { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+        header {
+            background-color: var(--header-bg); border-bottom: 1px solid var(--border-color);
+            padding: 0.875rem 5%; display: flex; justify-content: space-between; align-items: center;
+            position: sticky; top: 0; z-index: 100; box-shadow: var(--shadow-sm);
+        }
+        .header-left h1 { font-size: 1.15rem; font-weight: 900; display: flex; align-items: center; gap: 0.5rem; letter-spacing: -0.02em;} 
+        .header-controls { display: flex; align-items: center; gap: 1.5rem; font-size: 0.875rem; font-weight: 500; }
+        .timer { color: var(--text-secondary); font-variant-numeric: tabular-nums; display: flex; align-items: center; gap: 0.4rem; font-size: 0.7em; opacity: 0.7; }
+        .action-btns { display: flex; flex-direction: row; align-items: center; gap: 0.5rem; }
+
+        .icon-btn {
+            background: none; border: none; color: var(--text-secondary); cursor: pointer;
+            padding: 0.5rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+        }
+        .icon-btn:hover { background-color: var(--hover-bg); color: var(--text-primary); }
+        .icon-btn svg { width: 18px; height: 18px; }
+
+        /* 설정 드롭다운 관련 스타일 */
+        .settings-wrapper { position: relative; }
+        .settings-dropdown {
+            position: absolute; top: calc(100% + 10px); right: 0; 
+            background: var(--card-bg); border: 1px solid var(--border-color); 
+            border-radius: 12px; box-shadow: var(--shadow-md); 
+            min-width: 200px; z-index: 200;
+            opacity: 0; visibility: hidden; transform: translateY(-10px);
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); 
+            display: flex; flex-direction: column; padding: 0.5rem;
+        }
+        .settings-dropdown.active { opacity: 1; visibility: visible; transform: translateY(0); }
+        .dropdown-item {
+            padding: 0.75rem 1rem; display: flex; align-items: center; gap: 0.75rem;
+            cursor: pointer; color: var(--text-primary); font-size: 0.875rem; font-weight: 500;
+            background: none; border: none; width: 100%; text-align: left; border-radius: 8px;
+            transition: background-color 0.2s;
+        }
+        .dropdown-item:hover { background-color: var(--hover-bg); }
+        .dropdown-item svg { width: 16px; height: 16px; color: var(--text-secondary); }
+        .dropdown-divider { height: 1px; background: var(--border-color); margin: 0.5rem 0; }
+        
+        .theme-icon-sun { display: none; } .theme-icon-moon { display: block; }
+        [data-theme="dark"] .theme-icon-sun { display: block; } [data-theme="dark"] .theme-icon-moon { display: none; }
+
+        main { padding: 2rem 5%; max-width: 1400px; margin: 0 auto; flex: 1; width: 100%; }
+
+        .section-container {
+            background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; 
+            margin-bottom: 2rem; overflow: visible; box-shadow: var(--shadow-md); transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .section-header { border-radius: 12px 12px 0 0; }
+        .table-wrapper { border-radius: 0 0 12px 12px; overflow: hidden; }
+
+        .action-icon-btn {
+            background: none; border: none; color: var(--text-secondary); cursor: pointer;
+            padding: 0.4rem; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s ease;
+        }
+        .action-icon-btn svg { width: 18px; height: 18px; }
+        .action-icon-btn:hover { background-color: var(--hover-bg); color: var(--text-primary); }
+        .action-icon-btn.drag-handle { cursor: grab; touch-action: none; opacity: 0.6; }
+        .action-icon-btn.drag-handle:active { cursor: grabbing; opacity: 1; }
+        .action-icon-btn.drag-handle:hover { opacity: 1; }
+        .action-icon-btn.danger:hover { color: var(--red); background-color: var(--red-bg); }
+        .action-icon-btn.toggle-btn svg { transition: transform 0.3s ease; }
+        .collapsed .action-icon-btn.toggle-btn svg { transform: rotate(-180deg); }
+        .collapsed .section-body { display: none; }
+
+        /* 편집 모드가 아닐 때 삭제 컬럼 자체를 숨김 처리하여 공간 제거 */
+        .section-container:not(.edit-mode) th.actions-col,
+        .section-container:not(.edit-mode) td.actions-col {
+            display: none;
+        }
+
+        /* 편집 모드일 때 삭제 컬럼 표시 */
+        .section-container.edit-mode th.actions-col,
+        .section-container.edit-mode td.actions-col {
+            display: table-cell;
+        }
+
+        .section-container.edit-mode .actions-col .action-icon-btn.danger {
+            animation: fadeIn 0.2s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .sortable-ghost { opacity: 0.6; background-color: var(--drag-bg) !important; box-shadow: inset 0 0 5px rgba(0,0,0,0.05); }
+        .sortable-drag { box-shadow: 0 10px 20px rgba(0,0,0,0.1); background-color: var(--card-bg) !important; cursor: grabbing !important; }
+
+        .section-header {
+            padding: 1.25rem 1.5rem; display: flex; justify-content: space-between;
+            align-items: center; border-bottom: 1px solid var(--border-color); user-select: none;
+            background-color: var(--card-bg);
+        }
+        .section-header-left { flex: 1; display: flex; align-items: center; cursor: pointer; }
+        .section-header h2 { font-size: 1.125rem; font-weight: 600; }
+        .section-header-right { display: flex; align-items: center; gap: 0.25rem; }
+
+        .add-ticker-form {
+            display: none; padding: 0.75rem 1.5rem; gap: 0.75rem;
+            border-bottom: 1px solid var(--border-color); background-color: var(--hover-bg); align-items: center;
+        }
+        .add-ticker-form.active { display: flex; }
+        .search-wrapper { position: relative; flex: 1; max-width: 300px; z-index: 10; }
+        .search-wrapper svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--text-secondary); }
+        .add-ticker-form input {
+            width: 100%; padding: 0.5rem 0.75rem 0.5rem 2.2rem; border: 1px solid var(--border-color); border-radius: 8px;
+            background-color: var(--card-bg); color: var(--text-primary); font-size: 0.875rem; font-weight: 500; text-transform: uppercase; height: 38px;
+        }
+        .add-ticker-form input:focus { outline: none; border-color: #0056d2; }
+        
+        .add-ticker-form button { 
+            background-color: var(--btn-bg); 
+            color: var(--btn-text); 
+            border: 1.5px solid var(--text-secondary); 
+            border-radius: 20px;
+            cursor: pointer; 
+            font-size: 0.875rem; 
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            padding: 0 1.25rem;
+            height: 38px;
+            min-width: 155px;
+            transition: all 0.2s ease;
+        }
+        .add-ticker-form button:hover:not(:disabled) {
+            border-color: var(--text-primary);
+            background-color: var(--input-bg);
+        }
+        .add-ticker-form button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            background-color: var(--btn-bg);
+            border-color: var(--text-secondary);
+        }
+        .add-ticker-form button svg { width: 16px; height: 16px; stroke-width: 2.5; }
+
+        .autocomplete-list {
+            position: absolute; top: 100%; left: 0; right: 0;
+            background: var(--card-bg); border: 1px solid var(--border-color); border-top: none;
+            border-radius: 0 0 8px 8px; box-shadow: var(--shadow-md); max-height: 280px; overflow-y: auto;
+            z-index: 1000; list-style: none; display: none; margin-top: 2px;
+        }
+        .autocomplete-list li {
+            padding: 0.6rem 1rem; border-bottom: 1px solid var(--border-color); cursor: pointer;
+            display: flex; justify-content: space-between; align-items: center; text-transform: none; 
+        }
+        .autocomplete-list li:last-child { border-bottom: none; }
+        .autocomplete-list li:hover { background: var(--hover-bg); }
+        .ac-info { display: flex; flex-direction: column; gap: 0.1rem; }
+        .ac-symbol { font-weight: 600; color: var(--text-primary); font-size: 0.9rem;}
+        .ac-name { font-size: 0.75rem; color: var(--text-secondary); max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .ac-exch { font-size: 0.65rem; padding: 0.15rem 0.35rem; background: var(--input-bg); border-radius: 4px; color: var(--text-secondary); font-weight: 500;}
+
+        table { width: 100%; border-collapse: collapse; text-align: right; white-space: nowrap; background: var(--card-bg); }
+        th, td { padding: 0.875rem 1.5rem; border-bottom: 1px solid var(--border-color); }
+        tr:last-child td { border-bottom: none; }
+        th { color: var(--text-secondary); font-size: 0.75rem; font-weight: 500; text-transform: uppercase; }
+        th.left-align, td.left-align { text-align: left; }
+        th.actions-col, td.actions-col { width: 36px; padding-right: 0; padding-left: 0.5rem; text-align: center; }
+        /* 드래그 핸들 너비 확장 */
+        th.handle-col, td.handle-col { width: 48px; padding-right: 0.75rem; padding-left: 0; text-align: center; } 
+        tbody tr { transition: background-color 0.15s; }
+        tbody tr:hover { background-color: var(--hover-bg); }
+
+        .asset-col { display: flex; flex-direction: column; gap: 0.1rem; max-width: 200px; }
+        .symbol { font-weight: 600; font-size: 0.95rem; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .name { color: var(--text-secondary); font-size: 0.75rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        
+        .price { font-weight: 600; font-size: 1.05rem; font-variant-numeric: tabular-nums; color: var(--text-primary); }
+        
+        /* ---------------- 추가된 장외 거래(Pre/Post) 데이터 스타일 ---------------- */
+        .extended-price { 
+            font-size: 0.75rem; 
+            color: var(--text-secondary); 
+            margin-top: 0.2rem; 
+            font-weight: 500; 
+            font-variant-numeric: tabular-nums;
+        }
+        .extended-price .ext-label { font-size: 0.65rem; padding: 0.1rem 0.2rem; background: var(--input-bg); border-radius: 3px; margin-right: 0.2rem; }
+        .extended-price .up { color: var(--green); }
+        .extended-price .down { color: var(--red); }
+        /* -------------------------------------------------------------------------- */
+
+        .change-cell { display: flex; flex-direction: column; align-items: flex-end; font-variant-numeric: tabular-nums; font-weight: 500; font-size: 0.95rem; }
+        .up { color: var(--green); } .down { color: var(--red); }
+        .badge { display: inline-flex; align-items: center; padding: 0.2rem 0.4rem; border-radius: 4px; font-weight: 600; font-size: 0.8rem; margin-top: 0.1rem; }
+        .badge.up { background-color: var(--green-bg); color: var(--green); }
+        .badge.down { background-color: var(--red-bg); color: var(--red); }
+        .sub-data { color: var(--text-primary); font-weight: 500; font-variant-numeric: tabular-nums; }
+        .arrow { font-size: 0.7rem; margin-right: 0.2rem; stroke-width: 3; }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: var(--modal-overlay);
+            backdrop-filter: blur(2px);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1000; opacity: 0; visibility: hidden;
+            transition: opacity 0.2s, visibility 0.2s;
+        }
+        .modal-overlay.active {
+            opacity: 1; visibility: visible;
+        }
+        .modal-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.75rem;
+            width: 90%; max-width: 340px;
+            box-shadow: var(--shadow-md);
+            text-align: center;
+            transform: translateY(20px);
+            transition: transform 0.2s;
+        }
+        .modal-overlay.active .modal-card {
+            transform: translateY(0);
+        }
+        .modal-title {
+            font-size: 1.125rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;
+        }
+        .modal-desc {
+            font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1.5rem; line-height: 1.4;
+        }
+        .modal-desc span { color: var(--text-primary); font-weight: 700; }
+        .modal-actions {
+            display: flex; gap: 0.75rem; justify-content: center;
+        }
+        .modal-btn {
+            flex: 1; padding: 0.6rem 0; border-radius: 8px; font-weight: 600; font-size: 0.875rem; 
+            cursor: pointer; transition: all 0.2s ease;
+        }
+        .modal-btn.cancel {
+            background-color: transparent; color: var(--text-primary); border: 1px solid var(--border-color);
+        }
+        .modal-btn.cancel:hover { background-color: var(--hover-bg); }
+        .modal-btn.confirm {
+            background-color: var(--red); color: #fff; border: 1px solid var(--red);
+        }
+        .modal-btn.confirm:hover { filter: brightness(1.1); }
+
+        @keyframes flashGreen { 0% { background-color: var(--flash-green); } 100% { background-color: transparent; } }
+        @keyframes flashRed { 0% { background-color: var(--flash-red); } 100% { background-color: transparent; } }
+        .flash-up { animation: flashGreen 1s ease-out; } .flash-down { animation: flashRed 1s ease-out; }
+
+        .skeleton { background: linear-gradient(90deg, var(--border-color) 25%, var(--hover-bg) 50%, var(--border-color) 75%); background-size: 200% 100%; animation: skeletonLoading 1.5s infinite; border-radius: 4px; height: 1rem; width: 100%; display: inline-block; }
+        .skeleton.sm { height: 0.7rem; width: 60%; }
+        @keyframes skeletonLoading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        .error-text { color: var(--red); font-size: 0.75rem; font-weight: 600; white-space: pre-wrap; line-height: 1.2; }
+
+        footer {
+            text-align: right;
+            padding: 1.5rem 5%;
+            font-family: 'Courier New', Courier, monospace;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            opacity: 0.8;
+            margin-top: auto; 
+        }
+
+        @media (max-width: 768px) {
+            .hide-mobile { display: none; }
+            header { position: static; flex-direction: column; gap: 1rem; padding: 1rem; }
+            .header-controls { width: 100%; justify-content: space-between; }
+            main { padding: 1rem 3%; }
+            .section-header { padding: 1rem; }
+            th, td { padding: 0.75rem 0.5rem; font-size: 0.85rem; }
+            th.handle-col, td.handle-col { width: 44px; padding-left: 0; padding-right: 0.25rem; }
+            th.actions-col, td.actions-col { width: 32px; padding-right: 0; padding-left: 0; }
+            .asset-col { max-width: 110px; }
+            .symbol { font-size: 0.85rem; }
+            .price { font-size: 0.95rem; }
+            .change-cell { font-size: 0.85rem; }
+            .badge { padding: 0.15rem 0.3rem; font-size: 0.7rem; }
+            .search-wrapper { max-width: 100%; }
+            .add-ticker-form { flex-direction: column; align-items: stretch; padding: 0.75rem 1rem; }
+            .add-ticker-form button { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-left">
+            <h1>F I N A N C E : ¹ U P</h1>
+        </div>
+        <div class="header-controls">
+            <div class="timer">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <span id="countdown">60</span>s
+            </div>
+            <div class="action-btns">
+                <button id="btn-refresh" class="icon-btn" title="Force Refresh">
+                    <svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+                </button>
+                <div class="settings-wrapper">
+                    <button id="btn-settings-toggle" class="icon-btn" title="Settings" onclick="toggleSettingsMenu()">
+                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                    </button>
+                    <div class="settings-dropdown" id="settings-dropdown">
+                        <button class="dropdown-item" onclick="exportSettings()">
+                            <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            Export Config
+                        </button>
+                        <button class="dropdown-item" onclick="triggerImport()">
+                            <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                            Import Config
+                        </button>
+                        <div class="dropdown-divider"></div>
+                        <button class="dropdown-item" onclick="resetToDefaults()">
+                            <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
+                            Reset Everything
+                        </button>
+                        <button class="dropdown-item" onclick="toggleThemeDropdown()">
+                            <svg class="theme-icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="6.34" y2="6.34"/><line x1="17.66" y1="17.66" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="6.34" y2="17.66"/><line x1="17.66" y1="6.34" x2="19.78" y2="4.22"/></svg>
+                            <svg class="theme-icon-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                            Switch Theme
+                        </button>
+                        <div class="dropdown-divider"></div>
+                        <button class="dropdown-item" onclick="openAboutModal()">
+                            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                            Credits
+                        </button>
+                    </div>
+                </div>
+                <input type="file" id="import-file" accept=".json" style="display:none" onchange="importSettings(event)">
+            </div>
+        </div>
+    </header>
+
+    <main id="dashboard"></main>
+
+    <footer>
+        {{ site.footer }}
+    </footer>
+
+    <div class="modal-overlay" id="delete-modal">
+        <div class="modal-card">
+            <div class="modal-title">Drop Stock</div>
+            <div class="modal-desc">Drop <span id="delete-target-ticker"></span> from your list?</div>
+            <div class="modal-actions">
+                <button class="modal-btn cancel" onclick="closeDeleteModal()">Keep</button>
+                <button class="modal-btn confirm" id="confirm-delete-btn">Drop</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="about-modal">
+        <div class="modal-card">
+            <div class="modal-title">Credits</div>
+            <div class="modal-desc" style="text-align: left; padding: 1rem 0;">
+                <div style="font-weight: 700; font-size: 1.1rem; color: var(--text-primary); margin-bottom: 0.5rem;">F I N A N C E : ¹ U P</div>
+                <div style="margin-bottom: 0.3rem;"><span style="font-weight: 500;">v1.2.0</span></div>
+                <div><span>N3RD</span></div>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn cancel" onclick="closeAboutModal()" style="width: 100%;">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const DEFAULT_WATCHLISTS = {
+            indicators: { title: '📈 Market', tickers: ['KRW=X', '^KS11', '^KQ11', '^IXIC', '^DJI', '^GSPC', 'BTC-USD'] },
+            kr: { title: '🇰🇷 KR', tickers: ['005930.KS', '000660.KS', '373220.KS', '005380.KS', '035420.KS'] },            
+            us: { title: '🇺🇸 US', tickers: ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'TSLA', 'META'] }
+        };
+
+        const GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbzHIRkgH2Sqc_X0RxxrmKrWWdGyF67IW-S5jNL0mTRZ2vGwKT1rbfDzOveoUSg6cH5k/exec";
+
+        const CHO_HANGUL = [
+            'ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 
+            'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'
+        ];
+        
+        function getChosung(str) {
+            let result = '';
+            for (let i = 0; i < str.length; i++) {
+                let code = str.charCodeAt(i) - 44032; 
+                if (code > -1 && code < 11172) {
+                    result += CHO_HANGUL[Math.floor(code / 588)];
+                } else {
+                    result += str.charAt(i); 
+                }
+            }
+            return result;
+        }
+
+        let localTickerDB = [];
+
+        function processTickerDB(data) {
+            return data.map(q => ({
+                ...q,
+                cs_s: getChosung(q.s || '').toLowerCase(),
+                cs_n: getChosung(q.n || '').toLowerCase()
+            }));
+        }
+
+        async function initTickerDB() {
+            try {
+                const response = await fetch('./f/tickers.json');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const rawData = await response.json();
+                localTickerDB = processTickerDB(rawData);
+                console.log(`성공적으로 ${localTickerDB.length}개의 티커 데이터를 불러왔습니다.`);
+            } catch (error) {
+                console.error("티커 DB 로드 실패:", error);
+                localTickerDB = processTickerDB([
+                    { s: "AAPL", n: "Apple Inc.", e: "NASDAQ" },
+                    { s: "005930.KS", n: "삼성전자", e: "KOSPI" }
+                ]);
+            }
+        }
+
+        const DRAG_ICON = `<svg viewBox="0 0 24 24"><line x1="6" y1="6" x2="18" y2="6"/><line x1="6" y1="10" x2="18" y2="10"/><line x1="6" y1="14" x2="18" y2="14"/><line x1="6" y1="18" x2="18" y2="18"/></svg>`;
+        const TRASH_ICON = `<svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>`;
+        const CHEVRON_ICON = `<svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>`;
+        const SEARCH_ICON = `<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`;
+        const PLUS_ICON = `<svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
+
+        let state = {
+            watchlists: JSON.parse(localStorage.getItem('marketdash_watchlists')) || JSON.parse(JSON.stringify(DEFAULT_WATCHLISTS)),
+            sectionOrder: JSON.parse(localStorage.getItem('marketdash_sectionOrder')) || ['indicators', 'kr', 'us'],
+            expanded: JSON.parse(localStorage.getItem('marketdash_expanded')) || { indicators: true, kr: true, us: true },
+            theme: localStorage.getItem('marketdash_theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'),
+            countdown: 60,
+            intervalId: null
+        };
+
+        const rowNodes = new Map(); let sortables = []; 
+        function getSafeId(ticker) { return 'id_' + ticker.replace(/[^a-zA-Z0-9]/g, '_'); }
+
+        async function init() {
+            if (!state.sectionOrder || state.sectionOrder.length === 0) {
+                state.sectionOrder = Object.keys(state.watchlists);
+            }
+
+            await initTickerDB(); 
+
+            applyTheme(); renderLayout(); startTimer(); fetchData(); 
+            
+            document.getElementById('btn-refresh').addEventListener('click', forceRefresh);
+
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.search-wrapper')) {
+                    document.querySelectorAll('.autocomplete-list').forEach(el => el.style.display = 'none');
+                }
+                if (!e.target.closest('.settings-wrapper')) {
+                    document.getElementById('settings-dropdown').classList.remove('active');
+                }
+            });
+        }
+
+        /* 드롭다운 설정 메뉴 제어 */
+        function toggleSettingsMenu() {
+            document.getElementById('settings-dropdown').classList.toggle('active');
+        }
+
+        /* 설정값 내보내기 */
+        function exportSettings() {
+            const data = {
+                watchlists: state.watchlists,
+                sectionOrder: state.sectionOrder,
+                expanded: state.expanded,
+                theme: state.theme
+            };
+            const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `1up_finance_settings_${new Date().toISOString().slice(0,10)}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            toggleSettingsMenu();
+        }
+
+        /* 설정값 가져오기 트리거 */
+        function triggerImport() {
+            document.getElementById('import-file').click();
+            toggleSettingsMenu();
+        }
+
+        /* 설정값 복원 수행 */
+        function importSettings(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (data.watchlists && data.sectionOrder) {
+                        localStorage.setItem('marketdash_watchlists', JSON.stringify(data.watchlists));
+                        localStorage.setItem('marketdash_sectionOrder', JSON.stringify(data.sectionOrder));
+                        if(data.expanded) localStorage.setItem('marketdash_expanded', JSON.stringify(data.expanded));
+                        if(data.theme) localStorage.setItem('marketdash_theme', data.theme);
+                        
+                        alert('설정이 성공적으로 복원되었습니다.');
+                        location.reload(); 
+                    } else {
+                        alert('유효하지 않은 설정 파일입니다.');
+                    }
+                } catch (err) {
+                    alert('파일을 읽는 중 오류가 발생했습니다.');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = ''; 
+        }
+
+        function applyTheme() { document.documentElement.setAttribute('data-theme', state.theme); }
+        function toggleThemeDropdown() {
+            state.theme = state.theme === 'dark' ? 'light' : 'dark';
+            localStorage.setItem('marketdash_theme', state.theme); applyTheme();
+            toggleSettingsMenu();
+        }
+
+        function renderLayout() {
+            const dashboard = document.getElementById('dashboard');
+            dashboard.innerHTML = ''; rowNodes.clear();
+
+            sortables.forEach(s => s.destroy()); sortables = [];
+            const fragment = document.createDocumentFragment();
+
+            state.sectionOrder.forEach(sectionId => {
+                const sectionData = state.watchlists[sectionId];
+                if (!sectionData) return;
+
+                const isExpanded = state.expanded[sectionId];
+                const sectionContainer = document.createElement('div');
+                sectionContainer.className = `section-container ${isExpanded ? '' : 'collapsed'}`;
+                sectionContainer.id = `section-${sectionId}`;
+                sectionContainer.dataset.id = sectionId;
+
+                sectionContainer.innerHTML = `
+                    <div class="section-header">
+                        <div class="section-header-left" onclick="toggleSection(event, '${sectionId}')">
+                            <h2>${sectionData.title}</h2>
+                        </div>
+                        <div class="section-header-right">
+                            <button class="action-icon-btn btn-add-symbol" onclick="toggleAddForm(event, '${sectionId}')">${PLUS_ICON}</button>
+                            <div class="action-icon-btn drag-handle">${DRAG_ICON}</div>
+                            <button class="action-icon-btn toggle-btn" onclick="toggleSection(event, '${sectionId}')">${CHEVRON_ICON}</button>
+                        </div>
+                    </div>
+                    <div class="section-body">
+                        <form class="add-ticker-form" onsubmit="handleAddTicker(event, '${sectionId}')">
+                            <div class="search-wrapper">
+                                ${SEARCH_ICON}
+                                <input type="text" id="input-${sectionId}" placeholder="Search Ticker or Company" autocomplete="off">
+                                <ul class="autocomplete-list" id="autocomplete-${sectionId}"></ul>
+                            </div>
+                            <button type="submit" id="btn-add-${sectionId}">
+                                ${PLUS_ICON}<span>Add tickers</span>
+                            </button>
+                        </form>
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th class="left-align">Symbol</th>
+                                        <th>Price</th>
+                                        <th>Change</th>
+                                        <th class="hide-mobile">Volume</th>
+                                        <th class="hide-mobile">Market Cap</th>
+                                        <th class="hide-mobile">52W Range</th>
+                                        <th class="actions-col"></th>
+                                        <th class="handle-col"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbody-${sectionId}">
+                                    ${sectionData.tickers.map(ticker => generateRowHTML(ticker)).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+                fragment.appendChild(sectionContainer);
+            });
+
+            dashboard.appendChild(fragment);
+
+            state.sectionOrder.forEach(sectionId => {
+                const sectionData = state.watchlists[sectionId];
+                if (sectionData) sectionData.tickers.forEach(ticker => cacheRowNodes(ticker));
+                
+                const inputEl = document.getElementById(`input-${sectionId}`);
+                if(inputEl) {
+                    inputEl.addEventListener('input', (e) => {
+                        handleAutocomplete(e.target.value, sectionId);
+                    });
+                    
+                    inputEl.addEventListener('focus', (e) => {
+                        handleAutocomplete(e.target.value, sectionId);
+                    });
+                }
+            });
+
+            initDragAndDrop();
+        }
+
+        function handleAutocomplete(query, sectionId) {
+            const list = document.getElementById(`autocomplete-${sectionId}`);
+            query = query.trim().toLowerCase();
+            
+            if (query.length < 1) {
+                list.style.display = 'none';
+                return;
+            }
+
+            list.style.display = 'block';
+
+            const isChosungQuery = /[ㄱ-ㅎ]/.test(query) && !/[가-힣]/.test(query);
+
+            const matchedQuotes = localTickerDB.filter(q => {
+                if (isChosungQuery) {
+                    return (q.cs_s && q.cs_s.includes(query)) || (q.cs_n && q.cs_n.includes(query));
+                } else {
+                    return (q.s && q.s.toLowerCase().includes(query)) || (q.n && q.n.toLowerCase().includes(query));
+                }
+            }).slice(0, 8); 
+
+            if (matchedQuotes.length > 0) {
+                list.innerHTML = matchedQuotes.map(q => `
+                    <li onclick="selectAutocomplete('${q.s}', '${sectionId}')">
+                        <div class="ac-info">
+                            <span class="ac-symbol">${q.s}</span>
+                            <span class="ac-name">${q.n}</span>
+                        </div>
+                        <span class="ac-exch">${q.e}</span>
+                    </li>
+                `).join('');
+            } else {
+                list.innerHTML = `<li style="justify-content:center; cursor:default;"><span class="ac-name">Enter a Yahoo Finance ticker</span></li>`;
+            }
+        }
+
+        window.selectAutocomplete = function(symbol, sectionId) {
+            const input = document.getElementById(`input-${sectionId}`);
+            const list = document.getElementById(`autocomplete-${sectionId}`);
+            const btn = document.getElementById(`btn-add-${sectionId}`);
+            
+            input.value = symbol;
+            list.style.display = 'none';
+            btn.click(); 
+        };
+
+        function generateRowHTML(ticker) {
+            const sid = getSafeId(ticker);
+            return `
+                <tr id="row-${sid}" data-ticker="${ticker}">
+                    <td class="left-align">
+                        <div class="asset-col">
+                            <span class="symbol" id="symbol-${sid}" title="${ticker}">${ticker}</span>
+                            <span class="name" id="name-${sid}"><span class="skeleton sm"></span></span>
+                        </div>
+                    </td>
+                    
+                    <!-- 현재가 및 장외 가격(Pre/Post) 영역 -->
+                    <td id="price-cell-${sid}">
+                        <div class="price" id="price-${sid}"><span class="skeleton"></span></div>
+                        <div class="extended-price" id="ext-price-${sid}"></div>
+                    </td>
+                    
+                    <td id="change-cell-${sid}">
+                        <div class="change-cell">
+                            <div id="change-${sid}"><span class="skeleton"></span></div>
+                            <div id="pct-${sid}"><span class="skeleton sm"></span></div>
+                        </div>
+                    </td>
+                    <td class="hide-mobile sub-data" id="vol-${sid}">-</td>
+                    <td class="hide-mobile sub-data" id="cap-${sid}">-</td>
+                    <td class="hide-mobile sub-data" id="range-${sid}">-</td>
+                    <td class="actions-col">
+                        <button class="action-icon-btn danger" onclick="confirmRemoveTicker('${ticker}')">${TRASH_ICON}</button>
+                    </td>
+                    <td class="handle-col"><div class="action-icon-btn drag-handle">${DRAG_ICON}</div></td>
+                </tr>
+            `;
+        }
+
+        function cacheRowNodes(ticker) {
+            const sid = getSafeId(ticker);
+            rowNodes.set(ticker, {
+                row: document.getElementById(`row-${sid}`),
+                symbol: document.getElementById(`symbol-${sid}`),
+                name: document.getElementById(`name-${sid}`), 
+                price: document.getElementById(`price-${sid}`),
+                extPrice: document.getElementById(`ext-price-${sid}`), // 새로 추가된 장외 가격 캐싱
+                change: document.getElementById(`change-${sid}`),
+                pct: document.getElementById(`pct-${sid}`),
+                vol: document.getElementById(`vol-${sid}`),
+                cap: document.getElementById(`cap-${sid}`),
+                range: document.getElementById(`range-${sid}`)
+            });
+        }
+
+        function initDragAndDrop() {
+            const dashboard = document.getElementById('dashboard');
+            Sortable.create(dashboard, {
+                handle: '.drag-handle', animation: 200, ghostClass: 'sortable-ghost', delay: 100, delayOnTouchOnly: true,
+                onEnd: function () {
+                    state.sectionOrder = Array.from(dashboard.querySelectorAll('.section-container')).map(el => el.dataset.id);
+                    localStorage.setItem('marketdash_sectionOrder', JSON.stringify(state.sectionOrder));
+                }
+            });
+
+            state.sectionOrder.forEach(sectionId => {
+                const tbody = document.getElementById(`tbody-${sectionId}`);
+                if (tbody) {
+                    Sortable.create(tbody, {
+                        handle: '.drag-handle', animation: 200, ghostClass: 'sortable-ghost', delay: 100, delayOnTouchOnly: true,
+                        onEnd: function () {
+                            state.watchlists[sectionId].tickers = Array.from(tbody.querySelectorAll('tr')).map(el => el.dataset.ticker);
+                            saveWatchlists();
+                        }
+                    });
+                }
+            });
+        }
+
+        function toggleSection(e, sectionId) {
+            if (e.target.closest('.action-icon-btn') && !e.target.closest('.toggle-btn')) return; 
+            const container = document.getElementById(`section-${sectionId}`);
+            container.classList.toggle('collapsed');
+            state.expanded[sectionId] = !container.classList.contains('collapsed');
+            localStorage.setItem('marketdash_expanded', JSON.stringify(state.expanded));
+            if (state.expanded[sectionId]) forceRefresh();
+        }
+
+        function toggleAddForm(e, sectionId) {
+            e.stopPropagation();
+            const container = document.getElementById(`section-${sectionId}`);
+            const form = container.querySelector('.add-ticker-form');
+            if (container.classList.contains('collapsed')) {
+                container.classList.remove('collapsed');
+                state.expanded[sectionId] = true;
+                localStorage.setItem('marketdash_expanded', JSON.stringify(state.expanded));
+                forceRefresh();
+            }
+            form.classList.toggle('active');
+            container.classList.toggle('edit-mode');
+            
+            if (form.classList.contains('active')) form.querySelector('input').focus();
+        }
+
+        async function handleAddTicker(e, sectionId) {
+            e.preventDefault();
+            const inputEl = document.getElementById(`input-${sectionId}`);
+            const btnEl = document.getElementById(`btn-add-${sectionId}`);
+            const listEl = document.getElementById(`autocomplete-${sectionId}`);
+            const ticker = inputEl.value.trim().toUpperCase();
+            
+            if (!ticker || state.watchlists[sectionId].tickers.includes(ticker)) {
+                inputEl.value = ''; listEl.style.display = 'none'; return;
+            }
+
+            const originalBtnContent = `${PLUS_ICON}<span>Add tickers</span>`;
+            btnEl.disabled = true; 
+            btnEl.innerHTML = `<span>Adding ticker...</span>`; 
+            listEl.style.display = 'none';
+
+            try {
+                const data = await fetchYahooFinance([ticker]);
+                if (!data || data.length === 0 || !data[0].regularMarketPrice) {
+                    alert(`${ticker} not found. Search by Yahoo Finance ticker.`); return;
+                }
+                state.watchlists[sectionId].tickers.push(ticker);
+                saveWatchlists();
+
+                const tbody = document.getElementById(`tbody-${sectionId}`);
+                tbody.insertAdjacentHTML('beforeend', generateRowHTML(ticker));
+                cacheRowNodes(ticker);
+
+                updateDOMWithData([data[0]]);
+                inputEl.value = '';
+            } catch (err) {
+                alert(`오류: ${err.message}`);
+            } finally {
+                btnEl.disabled = false; 
+                btnEl.innerHTML = originalBtnContent;
+            }
+        }
+
+        let targetTickerToDelete = null;
+
+        function confirmRemoveTicker(ticker) {
+            targetTickerToDelete = ticker;
+            document.getElementById('delete-target-ticker').textContent = ticker;
+            document.getElementById('delete-modal').classList.add('active');
+            
+            document.getElementById('confirm-delete-btn').onclick = () => {
+                if (targetTickerToDelete) {
+                    executeRemoveTicker(targetTickerToDelete);
+                    closeDeleteModal();
+                }
+            };
+        }
+
+        function closeDeleteModal() {
+            targetTickerToDelete = null;
+            document.getElementById('delete-modal').classList.remove('active');
+        }
+
+        function executeRemoveTicker(ticker) {
+            for (const sectionId in state.watchlists) {
+                if (state.watchlists[sectionId].tickers.includes(ticker)) {
+                    state.watchlists[sectionId].tickers = state.watchlists[sectionId].tickers.filter(t => t !== ticker);
+                    break;
+                }
+            }
+            saveWatchlists();
+            const sid = getSafeId(ticker);
+            const row = document.getElementById(`row-${sid}`);
+            if (row) row.remove();
+            rowNodes.delete(ticker);
+        }
+
+        function resetToDefaults() {
+            toggleSettingsMenu();
+            if(confirm("현재 설정한 값을 기본값으로 초기화하시겠습니까?")) {
+                localStorage.clear();
+                state.watchlists = JSON.parse(JSON.stringify(DEFAULT_WATCHLISTS));
+                state.sectionOrder = ['indicators', 'kr', 'us'];
+                renderLayout(); forceRefresh();
+            }
+        }
+
+        function openAboutModal() {
+            toggleSettingsMenu();
+            document.getElementById('about-modal').classList.add('active');
+        }
+
+        function closeAboutModal() {
+            document.getElementById('about-modal').classList.remove('active');
+        }
+
+        function saveWatchlists() { localStorage.setItem('marketdash_watchlists', JSON.stringify(state.watchlists)); }
+
+        async function fetchYahooFinance(symbols) {
+            if (symbols.length === 0) return [];
+            const symbolsStr = symbols.join(',');
+            const targetUrl = `${GAS_PROXY_URL}?symbols=${encodeURIComponent(symbolsStr)}&t=${Date.now()}`;
+
+            try {
+                const response = await fetch(targetUrl);
+                const text = await response.text();
+                if (text.trim().startsWith('<')) throw new Error("GAS 권한 오류");
+                const data = JSON.parse(text);
+                
+                if (data && data.quoteResponse && data.quoteResponse.result) return data.quoteResponse.result;
+                else if (data && data.error) throw new Error(data.error);
+                throw new Error("데이터 구조가 올바르지 않습니다.");
+            } catch (e) { console.error("데이터 가져오기 실패:", e); throw e; }
+        }
+
+        async function fetchData() {
+            let symbolsToFetch = [];
+            for (const sectionId of state.sectionOrder) {
+                if (state.expanded[sectionId]) symbolsToFetch = symbolsToFetch.concat(state.watchlists[sectionId].tickers);
+            }
+            if (symbolsToFetch.length === 0) return;
+
+            const chunkSize = 40;
+            for (let i = 0; i < symbolsToFetch.length; i += chunkSize) {
+                const chunk = symbolsToFetch.slice(i, i + chunkSize);
+                try {
+                    const results = await fetchYahooFinance(chunk);
+                    updateDOMWithData(results);
+                    markMissingData(chunk, results);
+                } catch (error) {
+                    markAllError(chunk, error.message);
+                }
+            }
+        }
+
+        function forceRefresh() {
+            state.countdown = 60; document.getElementById('countdown').textContent = state.countdown; fetchData();
+        }
+
+        function startTimer() {
+            if (state.intervalId) clearInterval(state.intervalId);
+            state.intervalId = setInterval(() => {
+                state.countdown--;
+                if (state.countdown <= 0) forceRefresh();
+                else document.getElementById('countdown').textContent = state.countdown;
+            }, 1000);
+        }
+
+        function updateDOMWithData(quotes) {
+            requestAnimationFrame(() => {
+                quotes.forEach(quote => {
+                    const ticker = quote.symbol; const nodes = rowNodes.get(ticker);
+                    if (!nodes || !nodes.row) return;
+
+                    const price = quote.regularMarketPrice || 0; const change = quote.regularMarketChange || 0;
+                    const pct = quote.regularMarketChangePercent || 0; const isUp = change >= 0;
+                    const colorClass = isUp ? 'up' : 'down'; const sign = isUp ? '+' : ''; const arrow = isUp ? '▲' : '▼';
+                    
+                    const oldPriceStr = nodes.price.getAttribute('data-price');
+                    const oldPrice = oldPriceStr ? parseFloat(oldPriceStr) : null;
+                    if (oldPrice !== null && oldPrice !== price) {
+                        nodes.row.classList.remove('flash-up', 'flash-down');
+                        void nodes.row.offsetWidth; 
+                        nodes.row.classList.add(price > oldPrice ? 'flash-up' : 'flash-down');
+                    }
+                    nodes.price.setAttribute('data-price', price);
+
+                    nodes.name.textContent = quote.shortName || quote.longName || ticker;
+                    nodes.price.textContent = formatNum(price);
+                    
+                    // --- 장외 거래(Pre/Post Market) 데이터 처리 ---
+                    const prePrice = quote.preMarketPrice;
+                    const postPrice = quote.postMarketPrice;
+                    let extPrice, extChangePct, extLabel;
+
+                    if (prePrice) {
+                        extPrice = prePrice;
+                        extChangePct = quote.preMarketChangePercent || 0;
+                        extLabel = 'PRE';
+                    } else if (postPrice) {
+                        extPrice = postPrice;
+                        extChangePct = quote.postMarketChangePercent || 0;
+                        extLabel = 'POST';
+                    }
+
+                    if (extPrice && extLabel) {
+                        const isExtUp = extChangePct >= 0;
+                        const extColorClass = isExtUp ? 'up' : 'down';
+                        const extSign = isExtUp ? '+' : '';
+                        
+                        nodes.extPrice.innerHTML = `
+                            <span class="ext-label">${extLabel}</span>
+                            ${formatNum(extPrice)} 
+                            <span class="${extColorClass}">(${extSign}${formatNum(extChangePct)}%)</span>
+                        `;
+                    } else {
+                        nodes.extPrice.innerHTML = '';
+                    }
+                    // ---------------------------------------------
+                    
+                    nodes.change.innerHTML = `<span class="${colorClass}">${sign}${formatNum(change)}</span>`;
+                    nodes.pct.innerHTML = `<span class="badge ${colorClass}"><span class="arrow">${arrow}</span>${formatNum(Math.abs(pct))}%</span>`;
+                    
+                    nodes.vol.textContent = formatCompact(quote.regularMarketVolume);
+                    nodes.cap.textContent = formatCompact(quote.marketCap);
+                    
+                    if (quote.fiftyTwoWeekLow && quote.fiftyTwoWeekHigh) {
+                        nodes.range.textContent = `${formatNum(quote.fiftyTwoWeekLow)} - ${formatNum(quote.fiftyTwoWeekHigh)}`;
+                    } else { nodes.range.textContent = '-'; }
+                });
+            });
+        }
+
+        function markMissingData(requestedSymbols, results) {
+            const returnedSymbols = new Set(results.map(r => r.symbol));
+            requestedSymbols.forEach(sym => { if (!returnedSymbols.has(sym)) setErrorState(sym, 'No Data'); });
+        }
+
+        function markAllError(symbols, errMsg) { symbols.forEach(sym => setErrorState(sym, errMsg)); }
+
+        function setErrorState(ticker, msg) {
+            const nodes = rowNodes.get(ticker);
+            if (!nodes) return;
+            requestAnimationFrame(() => {
+                nodes.name.textContent = 'Error';
+                nodes.price.innerHTML = `<span class="error-text">${msg}</span>`;
+                nodes.extPrice.innerHTML = '';
+                nodes.change.innerHTML = ''; nodes.pct.innerHTML = '';
+                nodes.vol.textContent = '-'; nodes.cap.textContent = '-'; nodes.range.textContent = '-';
+            });
+        }
+
+        function formatNum(num) {
+            if (num === undefined || num === null || isNaN(num)) return '-';
+            const abs = Math.abs(num); let decimals = 2;
+            if (abs > 0 && abs < 0.1) decimals = 4; else if (abs > 1000) decimals = 0; 
+            return new Intl.NumberFormat('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals }).format(num);
+        }
+
+        function formatCompact(num) {
+            if (!num || isNaN(num)) return '-';
+            return new Intl.NumberFormat('en-US', { notation: 'compact', compactDisplay: 'short', maximumFractionDigits: 2 }).format(num);
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
