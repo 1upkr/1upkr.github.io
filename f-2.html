@@ -91,7 +91,7 @@ layout: null
             padding: 0.875rem 5%; display: flex; justify-content: space-between; align-items: center;
             position: sticky; top: 0; z-index: 100; box-shadow: var(--shadow-sm);
         }
-        .header-left h1 { font-size: 1.15rem; font-weight: 900; display: flex; align-items: center; gap: 0.5rem; letter-spacing: -0.02em;} 
+        .header-left h1 { font-size: 1.00rem; font-weight: 900; display: flex; align-items: center; gap: 0.5rem; letter-spacing: -0.02em;} 
         .header-controls { display: flex; align-items: center; gap: 1.5rem; font-size: 0.875rem; font-weight: 500; }
         .timer { color: var(--text-secondary); font-variant-numeric: tabular-nums; display: flex; align-items: center; gap: 0.4rem; font-size: 0.7em; opacity: 0.7; }
         .action-btns { display: flex; flex-direction: row; align-items: center; gap: 0.5rem; }
@@ -227,10 +227,19 @@ layout: null
         .add-ticker-form button svg { width: 16px; height: 16px; stroke-width: 2.5; }
 
         .autocomplete-list {
-            position: absolute; top: 100%; left: 0; right: 0;
-            background: var(--card-bg); border: 1px solid var(--border-color); border-top: none;
-            border-radius: 0 0 8px 8px; box-shadow: var(--shadow-md); max-height: 280px; overflow-y: auto;
-            z-index: 1000; list-style: none; display: none; margin-top: 2px;
+            position: absolute; 
+            bottom: calc(100% + 5px); /* 입력창 위로 5px 띄워서 배치 */
+            top: auto; /* 기존 아래로 열리는 속성(top: 100%) 무효화 */
+            left: 0; right: 0;
+            background: var(--card-bg); 
+            border: 1px solid var(--border-color); 
+            border-radius: 8px; /* 위아래 모서리 모두 둥글게 처리 */
+            box-shadow: var(--shadow-md); 
+            max-height: 280px; 
+            overflow-y: auto;
+            z-index: 1000; 
+            list-style: none; 
+            display: none; 
         }
         .autocomplete-list li {
             padding: 0.6rem 1rem; border-bottom: 1px solid var(--border-color); cursor: pointer;
