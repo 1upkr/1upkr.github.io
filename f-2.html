@@ -91,7 +91,7 @@ layout: null
             padding: 0.875rem 5%; display: flex; justify-content: space-between; align-items: center;
             position: sticky; top: 0; z-index: 100; box-shadow: var(--shadow-sm);
         }
-        .header-left h1 { font-size: 1.00rem; font-weight: 900; display: flex; align-items: center; gap: 0.5rem; letter-spacing: -0.02em;} 
+        .header-left h1 { font-size: 1.15rem; font-weight: 900; display: flex; align-items: center; gap: 0.5rem; letter-spacing: -0.02em;} 
         .header-controls { display: flex; align-items: center; gap: 1.5rem; font-size: 0.875rem; font-weight: 500; }
         .timer { color: var(--text-secondary); font-variant-numeric: tabular-nums; display: flex; align-items: center; gap: 0.4rem; font-size: 0.7em; opacity: 0.7; }
         .action-btns { display: flex; flex-direction: row; align-items: center; gap: 0.5rem; }
@@ -103,7 +103,6 @@ layout: null
         .icon-btn:hover { background-color: var(--hover-bg); color: var(--text-primary); }
         .icon-btn svg { width: 18px; height: 18px; }
 
-        /* 설정 드롭다운 관련 스타일 */
         .settings-wrapper { position: relative; }
         .settings-dropdown {
             position: absolute; top: calc(100% + 10px); right: 0; 
@@ -151,13 +150,11 @@ layout: null
         .collapsed .action-icon-btn.toggle-btn svg { transform: rotate(-180deg); }
         .collapsed .section-body { display: none; }
 
-        /* 편집 모드가 아닐 때 삭제 컬럼 자체를 숨김 처리하여 공간 제거 */
         .section-container:not(.edit-mode) th.actions-col,
         .section-container:not(.edit-mode) td.actions-col {
             display: none;
         }
 
-        /* 편집 모드일 때 삭제 컬럼 표시 */
         .section-container.edit-mode th.actions-col,
         .section-container.edit-mode td.actions-col {
             display: table-cell;
@@ -226,20 +223,12 @@ layout: null
         }
         .add-ticker-form button svg { width: 16px; height: 16px; stroke-width: 2.5; }
 
+        /* 미리보기 리스트 (아래로 열림) */
         .autocomplete-list {
-            position: absolute; 
-            bottom: calc(100% + 5px); /* 입력창 위로 5px 띄워서 배치 */
-            top: auto; /* 기존 아래로 열리는 속성(top: 100%) 무효화 */
-            left: 0; right: 0;
-            background: var(--card-bg); 
-            border: 1px solid var(--border-color); 
-            border-radius: 8px; /* 위아래 모서리 모두 둥글게 처리 */
-            box-shadow: var(--shadow-md); 
-            max-height: 280px; 
-            overflow-y: auto;
-            z-index: 1000; 
-            list-style: none; 
-            display: none; 
+            position: absolute; top: 100%; left: 0; right: 0;
+            background: var(--card-bg); border: 1px solid var(--border-color); border-top: none;
+            border-radius: 0 0 8px 8px; box-shadow: var(--shadow-md); max-height: 280px; overflow-y: auto;
+            z-index: 1000; list-style: none; display: none; margin-top: 2px;
         }
         .autocomplete-list li {
             padding: 0.6rem 1rem; border-bottom: 1px solid var(--border-color); cursor: pointer;
@@ -251,6 +240,44 @@ layout: null
         .ac-symbol { font-weight: 600; color: var(--text-primary); font-size: 0.9rem;}
         .ac-name { font-size: 0.75rem; color: var(--text-secondary); max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .ac-exch { font-size: 0.65rem; padding: 0.15rem 0.35rem; background: var(--input-bg); border-radius: 4px; color: var(--text-secondary); font-weight: 500;}
+
+        /* 결과 없음 안내 말풍선 (위로 열림) */
+        .input-guide {
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 0;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            box-shadow: var(--shadow-md);
+            display: none;
+            z-index: 1000;
+            white-space: nowrap;
+        }
+        .input-guide::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 15px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: var(--border-color) transparent transparent transparent;
+        }
+        .input-guide::before {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 15px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: var(--card-bg) transparent transparent transparent;
+            margin-top: -1.5px;
+            z-index: 1;
+        }
 
         table { width: 100%; border-collapse: collapse; text-align: right; white-space: nowrap; background: var(--card-bg); }
         th, td { padding: 0.875rem 1.5rem; border-bottom: 1px solid var(--border-color); }
@@ -295,44 +322,22 @@ layout: null
             z-index: 1000; opacity: 0; visibility: hidden;
             transition: opacity 0.2s, visibility 0.2s;
         }
-        .modal-overlay.active {
-            opacity: 1; visibility: visible;
-        }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
         .modal-card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 1.75rem;
-            width: 90%; max-width: 340px;
-            box-shadow: var(--shadow-md);
-            text-align: center;
-            transform: translateY(20px);
-            transition: transform 0.2s;
+            background-color: var(--card-bg); border: 1px solid var(--border-color);
+            border-radius: 12px; padding: 1.75rem; width: 90%; max-width: 340px;
+            box-shadow: var(--shadow-md); text-align: center;
+            transform: translateY(20px); transition: transform 0.2s;
         }
-        .modal-overlay.active .modal-card {
-            transform: translateY(0);
-        }
-        .modal-title {
-            font-size: 1.125rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;
-        }
-        .modal-desc {
-            font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1.5rem; line-height: 1.4;
-        }
+        .modal-overlay.active .modal-card { transform: translateY(0); }
+        .modal-title { font-size: 1.125rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem; }
+        .modal-desc { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1.5rem; line-height: 1.4; }
         .modal-desc span { color: var(--text-primary); font-weight: 700; }
-        .modal-actions {
-            display: flex; gap: 0.75rem; justify-content: center;
-        }
-        .modal-btn {
-            flex: 1; padding: 0.6rem 0; border-radius: 8px; font-weight: 600; font-size: 0.875rem; 
-            cursor: pointer; transition: all 0.2s ease;
-        }
-        .modal-btn.cancel {
-            background-color: transparent; color: var(--text-primary); border: 1px solid var(--border-color);
-        }
+        .modal-actions { display: flex; gap: 0.75rem; justify-content: center; }
+        .modal-btn { flex: 1; padding: 0.6rem 0; border-radius: 8px; font-weight: 600; font-size: 0.875rem; cursor: pointer; transition: all 0.2s ease; }
+        .modal-btn.cancel { background-color: transparent; color: var(--text-primary); border: 1px solid var(--border-color); }
         .modal-btn.cancel:hover { background-color: var(--hover-bg); }
-        .modal-btn.confirm {
-            background-color: var(--red); color: #fff; border: 1px solid var(--red);
-        }
+        .modal-btn.confirm { background-color: var(--red); color: #fff; border: 1px solid var(--red); }
         .modal-btn.confirm:hover { filter: brightness(1.1); }
 
         @keyframes flashGreen { 0% { background-color: var(--flash-green); } 100% { background-color: transparent; } }
@@ -344,19 +349,8 @@ layout: null
         @keyframes skeletonLoading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
         .error-text { color: var(--red); font-size: 0.75rem; font-weight: 600; white-space: pre-wrap; line-height: 1.2; }
 
-        footer {
-            text-align: right;
-            padding: 1.5rem 5%;
-            font-family: 'Courier New', Courier, monospace;
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-            opacity: 0.8;
-            margin-top: auto; 
-        }
+        footer { text-align: right; padding: 1.5rem 5%; font-family: 'Courier New', Courier, monospace; color: var(--text-secondary); font-size: 0.875rem; opacity: 0.8; margin-top: auto; }
 
-        /* ----------------------------------------------------- */
-        /* [수정됨] 모바일 미디어 쿼리 - 공간 확보 및 폰트 사이즈 조정 */
-        /* ----------------------------------------------------- */
         @media (max-width: 768px) {
             .hide-mobile { display: none; }
             header { position: static; flex-direction: column; gap: 1rem; padding: 1rem; }
@@ -364,30 +358,25 @@ layout: null
             main { padding: 1rem 3%; }
             .section-header { padding: 1rem; }
             
-            /* 공간 확보를 위한 테이블 여백 타이트하게 조정 */
             th, td { padding: 0.6rem 0.25rem; font-size: 0.75rem; }
             th.handle-col, td.handle-col { width: 32px; padding-left: 0; padding-right: 0; }
             th.actions-col, td.actions-col { width: 32px; padding-right: 0; padding-left: 0; }
             
-            /* Symbol 열의 과도한 넓이 제한 (우측 공간 확보) */
             th.left-align, td.left-align { width: 35%; max-width: 85px; padding-left: 0.5rem; }
             .asset-col { max-width: 85px; }
             .symbol { font-size: 0.8rem; }
             .name { font-size: 0.65rem; }
             
-            /* Price & Change 데이터 폰트 크기 대폭 축소 */
             .price { font-size: 0.85rem; }
             .extended-price { font-size: 0.65rem; margin-top: 0.15rem; }
             .extended-price .ext-label { font-size: 0.55rem; padding: 0.1rem 0.2rem; }
             .change-cell { font-size: 0.8rem; }
             .badge { padding: 0.15rem 0.25rem; font-size: 0.65rem; }
 
-            /* Add Ticker 폼 모바일 레이아웃 최적화 (가림 방지) */
             .search-wrapper { max-width: 100%; width: 100%; }
             .add-ticker-form { flex-direction: column; align-items: stretch; padding: 0.75rem 1rem; gap: 0.5rem; }
             .add-ticker-form button { width: 100%; height: 36px; min-width: auto; font-size: 0.8rem; }
             
-            /* 모바일 자동완성 팝업 스타일 고도화 (그림자로 깊이감 추가) */
             .autocomplete-list { max-height: 220px; box-shadow: 0 8px 16px rgba(0,0,0,0.15); }
             .autocomplete-list li { padding: 0.5rem 0.75rem; }
             .ac-symbol { font-size: 0.85rem; }
@@ -562,6 +551,7 @@ layout: null
             document.addEventListener('click', (e) => {
                 if (!e.target.closest('.search-wrapper')) {
                     document.querySelectorAll('.autocomplete-list').forEach(el => el.style.display = 'none');
+                    document.querySelectorAll('.input-guide').forEach(el => el.style.display = 'none');
                 }
                 if (!e.target.closest('.settings-wrapper')) {
                     document.getElementById('settings-dropdown').classList.remove('active');
@@ -648,6 +638,7 @@ layout: null
                     <div class="section-body">
                         <form class="add-ticker-form" onsubmit="handleAddTicker(event, '${sectionId}')">
                             <div class="search-wrapper">
+                                <div class="input-guide" id="guide-${sectionId}">Enter a Yahoo Finance ticker</div>
                                 ${SEARCH_ICON}
                                 <input type="text" id="input-${sectionId}" placeholder="Search Ticker or Company" autocomplete="off">
                                 <ul class="autocomplete-list" id="autocomplete-${sectionId}"></ul>
@@ -698,13 +689,15 @@ layout: null
 
         function handleAutocomplete(query, sectionId) {
             const list = document.getElementById(`autocomplete-${sectionId}`);
+            const guide = document.getElementById(`guide-${sectionId}`);
             query = query.trim().toLowerCase();
             
             if (query.length < 1) {
                 list.style.display = 'none';
+                guide.style.display = 'none';
                 return;
             }
-            list.style.display = 'block';
+            
             const isChosungQuery = /[ㄱ-ㅎ]/.test(query) && !/[가-힣]/.test(query);
             const matchedQuotes = localTickerDB.filter(q => {
                 if (isChosungQuery) {
@@ -721,16 +714,23 @@ layout: null
                         <span class="ac-exch">${q.e}</span>
                     </li>
                 `).join('');
+                list.style.display = 'block';
+                guide.style.display = 'none';
             } else {
-                list.innerHTML = `<li style="justify-content:center; cursor:default;"><span class="ac-name">Enter a Yahoo Finance ticker</span></li>`;
+                list.style.display = 'none';
+                guide.style.display = 'block';
             }
         }
 
         window.selectAutocomplete = function(symbol, sectionId) {
             const input = document.getElementById(`input-${sectionId}`);
             const list = document.getElementById(`autocomplete-${sectionId}`);
+            const guide = document.getElementById(`guide-${sectionId}`);
             const btn = document.getElementById(`btn-add-${sectionId}`);
-            input.value = symbol; list.style.display = 'none'; btn.click(); 
+            input.value = symbol; 
+            list.style.display = 'none'; 
+            if(guide) guide.style.display = 'none';
+            btn.click(); 
         };
 
         function generateRowHTML(ticker) {
@@ -831,14 +831,20 @@ layout: null
             const inputEl = document.getElementById(`input-${sectionId}`);
             const btnEl = document.getElementById(`btn-add-${sectionId}`);
             const listEl = document.getElementById(`autocomplete-${sectionId}`);
+            const guideEl = document.getElementById(`guide-${sectionId}`);
             const ticker = inputEl.value.trim().toUpperCase();
             
             if (!ticker || state.watchlists[sectionId].tickers.includes(ticker)) {
-                inputEl.value = ''; listEl.style.display = 'none'; return;
+                inputEl.value = ''; 
+                listEl.style.display = 'none'; 
+                if(guideEl) guideEl.style.display = 'none';
+                return;
             }
 
             const originalBtnContent = `${PLUS_ICON}<span>Add tickers</span>`;
-            btnEl.disabled = true; btnEl.innerHTML = `<span>Adding ticker...</span>`; listEl.style.display = 'none';
+            btnEl.disabled = true; btnEl.innerHTML = `<span>Adding ticker...</span>`; 
+            listEl.style.display = 'none';
+            if(guideEl) guideEl.style.display = 'none';
 
             try {
                 const data = await fetchYahooFinance([ticker]);
