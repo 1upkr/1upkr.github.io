@@ -129,15 +129,19 @@ layout: null
         .collapsed .action-icon-btn.toggle-btn svg { transform: rotate(-180deg); }
         .collapsed .section-body { display: none; }
 
-        /* [추가] 편집 모드가 아닐 때 삭제 버튼 숨김 처리 */
-        .section-container:not(.edit-mode) .actions-col .action-icon-btn.danger {
+        /* 편집 모드가 아닐 때 삭제 컬럼 자체를 숨김 처리하여 공간 제거 */
+        .section-container:not(.edit-mode) th.actions-col,
+        .section-container:not(.edit-mode) td.actions-col {
             display: none;
-            opacity: 0;
-            pointer-events: none;
         }
-        /* [추가] 편집 모드일 때 삭제 버튼 표시 (자연스러운 전환) */
+
+        /* 편집 모드일 때 삭제 컬럼 표시 */
+        .section-container.edit-mode th.actions-col,
+        .section-container.edit-mode td.actions-col {
+            display: table-cell;
+        }
+
         .section-container.edit-mode .actions-col .action-icon-btn.danger {
-            display: inline-flex;
             animation: fadeIn 0.2s ease-in;
         }
 
@@ -239,7 +243,6 @@ layout: null
         .sub-data { color: var(--text-primary); font-weight: 500; font-variant-numeric: tabular-nums; }
         .arrow { font-size: 0.7rem; margin-right: 0.2rem; stroke-width: 3; }
 
-        /* [추가] 모달(Modal) 창 스타일링 */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: var(--modal-overlay);
@@ -597,7 +600,6 @@ layout: null
 
         function generateRowHTML(ticker) {
             const sid = getSafeId(ticker);
-            /* [수정] removeTicker -> confirmRemoveTicker 호출로 변경 */
             return `
                 <tr id="row-${sid}" data-ticker="${ticker}">
                     <td class="left-align">
@@ -672,7 +674,6 @@ layout: null
             if (state.expanded[sectionId]) forceRefresh();
         }
 
-        /* [수정] 폼이 열리면서 edit-mode 클래스가 토글되도록 추가 처리 */
         function toggleAddForm(e, sectionId) {
             e.stopPropagation();
             const container = document.getElementById(`section-${sectionId}`);
@@ -684,7 +685,7 @@ layout: null
                 forceRefresh();
             }
             form.classList.toggle('active');
-            container.classList.toggle('edit-mode'); // 모달 노출 제어용 클래스 추가/제거
+            container.classList.toggle('edit-mode');
             
             if (form.classList.contains('active')) form.querySelector('input').focus();
         }
@@ -727,7 +728,6 @@ layout: null
             }
         }
 
-        /* [추가] 모달 제어용 상태 및 함수 */
         let targetTickerToDelete = null;
 
         function confirmRemoveTicker(ticker) {
@@ -748,7 +748,6 @@ layout: null
             document.getElementById('delete-modal').classList.remove('active');
         }
 
-        /* [수정] 모달 확인 시 실제 삭제를 수행하는 로직으로 이름 변경 */
         function executeRemoveTicker(ticker) {
             for (const sectionId in state.watchlists) {
                 if (state.watchlists[sectionId].tickers.includes(ticker)) {
