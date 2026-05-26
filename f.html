@@ -362,6 +362,28 @@ layout: null
             .search-wrapper { max-width: 100%; }
             .add-ticker-form { flex-direction: column; align-items: stretch; padding: 0.75rem 1rem; }
             .add-ticker-form button { width: 100%; }
+            
+            /* 1. Add Ticker 버튼 가림 문제 해결 */
+            .autocomplete-list {
+                position: relative; /* absolute 속성을 해제하여 버튼을 아래로 밀어내도록 수정 */
+                width: 100%;
+                max-height: 180px;  /* 모바일 화면에 맞게 최대 높이 조정 */
+                margin-top: 8px;
+                border-top: 1px solid var(--border-color); /* 모바일용 테두리 보정 */
+                border-radius: 8px;
+                box-shadow: none; /* 모바일에선 그림자 제거로 깔끔하게 */
+            }
+        
+            /* 2. Pre/Post 데이터가 우측 드래그 핸들을 가리는 문제 해결 */
+            .extended-price {
+                white-space: normal; /* 전체 테이블의 nowrap 속성을 무시하고 줄바꿈 허용 */
+                max-width: 85px; /* 최대 너비를 제한하여 가격과 퍼센트(%)를 두 줄로 분리 */
+                margin-left: auto; /* 우측 정렬 유지 */
+                line-height: 1.25;
+    }
+
+
+            
         }
     </style>
 </head>
