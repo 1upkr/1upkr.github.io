@@ -162,6 +162,7 @@
   { "s": "MS", "n": "Morgan Stanley (모건스탠리)", "e": "NYSE" },
   { "s": "V", "n": "Visa Inc. (비자)", "e": "NYSE" },
   { "s": "MA", "n": "Mastercard Inc. (마스터카드)", "e": "NYSE" },
+  { "s": "MAIN", "n": "Main Street Capital Corporation (메인)", "e": "NYSE" },  
   { "s": "AXP", "n": "American Express (아메리칸 익스프레스)", "e": "NYSE" },
   { "s": "C", "n": "Citigroup Inc. (시티그룹)", "e": "NYSE" },
   { "s": "WFC", "n": "Wells Fargo (웰스파고)", "e": "NYSE" },
