@@ -10,7 +10,7 @@ layout: null
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="icon" type="image/svg+xml" href="https://1up.kr/assets/pacman-svg.svg">
 
-      <meta property="og:title" content="📺 ꜰ ɪ ɴ ᴀ ɴ ᴄ ᴇ : ¹ ᴜ ᴘ " />
+      <meta property="og:title" content="ꜰ ɪ ɴ ᴀ ɴ ᴄ ᴇ : ¹ ᴜ ᴘ" />
       <meta property="og:description" content="ʙᴜɪʟᴅ ʏᴏᴜʀ ᴏᴡɴ ꜱᴛᴏᴄᴋ ᴅᴀꜱʜʙᴏᴀʀᴅ. ꜱᴇᴛ ᴄᴜꜱᴛᴏᴍ, ᴀɴᴅ ꜱᴛᴀʏ ᴀʜᴇᴀᴅ ᴏꜰ ᴛʜᴇ ᴍᴀʀᴋᴇᴛ ᴡɪᴛʜ 1ᴜᴘ." />
       <meta property="og:image" content="https://1up.kr/assets/finance_1up.png" />
       <meta property="og:url" content="https://1up.kr/f" />
@@ -931,7 +931,6 @@ layout: null
                     nodes.name.textContent = quote.shortName || quote.longName || ticker;
                     nodes.price.textContent = formatNum(price);
                     
-                    // --- 장외 거래(PRE/POST) 스마트 필터링 처리 ---
                     let extOptions = [];
 
                     if (quote.preMarketPrice) {
@@ -944,7 +943,6 @@ layout: null
                     let extPrice, extChangePct, extLabel;
 
                     if (extOptions.length > 0) {
-                        // PRE와 POST 중 타임스탬프가 더 큰(최신인) 데이터를 선택
                         const latestExt = extOptions.reduce((prev, current) => (prev.time > current.time) ? prev : current);
                         extPrice = latestExt.price;
                         extChangePct = latestExt.pct;
@@ -953,14 +951,13 @@ layout: null
 
                     if (extPrice && extLabel) {
                         const isExtUp = extChangePct >= 0; const extColorClass = isExtUp ? 'up' : 'down'; const extSign = isExtUp ? '+' : '';
-                        nodes.extPrice.innerHTML = `<span class="ext-label">${extLabel}</span> ${formatNum(extPrice)} <span class="${extColorClass}">(${extSign}${formatNum(extChangePct)}%)</span>`;
+                        nodes.extPrice.innerHTML = `<span class="ext-label">${extLabel}</span> ${formatNum(extPrice)} <span class="${extColorClass}">(${extSign}${formatPct(extChangePct)}%)</span>`;
                     } else {
                         nodes.extPrice.innerHTML = '';
                     }
-                    // ---------------------------------------------------
                     
                     nodes.change.innerHTML = `<span class="${colorClass}">${sign}${formatNum(change)}</span>`;
-                    nodes.pct.innerHTML = `<span class="badge ${colorClass}"><span class="arrow">${arrow}</span>${formatNum(Math.abs(pct))}%</span>`;
+                    nodes.pct.innerHTML = `<span class="badge ${colorClass}"><span class="arrow">${arrow}</span>${formatPct(Math.abs(pct))}%</span>`;
                     nodes.vol.textContent = formatCompact(quote.regularMarketVolume); nodes.cap.textContent = formatCompact(quote.marketCap);
                     if (quote.fiftyTwoWeekLow && quote.fiftyTwoWeekHigh) { nodes.range.textContent = `${formatNum(quote.fiftyTwoWeekLow)} - ${formatNum(quote.fiftyTwoWeekHigh)}`; } else { nodes.range.textContent = '-'; }
                 });
@@ -988,6 +985,11 @@ layout: null
             const abs = Math.abs(num); let decimals = 2;
             if (abs > 0 && abs < 0.1) decimals = 4; else if (abs > 1000) decimals = 0; 
             return new Intl.NumberFormat('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals }).format(num);
+        }
+
+        function formatPct(num) {
+            if (num === undefined || num === null || isNaN(num)) return '-';
+            return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num);
         }
 
         function formatCompact(num) {
