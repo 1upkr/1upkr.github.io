@@ -249,7 +249,6 @@ layout: null
         th { color: var(--text-secondary); font-size: 0.75rem; font-weight: 500; text-transform: uppercase; }
         th.left-align, td.left-align { text-align: left; }
         th.actions-col, td.actions-col { width: 36px; padding-right: 0; padding-left: 0.5rem; text-align: center; }
-        /* 드래그 핸들 너비 확장 */
         th.handle-col, td.handle-col { width: 48px; padding-right: 0.75rem; padding-left: 0; text-align: center; } 
         tbody tr { transition: background-color 0.15s; }
         tbody tr:hover { background-color: var(--hover-bg); }
@@ -260,7 +259,6 @@ layout: null
         
         .price { font-weight: 600; font-size: 1.05rem; font-variant-numeric: tabular-nums; color: var(--text-primary); }
         
-        /* ---------------- 추가된 장외 거래(Pre/Post/Overnight) 데이터 스타일 ---------------- */
         .extended-price { 
             font-size: 0.75rem; 
             color: var(--text-secondary); 
@@ -271,7 +269,6 @@ layout: null
         .extended-price .ext-label { font-size: 0.65rem; padding: 0.1rem 0.2rem; background: var(--input-bg); border-radius: 3px; margin-right: 0.2rem; }
         .extended-price .up { color: var(--green); }
         .extended-price .down { color: var(--red); }
-        /* --------------------------------------------------------------------------------- */
 
         .change-cell { display: flex; flex-direction: column; align-items: flex-end; font-variant-numeric: tabular-nums; font-weight: 500; font-size: 0.95rem; }
         .up { color: var(--green); } .down { color: var(--red); }
@@ -440,7 +437,7 @@ layout: null
             <div class="modal-title">Credits</div>
             <div class="modal-desc" style="text-align: left; padding: 1rem 0;">
                 <div style="font-weight: 700; font-size: 1.1rem; color: var(--text-primary); margin-bottom: 0.5rem;">F I N A N C E : ¹ U P</div>
-                <div style="margin-bottom: 0.3rem;"><span style="font-weight: 500;">v1.3.0</span></div>
+                <div style="margin-bottom: 0.3rem;"><span style="font-weight: 500;">v1.3.1</span></div>
                 <div><span>N3RD</span></div>
             </div>
             <div class="modal-actions">
@@ -494,7 +491,6 @@ layout: null
                 }
                 const rawData = await response.json();
                 localTickerDB = processTickerDB(rawData);
-                console.log(`성공적으로 ${localTickerDB.length}개의 티커 데이터를 불러왔습니다.`);
             } catch (error) {
                 console.error("티커 DB 로드 실패:", error);
                 localTickerDB = processTickerDB([
@@ -543,19 +539,10 @@ layout: null
             });
         }
 
-        /* 드롭다운 설정 메뉴 제어 */
-        function toggleSettingsMenu() {
-            document.getElementById('settings-dropdown').classList.toggle('active');
-        }
+        function toggleSettingsMenu() { document.getElementById('settings-dropdown').classList.toggle('active'); }
 
-        /* 설정값 내보내기 */
         function exportSettings() {
-            const data = {
-                watchlists: state.watchlists,
-                sectionOrder: state.sectionOrder,
-                expanded: state.expanded,
-                theme: state.theme
-            };
+            const data = { watchlists: state.watchlists, sectionOrder: state.sectionOrder, expanded: state.expanded, theme: state.theme };
             const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -566,13 +553,8 @@ layout: null
             toggleSettingsMenu();
         }
 
-        /* 설정값 가져오기 트리거 */
-        function triggerImport() {
-            document.getElementById('import-file').click();
-            toggleSettingsMenu();
-        }
+        function triggerImport() { document.getElementById('import-file').click(); toggleSettingsMenu(); }
 
-        /* 설정값 복원 수행 */
         function importSettings(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -585,7 +567,6 @@ layout: null
                         localStorage.setItem('marketdash_sectionOrder', JSON.stringify(data.sectionOrder));
                         if(data.expanded) localStorage.setItem('marketdash_expanded', JSON.stringify(data.expanded));
                         if(data.theme) localStorage.setItem('marketdash_theme', data.theme);
-                        
                         alert('설정이 성공적으로 복원되었습니다.');
                         location.reload(); 
                     } else {
@@ -677,13 +658,8 @@ layout: null
                 
                 const inputEl = document.getElementById(`input-${sectionId}`);
                 if(inputEl) {
-                    inputEl.addEventListener('input', (e) => {
-                        handleAutocomplete(e.target.value, sectionId);
-                    });
-                    
-                    inputEl.addEventListener('focus', (e) => {
-                        handleAutocomplete(e.target.value, sectionId);
-                    });
+                    inputEl.addEventListener('input', (e) => handleAutocomplete(e.target.value, sectionId));
+                    inputEl.addEventListener('focus', (e) => handleAutocomplete(e.target.value, sectionId));
                 }
             });
 
@@ -698,11 +674,8 @@ layout: null
                 list.style.display = 'none';
                 return;
             }
-
             list.style.display = 'block';
-
             const isChosungQuery = /[ㄱ-ㅎ]/.test(query) && !/[가-힣]/.test(query);
-
             const matchedQuotes = localTickerDB.filter(q => {
                 if (isChosungQuery) {
                     return (q.cs_s && q.cs_s.includes(query)) || (q.cs_n && q.cs_n.includes(query));
@@ -714,10 +687,7 @@ layout: null
             if (matchedQuotes.length > 0) {
                 list.innerHTML = matchedQuotes.map(q => `
                     <li onclick="selectAutocomplete('${q.s}', '${sectionId}')">
-                        <div class="ac-info">
-                            <span class="ac-symbol">${q.s}</span>
-                            <span class="ac-name">${q.n}</span>
-                        </div>
+                        <div class="ac-info"><span class="ac-symbol">${q.s}</span><span class="ac-name">${q.n}</span></div>
                         <span class="ac-exch">${q.e}</span>
                     </li>
                 `).join('');
@@ -730,10 +700,7 @@ layout: null
             const input = document.getElementById(`input-${sectionId}`);
             const list = document.getElementById(`autocomplete-${sectionId}`);
             const btn = document.getElementById(`btn-add-${sectionId}`);
-            
-            input.value = symbol;
-            list.style.display = 'none';
-            btn.click(); 
+            input.value = symbol; list.style.display = 'none'; btn.click(); 
         };
 
         function generateRowHTML(ticker) {
@@ -746,12 +713,10 @@ layout: null
                             <span class="name" id="name-${sid}"><span class="skeleton sm"></span></span>
                         </div>
                     </td>
-                    
                     <td id="price-cell-${sid}">
                         <div class="price" id="price-${sid}"><span class="skeleton"></span></div>
                         <div class="extended-price" id="ext-price-${sid}"></div>
                     </td>
-                    
                     <td id="change-cell-${sid}">
                         <div class="change-cell">
                             <div id="change-${sid}"><span class="skeleton"></span></div>
@@ -761,9 +726,7 @@ layout: null
                     <td class="hide-mobile sub-data" id="vol-${sid}">-</td>
                     <td class="hide-mobile sub-data" id="cap-${sid}">-</td>
                     <td class="hide-mobile sub-data" id="range-${sid}">-</td>
-                    <td class="actions-col">
-                        <button class="action-icon-btn danger" onclick="confirmRemoveTicker('${ticker}')">${TRASH_ICON}</button>
-                    </td>
+                    <td class="actions-col"><button class="action-icon-btn danger" onclick="confirmRemoveTicker('${ticker}')">${TRASH_ICON}</button></td>
                     <td class="handle-col"><div class="action-icon-btn drag-handle">${DRAG_ICON}</div></td>
                 </tr>
             `;
@@ -830,7 +793,6 @@ layout: null
             }
             form.classList.toggle('active');
             container.classList.toggle('edit-mode');
-            
             if (form.classList.contains('active')) form.querySelector('input').focus();
         }
 
@@ -846,29 +808,21 @@ layout: null
             }
 
             const originalBtnContent = `${PLUS_ICON}<span>Add tickers</span>`;
-            btnEl.disabled = true; 
-            btnEl.innerHTML = `<span>Adding ticker...</span>`; 
-            listEl.style.display = 'none';
+            btnEl.disabled = true; btnEl.innerHTML = `<span>Adding ticker...</span>`; listEl.style.display = 'none';
 
             try {
                 const data = await fetchYahooFinance([ticker]);
                 if (!data || data.length === 0 || !data[0].regularMarketPrice) {
                     alert(`${ticker} not found. Search by Yahoo Finance ticker.`); return;
                 }
-                state.watchlists[sectionId].tickers.push(ticker);
-                saveWatchlists();
-
+                state.watchlists[sectionId].tickers.push(ticker); saveWatchlists();
                 const tbody = document.getElementById(`tbody-${sectionId}`);
                 tbody.insertAdjacentHTML('beforeend', generateRowHTML(ticker));
-                cacheRowNodes(ticker);
-
-                updateDOMWithData([data[0]]);
-                inputEl.value = '';
+                cacheRowNodes(ticker); updateDOMWithData([data[0]]); inputEl.value = '';
             } catch (err) {
                 alert(`오류: ${err.message}`);
             } finally {
-                btnEl.disabled = false; 
-                btnEl.innerHTML = originalBtnContent;
+                btnEl.disabled = false; btnEl.innerHTML = originalBtnContent;
             }
         }
 
@@ -878,19 +832,12 @@ layout: null
             targetTickerToDelete = ticker;
             document.getElementById('delete-target-ticker').textContent = ticker;
             document.getElementById('delete-modal').classList.add('active');
-            
             document.getElementById('confirm-delete-btn').onclick = () => {
-                if (targetTickerToDelete) {
-                    executeRemoveTicker(targetTickerToDelete);
-                    closeDeleteModal();
-                }
+                if (targetTickerToDelete) { executeRemoveTicker(targetTickerToDelete); closeDeleteModal(); }
             };
         }
 
-        function closeDeleteModal() {
-            targetTickerToDelete = null;
-            document.getElementById('delete-modal').classList.remove('active');
-        }
+        function closeDeleteModal() { targetTickerToDelete = null; document.getElementById('delete-modal').classList.remove('active'); }
 
         function executeRemoveTicker(ticker) {
             for (const sectionId in state.watchlists) {
@@ -900,10 +847,8 @@ layout: null
                 }
             }
             saveWatchlists();
-            const sid = getSafeId(ticker);
-            const row = document.getElementById(`row-${sid}`);
-            if (row) row.remove();
-            rowNodes.delete(ticker);
+            const sid = getSafeId(ticker); const row = document.getElementById(`row-${sid}`);
+            if (row) row.remove(); rowNodes.delete(ticker);
         }
 
         function resetToDefaults() {
@@ -916,15 +861,8 @@ layout: null
             }
         }
 
-        function openAboutModal() {
-            toggleSettingsMenu();
-            document.getElementById('about-modal').classList.add('active');
-        }
-
-        function closeAboutModal() {
-            document.getElementById('about-modal').classList.remove('active');
-        }
-
+        function openAboutModal() { toggleSettingsMenu(); document.getElementById('about-modal').classList.add('active'); }
+        function closeAboutModal() { document.getElementById('about-modal').classList.remove('active'); }
         function saveWatchlists() { localStorage.setItem('marketdash_watchlists', JSON.stringify(state.watchlists)); }
 
         async function fetchYahooFinance(symbols) {
@@ -956,11 +894,8 @@ layout: null
                 const chunk = symbolsToFetch.slice(i, i + chunkSize);
                 try {
                     const results = await fetchYahooFinance(chunk);
-                    updateDOMWithData(results);
-                    markMissingData(chunk, results);
-                } catch (error) {
-                    markAllError(chunk, error.message);
-                }
+                    updateDOMWithData(results); markMissingData(chunk, results);
+                } catch (error) { markAllError(chunk, error.message); }
             }
         }
 
@@ -972,8 +907,7 @@ layout: null
             if (state.intervalId) clearInterval(state.intervalId);
             state.intervalId = setInterval(() => {
                 state.countdown--;
-                if (state.countdown <= 0) forceRefresh();
-                else document.getElementById('countdown').textContent = state.countdown;
+                if (state.countdown <= 0) forceRefresh(); else document.getElementById('countdown').textContent = state.countdown;
             }, 1000);
         }
 
@@ -990,16 +924,14 @@ layout: null
                     const oldPriceStr = nodes.price.getAttribute('data-price');
                     const oldPrice = oldPriceStr ? parseFloat(oldPriceStr) : null;
                     if (oldPrice !== null && oldPrice !== price) {
-                        nodes.row.classList.remove('flash-up', 'flash-down');
-                        void nodes.row.offsetWidth; 
+                        nodes.row.classList.remove('flash-up', 'flash-down'); void nodes.row.offsetWidth; 
                         nodes.row.classList.add(price > oldPrice ? 'flash-up' : 'flash-down');
                     }
                     nodes.price.setAttribute('data-price', price);
-
                     nodes.name.textContent = quote.shortName || quote.longName || ticker;
                     nodes.price.textContent = formatNum(price);
                     
-                    // --- 장외 거래(Pre/Post/Overnight) 스마트 처리 ---
+                    // --- 장외 거래(PRE/POST) 스마트 필터링 처리 ---
                     let extOptions = [];
 
                     if (quote.preMarketPrice) {
@@ -1008,30 +940,20 @@ layout: null
                     if (quote.postMarketPrice) {
                         extOptions.push({ price: quote.postMarketPrice, pct: quote.postMarketChangePercent || 0, label: 'POST', time: quote.postMarketTime || 0 });
                     }
-                    if (quote.overnightMarketPrice) {
-                        extOptions.push({ price: quote.overnightMarketPrice, pct: quote.overnightMarketChangePercent || 0, label: 'NIGHT', time: quote.overnightMarketTime || 0 });
-                    }
 
                     let extPrice, extChangePct, extLabel;
 
                     if (extOptions.length > 0) {
+                        // PRE와 POST 중 타임스탬프가 더 큰(최신인) 데이터를 선택
                         const latestExt = extOptions.reduce((prev, current) => (prev.time > current.time) ? prev : current);
-                        
                         extPrice = latestExt.price;
                         extChangePct = latestExt.pct;
                         extLabel = latestExt.label;
                     }
 
                     if (extPrice && extLabel) {
-                        const isExtUp = extChangePct >= 0;
-                        const extColorClass = isExtUp ? 'up' : 'down';
-                        const extSign = isExtUp ? '+' : '';
-                        
-                        nodes.extPrice.innerHTML = `
-                            <span class="ext-label">${extLabel}</span>
-                            ${formatNum(extPrice)} 
-                            <span class="${extColorClass}">(${extSign}${formatNum(extChangePct)}%)</span>
-                        `;
+                        const isExtUp = extChangePct >= 0; const extColorClass = isExtUp ? 'up' : 'down'; const extSign = isExtUp ? '+' : '';
+                        nodes.extPrice.innerHTML = `<span class="ext-label">${extLabel}</span> ${formatNum(extPrice)} <span class="${extColorClass}">(${extSign}${formatNum(extChangePct)}%)</span>`;
                     } else {
                         nodes.extPrice.innerHTML = '';
                     }
@@ -1039,13 +961,8 @@ layout: null
                     
                     nodes.change.innerHTML = `<span class="${colorClass}">${sign}${formatNum(change)}</span>`;
                     nodes.pct.innerHTML = `<span class="badge ${colorClass}"><span class="arrow">${arrow}</span>${formatNum(Math.abs(pct))}%</span>`;
-                    
-                    nodes.vol.textContent = formatCompact(quote.regularMarketVolume);
-                    nodes.cap.textContent = formatCompact(quote.marketCap);
-                    
-                    if (quote.fiftyTwoWeekLow && quote.fiftyTwoWeekHigh) {
-                        nodes.range.textContent = `${formatNum(quote.fiftyTwoWeekLow)} - ${formatNum(quote.fiftyTwoWeekHigh)}`;
-                    } else { nodes.range.textContent = '-'; }
+                    nodes.vol.textContent = formatCompact(quote.regularMarketVolume); nodes.cap.textContent = formatCompact(quote.marketCap);
+                    if (quote.fiftyTwoWeekLow && quote.fiftyTwoWeekHigh) { nodes.range.textContent = `${formatNum(quote.fiftyTwoWeekLow)} - ${formatNum(quote.fiftyTwoWeekHigh)}`; } else { nodes.range.textContent = '-'; }
                 });
             });
         }
@@ -1058,13 +975,10 @@ layout: null
         function markAllError(symbols, errMsg) { symbols.forEach(sym => setErrorState(sym, errMsg)); }
 
         function setErrorState(ticker, msg) {
-            const nodes = rowNodes.get(ticker);
-            if (!nodes) return;
+            const nodes = rowNodes.get(ticker); if (!nodes) return;
             requestAnimationFrame(() => {
-                nodes.name.textContent = 'Error';
-                nodes.price.innerHTML = `<span class="error-text">${msg}</span>`;
-                nodes.extPrice.innerHTML = '';
-                nodes.change.innerHTML = ''; nodes.pct.innerHTML = '';
+                nodes.name.textContent = 'Error'; nodes.price.innerHTML = `<span class="error-text">${msg}</span>`;
+                nodes.extPrice.innerHTML = ''; nodes.change.innerHTML = ''; nodes.pct.innerHTML = '';
                 nodes.vol.textContent = '-'; nodes.cap.textContent = '-'; nodes.range.textContent = '-';
             });
         }
