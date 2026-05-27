@@ -373,23 +373,29 @@ layout: null
             
             th, td { padding: 0.75rem 0.25rem; font-size: 0.75rem; }
             
-            /* 1. 좌우 대칭 교정: 강제 폭 늘림 */
+            /* 좌측 기준점 1rem 설정 */
             th.col-symbol, td.col-symbol { 
                 width: 32%; 
                 padding-left: 1rem !important; 
             }
+            
+            /* 우측 핸들 정렬: 1rem의 데칼코마니 대칭을 위해 물리적 우측 여백 1rem 강제 */
             th.handle-col, td.handle-col { 
-                width: 44px !important; /* 아이콘 폭(18px) + 버튼 자체 패딩 + 우측 0.6rem 여백을 수용할 충분한 공간 */
+                width: 44px !important; 
                 padding-left: 0; 
-                padding-right: 0.6rem !important; /* 내부 버튼의 0.4rem 패딩과 결합하여 시각적으로 1rem 구현 */
+                padding-right: 1rem !important; 
                 text-align: right !important; 
             }
+            /* [핵심 교정] 버튼 내부에 있는 우측 패딩(0.4rem)을 음수 마진으로 상쇄하여, 
+               아이콘의 시각적 끝선이 정확히 1rem 위치에 정렬되도록 처리 */
+            .handle-col .action-icon-btn {
+                margin-right: -0.4rem;
+            }
             
-            /* 2. Price와 Change 간격 좁히기: Price의 비율을 늘려 우측 밀착 유도 */
             th.col-price, td.col-price { width: 44%; } 
             th.col-change, td.col-change { 
                 width: 24%; 
-                padding-right: 0.5rem !important; /* 우측 핸들과의 간격도 깔끔하게 조정 */
+                padding-right: 0.5rem !important; 
             }
             
             th.actions-col, td.actions-col { width: 32px; padding-right: 0; padding-left: 0; }
