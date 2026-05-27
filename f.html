@@ -364,7 +364,6 @@ layout: null
 
         footer { text-align: right; padding: 1.5rem 5%; font-family: 'Courier New', Courier, monospace; color: var(--text-secondary); font-size: 0.7rem; opacity: 0.8; margin-top: auto; }
 
-        /* 모바일 환경 대응 (이 부분이 완벽 교정되었습니다!) */
         @media (max-width: 768px) {
             .hide-mobile { display: none; }
             header { position: static; flex-direction: column; gap: 1rem; padding: 1rem; }
@@ -374,23 +373,23 @@ layout: null
             
             th, td { padding: 0.75rem 0.25rem; font-size: 0.75rem; }
             
-            /* 좌우 대칭을 1rem으로 완벽하게 동기화 */
+            /* 1. 좌우 대칭 교정: 강제 폭 늘림 */
             th.col-symbol, td.col-symbol { 
                 width: 32%; 
-                padding-left: 1rem !important; /* 상단 헤더 패딩(1rem)과 수직 정렬 일치 */
+                padding-left: 1rem !important; 
             }
             th.handle-col, td.handle-col { 
-                width: 32px !important; /* 불필요한 공백을 제거하고 아이콘 크기에 딱 맞춤 */
+                width: 44px !important; /* 아이콘 폭(18px) + 버튼 자체 패딩 + 우측 0.6rem 여백을 수용할 충분한 공간 */
                 padding-left: 0; 
-                padding-right: 1rem !important; /* 좌측 기준점과 100% 데칼코마니 */
-                text-align: right !important; /* 아이콘을 완전히 우측 가장자리로 강제 밀착 */
+                padding-right: 0.6rem !important; /* 내부 버튼의 0.4rem 패딩과 결합하여 시각적으로 1rem 구현 */
+                text-align: right !important; 
             }
             
-            th.col-price, td.col-price { width: 38%; } 
-            
+            /* 2. Price와 Change 간격 좁히기: Price의 비율을 늘려 우측 밀착 유도 */
+            th.col-price, td.col-price { width: 44%; } 
             th.col-change, td.col-change { 
-                width: 30%; 
-                padding-right: 0.75rem !important; /* Change 데이터가 핸들 아이콘에 숨막히게 붙지 않도록 간격 확보 */
+                width: 24%; 
+                padding-right: 0.5rem !important; /* 우측 핸들과의 간격도 깔끔하게 조정 */
             }
             
             th.actions-col, td.actions-col { width: 32px; padding-right: 0; padding-left: 0; }
@@ -766,7 +765,6 @@ layout: null
 
         function generateRowHTML(ticker) {
             const sid = getSafeId(ticker);
-            /* 모바일 너비/정렬 CSS를 테이블 <td>에도 완벽히 강제하기 위해 col-* 클래스 삽입 */
             return `
                 <tr id="row-${sid}" data-ticker="${ticker}">
                     <td class="left-align col-symbol">
