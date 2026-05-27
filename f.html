@@ -149,6 +149,7 @@ layout: null
         .action-icon-btn.toggle-btn svg { transition: transform 0.3s ease; }
         .collapsed .action-icon-btn.toggle-btn svg { transform: rotate(-180deg); }
         .collapsed .section-body { display: none; }
+        .collapsed .btn-add-symbol { display: none; }
 
         .section-container:not(.edit-mode) th.actions-col,
         .section-container:not(.edit-mode) td.actions-col {
@@ -387,7 +388,7 @@ layout: null
                 text-align: right !important; 
             }
             /* [핵심 교정] 버튼 내부에 있는 우측 패딩(0.4rem)을 음수 마진으로 상쇄하여, 
-               아이콘의 시각적 끝선이 정확히 1rem 위치에 정렬되도록 처리 */
+                아이콘의 시각적 끝선이 정확히 1rem 위치에 정렬되도록 처리 */
             .handle-col .action-icon-btn {
                 margin-right: -0.4rem;
             }
@@ -492,7 +493,7 @@ layout: null
             <div class="modal-title">Credits</div>
             <div class="modal-desc" style="text-align: left; padding: 1rem 0;">
                 <div style="font-weight: 900; font-size: 1.3rem; color: var(--text-primary); margin-bottom: 0.5rem;">F I N A N C E : ¹ U P</div>
-                <div style="margin-bottom: 0.3rem;"><span style="font-weight: 600;">ver.1.5.0</span></div>
+                <div style="margin-bottom: 0.3rem;"><span style="font-weight: 600;">ver.1.5.0.527</span></div>
                 <div><span>N3RD - 1up your vibe!!</span></div>
             </div>
             <div class="modal-actions">
