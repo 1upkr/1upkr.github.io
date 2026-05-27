@@ -184,7 +184,7 @@ layout: null
             width: 100%; padding: 0.5rem 0.75rem 0.5rem 2.2rem; border: 1px solid var(--border-color); border-radius: 8px;
             background-color: var(--card-bg); color: var(--text-primary); font-size: 0.675rem; font-weight: 500; text-transform: uppercase; height: 38px;
         }
-        .add-ticker-form input:focus { outline: none; border-color: #0056d2; }
+        .add-ticker-form input:focus { outline: none; border-color: #EB0F29; }
         
         .add-ticker-form button { 
             background-color: var(--btn-bg); color: var(--btn-text); border: 1.5px solid var(--text-secondary); 
@@ -594,7 +594,7 @@ layout: null
                     <div class="section-body">
                         <form class="add-ticker-form" onsubmit="handleAddTicker(event, '${sectionId}')">
                             <div class="search-wrapper">
-                                <div class="input-guide" id="guide-${sectionId}">Enter a Yahoo Finance ticker</div>
+                                <div class="input-guide" id="guide-${sectionId}">Please enter only the ticker symbol from Yahoo Finance</div>
                                 ${SEARCH_ICON}
                                 <input type="text" id="input-${sectionId}" placeholder="Search Ticker or Company" autocomplete="off">
                                 <ul class="autocomplete-list" id="autocomplete-${sectionId}"></ul>
