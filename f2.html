@@ -5,7 +5,7 @@ layout: null
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ꜰ ɪ ɴ ᴀ ɴ ᴄ ᴇ : ¹ ᴜ ᴘ</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="icon" type="image/svg+xml" href="https://1up.kr/assets/pacman-svg.svg">
@@ -72,6 +72,8 @@ layout: null
             margin: 0;
             padding: 0;
             font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            /* 모바일 웹 더블탭 확대 등 방지 */
+            touch-action: manipulation;
         }
 
         body {
@@ -127,7 +129,7 @@ layout: null
         .theme-icon-sun { display: none; } .theme-icon-moon { display: block; }
         [data-theme="dark"] .theme-icon-sun { display: block; } [data-theme="dark"] .theme-icon-moon { display: none; }
 
-        main { padding: 2rem 5%; max-width: 1400px; margin: 0 auto; flex: 1; width: 100%; }
+        main { padding: 2rem 5%; max-width: 1400px; margin: 0 auto; flex: 1; width: 100%; overflow-x: hidden; }
 
         .section-container {
             background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; 
@@ -148,7 +150,6 @@ layout: null
         .action-icon-btn.danger:hover { color: var(--red); background-color: var(--red-bg); }
         .action-icon-btn.toggle-btn svg { transition: transform 0.3s ease; }
         
-        /* 1. UX: 접힌 상태에서는 '+' 버튼을 숨깁니다 */
         .collapsed .action-icon-btn.toggle-btn svg { transform: rotate(-180deg); }
         .collapsed .section-body { display: none; }
         .collapsed .btn-add-symbol { display: none; }
@@ -196,7 +197,6 @@ layout: null
         .add-ticker-form button:disabled { opacity: 0.6; cursor: not-allowed; background-color: var(--btn-bg); border-color: var(--text-secondary); }
         .add-ticker-form button svg.icon-svg { width: 16px; height: 16px; stroke-width: 2.5; }
 
-        /* 3. 로딩 스피너 애니메이션 */
         .spinner { animation: rotate 2s linear infinite; z-index: 2; width: 16px; height: 16px; }
         .spinner .path { stroke: currentColor; stroke-linecap: round; animation: dash 1.5s ease-in-out infinite; }
         @keyframes rotate { 100% { transform: rotate(360deg); } }
@@ -206,7 +206,6 @@ layout: null
             100% { stroke-dasharray: 90, 150; stroke-dashoffset: -124; }
         }
 
-        /* Empty State */
         .empty-state {
             padding: 3rem 1rem; text-align: center; color: var(--text-secondary);
             display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem;
@@ -231,8 +230,7 @@ layout: null
         .ac-name { font-size: 0.75rem; color: var(--text-secondary); max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .ac-exch { font-size: 0.65rem; padding: 0.15rem 0.35rem; background: var(--input-bg); border-radius: 4px; color: var(--text-secondary); font-weight: 500;}
 
-        /* Input Guide 생략 (코드 유지) */
-        .input-guide { /* ...기존 CSS 유지... */ position: absolute; bottom: calc(100% + 8px); left: 0; background: var(--card-bg); border: 1px solid var(--border-color); padding: 0.5rem 0.8rem; border-radius: 6px; font-size: 0.75rem; font-weight: 500; color: var(--text-secondary); box-shadow: var(--shadow-md); display: none; z-index: 1000; white-space: nowrap; }
+        .input-guide { position: absolute; bottom: calc(100% + 8px); left: 0; background: var(--card-bg); border: 1px solid var(--border-color); padding: 0.5rem 0.8rem; border-radius: 6px; font-size: 0.75rem; font-weight: 500; color: var(--text-secondary); box-shadow: var(--shadow-md); display: none; z-index: 1000; white-space: nowrap; }
         .input-guide::after { content: ''; position: absolute; top: 100%; left: 15px; border-width: 5px; border-style: solid; border-color: var(--border-color) transparent transparent transparent; }
         .input-guide::before { content: ''; position: absolute; top: 100%; left: 15px; border-width: 5px; border-style: solid; border-color: var(--card-bg) transparent transparent transparent; margin-top: -1.5px; z-index: 1; }
 
@@ -245,10 +243,9 @@ layout: null
         th.col-vol { width: 12%; } th.col-cap { width: 12%; } th.col-range { width: 18%; }
         td.left-align { text-align: left; }
         
-        /* 2. UX: 모바일 터치 타겟 최적화를 위해 컬럼 폭 약간 조정 */
         th.actions-col, td.actions-col { width: 44px; padding-right: 0; padding-left: 0.5rem; text-align: center; }
         th.handle-col, td.handle-col { width: 48px; padding-right: 0.75rem; padding-left: 0; text-align: center; } 
-        tbody tr { transition: background-color 0.15s; } tbody tr:hover { background-color: var(--hover-bg); }
+        tbody tr { transition: background-color 0.15s, transform 0.2s ease; } tbody tr:hover { background-color: var(--hover-bg); }
 
         .asset-col { display: flex; flex-direction: column; gap: 0.1rem; width: 100%; }
         .symbol { font-weight: 600; font-size: 0.95rem; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -266,7 +263,6 @@ layout: null
         .sub-data { color: var(--text-primary); font-weight: 500; font-size: 0.85rem; font-variant-numeric: tabular-nums; overflow: hidden; text-overflow: ellipsis; }
         .arrow { font-size: 0.7rem; margin-right: 0.2rem; stroke-width: 3; }
 
-        /* Modal 생략 (코드 유지) */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--modal-overlay); backdrop-filter: blur(2px); display: flex; justify-content: center; align-items: center; z-index: 1000; opacity: 0; visibility: hidden; transition: opacity 0.2s, visibility 0.2s; }
         .modal-overlay.active { opacity: 1; visibility: visible; }
         .modal-card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.75rem; width: 90%; max-width: 340px; box-shadow: var(--shadow-md); text-align: center; transform: translateY(20px); transition: transform 0.2s; }
@@ -296,7 +292,7 @@ layout: null
             .hide-mobile { display: none; }
             header { position: static; flex-direction: column; gap: 1rem; padding: 1rem; }
             .header-controls { width: 100%; justify-content: space-between; }
-            main { padding: 1rem 3%; }
+            main { padding: 1rem 3%; overflow-x: hidden; }
             .section-header { padding: 1rem; }
             
             th, td { padding: 0.75rem 0.25rem; font-size: 0.75rem; }
@@ -304,12 +300,13 @@ layout: null
             th.col-symbol, td.col-symbol { width: 32%; padding-left: 1rem !important; }
             th.handle-col, td.handle-col { width: 44px !important; padding-left: 0; padding-right: 1rem !important; text-align: right !important; }
             
-            /* 2. UX: 모바일 터치 타겟 크기 최소화 (버튼 여백 최적화) */
             .action-icon-btn { min-width: 36px; min-height: 36px; }
             .handle-col .action-icon-btn { margin-right: -0.4rem; }
             
             th.col-price, td.col-price { width: 44%; } 
             th.col-change, td.col-change { width: 24%; padding-right: 0.5rem !important; }
+            
+            /* 모바일에서 삭제버튼(actions-col) 영역은 사실상 스와이프로 대체할 것이지만 기본 형태 유지 */
             th.actions-col, td.actions-col { width: 40px; padding-right: 0; padding-left: 0; }
             
             .symbol { font-size: 0.8rem; } .name { font-size: 0.65rem; }
@@ -320,10 +317,24 @@ layout: null
 
             .search-wrapper { max-width: 100%; width: 100%; }
             .add-ticker-form { flex-direction: column; align-items: stretch; padding: 0.75rem 1rem; gap: 0.5rem; }
-            .add-ticker-form button { width: 100%; height: 44px; min-width: auto; font-size: 0.875rem; } /* 모바일에서 버튼 높이 증가 */
+            
+            /* 2. 모바일 버튼 사이즈 조절 및 정렬 수정 */
+            .add-ticker-form button { 
+                width: auto; 
+                align-self: flex-end; /* 우측 정렬 */
+                height: 44px; 
+                min-width: 140px; /* 가로 꽉 차지 않는 아름다운 사이즈 */
+                font-size: 0.875rem; 
+                padding: 0 1.5rem;
+            }
+
+            /* 3. iOS 모바일 Safari 텍스트 입력 시 화면 강제 확대 방지를 위한 16px 고정 */
+            .add-ticker-form input, input[type="text"] {
+                font-size: 16px !important; 
+            }
             
             .autocomplete-list { max-height: 220px; box-shadow: 0 8px 16px rgba(0,0,0,0.15); }
-            .autocomplete-list li { padding: 0.7rem 0.75rem; } /* 모바일 터치 타겟 증가 */
+            .autocomplete-list li { padding: 0.7rem 0.75rem; } 
             .ac-symbol { font-size: 0.85rem; } .ac-name { font-size: 0.7rem; max-width: 140px; }
         }
     </style>
@@ -394,7 +405,7 @@ layout: null
     </div>
 
     <script>
-        // --- 1. CONFIGURATION & UTILITIES ---
+        // --- CONFIGURATION & UTILITIES ---
         const DEFAULT_WATCHLISTS = {
             indicators: { title: '📈 Market', tickers: ['KRW=X', '^KS11', '^KQ11', '^IXIC', '^DJI', '^GSPC', 'BTC-USD'] },
             kr: { title: '🇰🇷 KR', tickers: ['005930.KS', '000660.KS', '373220.KS', '005380.KS', '035420.KS'] },            
@@ -414,7 +425,6 @@ layout: null
             return result;
         }
 
-        // [최적화] XSS 방어를 위한 HTML Escape 유틸리티
         function escapeHTML(str) {
             if (typeof str !== 'string') return str;
             return str.replace(/[&<>'"]/g, tag => ({
@@ -422,7 +432,6 @@ layout: null
             }[tag]));
         }
 
-        // [최적화] 디바운싱(Debouncing) 유틸리티 - 자동완성 성능 개선
         function debounce(func, wait) {
             let timeout;
             return function executedFunction(...args) {
@@ -453,13 +462,13 @@ layout: null
         const rowNodes = new Map(); let sortables = []; 
         function getSafeId(ticker) { return 'id_' + ticker.replace(/[^a-zA-Z0-9]/g, '_'); }
 
-
-        // --- 2. INITIALIZATION ---
+        // --- INITIALIZATION ---
         async function init() {
             if (!state.sectionOrder || state.sectionOrder.length === 0) state.sectionOrder = Object.keys(state.watchlists);
             await initTickerDB(); 
 
             applyTheme(); renderLayout(); startTimer(); fetchData(); 
+            initSwipeToDelete(); // 1. 스와이프 삭제 제스처 리스너 초기화
             
             document.getElementById('btn-refresh').addEventListener('click', forceRefresh);
             document.addEventListener('click', (e) => {
@@ -489,8 +498,76 @@ layout: null
             }
         }
 
+        // --- 1. SWIPE TO DELETE GESTURE LOGIC ---
+        function initSwipeToDelete() {
+            let touchStartX = 0;
+            let touchStartY = 0;
+            let swipingRow = null;
+            let isSwiping = false;
 
-        // --- 3. RENDERING & UI ---
+            const dashboard = document.getElementById('dashboard');
+
+            dashboard.addEventListener('touchstart', e => {
+                // 편집(Edit) 모드이거나, 드래그 핸들/버튼 터치 시에는 무시
+                const row = e.target.closest('tr[data-ticker]');
+                if (!row || e.target.closest('.drag-handle') || e.target.closest('.action-icon-btn')) return;
+                
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+                swipingRow = row;
+                isSwiping = false;
+                row.style.transition = 'none'; // 스와이프 시 딜레이 제거
+            }, { passive: true });
+
+            dashboard.addEventListener('touchmove', e => {
+                if (!swipingRow) return;
+                const touchCurrentX = e.touches[0].clientX;
+                const touchCurrentY = e.touches[0].clientY;
+                const diffX = touchCurrentX - touchStartX;
+                const diffY = touchCurrentY - touchStartY;
+
+                // 세로 스크롤보다 가로 움직임이 클 때만 스와이프 활성화 (오작동 방지)
+                if (!isSwiping && Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 10) {
+                    isSwiping = true;
+                }
+
+                // 왼쪽으로 스와이프 할 때만
+                if (isSwiping && diffX < 0) { 
+                    if (e.cancelable) e.preventDefault(); // 스와이프 중 세로 스크롤 방지
+                    const moveX = Math.max(diffX, -150); // 최대 이동폭 제한
+                    swipingRow.style.transform = `translateX(${moveX}px)`;
+                    swipingRow.style.opacity = 1 - (Math.abs(moveX) / 200); // 서서히 투명해지게 처리
+                }
+            }, { passive: false }); // preventDefault 사용을 위해 passive: false 설정
+
+            dashboard.addEventListener('touchend', e => {
+                if (!swipingRow) return;
+                const touchCurrentX = e.changedTouches[0].clientX;
+                const diffX = touchCurrentX - touchStartX;
+
+                swipingRow.style.transition = 'all 0.3s ease';
+                
+                // 임계치(80px) 이상 스와이프 시 즉시 삭제 처리
+                if (isSwiping && diffX < -80) {
+                    swipingRow.style.transform = `translateX(-100vw)`;
+                    swipingRow.style.opacity = '0';
+                    const ticker = swipingRow.dataset.ticker;
+                    
+                    setTimeout(() => {
+                        executeRemoveTicker(ticker); // 모달 없이 다이렉트 삭제!
+                    }, 300);
+                } else {
+                    // 원위치로 복구
+                    swipingRow.style.transform = 'translateX(0)';
+                    swipingRow.style.opacity = '1';
+                }
+                
+                swipingRow = null;
+                isSwiping = false;
+            });
+        }
+
+        // --- RENDERING & UI ---
         function renderLayout() {
             const dashboard = document.getElementById('dashboard');
             dashboard.innerHTML = ''; rowNodes.clear();
@@ -568,7 +645,6 @@ layout: null
                 
                 const inputEl = document.getElementById(`input-${sectionId}`);
                 if(inputEl) {
-                    // [퍼포먼스] 디바운스 적용으로 키입력 시 연산 부하 완화
                     const debouncedSearch = debounce((e) => handleAutocomplete(e.target.value, sectionId), 150);
                     inputEl.addEventListener('input', debouncedSearch);
                     inputEl.addEventListener('focus', debouncedSearch);
@@ -578,17 +654,14 @@ layout: null
             initDragAndDrop();
         }
 
-        // [UX] 자동완성 처리 (XSS 보안 적용)
         function handleAutocomplete(query, sectionId) {
             const list = document.getElementById(`autocomplete-${sectionId}`);
             const guide = document.getElementById(`guide-${sectionId}`);
-            if(!query) return; // 디바운스 과정에서 undefined 방어
+            if(!query) return; 
             query = query.trim().toLowerCase();
             
             if (query.length < 1) {
-                list.style.display = 'none';
-                guide.style.display = 'none';
-                return;
+                list.style.display = 'none'; guide.style.display = 'none'; return;
             }
             
             const isChosungQuery = /[ㄱ-ㅎ]/.test(query) && !/[가-힣]/.test(query);
@@ -599,21 +672,16 @@ layout: null
 
             if (matchedQuotes.length > 0) {
                 list.innerHTML = matchedQuotes.map(q => {
-                    // 외부 데이터 바인딩 시 XSS 방어 처리
-                    const safeSymbol = escapeHTML(q.s);
-                    const safeName = escapeHTML(q.n);
-                    const safeExch = escapeHTML(q.e);
+                    const safeSymbol = escapeHTML(q.s); const safeName = escapeHTML(q.n); const safeExch = escapeHTML(q.e);
                     return `
                     <li onclick="selectAutocomplete('${safeSymbol}', '${sectionId}')">
                         <div class="ac-info"><span class="ac-symbol">${safeSymbol}</span><span class="ac-name">${safeName}</span></div>
                         <span class="ac-exch">${safeExch}</span>
                     </li>
                 `}).join('');
-                list.style.display = 'block';
-                guide.style.display = 'none';
+                list.style.display = 'block'; guide.style.display = 'none';
             } else {
-                list.style.display = 'none';
-                guide.style.display = 'block';
+                list.style.display = 'none'; guide.style.display = 'block';
             }
         }
 
@@ -622,10 +690,8 @@ layout: null
             const list = document.getElementById(`autocomplete-${sectionId}`);
             const guide = document.getElementById(`guide-${sectionId}`);
             const btn = document.getElementById(`btn-add-${sectionId}`);
-            input.value = symbol; 
-            list.style.display = 'none'; 
-            if(guide) guide.style.display = 'none';
-            btn.click(); 
+            input.value = symbol; list.style.display = 'none'; 
+            if(guide) guide.style.display = 'none'; btn.click(); 
         };
 
         function generateRowHTML(ticker) {
@@ -669,9 +735,7 @@ layout: null
             }
         }
 
-
-        // --- 4. DATA FETCHING & LOGIC ---
-        // [안정성] 지수 백오프(Exponential Backoff)가 적용된 재시도 Fetch
+        // --- DATA FETCHING & LOGIC ---
         async function fetchWithRetry(url, maxRetries = 3, baseDelayMs = 1000) {
             for (let attempt = 0; attempt < maxRetries; attempt++) {
                 try {
@@ -679,8 +743,7 @@ layout: null
                     if (!response.ok) throw new Error(`HTTP ${response.status}`);
                     return await response.text();
                 } catch (error) {
-                    console.warn(`Fetch attempt ${attempt + 1} failed:`, error.message);
-                    if (attempt === maxRetries - 1) throw error; // 마지막 시도 실패 시 에러 던짐
+                    if (attempt === maxRetries - 1) throw error; 
                     await new Promise(res => setTimeout(res, baseDelayMs * Math.pow(2, attempt)));
                 }
             }
@@ -688,7 +751,6 @@ layout: null
 
         async function fetchYahooFinance(symbols) {
             if (symbols.length === 0) return [];
-            // 오프라인 상태 감지 방어
             if (!navigator.onLine) throw new Error("네트워크에 연결되어 있지 않습니다.");
 
             const symbolsStr = symbols.join(',');
@@ -718,10 +780,8 @@ layout: null
                 if(guideEl) guideEl.style.display = 'none'; return;
             }
 
-            // [UX] 로딩 스피너 표출
             const originalBtnContent = `${PLUS_ICON}<span>Add tickers</span>`;
-            btnEl.disabled = true; 
-            btnEl.innerHTML = `${SPINNER_SVG}<span>Adding...</span>`; 
+            btnEl.disabled = true; btnEl.innerHTML = `${SPINNER_SVG}<span>Adding...</span>`; 
             listEl.style.display = 'none';
             if(guideEl) guideEl.style.display = 'none';
 
@@ -734,10 +794,8 @@ layout: null
                 
                 const tbody = document.getElementById(`tbody-${sectionId}`);
                 tbody.insertAdjacentHTML('beforeend', generateRowHTML(ticker));
-                cacheRowNodes(ticker); 
-                checkEmptyState(sectionId); // 빈 상태 검사
-                updateDOMWithData([data[0]]); 
-                inputEl.value = '';
+                cacheRowNodes(ticker); checkEmptyState(sectionId); 
+                updateDOMWithData([data[0]]); inputEl.value = '';
             } catch (err) {
                 alert(`오류: ${err.message}`);
             } finally {
@@ -745,6 +803,7 @@ layout: null
             }
         }
 
+        // executeRemoveTicker: 스와이프나 확인을 누를 시 호출되어 완전히 삭제 처리함
         function executeRemoveTicker(ticker) {
             let sectionIdToUpdate = null;
             for (const sectionId in state.watchlists) {
@@ -761,7 +820,6 @@ layout: null
             if(sectionIdToUpdate) checkEmptyState(sectionIdToUpdate);
         }
 
-        // --- 기타 유지 로직 (캐싱, 드래그앤드롭, 업데이트 DOM, 포맷 등) ---
         function cacheRowNodes(ticker) {
             const sid = getSafeId(ticker);
             rowNodes.set(ticker, {
