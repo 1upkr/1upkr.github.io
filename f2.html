@@ -72,7 +72,6 @@ layout: null
             margin: 0;
             padding: 0;
             font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            /* 모바일 웹 더블탭 확대 등 방지 */
             touch-action: manipulation;
         }
 
@@ -306,8 +305,8 @@ layout: null
             th.col-price, td.col-price { width: 44%; } 
             th.col-change, td.col-change { width: 24%; padding-right: 0.5rem !important; }
             
-            /* 모바일에서 삭제버튼(actions-col) 영역은 사실상 스와이프로 대체할 것이지만 기본 형태 유지 */
-            th.actions-col, td.actions-col { width: 40px; padding-right: 0; padding-left: 0; }
+            /* [개선 1] 모바일 환경에서는 휴지통 아이콘(actions-col) 영역을 완전히 숨김 */
+            th.actions-col, td.actions-col { display: none !important; }
             
             .symbol { font-size: 0.8rem; } .name { font-size: 0.65rem; }
             .price { font-size: 0.85rem; }
@@ -315,23 +314,26 @@ layout: null
             .extended-price .ext-label { font-size: 0.55rem; padding: 0.1rem 0.2rem; }
             .change-cell { font-size: 0.8rem; } .badge { padding: 0.15rem 0.25rem; font-size: 0.65rem; }
 
-            .search-wrapper { max-width: 100%; width: 100%; }
-            .add-ticker-form { flex-direction: column; align-items: stretch; padding: 0.75rem 1rem; gap: 0.5rem; }
-            
-            /* 2. 모바일 버튼 사이즈 조절 및 정렬 수정 */
+            /* [개선 2] Add Tickers 폼 한 줄(Row) 레이아웃 재조정 */
+            .add-ticker-form { 
+                flex-direction: row; 
+                align-items: center; 
+                padding: 0.75rem 1rem; 
+                gap: 0.5rem; 
+            }
+            .search-wrapper { max-width: 100%; width: 100%; flex: 1; }
             .add-ticker-form button { 
                 width: auto; 
-                align-self: flex-end; /* 우측 정렬 */
-                height: 44px; 
-                min-width: 140px; /* 가로 꽉 차지 않는 아름다운 사이즈 */
+                align-self: center; 
+                height: 38px; 
+                min-width: 0; 
                 font-size: 0.875rem; 
-                padding: 0 1.5rem;
+                padding: 0 0.8rem;
+                flex-shrink: 0; /* 인풋창에 밀려 버튼이 찌그러지지 않도록 방지 */
             }
+            .add-ticker-form button span.hide-mobile-text { display: none; } /* 버튼 텍스트 최적화 */
 
-            /* 3. iOS 모바일 Safari 텍스트 입력 시 화면 강제 확대 방지를 위한 16px 고정 */
-            .add-ticker-form input, input[type="text"] {
-                font-size: 16px !important; 
-            }
+            .add-ticker-form input, input[type="text"] { font-size: 16px !important; } /* 확대 방지 유지 */
             
             .autocomplete-list { max-height: 220px; box-shadow: 0 8px 16px rgba(0,0,0,0.15); }
             .autocomplete-list li { padding: 0.7rem 0.75rem; } 
@@ -468,7 +470,7 @@ layout: null
             await initTickerDB(); 
 
             applyTheme(); renderLayout(); startTimer(); fetchData(); 
-            initSwipeToDelete(); // 1. 스와이프 삭제 제스처 리스너 초기화
+            initSwipeToDelete(); 
             
             document.getElementById('btn-refresh').addEventListener('click', forceRefresh);
             document.addEventListener('click', (e) => {
@@ -498,7 +500,7 @@ layout: null
             }
         }
 
-        // --- 1. SWIPE TO DELETE GESTURE LOGIC ---
+        // --- 1. SWIPE TO DELETE GESTURE LOGIC (모달 연동) ---
         function initSwipeToDelete() {
             let touchStartX = 0;
             let touchStartY = 0;
@@ -508,7 +510,6 @@ layout: null
             const dashboard = document.getElementById('dashboard');
 
             dashboard.addEventListener('touchstart', e => {
-                // 편집(Edit) 모드이거나, 드래그 핸들/버튼 터치 시에는 무시
                 const row = e.target.closest('tr[data-ticker]');
                 if (!row || e.target.closest('.drag-handle') || e.target.closest('.action-icon-btn')) return;
                 
@@ -516,7 +517,7 @@ layout: null
                 touchStartY = e.touches[0].clientY;
                 swipingRow = row;
                 isSwiping = false;
-                row.style.transition = 'none'; // 스와이프 시 딜레이 제거
+                row.style.transition = 'none'; 
             }, { passive: true });
 
             dashboard.addEventListener('touchmove', e => {
@@ -526,19 +527,17 @@ layout: null
                 const diffX = touchCurrentX - touchStartX;
                 const diffY = touchCurrentY - touchStartY;
 
-                // 세로 스크롤보다 가로 움직임이 클 때만 스와이프 활성화 (오작동 방지)
                 if (!isSwiping && Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 10) {
                     isSwiping = true;
                 }
 
-                // 왼쪽으로 스와이프 할 때만
                 if (isSwiping && diffX < 0) { 
-                    if (e.cancelable) e.preventDefault(); // 스와이프 중 세로 스크롤 방지
-                    const moveX = Math.max(diffX, -150); // 최대 이동폭 제한
+                    if (e.cancelable) e.preventDefault(); 
+                    const moveX = Math.max(diffX, -150); 
                     swipingRow.style.transform = `translateX(${moveX}px)`;
-                    swipingRow.style.opacity = 1 - (Math.abs(moveX) / 200); // 서서히 투명해지게 처리
+                    swipingRow.style.opacity = 1 - (Math.abs(moveX) / 200); 
                 }
-            }, { passive: false }); // preventDefault 사용을 위해 passive: false 설정
+            }, { passive: false }); 
 
             dashboard.addEventListener('touchend', e => {
                 if (!swipingRow) return;
@@ -547,20 +546,15 @@ layout: null
 
                 swipingRow.style.transition = 'all 0.3s ease';
                 
-                // 임계치(80px) 이상 스와이프 시 즉시 삭제 처리
+                // [개선 1] 임계치 이상 스와이프 시 모달 호출
                 if (isSwiping && diffX < -80) {
-                    swipingRow.style.transform = `translateX(-100vw)`;
-                    swipingRow.style.opacity = '0';
                     const ticker = swipingRow.dataset.ticker;
-                    
-                    setTimeout(() => {
-                        executeRemoveTicker(ticker); // 모달 없이 다이렉트 삭제!
-                    }, 300);
-                } else {
-                    // 원위치로 복구
-                    swipingRow.style.transform = 'translateX(0)';
-                    swipingRow.style.opacity = '1';
-                }
+                    confirmRemoveTicker(ticker); // 기존 모달 띄우기
+                } 
+                
+                // 모달이 뜨든, 스와이프가 취소되든 UI는 일단 원래 자리로 복구
+                swipingRow.style.transform = 'translateX(0)';
+                swipingRow.style.opacity = '1';
                 
                 swipingRow = null;
                 isSwiping = false;
@@ -606,7 +600,7 @@ layout: null
                                 <ul class="autocomplete-list" id="autocomplete-${sectionId}"></ul>
                             </div>
                             <button type="submit" id="btn-add-${sectionId}">
-                                ${PLUS_ICON}<span>Add tickers</span>
+                                ${PLUS_ICON}<span>Add<span class="hide-mobile-text"> tickers</span></span>
                             </button>
                         </form>
                         <div class="table-wrapper">
@@ -780,7 +774,7 @@ layout: null
                 if(guideEl) guideEl.style.display = 'none'; return;
             }
 
-            const originalBtnContent = `${PLUS_ICON}<span>Add tickers</span>`;
+            const originalBtnContent = `${PLUS_ICON}<span>Add<span class="hide-mobile-text"> tickers</span></span>`;
             btnEl.disabled = true; btnEl.innerHTML = `${SPINNER_SVG}<span>Adding...</span>`; 
             listEl.style.display = 'none';
             if(guideEl) guideEl.style.display = 'none';
@@ -803,7 +797,6 @@ layout: null
             }
         }
 
-        // executeRemoveTicker: 스와이프나 확인을 누를 시 호출되어 완전히 삭제 처리함
         function executeRemoveTicker(ticker) {
             let sectionIdToUpdate = null;
             for (const sectionId in state.watchlists) {
