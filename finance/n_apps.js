@@ -192,7 +192,7 @@ function renderLayout() {
 
         // 그룹별 안내 메시지 처리
         const guideText = sectionId === 'kr' 
-            ? "검색 목록에서 종목을 선택해주세요." 
+            ? "Please choose a ticker from the search results only." 
             : "Please enter only the ticker symbol from Yahoo Finance.";
 
         sectionContainer.innerHTML = `
