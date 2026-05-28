@@ -268,7 +268,6 @@ function handleAutocomplete(query, sectionId) {
     const guide = document.getElementById(`guide-${sectionId}`);
     const btn = document.getElementById(`btn-add-${sectionId}`);
 
-    // [수정] Adding... (버튼 비활성화) 상태일 때는 지연된 검색 결과가 뒤늦게 뜨는 것을 차단
     if (btn && btn.disabled) return;
 
     if(!query) return; 
@@ -450,7 +449,6 @@ async function handleAddTicker(e, sectionId) {
         cacheRowNodes(ticker); checkEmptyState(sectionId); 
         updateDOMWithData([data[0]]); 
         
-        // [수정] 추가 완료 후 입력창을 비울 때 리스트 창도 확실하게 숨김 처리
         inputEl.value = '';
         listEl.style.display = 'none';
 
