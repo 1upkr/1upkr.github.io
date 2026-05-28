@@ -418,7 +418,7 @@ async function handleAddTicker(e, sectionId) {
     if (sectionId === 'kr') {
         const isValidNaver = localTickerDB.some(q => q.s.toUpperCase() === ticker && q.e === "NAVER");
         if (!isValidNaver) {
-            alert('KR은 검색 목록의 종목만 추가할 수 있습니다.');
+            alert('KR stocks: search list only.');
             inputEl.value = '';
             listEl.style.display = 'none';
             return;
@@ -436,7 +436,7 @@ async function handleAddTicker(e, sectionId) {
         const data = await fetchFunc([ticker]);
         
         if (!data || data.length === 0 || data[0].regularMarketPrice === undefined) {
-            alert(`${ticker} 정보를 찾을 수 없습니다.`); return;
+            alert(`${ticker} not found.`); return;
         }
         state.watchlists[sectionId].tickers.push(ticker); saveWatchlists();
         
