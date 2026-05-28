@@ -185,7 +185,7 @@
   { "s": "MCHI", "n": "iShares MSCI China ETF (중국)", "e": "ETF" },
   { "s": "FXI", "n": "iShares China Large-Cap ETF (중국 대형주)", "e": "ETF" },
   { "s": "VWO", "n": "Vanguard FTSE Emerging Markets ETF (신흥국)", "e": "ETF" },  
-  { "s": "TLT", "n": "iShares 20+ Year Treasury Bond ETF", "e": "ETF" }
+  { "s": "TLT", "n": "iShares 20+ Year Treasury Bond ETF", "e": "ETF" },
   { "s": "KOSPI", "n": "코스피 지수 (네이버)", "e": "NAVER" },
   { "s": "KOSDAQ", "n": "코스닥 지수 (네이버)", "e": "NAVER" },
   { "s": "FUT", "n": "코스피 200 선물 (네이버)", "e": "NAVER" },
@@ -265,7 +265,6 @@
   { "s": "071050", "n": "한국금융지주 (Korea Financial Holdings)", "e": "NAVER" },
   { "s": "078930", "n": "GS홀딩스 (GS Holdings)", "e": "NAVER" },
   { "s": "026960", "n": "동서 (Dongsuh Companies)", "e": "NAVER" },
-  { "s": "496080", "n": "TIGER 코리안 밸류업 ETF", "e": "NAVER" },
   { "s": "247540", "n": "에코프로비엠 (Ecopro BM)", "e": "NAVER" },
   { "s": "086520", "n": "에코프로 (Ecopro)", "e": "NAVER" },
   { "s": "091990", "n": "셀트리온헬스케어 (Celltrion Healthcare)", "e": "NAVER" },
