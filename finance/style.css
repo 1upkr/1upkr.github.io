@@ -323,16 +323,19 @@ footer { text-align: right; padding: 1.0rem 5%; font-family: 'Inter', system-ui,
         padding: 0.75rem 1rem; 
         gap: 0.5rem; 
     }
+    
     .search-wrapper { max-width: 100%; width: 100%; flex: 1; }
+    
     .add-ticker-form button { 
-        width: auto; 
+        width: 105px; 
         align-self: center; 
         height: 38px; 
-        min-width: 0; 
         font-size: 0.875rem; 
-        padding: 0 0.8rem;
+        padding: 0; 
+        justify-content: center;
         flex-shrink: 0; 
     }
+    
     .add-ticker-form button span.hide-mobile-text { display: none; } 
 
     .add-ticker-form input, input[type="text"] { font-size: 16px !important; } 
