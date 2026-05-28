@@ -425,7 +425,7 @@ async function handleAddTicker(e, sectionId) {
         }
     }
 
-    const originalBtnContent = `${PLUS_ICON}<span>Add tickers<span class="hide-mobile-text"> tickers</span></span>`;
+    const originalBtnContent = `${PLUS_ICON}<span>Add tickers</span>`;
     btnEl.disabled = true; btnEl.innerHTML = `${SPINNER_SVG}<span>Adding....</span>`; 
     listEl.style.display = 'none';
     if(guideEl) guideEl.style.display = 'none';
