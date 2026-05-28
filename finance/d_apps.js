@@ -91,12 +91,14 @@ async function initTickerDB() {
     }
 }
 
-// --- SWIPE TO DELETE GESTURE LOGIC (모달 연동) ---
+// --- SWIPE TO DELETE GESTURE LOGIC (모달 연동 및 스크롤 오작동 방지) ---
 function initSwipeToDelete() {
     let touchStartX = 0;
     let touchStartY = 0;
     let swipingRow = null;
-    let isSwiping = false;
+    
+    let isSwiping = false;   // 가로 스와이프 상태
+    let isScrolling = false; // 세로 스크롤 상태 (새로 추가됨)
 
     const dashboard = document.getElementById('dashboard');
 
@@ -107,28 +109,48 @@ function initSwipeToDelete() {
         touchStartX = e.touches[0].clientX;
         touchStartY = e.touches[0].clientY;
         swipingRow = row;
+        
+        // 터치 시작 시 상태 초기화
         isSwiping = false;
+        isScrolling = false; 
         row.style.transition = 'none'; 
     }, { passive: true });
 
     dashboard.addEventListener('touchmove', e => {
         if (!swipingRow) return;
+        
         const touchCurrentX = e.touches[0].clientX;
         const touchCurrentY = e.touches[0].clientY;
         const diffX = touchCurrentX - touchStartX;
         const diffY = touchCurrentY - touchStartY;
+        
+        const absDiffX = Math.abs(diffX);
+        const absDiffY = Math.abs(diffY);
 
-        if (!isSwiping && Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 10) {
-            isSwiping = true;
+        // 1. 제스처의 방향을 결정하는 단계 (처음 10px 이상 움직였을 때 단 한 번만 판별)
+        if (!isSwiping && !isScrolling && (absDiffX > 10 || absDiffY > 10)) {
+            // 가로 이동 거리가 세로 이동 거리의 1.5배 이상이고, 왼쪽으로 밀 때(diffX < 0)만 스와이프로 간주
+            if (absDiffX > absDiffY * 1.5 && diffX < 0) {
+                isSwiping = true;
+            } else {
+                // 그 외의 대각선 움직임이나 세로 움직임은 모두 화면 스크롤로 간주
+                isScrolling = true; 
+            }
         }
 
+        // 2. 세로 스크롤 중으로 판별되었다면, 행(row)을 가로로 움직이는 로직은 무시하고 브라우저 기본 스크롤에 맡김
+        if (isScrolling) {
+            return; 
+        }
+
+        // 3. 명확한 가로 스와이프 중일 때의 처리
         if (isSwiping && diffX < 0) { 
-            if (e.cancelable) e.preventDefault(); 
+            if (e.cancelable) e.preventDefault(); // 스와이프 중 화면이 위아래로 흔들리는 것 방지
             const moveX = Math.max(diffX, -150); 
             swipingRow.style.transform = `translateX(${moveX}px)`;
             swipingRow.style.opacity = 1 - (Math.abs(moveX) / 200); 
         }
-    }, { passive: false }); 
+    }, { passive: false }); // preventDefault()를 사용해야 하므로 passive: false 유지
 
     dashboard.addEventListener('touchend', e => {
         if (!swipingRow) return;
@@ -137,16 +159,20 @@ function initSwipeToDelete() {
 
         swipingRow.style.transition = 'all 0.3s ease';
         
+        // 스와이프 모드였고, 충분히 왼쪽으로 밀었을 때만 삭제 모달 띄우기
         if (isSwiping && diffX < -80) {
             const ticker = swipingRow.dataset.ticker;
             confirmRemoveTicker(ticker); 
         } 
         
+        // 위치 및 투명도 원상 복구
         swipingRow.style.transform = 'translateX(0)';
         swipingRow.style.opacity = '1';
         
+        // 상태 초기화
         swipingRow = null;
         isSwiping = false;
+        isScrolling = false;
     });
 }
 
