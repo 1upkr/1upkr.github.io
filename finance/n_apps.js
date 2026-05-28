@@ -1,5 +1,5 @@
 // --- CONFIGURATION & UTILITIES ---
-// KR 그룹은 이제 야후의 .KS 확장자 없이 네이버 6자리 코드를 기본으로 사용합니다.
+
 const DEFAULT_WATCHLISTS = {
     indicators: { title: '📈 MKT', tickers: ['KRW=X', '^KS11', '^KQ11', '^IXIC', '^DJI', '^GSPC', 'BTC-USD'] },
     kr: { title: '🇰🇷 KR', tickers: ['005930', '000660', '373220', '005380', '035420'] },            
