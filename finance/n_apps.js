@@ -418,7 +418,7 @@ async function handleAddTicker(e, sectionId) {
     if (sectionId === 'kr') {
         const isValidNaver = localTickerDB.some(q => q.s.toUpperCase() === ticker && q.e === "NAVER");
         if (!isValidNaver) {
-            alert('KR 그룹은 검색 목록에서 선택한 종목만 추가할 수 있습니다.');
+            alert('KR은 검색 목록의 종목만 추가할 수 있습니다.');
             inputEl.value = '';
             listEl.style.display = 'none';
             return;
