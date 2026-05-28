@@ -192,7 +192,7 @@ function renderLayout() {
 
         // 그룹별 안내 메시지 처리
         const guideText = sectionId === 'kr' 
-            ? "목록에서 네이버 증권 종목을 선택해주세요." 
+            ? "검색 목록에서 종목을 선택해주세요." 
             : "Please enter only the ticker symbol from Yahoo Finance.";
 
         sectionContainer.innerHTML = `
@@ -418,7 +418,7 @@ async function handleAddTicker(e, sectionId) {
     if (sectionId === 'kr') {
         const isValidNaver = localTickerDB.some(q => q.s.toUpperCase() === ticker && q.e === "NAVER");
         if (!isValidNaver) {
-            alert('KR 그룹은 검색 목록에서 선택한 네이버 증권 종목만 추가할 수 있습니다.');
+            alert('KR 그룹은 검색 목록에서 선택한 종목만 추가할 수 있습니다.');
             inputEl.value = '';
             listEl.style.display = 'none';
             return;
