@@ -7,8 +7,7 @@ const DEFAULT_WATCHLISTS = {
 };
 
 const GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbydYWqn3tZL25dE8UPMyN9mV19R1YKFZKpF-aml_25Z_YvA_qElw-LpxNO_Y8_sOzCV/exec";
-// 새로 배포한 네이버 증권용 GAS URL을 아래에 입력하세요.
-const NAVER_GAS_PROXY_URL = "여기에_새로_만든_네이버_웹앱_URL을_넣으세요"; 
+const NAVER_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycby0tADaSAhEsDd3UkiGkFuISjjHzv43BMKVHfcIV6pgY4D72Wwqk-PyJGBwAK1oLIhaHQ/exec"; 
 
 const CHO_HANGUL = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
 function getChosung(str) {
