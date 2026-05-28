@@ -83,13 +83,17 @@ function processTickerDB(data) {
 
 async function initTickerDB() {
     try {
-        const response = await fetch(`./tickers_n.json?v=${new Date().getTime()}`);
+        const response = await fetch(`./finance/tickers_n.json?v=${new Date().getTime()}`);
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const rawData = await response.json();
+        
         localTickerDB = processTickerDB(rawData);
     } catch (error) {
         console.error("Failed to load ticker DB:", error);
-        localTickerDB = processTickerDB([{ s: "AAPL", n: "Apple Inc.", e: "NASDAQ" }, { s: "005930", n: "삼성전자", e: "NAVER" }]);
+        localTickerDB = processTickerDB([
+            { s: "AAPL", n: "Apple Inc.", e: "NASDAQ" }, 
+            { s: "005930", n: "삼성전자", e: "NAVER" }
+        ]);
     }
 }
 
