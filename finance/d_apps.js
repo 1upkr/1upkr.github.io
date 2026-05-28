@@ -86,7 +86,7 @@ async function initTickerDB() {
         const rawData = await response.json();
         localTickerDB = processTickerDB(rawData);
     } catch (error) {
-        console.error("티커 DB 로드 실패:", error);
+        console.error("Failed to load ticker DB:", error);
         localTickerDB = processTickerDB([{ s: "AAPL", n: "Apple Inc.", e: "NASDAQ" }, { s: "005930.KS", n: "삼성전자", e: "KOSPI" }]);
     }
 }
@@ -211,7 +211,7 @@ function renderLayout() {
                     <div class="search-wrapper">
                         <div class="input-guide" id="guide-${sectionId}">Please enter only the ticker symbol from Yahoo Finance.</div>
                         ${SEARCH_ICON}
-                        <input type="text" id="input-${sectionId}" placeholder="Search Ticker or Company" autocomplete="off">
+                        <input type="text" id="input-${sectionId}" placeholder="Quote Lookup" autocomplete="off">
                         <ul class="autocomplete-list" id="autocomplete-${sectionId}"></ul>
                     </div>
                     <button type="submit" id="btn-add-${sectionId}">
@@ -221,7 +221,7 @@ function renderLayout() {
                 <div class="table-wrapper">
                     <div class="empty-state" id="empty-${sectionId}" style="display: ${isEmpty ? 'flex' : 'none'};">
                         ${EMPTY_ICON}
-                        <p>등록된 관심 종목이 없습니다.<br>상단의 <strong>+ 버튼</strong>을 눌러 추가해보세요.</p>
+                        <p>Nothing here yet. <br>Tap the <strong>+ button</strong> at the top to add stocks.</p>
                     </div>
                     <table style="display: ${isEmpty ? 'none' : 'table'};" id="table-${sectionId}">
                         <thead>
@@ -360,20 +360,20 @@ async function fetchWithRetry(url, maxRetries = 3, baseDelayMs = 1000) {
 
 async function fetchYahooFinance(symbols) {
     if (symbols.length === 0) return [];
-    if (!navigator.onLine) throw new Error("네트워크에 연결되어 있지 않습니다.");
+    if (!navigator.onLine) throw new Error("No network connection.");
 
     const symbolsStr = symbols.join(',');
     const targetUrl = `${GAS_PROXY_URL}?symbols=${encodeURIComponent(symbolsStr)}&t=${Date.now()}`;
 
     try {
         const text = await fetchWithRetry(targetUrl);
-        if (text.trim().startsWith('<')) throw new Error("GAS 권한 또는 한도 초과 에러");
+        if (text.trim().startsWith('<')) throw new Error("GAS permission denied or limit reached.");
         const data = JSON.parse(text);
         
         if (data && data.quoteResponse && data.quoteResponse.result) return data.quoteResponse.result;
         else if (data && data.error) throw new Error(data.error);
-        throw new Error("데이터 구조가 올바르지 않습니다.");
-    } catch (e) { console.error("데이터 가져오기 최종 실패:", e); throw e; }
+        throw new Error("Invalid data structure.");
+    } catch (e) { console.error("Failed to fetch data:", e); throw e; }
 }
 
 async function handleAddTicker(e, sectionId) {
@@ -519,15 +519,15 @@ function importSettings(event) {
                 localStorage.setItem('marketdash_sectionOrder', JSON.stringify(data.sectionOrder));
                 if(data.expanded) localStorage.setItem('marketdash_expanded', JSON.stringify(data.expanded));
                 if(data.theme) localStorage.setItem('marketdash_theme', data.theme);
-                alert('설정이 성공적으로 복원되었습니다.'); location.reload(); 
-            } else alert('유효하지 않은 설정 파일입니다.');
-        } catch (err) { alert('파일을 읽는 중 오류가 발생했습니다.'); }
+                alert('Settings successfully restored.'); location.reload(); 
+            } else alert('Invalid settings file.');
+        } catch (err) { alert('File read error occurred.'); }
     };
     reader.readAsText(file); event.target.value = ''; 
 }
 function resetToDefaults() {
     toggleSettingsMenu();
-    if(confirm("현재 설정한 값을 기본값으로 초기화하시겠습니까?")) {
+    if(confirm("Reset all settings to default?")) {
         localStorage.clear(); state.watchlists = JSON.parse(JSON.stringify(DEFAULT_WATCHLISTS));
         state.sectionOrder = ['indicators', 'kr', 'us']; renderLayout(); forceRefresh();
     }
