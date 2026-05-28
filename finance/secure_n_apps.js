@@ -677,7 +677,7 @@ function setErrorState(ticker, msg) {
 function formatNum(num) {
     if (num === undefined || num === null || isNaN(num)) return '-';
     const abs = Math.abs(num); let decimals = 2;
-    if (abs > 0 && abs < 0.1) decimals = 4; else if (abs > 1000) decimals = 0; 
+    if (abs > 0 && abs < 0.1) decimals = 4; else if (abs > 10000) decimals = 0; 
     return new Intl.NumberFormat('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals }).format(num);
 }
 function formatPct(num) {
