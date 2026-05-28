@@ -215,7 +215,7 @@ function renderLayout() {
                         <ul class="autocomplete-list" id="autocomplete-${sectionId}"></ul>
                     </div>
                     <button type="submit" id="btn-add-${sectionId}">
-                        ${PLUS_ICON}<span>Add<span class="hide-mobile-text"> tickers</span></span>
+                        ${PLUS_ICON}<span>Add tickers</span></span>
                     </button>
                 </form>
                 <div class="table-wrapper">
