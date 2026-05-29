@@ -8,7 +8,7 @@ const DEFAULT_WATCHLISTS = {
 };
 
 const GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbydYWqn3tZL25dE8UPMyN9mV19R1YKFZKpF-aml_25Z_YvA_qElw-LpxNO_Y8_sOzCV/exec";
-const NAVER_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbztieWHNwan0NhNQetBwlNXvaP4dN47GXbzxEOFbFa07hEHWJm7wkLaz9rCZFKOGBV67w/exec"; 
+const NAVER_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbz2tv88NI9DY1UnSdnDhr1k9onwBwWJpTQT4fTqCd90GvtGJpsmJmPitOBK0V4P9NKXPA/exec"; 
 
 const CHO_HANGUL = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
 function getChosung(str) {
