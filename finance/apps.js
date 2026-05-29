@@ -1,5 +1,4 @@
 // --- CONFIGURATION & UTILITIES ---
-// KR inverse
 
 const DEFAULT_WATCHLISTS = {
     indicators: { title: '📈 MKT', tickers: ['KRW=X', '^KS11', '^KQ11', '^IXIC', '^DJI', '^GSPC', 'BTC-USD'] },
@@ -57,17 +56,6 @@ let state = {
 
 const rowNodes = new Map(); let sortables = []; 
 function getSafeId(ticker) { return 'id_' + ticker.replace(/[^a-zA-Z0-9]/g, '_'); }
-
-// --- HELPER FUNCTION ---
-// 티커가 어느 그룹(sectionId)에 속해 있는지 찾는 함수
-function getSectionForTicker(ticker) {
-    for (const sectionId in state.watchlists) {
-        if (state.watchlists[sectionId].tickers.includes(ticker)) {
-            return sectionId;
-        }
-    }
-    return null;
-}
 
 // --- INITIALIZATION ---
 async function init() {
@@ -202,6 +190,7 @@ function renderLayout() {
         sectionContainer.id = `section-${sectionId}`;
         sectionContainer.dataset.id = sectionId;
 
+        // 그룹별 안내 메시지 처리
         const guideText = sectionId === 'kr' 
             ? "Please choose a ticker from the search results only." 
             : "Please enter only the ticker symbol from Yahoo Finance.";
@@ -226,7 +215,7 @@ function renderLayout() {
                         <ul class="autocomplete-list" id="autocomplete-${sectionId}"></ul>
                     </div>
                     <button type="submit" id="btn-add-${sectionId}">
-                        ${PLUS_ICON}<span>Add tickers</span>
+                        ${PLUS_ICON}<span>Add tickers</span></span>
                     </button>
                 </form>
                 <div class="table-wrapper">
@@ -248,7 +237,7 @@ function renderLayout() {
                             </tr>
                         </thead>
                         <tbody id="tbody-${sectionId}">
-                            ${sectionData.tickers.map(ticker => generateRowHTML(ticker, sectionId)).join('')}
+                            ${sectionData.tickers.map(ticker => generateRowHTML(ticker)).join('')}
                         </tbody>
                     </table>
                 </div>
@@ -292,6 +281,7 @@ function handleAutocomplete(query, sectionId) {
     const isKrSection = sectionId === 'kr';
 
     const matchedQuotes = localTickerDB.filter(q => {
+        // 그룹별 e:"NAVER" 필터링 적용
         if (isKrSection && q.e !== "NAVER") return false;
         if (!isKrSection && q.e === "NAVER") return false;
 
@@ -323,24 +313,15 @@ window.selectAutocomplete = function(symbol, sectionId) {
     if(guide) guide.style.display = 'none'; btn.click(); 
 };
 
-// 파라미터에 sectionId 추가
-function generateRowHTML(ticker, sectionId) {
+function generateRowHTML(ticker) {
     const sid = getSafeId(ticker);
     const safeTicker = escapeHTML(ticker);
-    
-    // 정규식 대신, 전달받은 sectionId가 'kr'인지 확인
-    const isKrSection = sectionId === 'kr';
-
-    // KR 주식은 이름 스켈레톤을 메인 영역으로 올리고 번호를 서브 영역으로
-    const mainContent = isKrSection ? `<span class="skeleton sm"></span>` : safeTicker;
-    const subContent = isKrSection ? safeTicker : `<span class="skeleton sm"></span>`;
-
     return `
         <tr id="row-${sid}" data-ticker="${safeTicker}">
             <td class="left-align col-symbol">
                 <div class="asset-col">
-                    <span class="symbol" id="symbol-${sid}" title="${safeTicker}">${mainContent}</span>
-                    <span class="name" id="name-${sid}">${subContent}</span>
+                    <span class="symbol" id="symbol-${sid}" title="${safeTicker}">${safeTicker}</span>
+                    <span class="name" id="name-${sid}"><span class="skeleton sm"></span></span>
                 </div>
             </td>
             <td class="col-price" id="price-cell-${sid}">
@@ -405,6 +386,7 @@ async function fetchYahooFinance(symbols) {
     } catch (e) { console.error("Failed to fetch data:", e); throw e; }
 }
 
+// 네이버 파이낸스용 별도 Fetch 함수
 async function fetchNaverFinance(symbols) {
     if (symbols.length === 0) return [];
     if (!navigator.onLine) throw new Error("No network connection.");
@@ -436,6 +418,7 @@ async function handleAddTicker(e, sectionId) {
         if(guideEl) guideEl.style.display = 'none'; return;
     }
 
+    // KR 그룹은 네이버 증권 DB에 있는 종목만 등록 가능하도록 제한
     if (sectionId === 'kr') {
         const isValidNaver = localTickerDB.some(q => q.s.toUpperCase() === ticker && q.e === "NAVER");
         if (!isValidNaver) {
@@ -452,6 +435,7 @@ async function handleAddTicker(e, sectionId) {
     if(guideEl) guideEl.style.display = 'none';
 
     try {
+        // 섹션에 따라 다른 Fetch 함수 호출
         const fetchFunc = sectionId === 'kr' ? fetchNaverFinance : fetchYahooFinance;
         const data = await fetchFunc([ticker]);
         
@@ -461,8 +445,7 @@ async function handleAddTicker(e, sectionId) {
         state.watchlists[sectionId].tickers.push(ticker); saveWatchlists();
         
         const tbody = document.getElementById(`tbody-${sectionId}`);
-        // 생성 시점에 sectionId 같이 넘겨주기
-        tbody.insertAdjacentHTML('beforeend', generateRowHTML(ticker, sectionId));
+        tbody.insertAdjacentHTML('beforeend', generateRowHTML(ticker));
         cacheRowNodes(ticker); checkEmptyState(sectionId); 
         updateDOMWithData([data[0]]); 
         
@@ -600,6 +583,7 @@ function openAboutModal() { toggleSettingsMenu(); document.getElementById('about
 function closeAboutModal() { document.getElementById('about-modal').classList.remove('active'); }
 function saveWatchlists() { localStorage.setItem('marketdash_watchlists', JSON.stringify(state.watchlists)); }
 
+// fetchData 로직을 섹션별로 순회하며 각각의 API 호출하도록 변경
 async function fetchData() {
     for (const sectionId of state.sectionOrder) {
         if (!state.expanded[sectionId]) continue;
@@ -649,28 +633,12 @@ function updateDOMWithData(quotes) {
                 nodes.row.classList.add(price > oldPrice ? 'flash-up' : 'flash-down');
             }
             nodes.price.setAttribute('data-price', price);
-            
-            // --- KR 섹션 여부 판별하여 스왑 적용 ---
-            const nameToDisplay = quote.shortName || quote.longName || ticker;
-            const sectionId = getSectionForTicker(ticker); // 헬퍼 함수로 속한 그룹 찾기
-            const isKrSection = sectionId === 'kr';
-
-            if (isKrSection) {
-                nodes.symbol.textContent = nameToDisplay;
-                nodes.symbol.title = nameToDisplay;
-                nodes.name.textContent = ticker;
-            } else {
-                nodes.symbol.textContent = ticker;
-                nodes.symbol.title = ticker;
-                nodes.name.textContent = nameToDisplay;
-            }
-            // ------------------------------------------------
-
+            nodes.name.textContent = quote.shortName || quote.longName || ticker;
             nodes.price.textContent = formatNum(price);
             
             let extOptions = [];
-            if (quote.preMarketPrice) extOptions.push({ price: quote.preMarketPrice, pct: quote.preMarketChangePercent || 0, label: 'PRE', time: quote.preMarketTime || 0 });
-            if (quote.postMarketPrice) extOptions.push({ price: quote.postMarketPrice, pct: quote.postMarketChangePercent || 0, label: 'POST', time: quote.postMarketTime || 0 });
+            if (quote.preMarketPrice) extOptions.push({ price: quote.preMarketPrice, pct: quote.preMarketChangePercent || 0, label: '🔜', time: quote.preMarketTime || 0 });
+            if (quote.postMarketPrice) extOptions.push({ price: quote.postMarketPrice, pct: quote.postMarketChangePercent || 0, label: '🔚', time: quote.postMarketTime || 0 });
 
             let extPrice, extChangePct, extLabel;
             if (extOptions.length > 0) {
