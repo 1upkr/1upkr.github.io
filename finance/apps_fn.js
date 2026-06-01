@@ -9,231 +9,7 @@ const DEFAULT_WATCHLISTS = {
 
 const GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbydYWqn3tZL25dE8UPMyN9mV19R1YKFZKpF-aml_25Z_YvA_qElw-LpxNO_Y8_sOzCV/exec";
 const NAVER_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbygC4GrK-2abZUpWWCxD4ZVfFVzd-gjbGvyYBTWNP26J7zwkwbrWwttXNC-geENS1Nykw/exec"; 
-const NEWS_GAS_PROXY_URL = "function doGet(e) {
-  var symbols = e.parameter.symbols; 
-  if (!symbols) return ContentService.createTextOutput(JSON.stringify([])).setMimeType(ContentService.MimeType.JSON);
-
-  // 1. 캐시 서비스 호출 및 고유 키(Key) 생성
-  var cache = CacheService.getScriptCache();
-  var signature = Utilities.computeDigest(Utilities.DigestAlgorithm.MD5, symbols);
-  var cacheKey = "news_" + Utilities.base64EncodeWebSafe(signature).substring(0, 50);
-  
-  // 2. 캐시에 데이터가 있으면 즉시 반환 (속도 향상의 핵심)
-  var cachedData = cache.get(cacheKey);
-  if (cachedData) {
-    return ContentService.createTextOutput(cachedData).setMimeType(ContentService.MimeType.JSON);
-  }
-
-  // 특수 기호 및 HTML 엔티티 복원 함수
-  function decodeHtml(str) {
-    if (!str) return "";
-    var entities = {
-      '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&apos;': "'", '&#39;': "'",
-      '&hellip;': '…', '&lsquo;': '‘', '&rsquo;': '’', '&ldquo;': '“', '&rdquo;': '”',
-      '&middot;': '·', '&uarr;': '↑', '&darr;': '↓', '&rarr;': '→', '&larr;': '←',
-      '&nbsp;': ' ', '&bull;': '•', '&hearts;': '♥', '&clubs;': '♣', '&spades;': '♠', '&diams;': '♦',
-      '&starf;': '★', '&star;': '☆', '&circ;': 'ˆ', '&tilde;': '˜', '&ndash;': '–', '&mdash;': '—'
-    };
-    return str.replace(/&[a-zA-Z0-9#]+;/g, function(match) {
-      var lower = match.toLowerCase();
-      if (entities[lower]) return entities[lower];
-      
-      var decMatch = match.match(/&#(\d+);/);
-      if (decMatch) return String.fromCharCode(parseInt(decMatch[1], 10));
-      
-      var hexMatch = match.match(/&#x([a-fA-F0-9]+);/i);
-      if (hexMatch) return String.fromCharCode(parseInt(hexMatch[1], 16));
-      
-      return match;
-    });
-  }
-
-  var symbolArr = symbols.split(',');
-  var naverCodes = [];
-  var yahooSymbols = [];
-
-  symbolArr.forEach(function(sym) {
-    var s = sym.trim();
-    if (/^\d{6}$/.test(s)) naverCodes.push(s);
-    else if (s && s !== 'KRW=X' && s.indexOf('^') === -1) yahooSymbols.push(s);
-  });
-
-  var commonHeaders = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
-    "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
-    "Upgrade-Insecure-Requests": "1"
-  };
-
-  var requests = [];
-  
-  // 야후 뉴스 API 셋업
-  if (yahooSymbols.length > 0) {
-    var yahooHeaders = Object.assign({}, commonHeaders);
-    var yUrl = "https://feeds.finance.yahoo.com/rss/2.0/headline?s=" + yahooSymbols.join(',') + "&region=US&lang=en-US";
-    requests.push({ url: yUrl, headers: yahooHeaders, muteHttpExceptions: true, type: 'yahoo' });
-  }
-
-  // 네이버 뉴스 API 및 HTML 백업 셋업
-  if (naverCodes.length > 0) {
-    var naverHeaders = Object.assign({}, commonHeaders);
-    naverHeaders["Referer"] = "https://m.stock.naver.com/";
-    
-    naverCodes.forEach(function(code) {
-      var apiUrl = "https://m.stock.naver.com/api/news/stock/" + code + "?pageSize=30&page=1";
-      requests.push({ url: apiUrl, headers: naverHeaders, muteHttpExceptions: true, type: 'naver_api', code: code });
-      
-      var htmlUrl = "https://finance.naver.com/item/news_news.naver?code=" + code + "&page=1";
-      requests.push({ url: htmlUrl, headers: naverHeaders, muteHttpExceptions: true, type: 'naver_html', code: code });
-    });
-  }
-
-  var newsList = [];
-  var apiSuccessCodes = {};
-
-  if (requests.length > 0) {
-    try {
-      var responses = UrlFetchApp.fetchAll(requests);
-      
-      // 1차 순회 처리 (야후 & 네이버 모바일 API)
-      responses.forEach(function(res, i) {
-        if (!res || res.getResponseCode() !== 200) return;
-        var req = requests[i];
-        var content = res.getContentText("UTF-8");
-
-        if (req.type === 'yahoo') {
-          var items = content.match(/<item>[\s\S]*?<\/item>/g) || [];
-          items.forEach(function(item) {
-            var titleMatch = item.match(/<title>([\s\S]*?)<\/title>/);
-            var linkMatch = item.match(/<link>([\s\S]*?)<\/link>/);
-            var dateMatch = item.match(/<pubDate>([\s\S]*?)<\/pubDate>/);
-            
-            if (titleMatch && linkMatch) {
-              var title = titleMatch[1].replace(/<!\[CDATA\[(.*?)\]\]>/g, "$1");
-              title = decodeHtml(title).trim(); 
-              var pubDate = dateMatch ? new Date(dateMatch[1]).getTime() : new Date().getTime();
-              newsList.push({ title: title, link: linkMatch[1], time: pubDate, source: 'Yahoo', ticker: 'US' });
-            }
-          });
-        } 
-        else if (req.type === 'naver_api') {
-          if (!content || content.trim().startsWith('<')) return; // HTML 반환 차단
-          try {
-            var json = JSON.parse(content);
-            var hasData = false;
-            
-            // 데이터 깊은 파싱용 도우미 함수
-            function extractNaverNews(obj) {
-              if (!obj) return;
-              if (Array.isArray(obj)) {
-                obj.forEach(extractNaverNews);
-              } else if (typeof obj === 'object') {
-                if (obj.officeId && obj.articleId && (obj.title || obj.dt)) {
-                  hasData = true;
-                  var rawTitle = obj.title || obj.sub || "주요 뉴스";
-                  var title = decodeHtml(rawTitle).trim();
-                  var link = "https://n.news.naver.com/mnews/article/" + obj.officeId + "/" + obj.articleId;
-                  
-                  var pubDate = new Date().getTime();
-                  var dateStr = obj.datetime || obj.dt || "";
-                  if (dateStr && dateStr.length >= 14 && /^\d+$/.test(dateStr.substring(0,14))) {
-                    pubDate = new Date(dateStr.substring(0,4), dateStr.substring(4,6)-1, dateStr.substring(6,8), dateStr.substring(8,10), dateStr.substring(10,12), dateStr.substring(12,14)).getTime();
-                  } else if (dateStr) {
-                    pubDate = new Date(dateStr.replace(/\./g, '/').replace(/-/g, '/')).getTime();
-                  }
-                  if(isNaN(pubDate)) pubDate = new Date().getTime();
-                  
-                  newsList.push({ title: title, link: link, time: pubDate, source: 'Naver', ticker: req.code });
-                } else {
-                  for (var key in obj) {
-                    if (obj.hasOwnProperty(key)) extractNaverNews(obj[key]);
-                  }
-                }
-              }
-            }
-            extractNaverNews(json);
-            if (hasData) apiSuccessCodes[req.code] = true;
-          } catch (e) {
-            // JSON 파싱 실패 에러 방어
-          }
-        }
-      });
-
-      // 2차 순회 처리 (API 실패 종목에 한하여 기존 웹 크롤링 Fallback 실행)
-      responses.forEach(function(res, i) {
-        if (!res || res.getResponseCode() !== 200) return;
-        var req = requests[i];
-        
-        if (req.type === 'naver_html' && !apiSuccessCodes[req.code]) {
-          var content = res.getContentText("EUC-KR");
-          var rows = content.split('<td class="title">');
-          
-          for (var j = 1; j < rows.length; j++) {
-            try {
-              var row = rows[j];
-              var linkMatch = row.match(/<a href="([^"]+)"/);
-              var rawLink = linkMatch ? linkMatch[1].replace(/&amp;/g, '&') : "";
-              var link = "";
-              
-              if (rawLink) {
-                var oid = "", aid = "";
-                var idMatch = rawLink.match(/office_id=(\d+)/);
-                var artMatch = rawLink.match(/article_id=(\d+)/);
-                var pathMatch = rawLink.match(/article\/(\d+)\/(\d+)/);
-
-                if (idMatch && artMatch) { oid = idMatch[1]; aid = artMatch[1]; } 
-                else if (pathMatch) { oid = pathMatch[1]; aid = pathMatch[2]; }
-                
-                if (oid && aid) link = "https://n.news.naver.com/mnews/article/" + oid + "/" + aid;
-                else link = rawLink.indexOf('http') === 0 ? rawLink : "https://finance.naver.com" + (rawLink.startsWith('/') ? "" : "/") + rawLink;
-              }
-              
-              var title = "";
-              var titleAttrMatch = row.match(/title=(["'])([\s\S]*?)\1/);
-              if (titleAttrMatch && titleAttrMatch[2]) {
-                title = titleAttrMatch[2].trim();
-              } else {
-                var innerTitleMatch = row.match(/class="tit"[^>]*>([\s\S]*?)<\/a>/) || row.match(/<a[^>]*>([\s\S]*?)<\/a>/);
-                title = innerTitleMatch ? innerTitleMatch[1].replace(/<[^>]+>/g, '').trim() : "";
-              }
-              title = decodeHtml(title);
-              
-              var dateMatch = row.match(/<td class="date">([\s\S]*?)<\/td>/);
-              var dateStr = dateMatch ? dateMatch[1].trim() : "";
-              var pubDate = new Date().getTime();
-              if (dateStr) pubDate = new Date(dateStr.replace(/\./g, '/')).getTime();
-              
-              if (title && link) newsList.push({ title: title, link: link, time: pubDate, source: 'Naver', ticker: req.code });
-            } catch (e) {}
-          }
-        }
-      });
-    } catch(err) {
-      // 통신 전반 예외 대응
-    }
-  }
-  
-  // 정렬 및 고유값 처리
-  newsList.sort(function(a, b) { return b.time - a.time; });
-  var uniqueNews = [];
-  var seenTitles = new Set();
-  
-  for (var k = 0; k < newsList.length; k++) {
-    var t = newsList[k].title;
-    if (t && !seenTitles.has(t)) {
-      seenTitles.add(t);
-      uniqueNews.push(newsList[k]);
-      if (uniqueNews.length >= 30) break;
-    }
-  }
-
-  var resultJson = JSON.stringify(uniqueNews);
-  if (uniqueNews.length > 0) {
-    cache.put(cacheKey, resultJson, 300); // 5분 저장
-  }
-
-  return ContentService.createTextOutput(resultJson).setMimeType(ContentService.MimeType.JSON);
-}"; 
+const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbwv7UjHJTrwzhDzPSmvaM_09vXvTo0oaI0cxXl4dAAdp3138AHsJVUoiUugGiNrfsi6/exec"; 
 
 const CHO_HANGUL = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
 function getChosung(str) {
@@ -290,35 +66,47 @@ async function init() {
 
     applyTheme(); renderLayout(); startTimer(); 
     
-    // 캐시된 데이터 즉시 렌더링 (Stale-while-revalidate UX 개선)
-    const cachedData = JSON.parse(localStorage.getItem('marketdash_price_cache') || '{}');
-    if (Object.keys(cachedData).length > 0) {
-        updateDOMWithData(Object.values(cachedData));
+    // 💡 [방어 코드 추가] 로컬 스토리지 JSON 파싱 에러로 인한 페이지 멈춤 완벽 방지
+    try {
+        const cachedDataStr = localStorage.getItem('marketdash_price_cache');
+        if (cachedDataStr) {
+            const cachedData = JSON.parse(cachedDataStr);
+            if (Object.keys(cachedData).length > 0) {
+                updateDOMWithData(Object.values(cachedData));
+            }
+        }
+    } catch (e) {
+        console.warn("캐시 데이터가 손상되어 초기화합니다.", e);
+        localStorage.removeItem('marketdash_price_cache');
     }
 
-    // 💡 [수정됨] 새로고침 최적화: 60초 내에는 네트워크 통신 스킵
+    // 💡 [방어 코드 추가] 카운트다운 엘리먼트 null 에러 방지
     const lastFetchTime = parseInt(localStorage.getItem('marketdash_last_fetch_time') || '0');
     const now = Date.now();
     
     if (now - lastFetchTime < 60000) {
-        // 60초 이내면 타이머만 남은 시간으로 세팅하고 통신 건너뜀 (완전 즉시 로딩)
         state.countdown = Math.ceil(60 - ((now - lastFetchTime) / 1000));
-        document.getElementById('countdown').textContent = state.countdown;
-        fetchNews(); // 뉴스는 백그라운드에서 조용히 갱신
+        const countdownEl = document.getElementById('countdown');
+        if (countdownEl) countdownEl.textContent = state.countdown; // 요소가 있을 때만 업데이트
+        fetchNews(); 
     } else {
-        // 60초가 지났다면 최신 데이터 요청
         fetchData(); 
     }
 
     initSwipeToDelete(); 
     
-    document.getElementById('btn-refresh').addEventListener('click', forceRefresh);
+    const btnRefresh = document.getElementById('btn-refresh');
+    if (btnRefresh) btnRefresh.addEventListener('click', forceRefresh);
+
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.search-wrapper')) {
             document.querySelectorAll('.autocomplete-list').forEach(el => el.style.display = 'none');
             document.querySelectorAll('.input-guide').forEach(el => el.style.display = 'none');
         }
-        if (!e.target.closest('.settings-wrapper')) document.getElementById('settings-dropdown').classList.remove('active');
+        const settingsDropdown = document.getElementById('settings-dropdown');
+        if (settingsDropdown && !e.target.closest('.settings-wrapper')) {
+            settingsDropdown.classList.remove('active');
+        }
     });
 }
 
@@ -354,6 +142,7 @@ function initSwipeToDelete() {
     let isScrolling = false;
 
     const dashboard = document.getElementById('dashboard');
+    if (!dashboard) return;
 
     dashboard.addEventListener('touchstart', e => {
         const row = e.target.closest('tr[data-ticker]');
@@ -426,7 +215,7 @@ window.switchMobileTab = function(tabName) {
     if(tabName === 'news') {
         document.body.classList.add('show-news');
         if(tabs[1]) tabs[1].classList.add('active');
-        fetchNews(); // 뉴스 탭 진입 시 업데이트
+        fetchNews(); 
     } else {
         document.body.classList.remove('show-news');
         if(tabs[0]) tabs[0].classList.add('active');
@@ -436,8 +225,9 @@ window.switchMobileTab = function(tabName) {
 // --- RENDERING & UI ---
 function renderLayout() {
     const dashboard = document.getElementById('dashboard');
+    if (!dashboard) return;
+    
     dashboard.innerHTML = ''; rowNodes.clear();
-
     sortables.forEach(s => s.destroy()); sortables = [];
     const fragment = document.createDocumentFragment();
 
@@ -530,12 +320,13 @@ function handleAutocomplete(query, sectionId) {
     const btn = document.getElementById(`btn-add-${sectionId}`);
 
     if (btn && btn.disabled) return;
-
     if(!query) return; 
     query = query.trim().toLowerCase();
     
     if (query.length < 1) {
-        list.style.display = 'none'; guide.style.display = 'none'; return;
+        if(list) list.style.display = 'none'; 
+        if(guide) guide.style.display = 'none'; 
+        return;
     }
     
     const isChosungQuery = /[ㄱ-ㅎ]/.test(query) && !/[가-힣]/.test(query);
@@ -550,7 +341,7 @@ function handleAutocomplete(query, sectionId) {
     }).slice(0, 8); 
 
     if (matchedQuotes.length > 0) {
-        list.innerHTML = matchedQuotes.map(q => {
+        if(list) list.innerHTML = matchedQuotes.map(q => {
             const safeSymbol = escapeHTML(q.s); const safeName = escapeHTML(q.n); const safeExch = escapeHTML(q.e);
             return `
             <li onclick="selectAutocomplete('${safeSymbol}', '${sectionId}')">
@@ -558,9 +349,11 @@ function handleAutocomplete(query, sectionId) {
                 <span class="ac-exch">${safeExch}</span>
             </li>
         `}).join('');
-        list.style.display = 'block'; guide.style.display = 'none';
+        if(list) list.style.display = 'block'; 
+        if(guide) guide.style.display = 'none';
     } else {
-        list.style.display = 'none'; guide.style.display = 'block';
+        if(list) list.style.display = 'none'; 
+        if(guide) guide.style.display = 'block';
     }
 }
 
@@ -569,8 +362,10 @@ window.selectAutocomplete = function(symbol, sectionId) {
     const list = document.getElementById(`autocomplete-${sectionId}`);
     const guide = document.getElementById(`guide-${sectionId}`);
     const btn = document.getElementById(`btn-add-${sectionId}`);
-    input.value = symbol; list.style.display = 'none'; 
-    if(guide) guide.style.display = 'none'; btn.click(); 
+    if(input) input.value = symbol; 
+    if(list) list.style.display = 'none'; 
+    if(guide) guide.style.display = 'none'; 
+    if(btn) btn.click(); 
 };
 
 function generateRowHTML(ticker) {
@@ -673,8 +468,10 @@ async function handleAddTicker(e, sectionId) {
     const ticker = inputEl.value.trim().toUpperCase();
     
     if (!ticker || state.watchlists[sectionId].tickers.includes(ticker)) {
-        inputEl.value = ''; listEl.style.display = 'none'; 
-        if(guideEl) guideEl.style.display = 'none'; return;
+        inputEl.value = ''; 
+        if (listEl) listEl.style.display = 'none'; 
+        if (guideEl) guideEl.style.display = 'none'; 
+        return;
     }
 
     if (sectionId === 'kr') {
@@ -682,15 +479,18 @@ async function handleAddTicker(e, sectionId) {
         if (!isValidNaver) {
             alert('KR stocks: search list only.');
             inputEl.value = '';
-            listEl.style.display = 'none';
+            if (listEl) listEl.style.display = 'none';
             return;
         }
     }
 
     const originalBtnContent = `${PLUS_ICON}<span>Add tickers</span>`;
-    btnEl.disabled = true; btnEl.innerHTML = `${SPINNER_SVG}<span>Adding....</span>`; 
-    listEl.style.display = 'none';
-    if(guideEl) guideEl.style.display = 'none';
+    if (btnEl) {
+        btnEl.disabled = true; 
+        btnEl.innerHTML = `${SPINNER_SVG}<span>Adding....</span>`; 
+    }
+    if (listEl) listEl.style.display = 'none';
+    if (guideEl) guideEl.style.display = 'none';
 
     try {
         const fetchFunc = sectionId === 'kr' ? fetchNaverFinance : fetchYahooFinance;
@@ -702,20 +502,21 @@ async function handleAddTicker(e, sectionId) {
         state.watchlists[sectionId].tickers.push(ticker); saveWatchlists();
         
         const tbody = document.getElementById(`tbody-${sectionId}`);
-        tbody.insertAdjacentHTML('beforeend', generateRowHTML(ticker));
+        if (tbody) tbody.insertAdjacentHTML('beforeend', generateRowHTML(ticker));
         cacheRowNodes(ticker); checkEmptyState(sectionId); 
         updateDOMWithData([data[0]]); 
         
-        inputEl.value = '';
-        listEl.style.display = 'none';
+        if (inputEl) inputEl.value = '';
+        if (listEl) listEl.style.display = 'none';
 
-        // 새로운 종목이 추가되었으므로 뉴스도 업데이트
         fetchNews();
-
     } catch (err) {
         alert(`오류: ${err.message}`);
     } finally {
-        btnEl.disabled = false; btnEl.innerHTML = originalBtnContent;
+        if (btnEl) {
+            btnEl.disabled = false; 
+            btnEl.innerHTML = originalBtnContent;
+        }
     }
 }
 
@@ -733,7 +534,7 @@ function executeRemoveTicker(ticker) {
     if (row) row.remove(); rowNodes.delete(ticker);
     
     if(sectionIdToUpdate) checkEmptyState(sectionIdToUpdate);
-    fetchNews(); // 삭제 후 뉴스 목록 갱신
+    fetchNews(); 
 }
 
 function cacheRowNodes(ticker) {
@@ -749,6 +550,8 @@ function cacheRowNodes(ticker) {
 
 function initDragAndDrop() {
     const dashboard = document.getElementById('dashboard');
+    if (!dashboard) return;
+    
     Sortable.create(dashboard, {
         handle: '.drag-handle', animation: 200, ghostClass: 'sortable-ghost', delay: 100, delayOnTouchOnly: true,
         onEnd: function () {
@@ -774,6 +577,8 @@ function initDragAndDrop() {
 function toggleSection(e, sectionId) {
     if (e.target.closest('.action-icon-btn') && !e.target.closest('.toggle-btn')) return; 
     const container = document.getElementById(`section-${sectionId}`);
+    if (!container) return;
+    
     container.classList.toggle('collapsed');
     state.expanded[sectionId] = !container.classList.contains('collapsed');
     localStorage.setItem('marketdash_expanded', JSON.stringify(state.expanded));
@@ -783,6 +588,8 @@ function toggleSection(e, sectionId) {
 function toggleAddForm(e, sectionId) {
     e.stopPropagation();
     const container = document.getElementById(`section-${sectionId}`);
+    if (!container) return;
+    
     const form = container.querySelector('.add-ticker-form');
     if (container.classList.contains('collapsed')) {
         container.classList.remove('collapsed');
@@ -790,23 +597,30 @@ function toggleAddForm(e, sectionId) {
         localStorage.setItem('marketdash_expanded', JSON.stringify(state.expanded));
         forceRefresh();
     }
-    form.classList.toggle('active');
+    if (form) form.classList.toggle('active');
     container.classList.toggle('edit-mode');
-    if (form.classList.contains('active')) form.querySelector('input').focus();
+    if (form && form.classList.contains('active')) form.querySelector('input').focus();
 }
 
 let targetTickerToDelete = null;
 function confirmRemoveTicker(ticker) {
     targetTickerToDelete = ticker;
-    document.getElementById('delete-target-ticker').textContent = ticker;
-    document.getElementById('delete-modal').classList.add('active');
-    document.getElementById('confirm-delete-btn').onclick = () => {
-        if (targetTickerToDelete) { executeRemoveTicker(targetTickerToDelete); closeDeleteModal(); }
-    };
+    const delTarget = document.getElementById('delete-target-ticker');
+    if (delTarget) delTarget.textContent = ticker;
+    
+    const delModal = document.getElementById('delete-modal');
+    if (delModal) delModal.classList.add('active');
+    
+    const btn = document.getElementById('confirm-delete-btn');
+    if (btn) {
+        btn.onclick = () => {
+            if (targetTickerToDelete) { executeRemoveTicker(targetTickerToDelete); closeDeleteModal(); }
+        };
+    }
 }
 function closeDeleteModal() { targetTickerToDelete = null; document.getElementById('delete-modal').classList.remove('active'); }
 
-function toggleSettingsMenu() { document.getElementById('settings-dropdown').classList.toggle('active'); }
+function toggleSettingsMenu() { const el = document.getElementById('settings-dropdown'); if (el) el.classList.toggle('active'); }
 function applyTheme() { document.documentElement.setAttribute('data-theme', state.theme); }
 function toggleThemeDropdown() { state.theme = state.theme === 'dark' ? 'light' : 'dark'; localStorage.setItem('marketdash_theme', state.theme); applyTheme(); toggleSettingsMenu(); }
 function exportSettings() {
@@ -816,7 +630,7 @@ function exportSettings() {
     a.download = `1up_finance_settings_${new Date().toISOString().slice(0,10)}.json`; a.click();
     URL.revokeObjectURL(url); toggleSettingsMenu();
 }
-function triggerImport() { document.getElementById('import-file').click(); toggleSettingsMenu(); }
+function triggerImport() { const el = document.getElementById('import-file'); if(el) el.click(); toggleSettingsMenu(); }
 function importSettings(event) {
     const file = event.target.files[0]; if (!file) return; const reader = new FileReader();
     reader.onload = (e) => {
@@ -840,16 +654,15 @@ function resetToDefaults() {
         state.sectionOrder = ['indicators', 'kr', 'us']; renderLayout(); forceRefresh();
     }
 }
-function openAboutModal() { toggleSettingsMenu(); document.getElementById('about-modal').classList.add('active'); }
-function closeAboutModal() { document.getElementById('about-modal').classList.remove('active'); }
+function openAboutModal() { toggleSettingsMenu(); const el = document.getElementById('about-modal'); if (el) el.classList.add('active'); }
+function closeAboutModal() { const el = document.getElementById('about-modal'); if (el) el.classList.remove('active'); }
 function saveWatchlists() { localStorage.setItem('marketdash_watchlists', JSON.stringify(state.watchlists)); }
 
-// FetchData - 병렬 처리 및 청크 최적화 적용
+// FetchData 
 async function fetchData() {
-    // 💡 [수정됨] 데이터를 요청할 때 현재 시간을 브라우저에 기록
     localStorage.setItem('marketdash_last_fetch_time', Date.now().toString());
 
-    const fetchPromises = []; // 모든 요청을 담을 배열
+    const fetchPromises = []; 
 
     for (const sectionId of state.sectionOrder) {
         if (!state.expanded[sectionId]) continue;
@@ -857,13 +670,12 @@ async function fetchData() {
         const symbols = state.watchlists[sectionId].tickers;
         if (symbols.length === 0) continue;
 
-        const chunkSize = 100; // 청크 사이즈 상향 (네트워크 지연 최소화)
+        const chunkSize = 100; 
         const fetchFunc = sectionId === 'kr' ? fetchNaverFinance : fetchYahooFinance;
 
         for (let i = 0; i < symbols.length; i += chunkSize) {
             const chunk = symbols.slice(i, i + chunkSize);
             
-            // Promise를 배열에 추가
             const promise = fetchFunc(chunk)
                 .then(results => {
                     updateDOMWithData(results); 
@@ -877,18 +689,15 @@ async function fetchData() {
         }
     }
     
-    // 모아둔 네트워크 요청들을 병렬로 동시에 실행
     await Promise.all(fetchPromises);
-    
-    // 주식 데이터를 모두 가져온 후 뉴스도 업데이트
     fetchNews();
 }
 
 function forceRefresh() { 
     state.countdown = 60; 
-    document.getElementById('countdown').textContent = state.countdown; 
+    const el = document.getElementById('countdown');
+    if (el) el.textContent = state.countdown; // 💡 방어 코드 적용
     
-    // 💡 [수정됨] 수동 새로고침 버튼 클릭 시에는 시간 제한 강제 초기화
     localStorage.setItem('marketdash_last_fetch_time', '0'); 
     fetchData(); 
 }
@@ -897,11 +706,14 @@ function startTimer() {
     if (state.intervalId) clearInterval(state.intervalId);
     state.intervalId = setInterval(() => {
         state.countdown--;
-        if (state.countdown <= 0) forceRefresh(); else document.getElementById('countdown').textContent = state.countdown;
+        if (state.countdown <= 0) forceRefresh(); else {
+            const el = document.getElementById('countdown');
+            if (el) el.textContent = state.countdown; // 💡 방어 코드 적용
+        }
     }, 1000);
 }
 
-// Update DOM - Layout Thrashing 방지 및 캐싱 처리 적용
+// Update DOM 
 function updateDOMWithData(quotes) {
     requestAnimationFrame(() => {
         quotes.forEach(quote => {
@@ -916,7 +728,6 @@ function updateDOMWithData(quotes) {
             const oldPrice = oldPriceStr ? parseFloat(oldPriceStr) : null;
             if (oldPrice !== null && oldPrice !== price) {
                 nodes.row.classList.remove('flash-up', 'flash-down');
-                // 강제 리플로우(void nodes.row.offsetWidth) 제거 후 비동기 처리
                 setTimeout(() => {
                     if (nodes && nodes.row) {
                         nodes.row.classList.add(price > oldPrice ? 'flash-up' : 'flash-down');
@@ -949,10 +760,16 @@ function updateDOMWithData(quotes) {
         });
     });
 
-    // 새로 가져온 데이터를 브라우저에 캐싱 저장 (UX 개선)
-    const localCache = JSON.parse(localStorage.getItem('marketdash_price_cache') || '{}');
-    quotes.forEach(q => { localCache[q.symbol] = q; });
-    localStorage.setItem('marketdash_price_cache', JSON.stringify(localCache));
+    // 💡 [방어 코드 추가] 로컬 스토리지 데이터 저장 시 에러 방지
+    try {
+        const localCacheStr = localStorage.getItem('marketdash_price_cache');
+        const localCache = localCacheStr ? JSON.parse(localCacheStr) : {};
+        quotes.forEach(q => { localCache[q.symbol] = q; });
+        localStorage.setItem('marketdash_price_cache', JSON.stringify(localCache));
+    } catch (e) {
+        console.warn("캐시 저장 중 에러가 발생하여 초기화합니다.", e);
+        localStorage.setItem('marketdash_price_cache', '{}');
+    }
 }
 
 function markMissingData(requestedSymbols, results) {
@@ -996,7 +813,7 @@ async function fetchNews() {
     });
 
     const container = document.getElementById('news-container');
-    if (!container) return; // UI가 렌더링되지 않았을 경우를 대비
+    if (!container) return; 
 
     if (allTickers.length === 0) {
         container.innerHTML = '<div class="empty-state"><p>No tickers to fetch news for.</p></div>';
@@ -1032,14 +849,10 @@ function renderNews(newsList) {
     const html = newsList.map(news => {
         const dateObj = new Date(news.time);
         
-        // 💡 날짜 포맷 변경 (예: 6/1 -> 6.1.)
         const timeString = `${dateObj.getMonth()+1}.${dateObj.getDate()}. ${String(dateObj.getHours()).padStart(2, '0')}:${String(dateObj.getMinutes()).padStart(2, '0')}`;
-        
-        // 출처별 태그 생성
         const sourceTagClass = news.source === 'Naver' ? 'tag-naver' : 'tag-yahoo';
         const tickerLabel = news.ticker ? news.ticker : news.source; 
 
-        // 타이틀 아래쪽 메타(meta) 영역으로 태그 이동 (줄바꿈 효과)
         return `
             <a href="${news.link}" target="_blank" rel="noopener noreferrer" class="news-item">
                 <div class="news-title">
