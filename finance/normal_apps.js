@@ -847,7 +847,7 @@ function renderNews(newsList) {
         
         // 10분 미만 기사 -> n분 전 표기 / 10분 이상 기사 -> 한국 시각 고유 출고 시간(HH:MM) 표기
         if (diffMins >= 0 && diffMins < 10) {
-            timeDisplay = diffMins === 0 ? '방금 전' : `${diffMins}분 전`;
+            timeDisplay = diffMins === 0 ? '조금 전' : `${diffMins}분 전`;
         } else {
             timeDisplay = kstFormatter.format(new Date(news.time));
         }
