@@ -789,14 +789,15 @@ function renderNews(newsList) {
         const sourceTagClass = news.source === 'Naver' ? 'tag-naver' : 'tag-yahoo';
         const tickerLabel = news.ticker ? news.ticker : news.source; 
 
+        // 💡 [핵심 수정] 타이틀 아래쪽 메타(meta) 영역으로 태그 이동 (줄바꿈 효과)
         return `
             <a href="${news.link}" target="_blank" rel="noopener noreferrer" class="news-item">
                 <div class="news-title">
                     ${escapeHTML(news.title)} 
-                    <span class="news-tag ${sourceTagClass}">${escapeHTML(tickerLabel)} - ${escapeHTML(news.source)}</span>
                 </div>
                 <div class="news-meta">
                     <span>${timeString}</span>
+                    <span class="news-tag ${sourceTagClass}">${escapeHTML(tickerLabel)} - ${escapeHTML(news.source)}</span>
                 </div>
             </a>
         `;
