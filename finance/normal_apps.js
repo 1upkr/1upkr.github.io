@@ -8,7 +8,7 @@ const DEFAULT_WATCHLISTS = {
 };
 
 const GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbydYWqn3tZL25dE8UPMyN9mV19R1YKFZKpF-aml_25Z_YvA_qElw-LpxNO_Y8_sOzCV/exec";
-const NAVER_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbxUob6wiOj8WMgXMMACbBSyeqR4uudlLawIHwJK1JchJ8JdbCKLzkRjvAFyl5WsH7TW/exec"; 
+const NAVER_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbygC4GrK-2abZUpWWCxD4ZVfFVzd-gjbGvyYBTWNP26J7zwkwbrWwttXNC-geENS1Nykw/exec"; 
 
 const CHO_HANGUL = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
 function getChosung(str) {
@@ -63,7 +63,15 @@ async function init() {
     if (!state.sectionOrder || state.sectionOrder.length === 0) state.sectionOrder = Object.keys(state.watchlists);
     await initTickerDB(); 
 
-    applyTheme(); renderLayout(); startTimer(); fetchData(); 
+    applyTheme(); renderLayout(); startTimer(); 
+    
+    // 캐시된 데이터 즉시 렌더링 (Stale-while-revalidate UX 개선)
+    const cachedData = JSON.parse(localStorage.getItem('marketdash_price_cache') || '{}');
+    if (Object.keys(cachedData).length > 0) {
+        updateDOMWithData(Object.values(cachedData));
+    }
+
+    fetchData(); // 백그라운드에서 최신 데이터 요청 
     initSwipeToDelete(); 
     
     document.getElementById('btn-refresh').addEventListener('click', forceRefresh);
@@ -191,7 +199,6 @@ function renderLayout() {
         sectionContainer.id = `section-${sectionId}`;
         sectionContainer.dataset.id = sectionId;
 
-        // 그룹별 안내 메시지 처리
         const guideText = sectionId === 'kr' 
             ? "Please choose a ticker from the search results only." 
             : "Please enter only the ticker symbol from Yahoo Finance.";
@@ -216,7 +223,7 @@ function renderLayout() {
                         <ul class="autocomplete-list" id="autocomplete-${sectionId}"></ul>
                     </div>
                     <button type="submit" id="btn-add-${sectionId}">
-                        ${PLUS_ICON}<span>Add tickers</span></span>
+                        ${PLUS_ICON}<span>Add tickers</span>
                     </button>
                 </form>
                 <div class="table-wrapper">
@@ -282,7 +289,6 @@ function handleAutocomplete(query, sectionId) {
     const isKrSection = sectionId === 'kr';
 
     const matchedQuotes = localTickerDB.filter(q => {
-        // 그룹별 e:"NAVER" 필터링 적용
         if (isKrSection && q.e !== "NAVER") return false;
         if (!isKrSection && q.e === "NAVER") return false;
 
@@ -387,7 +393,6 @@ async function fetchYahooFinance(symbols) {
     } catch (e) { console.error("Failed to fetch data:", e); throw e; }
 }
 
-// 네이버 파이낸스용 별도 Fetch 함수
 async function fetchNaverFinance(symbols) {
     if (symbols.length === 0) return [];
     if (!navigator.onLine) throw new Error("No network connection.");
@@ -419,7 +424,6 @@ async function handleAddTicker(e, sectionId) {
         if(guideEl) guideEl.style.display = 'none'; return;
     }
 
-    // KR 그룹은 네이버 증권 DB에 있는 종목만 등록 가능하도록 제한
     if (sectionId === 'kr') {
         const isValidNaver = localTickerDB.some(q => q.s.toUpperCase() === ticker && q.e === "NAVER");
         if (!isValidNaver) {
@@ -436,7 +440,6 @@ async function handleAddTicker(e, sectionId) {
     if(guideEl) guideEl.style.display = 'none';
 
     try {
-        // 섹션에 따라 다른 Fetch 함수 호출
         const fetchFunc = sectionId === 'kr' ? fetchNaverFinance : fetchYahooFinance;
         const data = await fetchFunc([ticker]);
         
@@ -584,6 +587,7 @@ function openAboutModal() { toggleSettingsMenu(); document.getElementById('about
 function closeAboutModal() { document.getElementById('about-modal').classList.remove('active'); }
 function saveWatchlists() { localStorage.setItem('marketdash_watchlists', JSON.stringify(state.watchlists)); }
 
+// FetchData - 병렬 처리 및 청크 최적화 적용
 async function fetchData() {
     const fetchPromises = []; // 모든 요청을 담을 배열
 
@@ -593,27 +597,27 @@ async function fetchData() {
         const symbols = state.watchlists[sectionId].tickers;
         if (symbols.length === 0) continue;
 
-        const chunkSize = 40;
+        const chunkSize = 100; // 청크 사이즈 상향 (네트워크 지연 최소화)
         const fetchFunc = sectionId === 'kr' ? fetchNaverFinance : fetchYahooFinance;
 
         for (let i = 0; i < symbols.length; i += chunkSize) {
             const chunk = symbols.slice(i, i + chunkSize);
             
-            // await를 빼고 Promise 자체를 배열에 푸시합니다.
+            // Promise를 배열에 추가
             const promise = fetchFunc(chunk)
                 .then(results => {
                     updateDOMWithData(results); 
                     markMissingData(chunk, results);
                 })
-                .catch(error => {
-                    markAllError(chunk, error.message);
+                .catch(error => { 
+                    markAllError(chunk, error.message); 
                 });
-                
+            
             fetchPromises.push(promise);
         }
     }
     
-    // 모아둔 모든 네트워크 요청을 병렬로 동시 실행합니다.
+    // 모아둔 네트워크 요청들을 병렬로 동시에 실행
     await Promise.all(fetchPromises);
 }
 
@@ -626,6 +630,7 @@ function startTimer() {
     }, 1000);
 }
 
+// Update DOM - Layout Thrashing 방지 및 캐싱 처리 적용
 function updateDOMWithData(quotes) {
     requestAnimationFrame(() => {
         quotes.forEach(quote => {
@@ -639,10 +644,9 @@ function updateDOMWithData(quotes) {
             const oldPriceStr = nodes.price.getAttribute('data-price');
             const oldPrice = oldPriceStr ? parseFloat(oldPriceStr) : null;
             if (oldPrice !== null && oldPrice !== price) {
-            nodes.row.classList.remove('flash-up', 'flash-down');
-            
-            // offsetWidth 강제 호출 대신, 브라우저가 다음 렌더링 사이클에 처리하도록 10ms 지연
-            setTimeout(() => {
+                nodes.row.classList.remove('flash-up', 'flash-down');
+                // 강제 리플로우(void nodes.row.offsetWidth) 제거 후 비동기 처리
+                setTimeout(() => {
                     if (nodes && nodes.row) {
                         nodes.row.classList.add(price > oldPrice ? 'flash-up' : 'flash-down');
                     }
@@ -673,6 +677,11 @@ function updateDOMWithData(quotes) {
             if (quote.fiftyTwoWeekLow && quote.fiftyTwoWeekHigh) nodes.range.textContent = `${formatNum(quote.fiftyTwoWeekLow)} - ${formatNum(quote.fiftyTwoWeekHigh)}`; else nodes.range.textContent = '-';
         });
     });
+
+    // 새로 가져온 데이터를 브라우저에 캐싱 저장 (UX 개선)
+    const localCache = JSON.parse(localStorage.getItem('marketdash_price_cache') || '{}');
+    quotes.forEach(q => { localCache[q.symbol] = q; });
+    localStorage.setItem('marketdash_price_cache', JSON.stringify(localCache));
 }
 
 function markMissingData(requestedSymbols, results) {
