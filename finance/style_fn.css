@@ -335,14 +335,14 @@ footer { text-align: right; padding: 1.0rem 5%; font-family: 'Inter', system-ui,
 .news-item:last-child { border-bottom: none; }
 .news-title {
     font-size: 0.875rem;
-    font-weight: 700;
+    font-weight: 600;
     color: var(--text-primary);
     line-height: 1.4;
     margin-bottom: 0.5rem;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-    align-items: center;
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 .news-meta {
     font-size: 0.75rem;
@@ -360,8 +360,8 @@ footer { text-align: right; padding: 1.0rem 5%; font-family: 'Inter', system-ui,
     font-weight: 700;
     white-space: nowrap;
 }
-.tag-naver { background: rgba(3, 199, 90, 0.15); color: #03c75a; }
-.tag-yahoo { background: rgba(114, 14, 158, 0.15); color: #720e9e; }
+.tag-naver { background: rgba(69, 163, 108, 0.12); color: #45a36c; }
+.tag-yahoo { background: rgba(109, 77, 128, 0.12); color: #6d4d80; }
 
 
 /* =========================================================
