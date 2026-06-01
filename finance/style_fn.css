@@ -117,7 +117,6 @@ header {
 .theme-icon-sun { display: none; } .theme-icon-moon { display: block; }
 [data-theme="dark"] .theme-icon-sun { display: block; } [data-theme="dark"] .theme-icon-moon { display: none; }
 
-
 /* =========================================================
    [NEW] MAIN LAYOUT (GRID: 좌측 종목 / 우측 뉴스)
    ========================================================= */
@@ -128,18 +127,34 @@ main { flex: 1; width: 100%; overflow-x: hidden; }
     /* 65% : 35% 비율 */
     grid-template-columns: minmax(0, 6.5fr) minmax(0, 3.5fr);
     gap: 2rem;
-    padding: 2rem 5%; /* 헤더와 동일한 5% 여백 */
-    max-width: 100%; /* 💡 기존 1500px 제한을 100%로 변경하여 제한 해제 */
+    padding: 2rem 5%; 
+    max-width: 100%; /* 💡 가로 여백 꽉 채우기 (헤더와 동일 선상) */
     margin: 0 auto;
-    align-items: start;
+    align-items: stretch; /* 💡 양쪽 박스 세로 높이를 끝선까지 완벽하게 맞춤 */
 }
 
-#left-col, #right-col { width: 100%; min-width: 0; }
+#left-col { width: 100%; min-width: 0; }
+
+#right-col { 
+    width: 100%; 
+    min-width: 0; 
+    display: flex; 
+    flex-direction: column; 
+    height: 100%; /* 부모 그리드의 꽉 찬 높이를 그대로 상속 */
+}
 
 .section-container {
     background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; 
     margin-bottom: 2rem; overflow: visible; box-shadow: var(--shadow-md); transition: transform 0.2s, box-shadow 0.2s;
 }
+
+.news-section-container {
+    display: flex;
+    flex-direction: column;
+    flex: 1; /* 남은 세로 공간을 모두 채움 */
+    margin-bottom: 2rem; /* 좌측 컨테이너들의 하단 여백과 동일하게 맞춤 */
+}
+
 .section-header { border-radius: 12px 12px 0 0; }
 .table-wrapper { border-radius: 0 0 12px 12px; overflow: hidden; position: relative; min-height: 50px; }
 
@@ -294,12 +309,19 @@ tbody tr { transition: background-color 0.15s, transform 0.2s ease; } tbody tr:h
 
 footer { text-align: right; padding: 1.0rem 5%; font-family: 'Inter', system-ui, -apple-system, sans-serif; color: var(--text-secondary); font-size: 0.8rem; font-weight: 900; opacity: 0.8; margin-top: auto; }
 
+
 /* =========================================================
    [NEW] NEWS LIST & TABS CSS
    ========================================================= */
 .mobile-tabs { display: none; }
 
-.news-list { background: var(--card-bg); padding: 0; }
+.news-list { 
+    background: var(--card-bg); 
+    padding: 0; 
+    flex: 1 1 0; /* 💡 부모 높이에 맞춰 유연하게 꽉 채우기 */
+    overflow-y: auto; /* 💡 내부 콘텐츠가 넘치면 스크롤 생성 */
+    border-radius: 0 0 12px 12px;
+}
 .news-item {
     display: flex;
     flex-direction: column;
@@ -325,10 +347,10 @@ footer { text-align: right; padding: 1.0rem 5%; font-family: 'Inter', system-ui,
     font-size: 0.75rem;
     color: var(--text-secondary);
     display: flex;
-    justify-content: flex-start; /* 양쪽 끝 배치가 아닌 좌측으로 모아서 정렬 */
+    justify-content: flex-start; /* 💡 날짜와 태그를 좌측 정렬 */
     align-items: center;
-    gap: 0.5rem; /* 날짜와 태그 사이의 간격 */
-    margin-top: 0.2rem; /* 제목과 날짜 사이에 살짝 여백 주기 */
+    gap: 0.5rem; /* 💡 텍스트 간격 여백 */
+    margin-top: 0.2rem;
 }
 .news-tag {
     font-size: 0.65rem;
@@ -361,7 +383,6 @@ footer { text-align: right; padding: 1.0rem 5%; font-family: 'Inter', system-ui,
     }
     .header-left h1 { font-size: 0.95rem; }
     
-    /* 모바일 레이아웃(좌우 쪼개기 해제) */
     main { padding: 0 !important; }
     #main-layout { display: block; padding: 0; }
     
@@ -389,11 +410,11 @@ footer { text-align: right; padding: 1.0rem 5%; font-family: 'Inter', system-ui,
     body.show-news #left-col { display: none; }
     body.show-news #right-col { display: block; }
     
-    /* 뉴스 리스트 제약 해제 */
+    /* 💡 모바일 뉴스 리스트 제약 해제 (화면 전체 스크롤 활용) */
     .section-container { max-height: none !important; position: static !important; }
-    .news-list { overflow-y: visible !important; }
+    .news-section-container { display: block; height: auto; flex: none; margin-bottom: 0; }
+    .news-list { overflow-y: visible !important; flex: none; height: auto; }
     
-    /* 기존 테이블 관련 모바일 설정 유지 */
     th, td { padding: 0.75rem 0.25rem; font-size: 0.75rem; }
     th.col-symbol, td.col-symbol { width: 32%; padding-left: 1rem !important; }
     th.handle-col, td.handle-col { width: 44px !important; padding-left: 0; padding-right: 1rem !important; text-align: right !important; }
