@@ -395,11 +395,16 @@ footer { text-align: right; padding: 1.0rem 5%; font-family: 'Inter', system-ui,
         position: sticky;
         top: 65px; /* 헤더 바로 아래 고정 */
         z-index: 99;
+        flex-shrink: 0; 
+        min-height: 48px; 
     }
     .tab-btn {
-        flex: 1; padding: 0.9rem; background: none; border: none;
+        flex: 1; padding: 0; background: none; border: none;
         color: var(--text-secondary); font-weight: 700; font-size: 0.85rem;
         cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
     .tab-btn.active { color: var(--text-primary); border-bottom: 2px solid var(--text-primary); }
     
