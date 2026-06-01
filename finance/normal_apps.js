@@ -8,7 +8,7 @@ const DEFAULT_WATCHLISTS = {
 };
 
 const GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbydYWqn3tZL25dE8UPMyN9mV19R1YKFZKpF-aml_25Z_YvA_qElw-LpxNO_Y8_sOzCV/exec";
-const NAVER_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbz8bRB2LeF48k276T9sFnKTjUInlzOGeolDqH0GljcBeT3qXWO0lKVgOSw8k4Nbyi7b-A/exec"; 
+const NAVER_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbxUob6wiOj8WMgXMMACbBSyeqR4uudlLawIHwJK1JchJ8JdbCKLzkRjvAFyl5WsH7TW/exec"; 
 
 const CHO_HANGUL = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
 function getChosung(str) {
@@ -584,8 +584,9 @@ function openAboutModal() { toggleSettingsMenu(); document.getElementById('about
 function closeAboutModal() { document.getElementById('about-modal').classList.remove('active'); }
 function saveWatchlists() { localStorage.setItem('marketdash_watchlists', JSON.stringify(state.watchlists)); }
 
-// fetchData 로직을 섹션별로 순회하며 각각의 API 호출하도록 변경
 async function fetchData() {
+    const fetchPromises = []; // 모든 요청을 담을 배열
+
     for (const sectionId of state.sectionOrder) {
         if (!state.expanded[sectionId]) continue;
 
@@ -597,15 +598,23 @@ async function fetchData() {
 
         for (let i = 0; i < symbols.length; i += chunkSize) {
             const chunk = symbols.slice(i, i + chunkSize);
-            try {
-                const results = await fetchFunc(chunk);
-                updateDOMWithData(results); 
-                markMissingData(chunk, results);
-            } catch (error) { 
-                markAllError(chunk, error.message); 
-            }
+            
+            // await를 빼고 Promise 자체를 배열에 푸시합니다.
+            const promise = fetchFunc(chunk)
+                .then(results => {
+                    updateDOMWithData(results); 
+                    markMissingData(chunk, results);
+                })
+                .catch(error => {
+                    markAllError(chunk, error.message);
+                });
+                
+            fetchPromises.push(promise);
         }
     }
+    
+    // 모아둔 모든 네트워크 요청을 병렬로 동시 실행합니다.
+    await Promise.all(fetchPromises);
 }
 
 function forceRefresh() { state.countdown = 60; document.getElementById('countdown').textContent = state.countdown; fetchData(); }
@@ -630,8 +639,14 @@ function updateDOMWithData(quotes) {
             const oldPriceStr = nodes.price.getAttribute('data-price');
             const oldPrice = oldPriceStr ? parseFloat(oldPriceStr) : null;
             if (oldPrice !== null && oldPrice !== price) {
-                nodes.row.classList.remove('flash-up', 'flash-down'); void nodes.row.offsetWidth; 
-                nodes.row.classList.add(price > oldPrice ? 'flash-up' : 'flash-down');
+            nodes.row.classList.remove('flash-up', 'flash-down');
+            
+            // offsetWidth 강제 호출 대신, 브라우저가 다음 렌더링 사이클에 처리하도록 10ms 지연
+            setTimeout(() => {
+                    if (nodes && nodes.row) {
+                        nodes.row.classList.add(price > oldPrice ? 'flash-up' : 'flash-down');
+                    }
+                }, 10);
             }
             nodes.price.setAttribute('data-price', price);
             nodes.name.textContent = quote.shortName || quote.longName || ticker;
