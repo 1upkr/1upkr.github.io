@@ -118,19 +118,19 @@ header {
 [data-theme="dark"] .theme-icon-sun { display: block; } [data-theme="dark"] .theme-icon-moon { display: none; }
 
 /* =========================================================
-   [NEW] MAIN LAYOUT (GRID: 좌측 종목 / 우측 뉴스)
+   MAIN LAYOUT (GRID: 좌측 종목 / 우측 뉴스)
    ========================================================= */
 main { flex: 1; width: 100%; overflow-x: hidden; }
 
 #main-layout {
     display: grid;
-    /* 65% : 35% 비율 */
+    /* 6.5 : 3.5 비율 유지 */
     grid-template-columns: minmax(0, 6.5fr) minmax(0, 3.5fr);
     gap: 2rem;
     padding: 2rem 5%; 
-    max-width: 100%; /* 💡 가로 여백 꽉 채우기 (헤더와 동일 선상) */
+    max-width: 100%; 
     margin: 0 auto;
-    align-items: stretch; /* 💡 양쪽 박스 세로 높이를 끝선까지 완벽하게 맞춤 */
+    align-items: stretch;
 }
 
 #left-col { width: 100%; min-width: 0; }
@@ -140,7 +140,7 @@ main { flex: 1; width: 100%; overflow-x: hidden; }
     min-width: 0; 
     display: flex; 
     flex-direction: column; 
-    height: 100%; /* 부모 그리드의 꽉 찬 높이를 그대로 상속 */
+    height: 100%;
 }
 
 .section-container {
@@ -151,8 +151,8 @@ main { flex: 1; width: 100%; overflow-x: hidden; }
 .news-section-container {
     display: flex;
     flex-direction: column;
-    flex: 1; /* 남은 세로 공간을 모두 채움 */
-    margin-bottom: 2rem; /* 좌측 컨테이너들의 하단 여백과 동일하게 맞춤 */
+    flex: 1; 
+    margin-bottom: 2rem; 
 }
 
 .section-header { border-radius: 12px 12px 0 0; }
@@ -185,11 +185,12 @@ main { flex: 1; width: 100%; overflow-x: hidden; }
 .sortable-ghost { opacity: 0.6; background-color: var(--drag-bg) !important; box-shadow: inset 0 0 5px rgba(0,0,0,0.05); }
 .sortable-drag { box-shadow: 0 10px 20px rgba(0,0,0,0.1); background-color: var(--card-bg) !important; cursor: grabbing !important; }
 
+/* 양쪽 섹션 헤더 높이 완벽 동기화 */
 .section-header {
     padding: 1.25rem 1.5rem; display: flex; justify-content: space-between;
     align-items: center; border-bottom: 1px solid var(--border-color); user-select: none;
     background-color: var(--card-bg);
-    min-height: 71px;    
+    min-height: 71px; 
 }
 .section-header-left { flex: 1; display: flex; align-items: center; cursor: pointer; }
 .section-header h2 { font-size: 0.90rem; font-weight: 800; }
@@ -312,15 +313,16 @@ footer { text-align: right; padding: 1.0rem 5%; font-family: 'Inter', system-ui,
 
 
 /* =========================================================
-   [NEW] NEWS LIST & TABS CSS
+   NEWS LIST & TABS CSS
    ========================================================= */
 .mobile-tabs { display: none; }
 
 .news-list { 
     background: var(--card-bg); 
     padding: 0; 
-    flex: 1 1 0; /* 💡 부모 높이에 맞춰 유연하게 꽉 채우기 */
-    overflow-y: auto; /* 💡 내부 콘텐츠가 넘치면 스크롤 생성 */
+    flex: 1 1 0; 
+    /* 💡 [수정됨] 데스크탑에서 스크롤을 방지하고 넘치는 하단 기사는 숨김 처리 */
+    overflow: hidden; 
     border-radius: 0 0 12px 12px;
 }
 .news-item {
@@ -333,9 +335,11 @@ footer { text-align: right; padding: 1.0rem 5%; font-family: 'Inter', system-ui,
 }
 .news-item:hover { background-color: var(--hover-bg); }
 .news-item:last-child { border-bottom: none; }
+
+/* 제목 한 줄 고정 및 말줄임표 처리 */
 .news-title {
     font-size: 0.875rem;
-    font-weight: 600;
+    font-weight: 700;
     color: var(--text-primary);
     line-height: 1.4;
     margin-bottom: 0.5rem;
@@ -348,9 +352,9 @@ footer { text-align: right; padding: 1.0rem 5%; font-family: 'Inter', system-ui,
     font-size: 0.75rem;
     color: var(--text-secondary);
     display: flex;
-    justify-content: flex-start; /* 💡 날짜와 태그를 좌측 정렬 */
+    justify-content: flex-start; 
     align-items: center;
-    gap: 0.5rem; /* 💡 텍스트 간격 여백 */
+    gap: 0.5rem; 
     margin-top: 0.2rem;
 }
 .news-tag {
@@ -360,12 +364,13 @@ footer { text-align: right; padding: 1.0rem 5%; font-family: 'Inter', system-ui,
     font-weight: 700;
     white-space: nowrap;
 }
+/* 채도를 낮춰 눈을 편안하게 만든 태그 색상 */
 .tag-naver { background: rgba(69, 163, 108, 0.12); color: #45a36c; }
 .tag-yahoo { background: rgba(109, 77, 128, 0.12); color: #6d4d80; }
 
 
 /* =========================================================
-   [NEW] MOBILE RESPONSIVE
+   MOBILE RESPONSIVE
    ========================================================= */
 @media (max-width: 768px) {
     .hide-mobile { display: none; }
@@ -393,8 +398,9 @@ footer { text-align: right; padding: 1.0rem 5%; font-family: 'Inter', system-ui,
         background: var(--header-bg);
         border-bottom: 1px solid var(--border-color);
         position: sticky;
-        top: 65px; /* 헤더 바로 아래 고정 */
+        top: 65px; 
         z-index: 99;
+        /* 브라우저 상하 스크롤 시 주소창 유동에 따른 높이 변형 차단 */
         flex-shrink: 0; 
         min-height: 48px; 
     }
@@ -402,6 +408,7 @@ footer { text-align: right; padding: 1.0rem 5%; font-family: 'Inter', system-ui,
         flex: 1; padding: 0; background: none; border: none;
         color: var(--text-secondary); font-weight: 700; font-size: 0.85rem;
         cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s;
+        /* 패딩 대신 flex 중앙 정렬을 활용하여 상하 흔들림 제어 */
         display: flex;
         align-items: center;
         justify-content: center;
@@ -416,9 +423,9 @@ footer { text-align: right; padding: 1.0rem 5%; font-family: 'Inter', system-ui,
     body.show-news #left-col { display: none; }
     body.show-news #right-col { display: block; }
     
-    /* 💡 모바일 뉴스 리스트 제약 해제 (화면 전체 스크롤 활용) */
     .section-container { max-height: none !important; position: static !important; }
     .news-section-container { display: block; height: auto; flex: none; margin-bottom: 0; }
+    /* 모바일에서는 뉴스 리스트가 잘리지 않고 정상 유동하도록 재설정 */
     .news-list { overflow-y: visible !important; flex: none; height: auto; }
     
     th, td { padding: 0.75rem 0.25rem; font-size: 0.75rem; }
