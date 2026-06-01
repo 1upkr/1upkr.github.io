@@ -9,7 +9,7 @@ const DEFAULT_WATCHLISTS = {
 
 const GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbydYWqn3tZL25dE8UPMyN9mV19R1YKFZKpF-aml_25Z_YvA_qElw-LpxNO_Y8_sOzCV/exec";
 const NAVER_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbygC4GrK-2abZUpWWCxD4ZVfFVzd-gjbGvyYBTWNP26J7zwkwbrWwttXNC-geENS1Nykw/exec"; 
-const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbxUQ6J2y_2J5YKTygxIN7QZkWxY65NAzpzE4oq-icVgUlC5ysnwBXrNRf49L19-87T3/exec"; 
+const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbxpRSL22NN3ZzyqrMNobxlSNtfzUBKLBs5NVP-7OF2E_RSRLAt5TYOiveW2IvzsIJ4J/exec"; 
 
 const CHO_HANGUL = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
 function getChosung(str) {
@@ -503,10 +503,10 @@ function cacheRowNodes(ticker) {
     const sid = getSafeId(ticker);
     rowNodes.set(ticker, {
         row: document.getElementById(`row-${sid}`), symbol: document.getElementById(`symbol-${sid}`),
-        name: document.getElementById(`name-${sid}`), price: document.getElementById('price-' + sid),
-        extPrice: document.getElementById('ext-price-' + sid), change: document.getElementById('change-' + sid),
-        pct: document.getElementById('pct-' + sid), vol: document.getElementById('vol-' + sid),
-        cap: document.getElementById('cap-' + sid), range: document.getElementById('range-' + sid)
+        name: document.getElementById(`name-${sid}`), price: document.getElementById(`price-${sid}`),
+        extPrice: document.getElementById(`ext-price-${sid}`), change: document.getElementById(`change-${sid}`),
+        pct: document.getElementById(`pct-${sid}`), vol: document.getElementById(`vol-${sid}`),
+        cap: document.getElementById(`cap-${sid}`), range: document.getElementById(`range-${sid}`)
     });
 }
 
@@ -738,8 +738,6 @@ function formatCompact(num) {
 }
 
 // --- NEWS FETCHING & RENDERING LOGIC ---
-let lastNewsFetchTime = 0; // 💡 디바운스 및 쓰로틀링용 타임스탬프
-
 async function fetchNews() {
     const spinner = document.getElementById('news-spinner');
     if (spinner) spinner.style.display = 'block';
@@ -758,13 +756,6 @@ async function fetchNews() {
         return;
     }
 
-    // 💡 [추가됨] 빠른 탭 전환 및 연속 리프레시로 인한 불필요한 API 중복 호출 대기 차단 (30초 쓰로틀링)
-    const now = Date.now();
-    if (now - lastNewsFetchTime < 30000 && container.children.length > 1 && !container.querySelector('.empty-state')) {
-        if (spinner) spinner.style.display = 'none';
-        return;
-    }
-
     try {
         const url = `${NEWS_GAS_PROXY_URL}?symbols=${encodeURIComponent(allTickers.join(','))}&t=${Date.now()}`;
         const response = await fetch(url);
@@ -772,13 +763,10 @@ async function fetchNews() {
         if (!response.ok) throw new Error("Network response was not ok");
         const newsData = await response.json();
         
-        lastNewsFetchTime = Date.now(); // 💡 성공적인 호출 기록 시점 저장
         renderNews(newsData);
     } catch (error) {
         console.error("News fetch error:", error);
-        if(container.children.length <= 1) {
-            container.innerHTML = `<div class="empty-state"><p class="error-text">Failed to load news.</p></div>`;
-        }
+        container.innerHTML = `<div class="empty-state"><p class="error-text">Failed to load news.</p></div>`;
     } finally {
         if (spinner) spinner.style.display = 'none';
     }
