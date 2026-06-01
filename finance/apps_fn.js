@@ -9,7 +9,7 @@ const DEFAULT_WATCHLISTS = {
 
 const GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbydYWqn3tZL25dE8UPMyN9mV19R1YKFZKpF-aml_25Z_YvA_qElw-LpxNO_Y8_sOzCV/exec";
 const NAVER_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbygC4GrK-2abZUpWWCxD4ZVfFVzd-gjbGvyYBTWNP26J7zwkwbrWwttXNC-geENS1Nykw/exec"; 
-const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbwxlq4x_eIgvtZ-rAgoNME-D47gNc_Fg2QIr4Deo2RJcFFB1se73bwEGqSX5rfpH1Sl/exec"; 
+const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbxpRSL22NN3ZzyqrMNobxlSNtfzUBKLBs5NVP-7OF2E_RSRLAt5TYOiveW2IvzsIJ4J/exec"; 
 
 const CHO_HANGUL = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
 function getChosung(str) {
@@ -783,13 +783,15 @@ function renderNews(newsList) {
 
     const html = newsList.map(news => {
         const dateObj = new Date(news.time);
-        const timeString = `${dateObj.getMonth()+1}/${dateObj.getDate()} ${String(dateObj.getHours()).padStart(2, '0')}:${String(dateObj.getMinutes()).padStart(2, '0')}`;
+        
+        // 💡 [수정됨] 날짜 포맷 변경 (예: 6/1 -> 6.1.)
+        const timeString = `${dateObj.getMonth()+1}.${dateObj.getDate()}. ${String(dateObj.getHours()).padStart(2, '0')}:${String(dateObj.getMinutes()).padStart(2, '0')}`;
         
         // 출처별 태그 생성
         const sourceTagClass = news.source === 'Naver' ? 'tag-naver' : 'tag-yahoo';
         const tickerLabel = news.ticker ? news.ticker : news.source; 
 
-        // 💡 [핵심 수정] 타이틀 아래쪽 메타(meta) 영역으로 태그 이동 (줄바꿈 효과)
+        // 타이틀 아래쪽 메타(meta) 영역으로 태그 이동 (줄바꿈 효과)
         return `
             <a href="${news.link}" target="_blank" rel="noopener noreferrer" class="news-item">
                 <div class="news-title">
