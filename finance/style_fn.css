@@ -334,7 +334,7 @@ footer { text-align: right; padding: 1.0rem 5%; font-family: 'Inter', system-ui,
 .news-item:last-child { border-bottom: none; }
 .news-title {
     font-size: 0.875rem;
-    font-weight: 600;
+    font-weight: 700;
     color: var(--text-primary);
     line-height: 1.4;
     margin-bottom: 0.5rem;
