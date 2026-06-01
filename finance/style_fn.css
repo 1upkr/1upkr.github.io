@@ -124,7 +124,7 @@ main { flex: 1; width: 100%; overflow-x: hidden; }
 
 #main-layout {
     display: grid;
-    grid-template-columns: 7fr 3fr;
+    grid-template-columns: 7fr 3fr; 
     gap: 2rem;
     padding: 2rem 5%; 
     max-width: 100%; 
@@ -132,14 +132,10 @@ main { flex: 1; width: 100%; overflow-x: hidden; }
     align-items: start; 
 }
 
-#left-col { width: 100%; min-width: 0; }
-
 #right-col { 
-    width: 100%; 
     display: flex; 
     flex-direction: column; 
-    position: sticky;
-    top: 80px; /* 헤더 아래 고정 */
+    height: 100%;
 }
 
 .section-container {
