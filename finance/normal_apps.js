@@ -9,7 +9,7 @@ const DEFAULT_WATCHLISTS = {
 
 const GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbydYWqn3tZL25dE8UPMyN9mV19R1YKFZKpF-aml_25Z_YvA_qElw-LpxNO_Y8_sOzCV/exec";
 const NAVER_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbygC4GrK-2abZUpWWCxD4ZVfFVzd-gjbGvyYBTWNP26J7zwkwbrWwttXNC-geENS1Nykw/exec"; 
-const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbyjCeuo14NKh-TEtpSqicYoIPG3CwCvoiGo4l78X_eZmguQRn-vKONc9Sy8-P7HI_Wb/exec"; 
+const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbwOLS2Fe8L0A0mDz3Ld34Uqjw1mGN76oqgH2hcEIxhCoPRZZsHOuMNXxRNCjkCkEiP_/exec"; 
 
 const CHO_HANGUL = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
 function getChosung(str) {
@@ -54,7 +54,7 @@ let state = {
     theme: localStorage.getItem('marketdash_theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'),
     countdown: 60,
     intervalId: null,
-    lastNewsFetch: 0 // 뉴스 갱신 쿨타임 체크용 변수
+    lastNewsFetch: 0 // 뉴스 오버로딩 방지 타임스탬프
 };
 
 const rowNodes = new Map(); let sortables = []; 
@@ -67,7 +67,6 @@ async function init() {
 
     applyTheme(); renderLayout(); startTimer(); 
     
-    // 로컬 스토리지 JSON 파싱 에러로 인한 페이지 멈춤 완벽 방지
     try {
         const cachedDataStr = localStorage.getItem('marketdash_price_cache');
         if (cachedDataStr) {
@@ -81,7 +80,6 @@ async function init() {
         localStorage.removeItem('marketdash_price_cache');
     }
 
-    // 카운트다운 엘리먼트 null 에러 방지
     const lastFetchTime = parseInt(localStorage.getItem('marketdash_last_fetch_time') || '0');
     const now = Date.now();
     
@@ -122,7 +120,6 @@ async function initTickerDB() {
         const response = await fetch(`./finance/tickers_n.json?v=${new Date().getTime()}`);
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const rawData = await response.json();
-        
         localTickerDB = processTickerDB(rawData);
     } catch (error) {
         console.error("Failed to load ticker DB:", error);
@@ -138,7 +135,6 @@ function initSwipeToDelete() {
     let touchStartX = 0;
     let touchStartY = 0;
     let swipingRow = null;
-    
     let isSwiping = false;
     let isScrolling = false;
 
@@ -152,7 +148,6 @@ function initSwipeToDelete() {
         touchStartX = e.touches[0].clientX;
         touchStartY = e.touches[0].clientY;
         swipingRow = row;
-        
         isSwiping = false;
         isScrolling = false; 
         row.style.transition = 'none'; 
@@ -177,7 +172,7 @@ function initSwipeToDelete() {
             }
         }
 
-        if (isScrolling) { return; }
+        if (isScrolling) return;
 
         if (isSwiping && diffX < 0) { 
             if (e.cancelable) e.preventDefault();
@@ -201,7 +196,6 @@ function initSwipeToDelete() {
         
         swipingRow.style.transform = 'translateX(0)';
         swipingRow.style.opacity = '1';
-        
         swipingRow = null;
         isSwiping = false;
         isScrolling = false;
@@ -221,7 +215,7 @@ window.switchMobileTab = function(tabName) {
         const isStale = (Date.now() - state.lastNewsFetch) > 60000;
         const isEmpty = !container || container.children.length === 0 || container.querySelector('.empty-state');
         
-        // 60초가 지났거나, 뉴스 리스트가 텅 비어있을 때만 실제 Fetch 실행
+        // 60초가 완전히 경과했거나 리스트가 완전히 비어있을 때만 데이터를 실제 갱신(스피너 작동)하도록 처리
         if (isStale || isEmpty) {
             fetchNews(); 
         }
@@ -344,7 +338,6 @@ function handleAutocomplete(query, sectionId) {
     const matchedQuotes = localTickerDB.filter(q => {
         if (isKrSection && q.e !== "NAVER") return false;
         if (!isKrSection && q.e === "NAVER") return false;
-
         if (isChosungQuery) return (q.cs_s && q.cs_s.includes(query)) || (q.cs_n && q.cs_n.includes(query));
         else return (q.s && q.s.toLowerCase().includes(query)) || (q.n && q.n.toLowerCase().includes(query));
     }).slice(0, 8); 
@@ -443,7 +436,6 @@ async function fetchYahooFinance(symbols) {
         const text = await fetchWithRetry(targetUrl);
         if (text.trim().startsWith('<')) throw new Error("GAS permission denied or limit reached.");
         const data = JSON.parse(text);
-        
         if (data && data.quoteResponse && data.quoteResponse.result) return data.quoteResponse.result;
         else if (data && data.error) throw new Error(data.error);
         throw new Error("Invalid data structure.");
@@ -461,7 +453,6 @@ async function fetchNaverFinance(symbols) {
         const text = await fetchWithRetry(targetUrl);
         if (text.trim().startsWith('<')) throw new Error("Naver GAS proxy permission denied.");
         const data = JSON.parse(text);
-        
         if (data && data.quoteResponse && data.quoteResponse.result) return data.quoteResponse.result;
         else if (data && data.error) throw new Error(data.error);
         throw new Error("Invalid data structure from Naver proxy.");
@@ -504,20 +495,16 @@ async function handleAddTicker(e, sectionId) {
     try {
         const fetchFunc = sectionId === 'kr' ? fetchNaverFinance : fetchYahooFinance;
         const data = await fetchFunc([ticker]);
-        
         if (!data || data.length === 0 || data[0].regularMarketPrice === undefined) {
             alert(`${ticker} not found.`); return;
         }
         state.watchlists[sectionId].tickers.push(ticker); saveWatchlists();
-        
         const tbody = document.getElementById(`tbody-${sectionId}`);
         if (tbody) tbody.insertAdjacentHTML('beforeend', generateRowHTML(ticker));
         cacheRowNodes(ticker); checkEmptyState(sectionId); 
         updateDOMWithData([data[0]]); 
-        
         if (inputEl) inputEl.value = '';
         if (listEl) listEl.style.display = 'none';
-
         fetchNews();
     } catch (err) {
         alert(`오류: ${err.message}`);
@@ -541,7 +528,6 @@ function executeRemoveTicker(ticker) {
     saveWatchlists();
     const sid = getSafeId(ticker); const row = document.getElementById(`row-${sid}`);
     if (row) row.remove(); rowNodes.delete(ticker);
-    
     if(sectionIdToUpdate) checkEmptyState(sectionIdToUpdate);
     fetchNews(); 
 }
@@ -549,11 +535,11 @@ function executeRemoveTicker(ticker) {
 function cacheRowNodes(ticker) {
     const sid = getSafeId(ticker);
     rowNodes.set(ticker, {
-        row: document.getElementById(`row-${sid}`), symbol: document.getElementById(`symbol-${sid}`),
-        name: document.getElementById(`name-${sid}`), price: document.getElementById(`price-${sid}`),
-        extPrice: document.getElementById(`ext-price-${sid}`), change: document.getElementById(`change-${sid}`),
-        pct: document.getElementById(`pct-${sid}`), vol: document.getElementById(`vol-${sid}`),
-        cap: document.getElementById(`cap-${sid}`), range: document.getElementById(`range-${sid}`)
+        row: document.getElementById('row-' + sid), symbol: document.getElementById('symbol-' + sid),
+        name: document.getElementById('name-' + sid), price: document.getElementById('price-' + sid),
+        extPrice: document.getElementById('ext-price-' + sid), change: document.getElementById('change-' + sid),
+        pct: document.getElementById('pct-' + sid), vol: document.getElementById('vol-' + sid),
+        cap: document.getElementById('cap-' + sid), range: document.getElementById('range-' + sid)
     });
 }
 
@@ -587,7 +573,6 @@ function toggleSection(e, sectionId) {
     if (e.target.closest('.action-icon-btn') && !e.target.closest('.toggle-btn')) return; 
     const container = document.getElementById(`section-${sectionId}`);
     if (!container) return;
-    
     container.classList.toggle('collapsed');
     state.expanded[sectionId] = !container.classList.contains('collapsed');
     localStorage.setItem('marketdash_expanded', JSON.stringify(state.expanded));
@@ -598,7 +583,6 @@ function toggleAddForm(e, sectionId) {
     e.stopPropagation();
     const container = document.getElementById(`section-${sectionId}`);
     if (!container) return;
-    
     const form = container.querySelector('.add-ticker-form');
     if (container.classList.contains('collapsed')) {
         container.classList.remove('collapsed');
@@ -616,10 +600,8 @@ function confirmRemoveTicker(ticker) {
     targetTickerToDelete = ticker;
     const delTarget = document.getElementById('delete-target-ticker');
     if (delTarget) delTarget.textContent = ticker;
-    
     const delModal = document.getElementById('delete-modal');
     if (delModal) delModal.classList.add('active');
-    
     const btn = document.getElementById('confirm-delete-btn');
     if (btn) {
         btn.onclick = () => {
@@ -670,12 +652,10 @@ function saveWatchlists() { localStorage.setItem('marketdash_watchlists', JSON.s
 // FetchData 
 async function fetchData() {
     localStorage.setItem('marketdash_last_fetch_time', Date.now().toString());
-
     const fetchPromises = []; 
 
     for (const sectionId of state.sectionOrder) {
         if (!state.expanded[sectionId]) continue;
-
         const symbols = state.watchlists[sectionId].tickers;
         if (symbols.length === 0) continue;
 
@@ -684,7 +664,6 @@ async function fetchData() {
 
         for (let i = 0; i < symbols.length; i += chunkSize) {
             const chunk = symbols.slice(i, i + chunkSize);
-            
             const promise = fetchFunc(chunk)
                 .then(results => {
                     updateDOMWithData(results); 
@@ -693,11 +672,9 @@ async function fetchData() {
                 .catch(error => { 
                     markAllError(chunk, error.message); 
                 });
-            
             fetchPromises.push(promise);
         }
     }
-    
     await Promise.all(fetchPromises);
     fetchNews();
 }
@@ -706,9 +683,8 @@ function forceRefresh() {
     state.countdown = 60; 
     const el = document.getElementById('countdown');
     if (el) el.textContent = state.countdown;
-    
     localStorage.setItem('marketdash_last_fetch_time', '0'); 
-    state.lastNewsFetch = 0; // 수동 갱신 시 뉴스 쿨타임도 무효화
+    state.lastNewsFetch = 0; 
     fetchData(); 
 }
 
@@ -838,9 +814,7 @@ async function fetchNews() {
         if (!response.ok) throw new Error("Network response was not ok");
         const newsData = await response.json();
         
-        // 갱신 완료 시점 기록
         state.lastNewsFetch = Date.now();
-        
         renderNews(newsData);
     } catch (error) {
         console.error("News fetch error:", error);
@@ -860,8 +834,6 @@ function renderNews(newsList) {
     }
 
     const now = Date.now();
-
-    // 로컬 브라우저 세팅 상관없이 한국(KST) 시간을 강제하는 formatter
     const kstFormatter = new Intl.DateTimeFormat('ko-KR', {
         timeZone: 'Asia/Seoul',
         hour: '2-digit',
@@ -870,11 +842,10 @@ function renderNews(newsList) {
     });
 
     const html = newsList.map(news => {
-        // 출고된 시간과 현재 시간의 분단위 차이 계산
         const diffMins = Math.floor((now - news.time) / 60000);
         let timeDisplay = '';
         
-        // 10분 미만인 경우 "n분 전" 노출, 그렇지 않으면 KST "HH:MM" 노출
+        // 10분 미만 기사 -> n분 전 표기 / 10분 이상 기사 -> 한국 시각 고유 출고 시간(HH:MM) 표기
         if (diffMins >= 0 && diffMins < 10) {
             timeDisplay = diffMins === 0 ? '방금 전' : `${diffMins}분 전`;
         } else {
