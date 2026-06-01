@@ -343,10 +343,14 @@ footer { text-align: right; padding: 1.0rem 5%; font-family: 'Inter', system-ui,
     color: var(--text-primary);
     line-height: 1.4;
     margin-bottom: 0.5rem;
-    display: block;
-    white-space: nowrap;
+    display: -webkit-box;
+    -webkit-line-clamp: 1; /* 1줄로 고정 (필요시 2로 변경하면 2줄까지 나옵니다) */
+    -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
+    white-space: normal; 
+    word-break: break-all; 
+    width: 100%;
 }
 .news-meta {
     font-size: 0.75rem;
