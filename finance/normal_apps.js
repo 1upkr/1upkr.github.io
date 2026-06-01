@@ -9,7 +9,7 @@ const DEFAULT_WATCHLISTS = {
 
 const GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbydYWqn3tZL25dE8UPMyN9mV19R1YKFZKpF-aml_25Z_YvA_qElw-LpxNO_Y8_sOzCV/exec";
 const NAVER_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbygC4GrK-2abZUpWWCxD4ZVfFVzd-gjbGvyYBTWNP26J7zwkwbrWwttXNC-geENS1Nykw/exec"; 
-const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbzKjrnN6mToyLG2JQ8iA8PUhEL4ggK8Zo-w-8U6ZRiovIapGDzec1tUfGN6GnXaNakD/exec"; 
+const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbyjCeuo14NKh-TEtpSqicYoIPG3CwCvoiGo4l78X_eZmguQRn-vKONc9Sy8-P7HI_Wb/exec"; 
 
 const CHO_HANGUL = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
 function getChosung(str) {
@@ -53,7 +53,8 @@ let state = {
     expanded: JSON.parse(localStorage.getItem('marketdash_expanded')) || { indicators: true, kr: true, us: true },
     theme: localStorage.getItem('marketdash_theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'),
     countdown: 60,
-    intervalId: null
+    intervalId: null,
+    lastNewsFetch: 0 // 뉴스 갱신 쿨타임 체크용 변수
 };
 
 const rowNodes = new Map(); let sortables = []; 
@@ -66,7 +67,7 @@ async function init() {
 
     applyTheme(); renderLayout(); startTimer(); 
     
-    // 💡 [방어 코드 추가] 로컬 스토리지 JSON 파싱 에러로 인한 페이지 멈춤 완벽 방지
+    // 로컬 스토리지 JSON 파싱 에러로 인한 페이지 멈춤 완벽 방지
     try {
         const cachedDataStr = localStorage.getItem('marketdash_price_cache');
         if (cachedDataStr) {
@@ -80,14 +81,14 @@ async function init() {
         localStorage.removeItem('marketdash_price_cache');
     }
 
-    // 💡 [방어 코드 추가] 카운트다운 엘리먼트 null 에러 방지
+    // 카운트다운 엘리먼트 null 에러 방지
     const lastFetchTime = parseInt(localStorage.getItem('marketdash_last_fetch_time') || '0');
     const now = Date.now();
     
     if (now - lastFetchTime < 60000) {
         state.countdown = Math.ceil(60 - ((now - lastFetchTime) / 1000));
         const countdownEl = document.getElementById('countdown');
-        if (countdownEl) countdownEl.textContent = state.countdown; // 요소가 있을 때만 업데이트
+        if (countdownEl) countdownEl.textContent = state.countdown;
         fetchNews(); 
     } else {
         fetchData(); 
@@ -215,7 +216,15 @@ window.switchMobileTab = function(tabName) {
     if(tabName === 'news') {
         document.body.classList.add('show-news');
         if(tabs[1]) tabs[1].classList.add('active');
-        fetchNews(); 
+        
+        const container = document.getElementById('news-container');
+        const isStale = (Date.now() - state.lastNewsFetch) > 60000;
+        const isEmpty = !container || container.children.length === 0 || container.querySelector('.empty-state');
+        
+        // 60초가 지났거나, 뉴스 리스트가 텅 비어있을 때만 실제 Fetch 실행
+        if (isStale || isEmpty) {
+            fetchNews(); 
+        }
     } else {
         document.body.classList.remove('show-news');
         if(tabs[0]) tabs[0].classList.add('active');
@@ -696,9 +705,10 @@ async function fetchData() {
 function forceRefresh() { 
     state.countdown = 60; 
     const el = document.getElementById('countdown');
-    if (el) el.textContent = state.countdown; // 💡 방어 코드 적용
+    if (el) el.textContent = state.countdown;
     
     localStorage.setItem('marketdash_last_fetch_time', '0'); 
+    state.lastNewsFetch = 0; // 수동 갱신 시 뉴스 쿨타임도 무효화
     fetchData(); 
 }
 
@@ -708,7 +718,7 @@ function startTimer() {
         state.countdown--;
         if (state.countdown <= 0) forceRefresh(); else {
             const el = document.getElementById('countdown');
-            if (el) el.textContent = state.countdown; // 💡 방어 코드 적용
+            if (el) el.textContent = state.countdown;
         }
     }, 1000);
 }
@@ -760,7 +770,6 @@ function updateDOMWithData(quotes) {
         });
     });
 
-    // 💡 [방어 코드 추가] 로컬 스토리지 데이터 저장 시 에러 방지
     try {
         const localCacheStr = localStorage.getItem('marketdash_price_cache');
         const localCache = localCacheStr ? JSON.parse(localCacheStr) : {};
@@ -805,6 +814,8 @@ function formatCompact(num) {
 // --- NEWS FETCHING & RENDERING LOGIC ---
 async function fetchNews() {
     const spinner = document.getElementById('news-spinner');
+    const container = document.getElementById('news-container');
+    
     if (spinner) spinner.style.display = 'block';
 
     let allTickers = [];
@@ -812,7 +823,6 @@ async function fetchNews() {
         allTickers = allTickers.concat(section.tickers);
     });
 
-    const container = document.getElementById('news-container');
     if (!container) return; 
 
     if (allTickers.length === 0) {
@@ -827,6 +837,9 @@ async function fetchNews() {
         
         if (!response.ok) throw new Error("Network response was not ok");
         const newsData = await response.json();
+        
+        // 갱신 완료 시점 기록
+        state.lastNewsFetch = Date.now();
         
         renderNews(newsData);
     } catch (error) {
@@ -846,10 +859,28 @@ function renderNews(newsList) {
         return;
     }
 
+    const now = Date.now();
+
+    // 로컬 브라우저 세팅 상관없이 한국(KST) 시간을 강제하는 formatter
+    const kstFormatter = new Intl.DateTimeFormat('ko-KR', {
+        timeZone: 'Asia/Seoul',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+    });
+
     const html = newsList.map(news => {
-        const dateObj = new Date(news.time);
+        // 출고된 시간과 현재 시간의 분단위 차이 계산
+        const diffMins = Math.floor((now - news.time) / 60000);
+        let timeDisplay = '';
         
-        const timeString = `${dateObj.getMonth()+1}.${dateObj.getDate()}. ${String(dateObj.getHours()).padStart(2, '0')}:${String(dateObj.getMinutes()).padStart(2, '0')}`;
+        // 10분 미만인 경우 "n분 전" 노출, 그렇지 않으면 KST "HH:MM" 노출
+        if (diffMins >= 0 && diffMins < 10) {
+            timeDisplay = diffMins === 0 ? '방금 전' : `${diffMins}분 전`;
+        } else {
+            timeDisplay = kstFormatter.format(new Date(news.time));
+        }
+
         const sourceTagClass = news.source === 'Naver' ? 'tag-naver' : 'tag-yahoo';
         const tickerLabel = news.ticker ? news.ticker : news.source; 
 
@@ -859,7 +890,7 @@ function renderNews(newsList) {
                     ${escapeHTML(news.title)} 
                 </div>
                 <div class="news-meta">
-                    <span>${timeString}</span>
+                    <span class="news-time ${diffMins < 10 ? 'recent' : ''}">${timeDisplay}</span>
                     <span class="news-tag ${sourceTagClass}">${escapeHTML(tickerLabel)} - ${escapeHTML(news.source)}</span>
                 </div>
             </a>
