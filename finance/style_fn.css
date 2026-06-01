@@ -404,15 +404,19 @@ footer { text-align: right; padding: 1.0rem 5%; font-family: 'Inter', system-ui,
         position: sticky;
         top: 65px; 
         z-index: 99;
-        /* 브라우저 상하 스크롤 시 주소창 유동에 따른 높이 변형 차단 */
+        /* 💡 [수정됨] min-height 대신 절대 높이(height)로 완전 고정 */
+        height: 48px; 
         flex-shrink: 0; 
-        min-height: 48px; 
     }
     .tab-btn {
         flex: 1; padding: 0; background: none; border: none;
         color: var(--text-secondary); font-weight: 700; font-size: 0.85rem;
-        cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s;
-        /* 패딩 대신 flex 중앙 정렬을 활용하여 상하 흔들림 제어 */
+        cursor: pointer; transition: all 0.2s;
+        /* 💡 [수정됨] 하단 테두리(border)가 생겨도 레이아웃이 밀리지 않도록 설정 */
+        box-sizing: border-box;
+        border-bottom: 2px solid transparent; 
+        /* 💡 [수정됨] 버튼의 높이를 부모 컨테이너(48px)에 100% 강제 맞춤 */
+        height: 100%;
         display: flex;
         align-items: center;
         justify-content: center;
