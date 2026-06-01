@@ -62,10 +62,10 @@ body {
     min-height: 100vh;
     
     /* 텍스트 선택 방지 */
-    -webkit-user-select: none; /* Safari */
-    -ms-user-select: none;     /* IE 10 and IE 11 */
-    user-select: none;         /* Standard syntax */
-    -webkit-touch-callout: none; /* iOS Safari에서 길게 누를 때 뜨는 메뉴 방지*/   
+    -webkit-user-select: none;
+    -ms-user-select: none;     
+    user-select: none;         
+    -webkit-touch-callout: none; 
 }
 
 input, textarea {
@@ -117,7 +117,24 @@ header {
 .theme-icon-sun { display: none; } .theme-icon-moon { display: block; }
 [data-theme="dark"] .theme-icon-sun { display: block; } [data-theme="dark"] .theme-icon-moon { display: none; }
 
-main { padding: 2rem 5%; max-width: 1400px; margin: 0 auto; flex: 1; width: 100%; overflow-x: hidden; }
+
+/* =========================================================
+   [NEW] MAIN LAYOUT (GRID: 좌측 종목 / 우측 뉴스)
+   ========================================================= */
+main { flex: 1; width: 100%; overflow-x: hidden; }
+
+#main-layout {
+    display: grid;
+    /* 65% : 35% 비율 */
+    grid-template-columns: minmax(0, 6.5fr) minmax(0, 3.5fr);
+    gap: 2rem;
+    padding: 2rem 5%;
+    max-width: 1500px;
+    margin: 0 auto;
+    align-items: start; /* 매우 중요: 양쪽 박스 높이가 서로 영향받지 않게 함 */
+}
+
+#left-col, #right-col { width: 100%; min-width: 0; }
 
 .section-container {
     background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; 
@@ -165,7 +182,7 @@ main { padding: 2rem 5%; max-width: 1400px; margin: 0 auto; flex: 1; width: 100%
 .add-ticker-form {
     display: none; padding: 0.75rem 1.5rem; gap: 0.75rem;
     border-bottom: 1px solid var(--border-color); background-color: var(--hover-bg); align-items: center;
-    justify-content: flex-end; /* 데스크탑 우측 정렬 */
+    justify-content: flex-end; 
 }
 .add-ticker-form.active { display: flex; }
 .search-wrapper { position: relative; flex: 1; max-width: 300px; z-index: 10; }
@@ -277,6 +294,53 @@ tbody tr { transition: background-color 0.15s, transform 0.2s ease; } tbody tr:h
 
 footer { text-align: right; padding: 1.0rem 5%; font-family: 'Inter', system-ui, -apple-system, sans-serif; color: var(--text-secondary); font-size: 0.8rem; font-weight: 900; opacity: 0.8; margin-top: auto; }
 
+/* =========================================================
+   [NEW] NEWS LIST & TABS CSS
+   ========================================================= */
+.mobile-tabs { display: none; }
+
+.news-list { background: var(--card-bg); padding: 0; }
+.news-item {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border-color);
+    text-decoration: none;
+    transition: background-color 0.2s;
+}
+.news-item:hover { background-color: var(--hover-bg); }
+.news-item:last-child { border-bottom: none; }
+.news-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.4;
+    margin-bottom: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    align-items: center;
+}
+.news-meta {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    display: flex;
+    justify-content: space-between;
+}
+.news-tag {
+    font-size: 0.65rem;
+    padding: 0.15rem 0.35rem;
+    border-radius: 4px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+.tag-naver { background: rgba(3, 199, 90, 0.15); color: #03c75a; }
+.tag-yahoo { background: rgba(114, 14, 158, 0.15); color: #720e9e; }
+
+
+/* =========================================================
+   [NEW] MOBILE RESPONSIVE
+   ========================================================= */
 @media (max-width: 768px) {
     .hide-mobile { display: none; }
     
@@ -294,11 +358,40 @@ footer { text-align: right; padding: 1.0rem 5%; font-family: 'Inter', system-ui,
     }
     .header-left h1 { font-size: 0.95rem; }
     
-    main { padding: 1.5rem 3%; overflow-x: hidden; }
-    .section-header { padding: 1rem; }
+    /* 모바일 레이아웃(좌우 쪼개기 해제) */
+    main { padding: 0 !important; }
+    #main-layout { display: block; padding: 0; }
     
+    /* 모바일 탭 디자인 */
+    .mobile-tabs {
+        display: flex;
+        background: var(--header-bg);
+        border-bottom: 1px solid var(--border-color);
+        position: sticky;
+        top: 65px; /* 헤더 바로 아래 고정 */
+        z-index: 99;
+    }
+    .tab-btn {
+        flex: 1; padding: 0.9rem; background: none; border: none;
+        color: var(--text-secondary); font-weight: 700; font-size: 0.85rem;
+        cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s;
+    }
+    .tab-btn.active { color: var(--text-primary); border-bottom: 2px solid var(--text-primary); }
+    
+    /* 모바일 기본 뷰 (관심종목 뷰) */
+    #left-col { padding: 1.5rem 3%; }
+    #right-col { display: none; padding: 1.5rem 3%; } 
+    
+    /* 모바일 전환 뷰 (뉴스 뷰) */
+    body.show-news #left-col { display: none; }
+    body.show-news #right-col { display: block; }
+    
+    /* 뉴스 리스트 제약 해제 */
+    .section-container { max-height: none !important; position: static !important; }
+    .news-list { overflow-y: visible !important; }
+    
+    /* 기존 테이블 관련 모바일 설정 유지 */
     th, td { padding: 0.75rem 0.25rem; font-size: 0.75rem; }
-    
     th.col-symbol, td.col-symbol { width: 32%; padding-left: 1rem !important; }
     th.handle-col, td.handle-col { width: 44px !important; padding-left: 0; padding-right: 1rem !important; text-align: right !important; }
     
@@ -337,245 +430,18 @@ footer { text-align: right; padding: 1.0rem 5%; font-family: 'Inter', system-ui,
     }
     
     .add-ticker-form button span.hide-mobile-text { display: none; } 
-
     .add-ticker-form input, input[type="text"] { font-size: 16px !important; } 
     
     .autocomplete-list { max-height: 220px; box-shadow: 0 8px 16px rgba(0,0,0,0.15); }
     .autocomplete-list li { padding: 0.7rem 0.75rem; } 
     .ac-symbol { font-size: 0.85rem; } .ac-name { font-size: 0.7rem; max-width: 140px; }
 
-    /* GPU 가속 힌트를 주어 모바일 환경에서 애니메이션 성능 향상 */
-    tbody tr[data-ticker] {
-        will-change: transform, opacity, background-color;
-    }
+    tbody tr[data-ticker] { will-change: transform, opacity, background-color; }
     
-    /* 드래그 상태일 때의 요소 최적화 보강 */
     .sortable-drag {
         will-change: transform;
         box-shadow: 0 10px 20px rgba(0,0,0,0.1); 
         background-color: var(--card-bg) !important; 
         cursor: grabbing !important; 
     }
-  /* Layout & News Container */
-#main-layout {
-    display: grid;
-    grid-template-columns: minmax(0, 7fr) minmax(0, 3fr);
-    gap: 2rem;
-    padding: 2rem 5%;
-    max-width: 1600px;
-    margin: 0 auto;
-    width: 100%;
-}
-.news-list {
-    max-height: calc(100vh - 150px);
-    overflow-y: auto;
-    padding: 0;
-    background: var(--card-bg);
-    border-radius: 0 0 12px 12px;
-}
-.news-item {
-    display: flex;
-    flex-direction: column;
-    padding: 1rem 1.25rem;
-    border-bottom: 1px solid var(--border-color);
-    text-decoration: none;
-    transition: background-color 0.2s;
-}
-.news-item:hover { background-color: var(--hover-bg); }
-.news-item:last-child { border-bottom: none; }
-.news-title {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    line-height: 1.4;
-    margin-bottom: 0.5rem;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-    align-items: center;
-}
-.news-meta {
-    font-size: 0.7rem;
-    color: var(--text-secondary);
-    display: flex;
-    justify-content: space-between;
-}
-.news-tag {
-    font-size: 0.65rem;
-    padding: 0.15rem 0.35rem;
-    border-radius: 4px;
-    font-weight: 700;
-    white-space: nowrap;
-}
-.tag-naver { background: rgba(3, 199, 90, 0.15); color: #03c75a; }
-.tag-yahoo { background: rgba(114, 14, 158, 0.15); color: #720e9e; }
-
-/* Mobile Tabs */
-.mobile-tabs {
-    display: none; /* Hide on desktop */
-}
-
-/* Mobile Responsive */
-@media (max-width: 1024px) {
-    #main-layout { grid-template-columns: minmax(0, 6fr) minmax(0, 4fr); gap: 1rem; }
-}
-@media (max-width: 768px) {
-    main { padding: 0 !important; }
-    #main-layout { 
-        display: block; /* Disable grid */
-        padding: 0;
-    }
-    
-    .mobile-tabs {
-        display: flex;
-        background: var(--header-bg);
-        border-bottom: 1px solid var(--border-color);
-        position: sticky;
-        top: 65px; /* 헤더 높이만큼 아래에 고정 */
-        z-index: 99;
-    }
-    .tab-btn {
-        flex: 1;
-        padding: 0.8rem;
-        background: none;
-        border: none;
-        color: var(--text-secondary);
-        font-weight: 600;
-        font-size: 0.85rem;
-        cursor: pointer;
-        border-bottom: 2px solid transparent;
-        transition: all 0.2s;
-    }
-    .tab-btn.active {
-        color: var(--text-primary);
-        border-bottom: 2px solid var(--text-primary);
-    }
-    
-    #right-col { display: none; } /* 기본적으로 뉴스 숨김 */
-    
-    /* 탭 상태에 따른 표시/숨김 */
-    body.show-news #left-col { display: none; }
-    body.show-news #right-col { display: block; padding: 1.5rem 3%; }
-    
-    .news-list { max-height: none; } /* 모바일에서는 자체 스크롤 제거 */
-
-
-
-    /* =========================================================
-   [NEW] GRID LAYOUT & NEWS SECTION (Desktop & Mobile Tabs)
-   ========================================================= */
-
-/* --- 1. 데스크탑 기본 레이아웃 (좌우 분할) --- */
-#main-layout {
-    display: grid;
-    /* 좌측 65%, 우측 35% 비율로 고정 */
-    grid-template-columns: minmax(0, 6.5fr) minmax(0, 3.5fr); 
-    gap: 2rem;
-    padding: 2rem 5%;
-    max-width: 1500px;
-    margin: 0 auto;
-    width: 100%;
-    align-items: start; /* 매우 중요: 양쪽 박스 높이가 서로 영향받지 않게 함 */
-}
-
-#left-col, #right-col {
-    width: 100%;
-    min-width: 0; /* 컨텐츠가 길어져도 Grid 바깥으로 삐져나가지 않게 방지 */
-}
-
-.mobile-tabs {
-    display: none; /* 데스크탑에서는 탭 버튼 숨김 */
-}
-
-/* --- 2. 뉴스 리스트 디자인 --- */
-.news-list {
-    background: var(--card-bg);
-    padding: 0;
-}
-.news-item {
-    display: flex;
-    flex-direction: column;
-    padding: 1rem 1.25rem;
-    border-bottom: 1px solid var(--border-color);
-    text-decoration: none;
-    transition: background-color 0.2s;
-}
-.news-item:hover { background-color: var(--hover-bg); }
-.news-item:last-child { border-bottom: none; }
-.news-title {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    line-height: 1.4;
-    margin-bottom: 0.5rem;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-    align-items: center;
-}
-.news-meta {
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-    display: flex;
-    justify-content: space-between;
-}
-.news-tag {
-    font-size: 0.65rem;
-    padding: 0.15rem 0.35rem;
-    border-radius: 4px;
-    font-weight: 700;
-    white-space: nowrap;
-}
-.tag-naver { background: rgba(3, 199, 90, 0.15); color: #03c75a; }
-.tag-yahoo { background: rgba(114, 14, 158, 0.15); color: #720e9e; }
-
-/* --- 3. 모바일 화면 최적화 (탭 전환) --- */
-@media (max-width: 768px) {
-    /* 모바일에서는 좌우 분할 해제 */
-    #main-layout { 
-        display: block; 
-        padding: 0;
-    }
-    
-    /* 모바일 탭 디자인 */
-    .mobile-tabs {
-        display: flex;
-        background: var(--header-bg);
-        border-bottom: 1px solid var(--border-color);
-        position: sticky;
-        top: 65px; /* 헤더 바로 아래 고정 */
-        z-index: 99;
-    }
-    .tab-btn {
-        flex: 1;
-        padding: 0.9rem;
-        background: none;
-        border: none;
-        color: var(--text-secondary);
-        font-weight: 700;
-        font-size: 0.85rem;
-        cursor: pointer;
-        border-bottom: 2px solid transparent;
-        transition: all 0.2s;
-    }
-    .tab-btn.active {
-        color: var(--text-primary);
-        border-bottom: 2px solid var(--text-primary);
-    }
-    
-    /* 모바일 기본 뷰 (관심종목 보이고 뉴스 숨김) */
-    #left-col { padding: 1.5rem 3%; }
-    #right-col { display: none; } 
-    
-    /* body에 show-news 클래스가 붙으면 뷰 전환 (뉴스 보이고 관심종목 숨김) */
-    body.show-news #left-col { display: none; }
-    body.show-news #right-col { display: block; padding: 1.5rem 3%; }
-    
-    /* 모바일에서는 뉴스 자체 스크롤 해제 (전체 화면 스크롤 사용) */
-    .section-container { max-height: none !important; position: static !important; }
-    .news-list { overflow-y: visible !important; }
-}
-
-
-  
 }
