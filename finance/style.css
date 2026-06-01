@@ -343,4 +343,17 @@ footer { text-align: right; padding: 1.0rem 5%; font-family: 'Inter', system-ui,
     .autocomplete-list { max-height: 220px; box-shadow: 0 8px 16px rgba(0,0,0,0.15); }
     .autocomplete-list li { padding: 0.7rem 0.75rem; } 
     .ac-symbol { font-size: 0.85rem; } .ac-name { font-size: 0.7rem; max-width: 140px; }
+
+    /* GPU 가속 힌트를 주어 모바일 환경에서 애니메이션 성능 향상 */
+    tbody tr[data-ticker] {
+        will-change: transform, opacity, background-color;
+    }
+    
+    /* 드래그 상태일 때의 요소 최적화 보강 */
+    .sortable-drag {
+        will-change: transform;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1); 
+        background-color: var(--card-bg) !important; 
+        cursor: grabbing !important; 
+    }
 }
