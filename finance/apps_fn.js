@@ -9,7 +9,231 @@ const DEFAULT_WATCHLISTS = {
 
 const GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbydYWqn3tZL25dE8UPMyN9mV19R1YKFZKpF-aml_25Z_YvA_qElw-LpxNO_Y8_sOzCV/exec";
 const NAVER_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbygC4GrK-2abZUpWWCxD4ZVfFVzd-gjbGvyYBTWNP26J7zwkwbrWwttXNC-geENS1Nykw/exec"; 
-const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbzEtlVIHuujHaUVrxGdCXUI22RGCq44Vcasn6Xh-NctALxc33uXwAxP99bZh_WKTcP-/exec"; 
+const NEWS_GAS_PROXY_URL = "function doGet(e) {
+  var symbols = e.parameter.symbols; 
+  if (!symbols) return ContentService.createTextOutput(JSON.stringify([])).setMimeType(ContentService.MimeType.JSON);
+
+  // 1. 캐시 서비스 호출 및 고유 키(Key) 생성
+  var cache = CacheService.getScriptCache();
+  var signature = Utilities.computeDigest(Utilities.DigestAlgorithm.MD5, symbols);
+  var cacheKey = "news_" + Utilities.base64EncodeWebSafe(signature).substring(0, 50);
+  
+  // 2. 캐시에 데이터가 있으면 즉시 반환 (속도 향상의 핵심)
+  var cachedData = cache.get(cacheKey);
+  if (cachedData) {
+    return ContentService.createTextOutput(cachedData).setMimeType(ContentService.MimeType.JSON);
+  }
+
+  // 특수 기호 및 HTML 엔티티 복원 함수
+  function decodeHtml(str) {
+    if (!str) return "";
+    var entities = {
+      '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&apos;': "'", '&#39;': "'",
+      '&hellip;': '…', '&lsquo;': '‘', '&rsquo;': '’', '&ldquo;': '“', '&rdquo;': '”',
+      '&middot;': '·', '&uarr;': '↑', '&darr;': '↓', '&rarr;': '→', '&larr;': '←',
+      '&nbsp;': ' ', '&bull;': '•', '&hearts;': '♥', '&clubs;': '♣', '&spades;': '♠', '&diams;': '♦',
+      '&starf;': '★', '&star;': '☆', '&circ;': 'ˆ', '&tilde;': '˜', '&ndash;': '–', '&mdash;': '—'
+    };
+    return str.replace(/&[a-zA-Z0-9#]+;/g, function(match) {
+      var lower = match.toLowerCase();
+      if (entities[lower]) return entities[lower];
+      
+      var decMatch = match.match(/&#(\d+);/);
+      if (decMatch) return String.fromCharCode(parseInt(decMatch[1], 10));
+      
+      var hexMatch = match.match(/&#x([a-fA-F0-9]+);/i);
+      if (hexMatch) return String.fromCharCode(parseInt(hexMatch[1], 16));
+      
+      return match;
+    });
+  }
+
+  var symbolArr = symbols.split(',');
+  var naverCodes = [];
+  var yahooSymbols = [];
+
+  symbolArr.forEach(function(sym) {
+    var s = sym.trim();
+    if (/^\d{6}$/.test(s)) naverCodes.push(s);
+    else if (s && s !== 'KRW=X' && s.indexOf('^') === -1) yahooSymbols.push(s);
+  });
+
+  var commonHeaders = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+    "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
+    "Upgrade-Insecure-Requests": "1"
+  };
+
+  var requests = [];
+  
+  // 야후 뉴스 API 셋업
+  if (yahooSymbols.length > 0) {
+    var yahooHeaders = Object.assign({}, commonHeaders);
+    var yUrl = "https://feeds.finance.yahoo.com/rss/2.0/headline?s=" + yahooSymbols.join(',') + "&region=US&lang=en-US";
+    requests.push({ url: yUrl, headers: yahooHeaders, muteHttpExceptions: true, type: 'yahoo' });
+  }
+
+  // 네이버 뉴스 API 및 HTML 백업 셋업
+  if (naverCodes.length > 0) {
+    var naverHeaders = Object.assign({}, commonHeaders);
+    naverHeaders["Referer"] = "https://m.stock.naver.com/";
+    
+    naverCodes.forEach(function(code) {
+      var apiUrl = "https://m.stock.naver.com/api/news/stock/" + code + "?pageSize=30&page=1";
+      requests.push({ url: apiUrl, headers: naverHeaders, muteHttpExceptions: true, type: 'naver_api', code: code });
+      
+      var htmlUrl = "https://finance.naver.com/item/news_news.naver?code=" + code + "&page=1";
+      requests.push({ url: htmlUrl, headers: naverHeaders, muteHttpExceptions: true, type: 'naver_html', code: code });
+    });
+  }
+
+  var newsList = [];
+  var apiSuccessCodes = {};
+
+  if (requests.length > 0) {
+    try {
+      var responses = UrlFetchApp.fetchAll(requests);
+      
+      // 1차 순회 처리 (야후 & 네이버 모바일 API)
+      responses.forEach(function(res, i) {
+        if (!res || res.getResponseCode() !== 200) return;
+        var req = requests[i];
+        var content = res.getContentText("UTF-8");
+
+        if (req.type === 'yahoo') {
+          var items = content.match(/<item>[\s\S]*?<\/item>/g) || [];
+          items.forEach(function(item) {
+            var titleMatch = item.match(/<title>([\s\S]*?)<\/title>/);
+            var linkMatch = item.match(/<link>([\s\S]*?)<\/link>/);
+            var dateMatch = item.match(/<pubDate>([\s\S]*?)<\/pubDate>/);
+            
+            if (titleMatch && linkMatch) {
+              var title = titleMatch[1].replace(/<!\[CDATA\[(.*?)\]\]>/g, "$1");
+              title = decodeHtml(title).trim(); 
+              var pubDate = dateMatch ? new Date(dateMatch[1]).getTime() : new Date().getTime();
+              newsList.push({ title: title, link: linkMatch[1], time: pubDate, source: 'Yahoo', ticker: 'US' });
+            }
+          });
+        } 
+        else if (req.type === 'naver_api') {
+          if (!content || content.trim().startsWith('<')) return; // HTML 반환 차단
+          try {
+            var json = JSON.parse(content);
+            var hasData = false;
+            
+            // 데이터 깊은 파싱용 도우미 함수
+            function extractNaverNews(obj) {
+              if (!obj) return;
+              if (Array.isArray(obj)) {
+                obj.forEach(extractNaverNews);
+              } else if (typeof obj === 'object') {
+                if (obj.officeId && obj.articleId && (obj.title || obj.dt)) {
+                  hasData = true;
+                  var rawTitle = obj.title || obj.sub || "주요 뉴스";
+                  var title = decodeHtml(rawTitle).trim();
+                  var link = "https://n.news.naver.com/mnews/article/" + obj.officeId + "/" + obj.articleId;
+                  
+                  var pubDate = new Date().getTime();
+                  var dateStr = obj.datetime || obj.dt || "";
+                  if (dateStr && dateStr.length >= 14 && /^\d+$/.test(dateStr.substring(0,14))) {
+                    pubDate = new Date(dateStr.substring(0,4), dateStr.substring(4,6)-1, dateStr.substring(6,8), dateStr.substring(8,10), dateStr.substring(10,12), dateStr.substring(12,14)).getTime();
+                  } else if (dateStr) {
+                    pubDate = new Date(dateStr.replace(/\./g, '/').replace(/-/g, '/')).getTime();
+                  }
+                  if(isNaN(pubDate)) pubDate = new Date().getTime();
+                  
+                  newsList.push({ title: title, link: link, time: pubDate, source: 'Naver', ticker: req.code });
+                } else {
+                  for (var key in obj) {
+                    if (obj.hasOwnProperty(key)) extractNaverNews(obj[key]);
+                  }
+                }
+              }
+            }
+            extractNaverNews(json);
+            if (hasData) apiSuccessCodes[req.code] = true;
+          } catch (e) {
+            // JSON 파싱 실패 에러 방어
+          }
+        }
+      });
+
+      // 2차 순회 처리 (API 실패 종목에 한하여 기존 웹 크롤링 Fallback 실행)
+      responses.forEach(function(res, i) {
+        if (!res || res.getResponseCode() !== 200) return;
+        var req = requests[i];
+        
+        if (req.type === 'naver_html' && !apiSuccessCodes[req.code]) {
+          var content = res.getContentText("EUC-KR");
+          var rows = content.split('<td class="title">');
+          
+          for (var j = 1; j < rows.length; j++) {
+            try {
+              var row = rows[j];
+              var linkMatch = row.match(/<a href="([^"]+)"/);
+              var rawLink = linkMatch ? linkMatch[1].replace(/&amp;/g, '&') : "";
+              var link = "";
+              
+              if (rawLink) {
+                var oid = "", aid = "";
+                var idMatch = rawLink.match(/office_id=(\d+)/);
+                var artMatch = rawLink.match(/article_id=(\d+)/);
+                var pathMatch = rawLink.match(/article\/(\d+)\/(\d+)/);
+
+                if (idMatch && artMatch) { oid = idMatch[1]; aid = artMatch[1]; } 
+                else if (pathMatch) { oid = pathMatch[1]; aid = pathMatch[2]; }
+                
+                if (oid && aid) link = "https://n.news.naver.com/mnews/article/" + oid + "/" + aid;
+                else link = rawLink.indexOf('http') === 0 ? rawLink : "https://finance.naver.com" + (rawLink.startsWith('/') ? "" : "/") + rawLink;
+              }
+              
+              var title = "";
+              var titleAttrMatch = row.match(/title=(["'])([\s\S]*?)\1/);
+              if (titleAttrMatch && titleAttrMatch[2]) {
+                title = titleAttrMatch[2].trim();
+              } else {
+                var innerTitleMatch = row.match(/class="tit"[^>]*>([\s\S]*?)<\/a>/) || row.match(/<a[^>]*>([\s\S]*?)<\/a>/);
+                title = innerTitleMatch ? innerTitleMatch[1].replace(/<[^>]+>/g, '').trim() : "";
+              }
+              title = decodeHtml(title);
+              
+              var dateMatch = row.match(/<td class="date">([\s\S]*?)<\/td>/);
+              var dateStr = dateMatch ? dateMatch[1].trim() : "";
+              var pubDate = new Date().getTime();
+              if (dateStr) pubDate = new Date(dateStr.replace(/\./g, '/')).getTime();
+              
+              if (title && link) newsList.push({ title: title, link: link, time: pubDate, source: 'Naver', ticker: req.code });
+            } catch (e) {}
+          }
+        }
+      });
+    } catch(err) {
+      // 통신 전반 예외 대응
+    }
+  }
+  
+  // 정렬 및 고유값 처리
+  newsList.sort(function(a, b) { return b.time - a.time; });
+  var uniqueNews = [];
+  var seenTitles = new Set();
+  
+  for (var k = 0; k < newsList.length; k++) {
+    var t = newsList[k].title;
+    if (t && !seenTitles.has(t)) {
+      seenTitles.add(t);
+      uniqueNews.push(newsList[k]);
+      if (uniqueNews.length >= 30) break;
+    }
+  }
+
+  var resultJson = JSON.stringify(uniqueNews);
+  if (uniqueNews.length > 0) {
+    cache.put(cacheKey, resultJson, 300); // 5분 저장
+  }
+
+  return ContentService.createTextOutput(resultJson).setMimeType(ContentService.MimeType.JSON);
+}"; 
 
 const CHO_HANGUL = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
 function getChosung(str) {
