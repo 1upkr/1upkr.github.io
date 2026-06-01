@@ -153,14 +153,42 @@ main { flex: 1; width: 100%; overflow-x: hidden; }
     flex-direction: column;
     flex: 1; /* 남은 세로 공간을 모두 채움 */
     margin-bottom: 2rem; /* 좌측 컨테이너들의 하단 여백과 동일하게 맞춤 */
-    max-height: calc(100vh - 140px); /* 💡 브라우저 높이에 맞춰 내부 스크롤 활성화 */
 }
+
+.section-header { border-radius: 12px 12px 0 0; }
+.table-wrapper { border-radius: 0 0 12px 12px; overflow: hidden; position: relative; min-height: 50px; }
+
+.action-icon-btn {
+    background: none; border: none; color: var(--text-secondary); cursor: pointer;
+    padding: 0.4rem; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s ease;
+}
+.action-icon-btn svg { width: 18px; height: 18px; }
+.action-icon-btn:hover { background-color: var(--hover-bg); color: var(--text-primary); }
+.action-icon-btn.drag-handle { cursor: grab; touch-action: none; opacity: 0.6; }
+.action-icon-btn.drag-handle:active { cursor: grabbing; opacity: 1; }
+.action-icon-btn.drag-handle:hover { opacity: 1; }
+.action-icon-btn.danger:hover { color: var(--red); background-color: var(--red-bg); }
+.action-icon-btn.toggle-btn svg { transition: transform 0.3s ease; }
+ 
+.collapsed .action-icon-btn.toggle-btn svg { transform: rotate(-180deg); }
+.collapsed .section-body { display: none; }
+.collapsed .btn-add-symbol { display: none; }
+
+.section-container:not(.edit-mode) th.actions-col,
+.section-container:not(.edit-mode) td.actions-col { display: none; }
+.section-container.edit-mode th.actions-col,
+.section-container.edit-mode td.actions-col { display: table-cell; }
+.section-container.edit-mode .actions-col .action-icon-btn.danger { animation: fadeIn 0.2s ease-in; }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.sortable-ghost { opacity: 0.6; background-color: var(--drag-bg) !important; box-shadow: inset 0 0 5px rgba(0,0,0,0.05); }
+.sortable-drag { box-shadow: 0 10px 20px rgba(0,0,0,0.1); background-color: var(--card-bg) !important; cursor: grabbing !important; }
 
 .section-header {
     padding: 1.25rem 1.5rem; display: flex; justify-content: space-between;
     align-items: center; border-bottom: 1px solid var(--border-color); user-select: none;
     background-color: var(--card-bg);
-    min-height: 72px; /* 💡 다른 좌측 섹션 헤더들과 높이를 완벽하게 일치시킴 */
 }
 .section-header-left { flex: 1; display: flex; align-items: center; cursor: pointer; }
 .section-header h2 { font-size: 0.90rem; font-weight: 800; }
@@ -310,11 +338,10 @@ footer { text-align: right; padding: 1.0rem 5%; font-family: 'Inter', system-ui,
     color: var(--text-primary);
     line-height: 1.4;
     margin-bottom: 0.5rem;
-    display: block; /* 💡 말줄임표 작동을 위해 flex 해제 및 블록화 */
-    white-space: nowrap; /* 💡 줄바꿈 금지 */
-    overflow: hidden; /* 💡 넘친 영역 숨김 */
-    text-overflow: ellipsis; /* 💡 공간 부족 시 말줄임표(...) 표시 */
-    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    align-items: center;
 }
 .news-meta {
     font-size: 0.75rem;
@@ -332,16 +359,8 @@ footer { text-align: right; padding: 1.0rem 5%; font-family: 'Inter', system-ui,
     font-weight: 700;
     white-space: nowrap;
 }
-.tag-naver { 
-    background: rgba(3, 199, 90, 0.07); 
-    color: #4da374; 
-    border: 1px solid rgba(3, 199, 90, 0.15);
-}
-.tag-yahoo { 
-    background: rgba(114, 14, 158, 0.07); 
-    color: #8c63a0; 
-    border: 1px solid rgba(114, 14, 158, 0.15);
-}
+.tag-naver { background: rgba(3, 199, 90, 0.15); color: #03c75a; }
+.tag-yahoo { background: rgba(114, 14, 158, 0.15); color: #720e9e; }
 
 
 /* =========================================================
@@ -367,7 +386,7 @@ footer { text-align: right; padding: 1.0rem 5%; font-family: 'Inter', system-ui,
     main { padding: 0 !important; }
     #main-layout { display: block; padding: 0; }
     
-    /* 모바일 탭 디자인 (높이 고정으로 스크롤 왜곡 완벽 방지) */
+    /* 모바일 탭 디자인 */
     .mobile-tabs {
         display: flex;
         background: var(--header-bg);
@@ -375,25 +394,11 @@ footer { text-align: right; padding: 1.0rem 5%; font-family: 'Inter', system-ui,
         position: sticky;
         top: 65px; /* 헤더 바로 아래 고정 */
         z-index: 99;
-        height: 48px;
-        min-height: 48px;
-        box-sizing: border-box;
     }
     .tab-btn {
-        flex: 1; 
-        height: 100%; 
-        padding: 0; 
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: none; 
-        border: none;
-        color: var(--text-secondary); 
-        font-weight: 700; 
-        font-size: 0.85rem;
-        cursor: pointer; 
-        border-bottom: 2px solid transparent; 
-        transition: all 0.2s;
+        flex: 1; padding: 0.9rem; background: none; border: none;
+        color: var(--text-secondary); font-weight: 700; font-size: 0.85rem;
+        cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s;
     }
     .tab-btn.active { color: var(--text-primary); border-bottom: 2px solid var(--text-primary); }
     
@@ -407,7 +412,7 @@ footer { text-align: right; padding: 1.0rem 5%; font-family: 'Inter', system-ui,
     
     /* 💡 모바일 뉴스 리스트 제약 해제 (화면 전체 스크롤 활용) */
     .section-container { max-height: none !important; position: static !important; }
-    .news-section-container { display: block; height: auto; flex: none; margin-bottom: 0; max-height: none !important; }
+    .news-section-container { display: block; height: auto; flex: none; margin-bottom: 0; }
     .news-list { overflow-y: visible !important; flex: none; height: auto; }
     
     th, td { padding: 0.75rem 0.25rem; font-size: 0.75rem; }
