@@ -9,7 +9,7 @@ const DEFAULT_WATCHLISTS = {
 
 const GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbydYWqn3tZL25dE8UPMyN9mV19R1YKFZKpF-aml_25Z_YvA_qElw-LpxNO_Y8_sOzCV/exec";
 const NAVER_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbygC4GrK-2abZUpWWCxD4ZVfFVzd-gjbGvyYBTWNP26J7zwkwbrWwttXNC-geENS1Nykw/exec"; 
-const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbxy7utQUoUx11yWaanrJXqgF9XgJCfMI6Lo26NHmCh8syOs9p3dtR5ZbErL2LbV1v1s/exec"; 
+const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbzEtlVIHuujHaUVrxGdCXUI22RGCq44Vcasn6Xh-NctALxc33uXwAxP99bZh_WKTcP-/exec"; 
 
 const CHO_HANGUL = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
 function getChosung(str) {
@@ -72,7 +72,20 @@ async function init() {
         updateDOMWithData(Object.values(cachedData));
     }
 
-    fetchData(); // 백그라운드에서 최신 데이터 요청 
+    // 💡 [수정됨] 새로고침 최적화: 60초 내에는 네트워크 통신 스킵
+    const lastFetchTime = parseInt(localStorage.getItem('marketdash_last_fetch_time') || '0');
+    const now = Date.now();
+    
+    if (now - lastFetchTime < 60000) {
+        // 60초 이내면 타이머만 남은 시간으로 세팅하고 통신 건너뜀 (완전 즉시 로딩)
+        state.countdown = Math.ceil(60 - ((now - lastFetchTime) / 1000));
+        document.getElementById('countdown').textContent = state.countdown;
+        fetchNews(); // 뉴스는 백그라운드에서 조용히 갱신
+    } else {
+        // 60초가 지났다면 최신 데이터 요청
+        fetchData(); 
+    }
+
     initSwipeToDelete(); 
     
     document.getElementById('btn-refresh').addEventListener('click', forceRefresh);
@@ -609,6 +622,9 @@ function saveWatchlists() { localStorage.setItem('marketdash_watchlists', JSON.s
 
 // FetchData - 병렬 처리 및 청크 최적화 적용
 async function fetchData() {
+    // 💡 [수정됨] 데이터를 요청할 때 현재 시간을 브라우저에 기록
+    localStorage.setItem('marketdash_last_fetch_time', Date.now().toString());
+
     const fetchPromises = []; // 모든 요청을 담을 배열
 
     for (const sectionId of state.sectionOrder) {
@@ -644,7 +660,15 @@ async function fetchData() {
     fetchNews();
 }
 
-function forceRefresh() { state.countdown = 60; document.getElementById('countdown').textContent = state.countdown; fetchData(); }
+function forceRefresh() { 
+    state.countdown = 60; 
+    document.getElementById('countdown').textContent = state.countdown; 
+    
+    // 💡 [수정됨] 수동 새로고침 버튼 클릭 시에는 시간 제한 강제 초기화
+    localStorage.setItem('marketdash_last_fetch_time', '0'); 
+    fetchData(); 
+}
+
 function startTimer() {
     if (state.intervalId) clearInterval(state.intervalId);
     state.intervalId = setInterval(() => {
@@ -784,7 +808,7 @@ function renderNews(newsList) {
     const html = newsList.map(news => {
         const dateObj = new Date(news.time);
         
-        // 💡 [수정됨] 날짜 포맷 변경 (예: 6/1 -> 6.1.)
+        // 💡 날짜 포맷 변경 (예: 6/1 -> 6.1.)
         const timeString = `${dateObj.getMonth()+1}.${dateObj.getDate()}. ${String(dateObj.getHours()).padStart(2, '0')}:${String(dateObj.getMinutes()).padStart(2, '0')}`;
         
         // 출처별 태그 생성
