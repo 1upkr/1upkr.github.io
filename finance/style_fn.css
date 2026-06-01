@@ -458,6 +458,122 @@ footer { text-align: right; padding: 1.0rem 5%; font-family: 'Inter', system-ui,
     body.show-news #right-col { display: block; padding: 1.5rem 3%; }
     
     .news-list { max-height: none; } /* 모바일에서는 자체 스크롤 제거 */
+
+
+
+    /* =========================================================
+   [NEW] GRID LAYOUT & NEWS SECTION (Desktop & Mobile Tabs)
+   ========================================================= */
+
+/* --- 1. 데스크탑 기본 레이아웃 (좌우 분할) --- */
+#main-layout {
+    display: grid;
+    /* 좌측 65%, 우측 35% 비율로 고정 */
+    grid-template-columns: minmax(0, 6.5fr) minmax(0, 3.5fr); 
+    gap: 2rem;
+    padding: 2rem 5%;
+    max-width: 1500px;
+    margin: 0 auto;
+    width: 100%;
+    align-items: start; /* 매우 중요: 양쪽 박스 높이가 서로 영향받지 않게 함 */
+}
+
+#left-col, #right-col {
+    width: 100%;
+    min-width: 0; /* 컨텐츠가 길어져도 Grid 바깥으로 삐져나가지 않게 방지 */
+}
+
+.mobile-tabs {
+    display: none; /* 데스크탑에서는 탭 버튼 숨김 */
+}
+
+/* --- 2. 뉴스 리스트 디자인 --- */
+.news-list {
+    background: var(--card-bg);
+    padding: 0;
+}
+.news-item {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border-color);
+    text-decoration: none;
+    transition: background-color 0.2s;
+}
+.news-item:hover { background-color: var(--hover-bg); }
+.news-item:last-child { border-bottom: none; }
+.news-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.4;
+    margin-bottom: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    align-items: center;
+}
+.news-meta {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    display: flex;
+    justify-content: space-between;
+}
+.news-tag {
+    font-size: 0.65rem;
+    padding: 0.15rem 0.35rem;
+    border-radius: 4px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+.tag-naver { background: rgba(3, 199, 90, 0.15); color: #03c75a; }
+.tag-yahoo { background: rgba(114, 14, 158, 0.15); color: #720e9e; }
+
+/* --- 3. 모바일 화면 최적화 (탭 전환) --- */
+@media (max-width: 768px) {
+    /* 모바일에서는 좌우 분할 해제 */
+    #main-layout { 
+        display: block; 
+        padding: 0;
+    }
+    
+    /* 모바일 탭 디자인 */
+    .mobile-tabs {
+        display: flex;
+        background: var(--header-bg);
+        border-bottom: 1px solid var(--border-color);
+        position: sticky;
+        top: 65px; /* 헤더 바로 아래 고정 */
+        z-index: 99;
+    }
+    .tab-btn {
+        flex: 1;
+        padding: 0.9rem;
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        font-weight: 700;
+        font-size: 0.85rem;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        transition: all 0.2s;
+    }
+    .tab-btn.active {
+        color: var(--text-primary);
+        border-bottom: 2px solid var(--text-primary);
+    }
+    
+    /* 모바일 기본 뷰 (관심종목 보이고 뉴스 숨김) */
+    #left-col { padding: 1.5rem 3%; }
+    #right-col { display: none; } 
+    
+    /* body에 show-news 클래스가 붙으면 뷰 전환 (뉴스 보이고 관심종목 숨김) */
+    body.show-news #left-col { display: none; }
+    body.show-news #right-col { display: block; padding: 1.5rem 3%; }
+    
+    /* 모바일에서는 뉴스 자체 스크롤 해제 (전체 화면 스크롤 사용) */
+    .section-container { max-height: none !important; position: static !important; }
+    .news-list { overflow-y: visible !important; }
 }
 
 
