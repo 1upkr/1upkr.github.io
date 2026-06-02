@@ -61,7 +61,7 @@ body {
     flex-direction: column;
     min-height: 100vh;
 
-    touch-action: manipulation;
+    touch-action: pan-x pan-y;
     
     /* 텍스트 선택 방지 */
     -webkit-user-select: none;
