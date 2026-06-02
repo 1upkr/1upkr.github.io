@@ -323,14 +323,14 @@ function handleAutocomplete(query, sectionId) {
     const btn = document.getElementById(`btn-add-${sectionId}`);
 
     if (btn && btn.disabled) return;
-    if(!query) return; 
-    query = query.trim().toLowerCase();
     
-    if (query.length < 1) {
+    if (!query || query.trim() === '') {
         if(list) list.style.display = 'none'; 
         if(guide) guide.style.display = 'none'; 
         return;
     }
+    
+    query = query.trim().toLowerCase();
     
     const isChosungQuery = /[ㄱ-ㅎ]/.test(query) && !/[가-힣]/.test(query);
     const isKrSection = sectionId === 'kr';
