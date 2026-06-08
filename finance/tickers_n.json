@@ -290,5 +290,5 @@
   { "s": "078340", "n": "컴투스 (Com2uS)", "e": "NAVER" },
   { "s": "095660", "n": "네오위즈 (Neowiz)", "e": "NAVER" },
   { "s": "036830", "n": "솔브레인홀딩스 (Soulbrain Holdings)", "e": "NAVER" },
-  { "s": "night", "n": "코스피200야간선물 (KOSPI200 NIGHT)", "e": "etc" }  
+  { "s": "NIGHT", "n": "코스피200야간선물 (KOSPI200 NIGHT)", "e": "etc" }  
 ]
