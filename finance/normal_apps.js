@@ -39,7 +39,7 @@ function debounce(func, wait) {
 }
 
 const DRAG_ICON = `<svg viewBox="0 0 24 24"><line x1="6" y1="6" x2="18" y2="6"/><line x1="6" y1="10" x2="18" y2="10"/><line x1="6" y1="14" x2="18" y2="14"/><line x1="6" y1="18" x2="18" y2="18"/></svg>`;
-const TRASH_ICON = `<svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>`;
+const TRASH_ICON = `<svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2-2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>`;
 const CHEVRON_ICON = `<svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>`;
 const SEARCH_ICON = `<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`;
 const PLUS_ICON = `<svg class="icon-svg" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
@@ -54,48 +54,70 @@ let state = {
     theme: localStorage.getItem('marketdash_theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'),
     countdown: 60,
     intervalId: null,
-    lastNewsFetch: 0 // 뉴스 오버로딩 방지 타임스탬프
+    lastNewsFetch: 0 
 };
 
 const rowNodes = new Map(); let sortables = []; 
 function getSafeId(ticker) { return 'id_' + ticker.replace(/[^a-zA-Z0-9]/g, '_'); }
 
+// --- [최적화] 로컬 스토리지 I/O 병목 제거를 위한 메모리 캐시 변수 설정 ---
+let memoryPriceCache = {};
+try {
+    memoryPriceCache = JSON.parse(localStorage.getItem('marketdash_price_cache')) || {};
+} catch (e) {
+    memoryPriceCache = {};
+}
+
+// --- [최적화] Debounce를 적용한 스토리지 저장 함수 (디스크 쓰기 최소화) ---
+const saveCacheToStorage = debounce(() => {
+    try {
+        localStorage.setItem('marketdash_price_cache', JSON.stringify(memoryPriceCache));
+    } catch (e) {
+        console.warn("캐시 저장 실패", e);
+    }
+}, 1000);
+
 // --- INITIALIZATION ---
 async function init() {
+    // 1. [UI 깜빡임 방지] 데이터 로딩 전 UI 상태(테마) 최우선 적용
     applyTheme(); 
     if (!state.sectionOrder || state.sectionOrder.length === 0) state.sectionOrder = Object.keys(state.watchlists);
+
+    // 2. [최적화] Page Visibility API: 백그라운드 전환 시 불필요한 리소스 낭비 방지
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            if (state.intervalId) clearInterval(state.intervalId);
+        } else {
+            const now = Date.now();
+            const lastFetch = parseInt(localStorage.getItem('marketdash_last_fetch_time') || '0');
+            // 복귀 시 데이터가 60초 이상 지났다면 즉시 갱신
+            if (now - lastFetch > 60000) forceRefresh();
+            else startTimer();
+        }
+    });
     
     await initTickerDB(); 
 
     renderLayout(); startTimer(); 
     
-    try {
-        const cachedDataStr = localStorage.getItem('marketdash_price_cache');
-        if (cachedDataStr) {
-            const cachedData = JSON.parse(cachedDataStr);
-            if (Object.keys(cachedData).length > 0) {
-                updateDOMWithData(Object.values(cachedData));
-            }
-        }
-    } catch (e) {
-        console.warn("캐시 데이터가 손상되어 초기화합니다.", e);
-        localStorage.removeItem('marketdash_price_cache');
+    // 3. [최적화] 메모리에 올려둔 캐시 데이터를 사용하여 즉시 렌더링
+    if (Object.keys(memoryPriceCache).length > 0) {
+        updateDOMWithData(Object.values(memoryPriceCache));
     }
 
     const lastFetchTime = parseInt(localStorage.getItem('marketdash_last_fetch_time') || '0');
     const now = Date.now();
     const savedTab = localStorage.getItem('marketdash_active_tab');
     
-    // 이전에 News 탭을 보고 있었다면 News 데이터 로드, 아니면 Watchlist 데이터 로드
+    // 4. [UX 유지] 이전에 News 탭을 보고 있었다면 News 데이터 로드, 아니면 Watchlist 데이터 로드
     if (savedTab === 'news') {
         const container = document.getElementById('news-container');
         const isStale = (now - state.lastNewsFetch) > 60000;
         const isEmpty = !container || container.children.length === 0 || container.querySelector('.empty-state');
         
-        if (isStale || isEmpty) {
-            fetchNews(); 
-        }
-        // Watchlist 갱신 타이머는 돌아가도록 설정 (백그라운드)
+        if (isStale || isEmpty) fetchNews(); 
+        
+        // Watchlist 갱신 타이머는 백그라운드에서 돌아가도록 설정
         if (now - lastFetchTime < 60000) {
             state.countdown = Math.ceil(60 - ((now - lastFetchTime) / 1000));
             const countdownEl = document.getElementById('countdown');
@@ -771,15 +793,9 @@ function updateDOMWithData(quotes) {
         });
     });
 
-    try {
-        const localCacheStr = localStorage.getItem('marketdash_price_cache');
-        const localCache = localCacheStr ? JSON.parse(localCacheStr) : {};
-        quotes.forEach(q => { localCache[q.symbol] = q; });
-        localStorage.setItem('marketdash_price_cache', JSON.stringify(localCache));
-    } catch (e) {
-        console.warn("캐시 저장 중 에러가 발생하여 초기화합니다.", e);
-        localStorage.setItem('marketdash_price_cache', '{}');
-    }
+    // --- [최적화] 직접 로컬 스토리지에 쓰지 않고 메모리 변수만 업데이트 후 Debounce 함수 호출 ---
+    quotes.forEach(q => { memoryPriceCache[q.symbol] = q; });
+    saveCacheToStorage();
 }
 
 function markMissingData(requestedSymbols, results) {
