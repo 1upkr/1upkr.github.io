@@ -10,10 +10,6 @@ const DEFAULT_WATCHLISTS = {
 const GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbydYWqn3tZL25dE8UPMyN9mV19R1YKFZKpF-aml_25Z_YvA_qElw-LpxNO_Y8_sOzCV/exec";
 const NAVER_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbygC4GrK-2abZUpWWCxD4ZVfFVzd-gjbGvyYBTWNP26J7zwkwbrWwttXNC-geENS1Nykw/exec"; 
 const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbwSD8MOLPrYjwTBVQX_Tq6pu-gTHlOeR7p0hUY2pHGACNc2NA6f4zICduC05ypO_EN6/exec"; 
-const ETC_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbwv4c4HTszzzs-oVox-gqPg6ZNfzxri23n8NyoNbhh5aLtKEYDahUDIZO3iHZxW7bcr/exec"; // 야간선물 스크래핑용 프록시 URL
-
-let lastNightFetchTime = 0; 
-let cachedNightData = null;
 
 const CHO_HANGUL = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
 function getChosung(str) {
@@ -42,14 +38,6 @@ function debounce(func, wait) {
     };
 }
 
-// 18:00 ~ 익일 05:00(04:59) KST 체크
-function isNightMarketTime() {
-    const now = new Date();
-    const utcHour = now.getUTCHours();
-    const kstHour = (utcHour + 9) % 24; 
-    return kstHour >= 18 || kstHour < 5;
-}
-
 const DRAG_ICON = `<svg viewBox="0 0 24 24"><line x1="6" y1="6" x2="18" y2="6"/><line x1="6" y1="10" x2="18" y2="10"/><line x1="6" y1="14" x2="18" y2="14"/><line x1="6" y1="18" x2="18" y2="18"/></svg>`;
 const TRASH_ICON = `<svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2-2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>`;
 const CHEVRON_ICON = `<svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>`;
@@ -72,6 +60,7 @@ let state = {
 const rowNodes = new Map(); let sortables = []; 
 function getSafeId(ticker) { return 'id_' + ticker.replace(/[^a-zA-Z0-9]/g, '_'); }
 
+// --- [최적화] 로컬 스토리지 I/O 병목 제거를 위한 메모리 캐시 변수 설정 ---
 let memoryPriceCache = {};
 try {
     memoryPriceCache = JSON.parse(localStorage.getItem('marketdash_price_cache')) || {};
@@ -79,6 +68,7 @@ try {
     memoryPriceCache = {};
 }
 
+// --- [최적화] Debounce를 적용한 스토리지 저장 함수 (디스크 쓰기 최소화) ---
 const saveCacheToStorage = debounce(() => {
     try {
         localStorage.setItem('marketdash_price_cache', JSON.stringify(memoryPriceCache));
@@ -89,15 +79,18 @@ const saveCacheToStorage = debounce(() => {
 
 // --- INITIALIZATION ---
 async function init() {
+    // 1. [UI 깜빡임 방지] 데이터 로딩 전 UI 상태(테마) 최우선 적용
     applyTheme(); 
     if (!state.sectionOrder || state.sectionOrder.length === 0) state.sectionOrder = Object.keys(state.watchlists);
 
+    // 2. [최적화] Page Visibility API: 백그라운드 전환 시 불필요한 리소스 낭비 방지
     document.addEventListener('visibilitychange', () => {
         if (document.hidden) {
             if (state.intervalId) clearInterval(state.intervalId);
         } else {
             const now = Date.now();
             const lastFetch = parseInt(localStorage.getItem('marketdash_last_fetch_time') || '0');
+            // 복귀 시 데이터가 60초 이상 지났다면 즉시 갱신
             if (now - lastFetch > 60000) forceRefresh();
             else startTimer();
         }
@@ -107,6 +100,7 @@ async function init() {
 
     renderLayout(); startTimer(); 
     
+    // 3. [최적화] 메모리에 올려둔 캐시 데이터를 사용하여 즉시 렌더링
     if (Object.keys(memoryPriceCache).length > 0) {
         updateDOMWithData(Object.values(memoryPriceCache));
     }
@@ -115,6 +109,7 @@ async function init() {
     const now = Date.now();
     const savedTab = localStorage.getItem('marketdash_active_tab');
     
+    // 4. [UX 유지] 이전에 News 탭을 보고 있었다면 News 데이터 로드, 아니면 Watchlist 데이터 로드
     if (savedTab === 'news') {
         const container = document.getElementById('news-container');
         const isStale = (now - state.lastNewsFetch) > 60000;
@@ -122,6 +117,7 @@ async function init() {
         
         if (isStale || isEmpty) fetchNews(); 
         
+        // Watchlist 갱신 타이머는 백그라운드에서 돌아가도록 설정
         if (now - lastFetchTime < 60000) {
             state.countdown = Math.ceil(60 - ((now - lastFetchTime) / 1000));
             const countdownEl = document.getElementById('countdown');
@@ -173,16 +169,18 @@ async function initTickerDB() {
         console.error("Failed to load ticker DB:", error);
         localTickerDB = processTickerDB([
             { s: "AAPL", n: "Apple Inc.", e: "NASDAQ" }, 
-            { s: "005930", n: "삼성전자", e: "NAVER" },
-            { s: "NIGHT", n: "코스피200야간선물 (KOSPI200 NIGHT)", e: "etc" }
+            { s: "005930", n: "삼성전자", e: "NAVER" }
         ]);
     }
 }
 
 // --- SWIPE TO DELETE GESTURE LOGIC ---
 function initSwipeToDelete() {
-    let touchStartX = 0, touchStartY = 0;
-    let swipingRow = null, isSwiping = false, isScrolling = false;
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let swipingRow = null;
+    let isSwiping = false;
+    let isScrolling = false;
 
     const dashboard = document.getElementById('dashboard');
     if (!dashboard) return;
@@ -191,21 +189,31 @@ function initSwipeToDelete() {
         const row = e.target.closest('tr[data-ticker]');
         if (!row || e.target.closest('.drag-handle') || e.target.closest('.action-icon-btn')) return;
         
-        touchStartX = e.touches[0].clientX; touchStartY = e.touches[0].clientY;
-        swipingRow = row; isSwiping = false; isScrolling = false; 
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+        swipingRow = row;
+        isSwiping = false;
+        isScrolling = false; 
         row.style.transition = 'none'; 
     }, { passive: true });
 
     dashboard.addEventListener('touchmove', e => {
         if (!swipingRow) return;
         
-        const touchCurrentX = e.touches[0].clientX; const touchCurrentY = e.touches[0].clientY;
-        const diffX = touchCurrentX - touchStartX; const diffY = touchCurrentY - touchStartY;
-        const absDiffX = Math.abs(diffX); const absDiffY = Math.abs(diffY);
+        const touchCurrentX = e.touches[0].clientX;
+        const touchCurrentY = e.touches[0].clientY;
+        const diffX = touchCurrentX - touchStartX;
+        const diffY = touchCurrentY - touchStartY;
+        
+        const absDiffX = Math.abs(diffX);
+        const absDiffY = Math.abs(diffY);
 
         if (!isSwiping && !isScrolling && (absDiffX > 10 || absDiffY > 10)) {
-            if (absDiffX > absDiffY * 1.5 && diffX < 0) isSwiping = true;
-            else isScrolling = true; 
+            if (absDiffX > absDiffY * 1.5 && diffX < 0) {
+                isSwiping = true;
+            } else {
+                isScrolling = true; 
+            }
         }
 
         if (isScrolling) return;
@@ -220,20 +228,30 @@ function initSwipeToDelete() {
 
     dashboard.addEventListener('touchend', e => {
         if (!swipingRow) return;
-        const diffX = e.changedTouches[0].clientX - touchStartX;
+        const touchCurrentX = e.changedTouches[0].clientX;
+        const diffX = touchCurrentX - touchStartX;
+
         swipingRow.style.transition = 'all 0.3s ease';
         
-        if (isSwiping && diffX < -80) confirmRemoveTicker(swipingRow.dataset.ticker); 
+        if (isSwiping && diffX < -80) {
+            const ticker = swipingRow.dataset.ticker;
+            confirmRemoveTicker(ticker); 
+        } 
         
-        swipingRow.style.transform = 'translateX(0)'; swipingRow.style.opacity = '1';
-        swipingRow = null; isSwiping = false; isScrolling = false;
+        swipingRow.style.transform = 'translateX(0)';
+        swipingRow.style.opacity = '1';
+        swipingRow = null;
+        isSwiping = false;
+        isScrolling = false;
     });
 }
 
 // --- MOBILE TAB LOGIC ---
 window.switchMobileTab = function(tabName) {
     localStorage.setItem('marketdash_active_tab', tabName);
-    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+
+    const tabs = document.querySelectorAll('.tab-btn');
+    tabs.forEach(btn => btn.classList.remove('active'));
     
     if(tabName === 'news') {
         document.body.classList.add('show-news');
@@ -244,7 +262,9 @@ window.switchMobileTab = function(tabName) {
         const isStale = (Date.now() - state.lastNewsFetch) > 60000;
         const isEmpty = !container || container.children.length === 0 || container.querySelector('.empty-state');
         
-        if (isStale || isEmpty) fetchNews(); 
+        if (isStale || isEmpty) {
+            fetchNews(); 
+        }
     } else {
         document.body.classList.remove('show-news');
         const tabDashBtn = document.getElementById('tab-btn-dashboard');
@@ -358,15 +378,13 @@ function handleAutocomplete(query, sectionId) {
     }
     
     query = query.trim().toLowerCase();
+    
     const isChosungQuery = /[ㄱ-ㅎ]/.test(query) && !/[가-힣]/.test(query);
     const isKrSection = sectionId === 'kr';
 
     const matchedQuotes = localTickerDB.filter(q => {
-        // KR 섹션은 NAVER 또는 etc (야간선물) 허용
-        if (isKrSection && q.e !== "NAVER" && q.e !== "etc") return false;
-        // 다른 섹션에는 노출 금지
-        if (!isKrSection && (q.e === "NAVER" || q.e === "etc")) return false;
-
+        if (isKrSection && q.e !== "NAVER") return false;
+        if (!isKrSection && q.e === "NAVER") return false;
         if (isChosungQuery) return (q.cs_s && q.cs_s.includes(query)) || (q.cs_n && q.cs_n.includes(query));
         else return (q.s && q.s.toLowerCase().includes(query)) || (q.n && q.n.toLowerCase().includes(query));
     }).slice(0, 8); 
@@ -488,40 +506,6 @@ async function fetchNaverFinance(symbols) {
     } catch (e) { console.error("Failed to fetch Naver data:", e); throw e; }
 }
 
-// 야간선물 데이터 10분 캐싱 및 스크래핑 함수
-async function fetchEtcFinance(symbols) {
-    if (symbols.length === 0 || !symbols.includes('NIGHT')) return [];
-    if (!navigator.onLine) throw new Error("No network connection.");
-
-    const now = Date.now();
-    const isOpen = isNightMarketTime();
-
-    // 운영 시간 외 이거나 캐시 생성 이후 10분(600000ms)이 경과하지 않았으면 기존 데이터 재사용
-    if (cachedNightData && (!isOpen || (now - lastNightFetchTime < 600000))) {
-        return [cachedNightData];
-    }
-
-    const targetUrl = `${ETC_GAS_PROXY_URL}?symbols=NIGHT&t=${Date.now()}`;
-
-    try {
-        const text = await fetchWithRetry(targetUrl);
-        if (text.trim().startsWith('<')) throw new Error("ETC GAS proxy permission denied.");
-        const data = JSON.parse(text);
-        
-        if (data && data.quoteResponse && data.quoteResponse.result) {
-            lastNightFetchTime = now;
-            cachedNightData = data.quoteResponse.result[0];
-            return [cachedNightData];
-        } else if (data && data.error) throw new Error(data.error);
-        
-        throw new Error("Invalid data structure from ETC proxy.");
-    } catch (e) { 
-        console.error("Failed to fetch ETC data:", e); 
-        if (cachedNightData) return [cachedNightData]; // 실패 시 기존 캐시 반환
-        throw e; 
-    }
-}
-
 async function handleAddTicker(e, sectionId) {
     e.preventDefault();
     const inputEl = document.getElementById(`input-${sectionId}`);
@@ -538,8 +522,8 @@ async function handleAddTicker(e, sectionId) {
     }
 
     if (sectionId === 'kr') {
-        const isValidKr = localTickerDB.some(q => q.s.toUpperCase() === ticker && (q.e === "NAVER" || q.e === "etc"));
-        if (!isValidKr) {
+        const isValidNaver = localTickerDB.some(q => q.s.toUpperCase() === ticker && q.e === "NAVER");
+        if (!isValidNaver) {
             alert('KR stocks: search list only.');
             inputEl.value = '';
             if (listEl) listEl.style.display = 'none';
@@ -556,13 +540,7 @@ async function handleAddTicker(e, sectionId) {
     if (guideEl) guideEl.style.display = 'none';
 
     try {
-        let fetchFunc;
-        if (sectionId === 'kr') {
-            fetchFunc = ticker === 'NIGHT' ? fetchEtcFinance : fetchNaverFinance;
-        } else {
-            fetchFunc = fetchYahooFinance;
-        }
-        
+        const fetchFunc = sectionId === 'kr' ? fetchNaverFinance : fetchYahooFinance;
         const data = await fetchFunc([ticker]);
         if (!data || data.length === 0 || data[0].regularMarketPrice === undefined) {
             alert(`${ticker} not found.`); return;
@@ -729,36 +707,19 @@ async function fetchData() {
         if (symbols.length === 0) continue;
 
         const chunkSize = 100; 
+        const fetchFunc = sectionId === 'kr' ? fetchNaverFinance : fetchYahooFinance;
 
-        if (sectionId === 'kr') {
-            const naverSymbols = symbols.filter(s => s !== 'NIGHT');
-            const etcSymbols = symbols.filter(s => s === 'NIGHT');
-
-            // 1. 네이버 종목 Fetch
-            for (let i = 0; i < naverSymbols.length; i += chunkSize) {
-                const chunk = naverSymbols.slice(i, i + chunkSize);
-                const promise = fetchNaverFinance(chunk)
-                    .then(results => { updateDOMWithData(results); markMissingData(chunk, results); })
-                    .catch(error => { markAllError(chunk, error.message); });
-                fetchPromises.push(promise);
-            }
-
-            // 2. 야간선물(NIGHT) 종목 Fetch
-            if (etcSymbols.length > 0) {
-                const promise = fetchEtcFinance(etcSymbols)
-                    .then(results => { updateDOMWithData(results); markMissingData(etcSymbols, results); })
-                    .catch(error => { markAllError(etcSymbols, error.message); });
-                fetchPromises.push(promise);
-            }
-        } else {
-            // US, Indicators 등 (Yahoo)
-            for (let i = 0; i < symbols.length; i += chunkSize) {
-                const chunk = symbols.slice(i, i + chunkSize);
-                const promise = fetchYahooFinance(chunk)
-                    .then(results => { updateDOMWithData(results); markMissingData(chunk, results); })
-                    .catch(error => { markAllError(chunk, error.message); });
-                fetchPromises.push(promise);
-            }
+        for (let i = 0; i < symbols.length; i += chunkSize) {
+            const chunk = symbols.slice(i, i + chunkSize);
+            const promise = fetchFunc(chunk)
+                .then(results => {
+                    updateDOMWithData(results); 
+                    markMissingData(chunk, results);
+                })
+                .catch(error => { 
+                    markAllError(chunk, error.message); 
+                });
+            fetchPromises.push(promise);
         }
     }
     await Promise.all(fetchPromises);
@@ -832,6 +793,7 @@ function updateDOMWithData(quotes) {
         });
     });
 
+    // --- [최적화] 직접 로컬 스토리지에 쓰지 않고 메모리 변수만 업데이트 후 Debounce 함수 호출 ---
     quotes.forEach(q => { memoryPriceCache[q.symbol] = q; });
     saveCacheToStorage();
 }
@@ -924,6 +886,7 @@ function renderNews(newsList) {
         const diffMins = Math.floor((now - news.time) / 60000);
         let timeDisplay = '';
         
+        // 10분 미만 기사 -> n분 전 표기 / 10분 이상 기사 -> 한국 시각 고유 출고 시간(HH:MM) 표기
         if (diffMins >= 0 && diffMins < 10) {
             timeDisplay = diffMins === 0 ? '방금' : `${diffMins}분 전`;
         } else {
