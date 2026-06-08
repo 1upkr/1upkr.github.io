@@ -93,6 +93,15 @@ async function init() {
     }
 
     initSwipeToDelete(); 
+
+    // --- 복구된 탭 상태 반영 로직 ---
+    const savedTab = localStorage.getItem('marketdash_active_tab');
+    if (savedTab === 'news') {
+        document.body.classList.add('show-news');
+        const tabs = document.querySelectorAll('.tab-btn');
+        if (tabs[0]) tabs[0].classList.remove('active');
+        if (tabs[1]) tabs[1].classList.add('active');
+    }
     
     const btnRefresh = document.getElementById('btn-refresh');
     if (btnRefresh) btnRefresh.addEventListener('click', forceRefresh);
@@ -204,6 +213,9 @@ function initSwipeToDelete() {
 
 // --- MOBILE TAB LOGIC ---
 window.switchMobileTab = function(tabName) {
+    // 탭 변경 시 상태를 localStorage에 저장
+    localStorage.setItem('marketdash_active_tab', tabName);
+
     const tabs = document.querySelectorAll('.tab-btn');
     tabs.forEach(btn => btn.classList.remove('active'));
     
