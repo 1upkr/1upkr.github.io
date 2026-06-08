@@ -20,9 +20,14 @@ layout: null
     
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     
-    <link rel="stylesheet" href="https://1up.kr/finance/style.css?ver=3.0.012">
+    <link rel="stylesheet" href="https://1up.kr/finance/style.css?ver=3.0.015">
 </head>
 <body>
+    <script>
+        if (localStorage.getItem('marketdash_active_tab') === 'news') {
+            document.body.classList.add('show-news');
+        }
+    </script>
 
     <header>
         <div class="header-left">
@@ -57,9 +62,17 @@ layout: null
     </header>
 
     <div class="mobile-tabs hide-desktop">
-        <button class="tab-btn active" onclick="switchMobileTab('dashboard')">Watchlist</button>
-        <button class="tab-btn" onclick="switchMobileTab('news')">News</button>
+        <button class="tab-btn" id="tab-btn-dashboard" onclick="switchMobileTab('dashboard')">Watchlist</button>
+        <button class="tab-btn" id="tab-btn-news" onclick="switchMobileTab('news')">News</button>
     </div>
+
+    <script>
+        if (localStorage.getItem('marketdash_active_tab') === 'news') {
+            document.getElementById('tab-btn-news').classList.add('active');
+        } else {
+            document.getElementById('tab-btn-dashboard').classList.add('active');
+        }
+    </script>
 
     <main id="main-layout">
         <div id="left-col">
@@ -104,7 +117,7 @@ layout: null
             <div class="modal-title">credits</div>
             <div class="modal-desc" style="text-align: left; padding: 1rem 0;">
                 <div style="font-weight: 900; font-size: 1.3rem; color: var(--text-primary); margin-bottom: 0.5rem;">F I N A N C E : ¹ U P</div>
-                <div style="margin-bottom: 0.3rem;"><span style="font-weight: 600;">ver.3.0.012.0602</span></div>
+                <div style="margin-bottom: 0.3rem;"><span style="font-weight: 600;">ver.3.0.015.0602</span></div>
                 <div><span>N3RD - 1UP YOUR VIBE!!</span></div>
             </div>
             <div class="modal-actions">
@@ -113,7 +126,6 @@ layout: null
         </div>
     </div>
 
-    <script src="https://1up.kr/finance/appz.js?ver=3.0.012"></script>
+    <script src="https://1up.kr/finance/appz.js?ver=3.0.015"></script>
 </body>
-    
 </html>
