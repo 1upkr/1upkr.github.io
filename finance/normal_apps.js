@@ -10,7 +10,7 @@ const DEFAULT_WATCHLISTS = {
 const GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbydYWqn3tZL25dE8UPMyN9mV19R1YKFZKpF-aml_25Z_YvA_qElw-LpxNO_Y8_sOzCV/exec";
 const NAVER_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbygC4GrK-2abZUpWWCxD4ZVfFVzd-gjbGvyYBTWNP26J7zwkwbrWwttXNC-geENS1Nykw/exec"; 
 const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbwSD8MOLPrYjwTBVQX_Tq6pu-gTHlOeR7p0hUY2pHGACNc2NA6f4zICduC05ypO_EN6/exec"; 
-const ETC_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbww1qk0aEmddRmyW5QSGnSCEwXx1Pidsh59ycud8sab0eXR8dmHJJjRVNjXuLJW7Q31/exec"; // 야간선물 스크래핑용 프록시 URL
+const ETC_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbwv4c4HTszzzs-oVox-gqPg6ZNfzxri23n8NyoNbhh5aLtKEYDahUDIZO3iHZxW7bcr/exec"; // 야간선물 스크래핑용 프록시 URL
 
 let lastNightFetchTime = 0; 
 let cachedNightData = null;
