@@ -39,7 +39,7 @@ function debounce(func, wait) {
 }
 
 const DRAG_ICON = `<svg viewBox="0 0 24 24"><line x1="6" y1="6" x2="18" y2="6"/><line x1="6" y1="10" x2="18" y2="10"/><line x1="6" y1="14" x2="18" y2="14"/><line x1="6" y1="18" x2="18" y2="18"/></svg>`;
-const TRASH_ICON = `<svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>`;
+const TRASH_ICON = `<svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2-2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>`;
 const CHEVRON_ICON = `<svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>`;
 const SEARCH_ICON = `<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`;
 const PLUS_ICON = `<svg class="icon-svg" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
@@ -62,10 +62,23 @@ function getSafeId(ticker) { return 'id_' + ticker.replace(/[^a-zA-Z0-9]/g, '_')
 
 // --- INITIALIZATION ---
 async function init() {
+    // 1. 데이터 로딩 대기 전에 UI 상태(테마 및 탭)부터 최우선으로 복구하여 깜빡임 방지
+    applyTheme(); 
+    
+    const savedTab = localStorage.getItem('marketdash_active_tab');
+    if (savedTab === 'news') {
+        document.body.classList.add('show-news');
+        const tabs = document.querySelectorAll('.tab-btn');
+        if (tabs[0]) tabs[0].classList.remove('active');
+        if (tabs[1]) tabs[1].classList.add('active');
+    }
+
     if (!state.sectionOrder || state.sectionOrder.length === 0) state.sectionOrder = Object.keys(state.watchlists);
+    
+    // 2. 종목 데이터 비동기 로딩 (이 부분에서 지연이 발생하더라도 1번에서 UI가 먼저 세팅됨)
     await initTickerDB(); 
 
-    applyTheme(); renderLayout(); startTimer(); 
+    renderLayout(); startTimer(); 
     
     try {
         const cachedDataStr = localStorage.getItem('marketdash_price_cache');
@@ -93,15 +106,6 @@ async function init() {
     }
 
     initSwipeToDelete(); 
-
-    // --- 복구된 탭 상태 반영 로직 ---
-    const savedTab = localStorage.getItem('marketdash_active_tab');
-    if (savedTab === 'news') {
-        document.body.classList.add('show-news');
-        const tabs = document.querySelectorAll('.tab-btn');
-        if (tabs[0]) tabs[0].classList.remove('active');
-        if (tabs[1]) tabs[1].classList.add('active');
-    }
     
     const btnRefresh = document.getElementById('btn-refresh');
     if (btnRefresh) btnRefresh.addEventListener('click', forceRefresh);
