@@ -754,15 +754,12 @@ function updateDOMWithData(quotes) {
             const nodes = rowNodes.get(ticker);
             if (!nodes || !nodes.row) return;
 
-            // [디버깅용] 데이터가 안 나올 경우 F12(개발자 도구) 콘솔창에서 야후 원본 데이터를 확인할 수 있습니다.
-            // console.log(`[${ticker}] 야후 원본 데이터:`, quote);
-
             // 1. 기본 정규장 데이터 세팅
             const regPrice = quote.regularMarketPrice || 0; 
             const regChange = quote.regularMarketChange || 0;
             const regPct = quote.regularMarketChangePercent || 0; 
 
-            // 2. 프리마켓(Pre) 데이터
+            // 2. 프리마켓(Pre) 데이터 (🔜)
             let preData = null;
             if (quote.preMarketPrice) {
                 const change = quote.preMarketChange !== undefined ? quote.preMarketChange : (quote.preMarketPrice - regPrice);
@@ -770,7 +767,7 @@ function updateDOMWithData(quotes) {
                 preData = { price: quote.preMarketPrice, change: change, pct: pct, label: '🔜', time: quote.preMarketTime || 0 };
             }
 
-            // 3. 애프터마켓(Post) 데이터
+            // 3. 애프터마켓(Post) 데이터 (🔚)
             let postData = null;
             if (quote.postMarketPrice) {
                 const change = quote.postMarketChange !== undefined ? quote.postMarketChange : (quote.postMarketPrice - regPrice);
@@ -778,29 +775,25 @@ function updateDOMWithData(quotes) {
                 postData = { price: quote.postMarketPrice, change: change, pct: pct, label: '🔚', time: quote.postMarketTime || 0 };
             }
 
-            // ★ 4. 절대적인 상태 판별 로직 (시간 꼬임 방지) ★
-            // 야후 API의 marketState 텍스트 값 자체를 최우선 기준으로 삼습니다.
+            // ★ 4. "바뀐 것처럼 보이게 만든" 원인 제거 (교차 Fallback 삭제) ★
             const mState = (quote.marketState || 'REGULAR').toUpperCase();
-            let isRegular = mState === 'REGULAR';
             let activeExt = null;
 
-            if (mState.includes('PRE')) {
-                // 프리마켓 진행 중
-                isRegular = false;
-                activeExt = preData || postData;
-            } else if (mState.includes('POST')) {
-                // 애프터마켓 진행 중
-                isRegular = false;
-                activeExt = postData || preData;
+            if (mState.includes('PRE') && preData) {
+                activeExt = preData; // PRE 장일 때는 오직 PRE 데이터만!
+            } else if (mState.includes('POST') && postData) {
+                activeExt = postData; // POST 장일 때는 오직 POST 데이터만!
             } else if (mState === 'CLOSED') {
-                // 완전히 장이 닫힌 주말/새벽 시간대 (시간 비교로 가장 최근 열렸던 연장장 선택)
-                isRegular = false;
+                // 완전히 장이 닫혔을 때는 시간 비교로 가장 최근 데이터를 띄움
                 if (preData && postData) {
                     activeExt = preData.time > postData.time ? preData : postData;
                 } else {
                     activeExt = postData || preData;
                 }
             }
+
+            // 연장장 데이터가 없거나 조건에 안 맞으면 무조건 정규장 모드로 작동
+            const isRegular = (mState === 'REGULAR' || !activeExt);
 
             // 5. 렌더링 변수 초기화
             let mainPrice = regPrice;
@@ -811,7 +804,7 @@ function updateDOMWithData(quotes) {
 
             // 6. 상태별 화면 분기
             if (isRegular) {
-                // [정규장] 메인 = 장중가 / 하단 = 프리마켓 흔적
+                // [정규장] 메인 = 장중가 / 하단 = 🔜 프리마켓 데이터 (존재 시)
                 if (preData) {
                     const isExtUp = preData.change >= 0;
                     const extColor = isExtUp ? 'up' : 'down';
@@ -852,7 +845,7 @@ function updateDOMWithData(quotes) {
             nodes.price.setAttribute('data-price', mainPrice);
             nodes.name.textContent = quote.shortName || quote.longName || ticker;
             
-            // 아이콘(mainIcon)이 포함된 메인 가격 및 서브(종가) 업데이트
+            // 아이콘(mainIcon)이 포함된 최종 가격
             nodes.price.textContent = mainIcon + formatNum(mainPrice);
             nodes.extPrice.innerHTML = subHtml;
             
