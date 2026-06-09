@@ -1,48 +1,52 @@
-// =========================================================
-// 1. 초기 설정 및 상수 정의 (Constants & Defaults)
-// =========================================================
+// --- CONFIGURATION & UTILITIES ---
+// KR - NAVER data, US, MKT - YAHOO data
+
 const DEFAULT_WATCHLISTS = {
-    'indicators': { 
-        title: '📈 MKT', 
-        tickers: ['KRW=X', '^KS11', '^KQ11', '^IXIC', '^DJI', '^GSPC', 'BTC-USD'] 
-    },
-    'kr': { 
-        title: '🇰🇷 KR', 
-        tickers: ['005930', '000660', '373220', '035720', '035420'] // 삼성전자, SK하이닉스 등
-    },
-    'us': { 
-        title: '🇺🇸 US', 
-        tickers: ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'TSLA', 'META'] 
-    }
+    indicators: { title: '📈 MKT', tickers: ['KRW=X', '^KS11', '^KQ11', '^IXIC', '^DJI', '^GSPC', 'BTC-USD'] },
+    kr: { title: '🇰🇷 KR', tickers: ['005930', '000660', '373220', '005380', '035420'] },            
+    us: { title: '🇺🇸 US', tickers: ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'TSLA', 'META'] }
 };
 
-const GAS_PROXY_URL = 'https://script.google.com/macros/s/AKfycbydYWqn3tZL25dE8UPMyN9mV19R1YKFZKpF-aml_25Z_YvA_qElw-LpxNO_Y8_sOzCV/exec';
-const NAVER_GAS_PROXY_URL = 'https://script.google.com/macros/s/AKfycbygC4GrK-2abZUpWWCxD4ZVfFVzd-gjbGvyYBTWNP26J7zwkwbrWwttXNC-geENS1Nykw/exec';
-const NEWS_GAS_PROXY_URL = 'https://script.google.com/macros/s/AKfycb.../exec'; // 뉴스 프록시 URL
+const GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbydYWqn3tZL25dE8UPMyN9mV19R1YKFZKpF-aml_25Z_YvA_qElw-LpxNO_Y8_sOzCV/exec";
+const NAVER_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbygC4GrK-2abZUpWWCxD4ZVfFVzd-gjbGvyYBTWNP26J7zwkwbrWwttXNC-geENS1Nykw/exec"; 
+const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbwSD8MOLPrYjwTBVQX_Tq6pu-gTHlOeR7p0hUY2pHGACNc2NA6f4zICduC05ypO_EN6/exec"; 
 
-const CHO_HANGUL = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
-
-// SVG 아이콘 모음
-const DRAG_ICON = '<svg viewBox="0 0 24 24"><line x1="6" y1="6" x2="18" y2="6"/><line x1="6" y1="10" x2="18" y2="10"/><line x1="6" y1="14" x2="18" y2="14"/><line x1="6" y1="18" x2="18" y2="18"/></svg>';
-const TRASH_ICON = '<svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2-2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>';
-const CHEVRON_ICON = '<svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>';
-const SEARCH_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>';
-const PLUS_ICON = '<svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
-const SPINNER_SVG = '<svg class="spinner" viewBox="0 0 50 50"><circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle></svg>';
-const EMPTY_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>';
-
-// =========================================================
-// 2. 상태 관리 (State Management)
-// =========================================================
-let localTickerDB = [];
-let memoryPriceCache = {};
-
-try {
-    memoryPriceCache = JSON.parse(localStorage.getItem('marketdash_price_cache')) || {};
-} catch (e) {
-    memoryPriceCache = {};
+const CHO_HANGUL = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
+function getChosung(str) {
+    let result = '';
+    for (let i = 0; i < str.length; i++) {
+        let code = str.charCodeAt(i) - 44032; 
+        if (code > -1 && code < 11172) result += CHO_HANGUL[Math.floor(code / 588)];
+        else result += str.charAt(i); 
+    }
+    return result;
 }
 
+function escapeHTML(str) {
+    if (typeof str !== 'string') return str;
+    return str.replace(/[&<>'"]/g, tag => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+    }[tag]));
+}
+
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => { clearTimeout(timeout); func(...args); };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+const DRAG_ICON = `<svg viewBox="0 0 24 24"><line x1="6" y1="6" x2="18" y2="6"/><line x1="6" y1="10" x2="18" y2="10"/><line x1="6" y1="14" x2="18" y2="14"/><line x1="6" y1="18" x2="18" y2="18"/></svg>`;
+const TRASH_ICON = `<svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2-2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>`;
+const CHEVRON_ICON = `<svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>`;
+const SEARCH_ICON = `<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`;
+const PLUS_ICON = `<svg class="icon-svg" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
+const SPINNER_SVG = `<svg class="spinner" viewBox="0 0 50 50"><circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle></svg>`;
+const EMPTY_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>`;
+
+let localTickerDB = [];
 let state = {
     watchlists: JSON.parse(localStorage.getItem('marketdash_watchlists')) || JSON.parse(JSON.stringify(DEFAULT_WATCHLISTS)),
     sectionOrder: JSON.parse(localStorage.getItem('marketdash_sectionOrder')) || ['indicators', 'kr', 'us'],
@@ -50,95 +54,72 @@ let state = {
     theme: localStorage.getItem('marketdash_theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'),
     countdown: 60,
     intervalId: null,
-    lastNewsFetch: 0
+    lastNewsFetch: 0 
 };
 
-const rowNodes = new Map();
-let sortables = [];
-let targetTickerToDelete = null;
+const rowNodes = new Map(); let sortables = []; 
+function getSafeId(ticker) { return 'id_' + ticker.replace(/[^a-zA-Z0-9]/g, '_'); }
 
-// =========================================================
-// 3. 유틸리티 함수 (Utilities)
-// =========================================================
-function getChosung(str) {
-    let result = '';
-    for (let i = 0; i < str.length; i++) {
-        let code = str.charCodeAt(i) - 44032;
-        if (code > -1 && code < 11172) {
-            result += CHO_HANGUL[Math.floor(code / 588)];
-        } else {
-            result += str.charAt(i);
-        }
-    }
-    return result;
+// --- [최적화] 로컬 스토리지 I/O 병목 제거를 위한 메모리 캐시 변수 설정 ---
+let memoryPriceCache = {};
+try {
+    memoryPriceCache = JSON.parse(localStorage.getItem('marketdash_price_cache')) || {};
+} catch (e) {
+    memoryPriceCache = {};
 }
 
-function escapeHTML(str) {
-    if (typeof str !== 'string') return str;
-    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' };
-    return str.replace(/[&<>'"]/g, m => map[m]);
-}
-
-function debounce(func, wait) {
-    let timeout;
-    return function (...args) {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => func.apply(this, args), wait);
-    };
-}
-
-function getSafeId(str) {
-    return 'id_' + str.replace(/[^a-zA-Z0-9]/g, '_');
-}
-
+// --- [최적화] Debounce를 적용한 스토리지 저장 함수 (디스크 쓰기 최소화) ---
 const saveCacheToStorage = debounce(() => {
     try {
         localStorage.setItem('marketdash_price_cache', JSON.stringify(memoryPriceCache));
     } catch (e) {
-        console.warn('Cache save failed', e);
+        console.warn("캐시 저장 실패", e);
     }
-}, 2000);
+}, 1000);
 
-// =========================================================
-// 4. 초기화 및 메인 로직 (Initialization)
-// =========================================================
+// --- INITIALIZATION ---
 async function init() {
-    applyTheme();
-    if (!state.sectionOrder || state.sectionOrder.length === 0) {
-        state.sectionOrder = Object.keys(state.watchlists);
-    }
+    // 1. [UI 깜빡임 방지] 데이터 로딩 전 UI 상태(테마) 최우선 적용
+    applyTheme(); 
+    if (!state.sectionOrder || state.sectionOrder.length === 0) state.sectionOrder = Object.keys(state.watchlists);
 
+    // 2. [최적화] Page Visibility API: 백그라운드 전환 시 불필요한 리소스 낭비 방지
     document.addEventListener('visibilitychange', () => {
         if (document.hidden) {
             if (state.intervalId) clearInterval(state.intervalId);
         } else {
             const now = Date.now();
             const lastFetch = parseInt(localStorage.getItem('marketdash_last_fetch_time') || '0');
+            // 복귀 시 데이터가 60초 이상 지났다면 즉시 갱신
             if (now - lastFetch > 60000) forceRefresh();
             else startTimer();
         }
     });
+    
+    await initTickerDB(); 
 
-    await initTickerDB();
-    renderLayout();
-    startTimer();
-
+    renderLayout(); startTimer(); 
+    
+    // 3. [최적화] 메모리에 올려둔 캐시 데이터를 사용하여 즉시 렌더링
     if (Object.keys(memoryPriceCache).length > 0) {
         updateDOMWithData(Object.values(memoryPriceCache));
     }
 
     const lastFetchTime = parseInt(localStorage.getItem('marketdash_last_fetch_time') || '0');
     const now = Date.now();
-    const activeTab = localStorage.getItem('marketdash_active_tab');
-
-    if (activeTab === 'news') {
-        const newsContainer = document.getElementById('news-container');
-        const isStale = now - state.lastNewsFetch > 300000;
-        const isEmpty = !newsContainer || newsContainer.children.length === 0 || newsContainer.querySelector('.empty-state');
-        if (isStale || isEmpty) fetchNews();
+    const savedTab = localStorage.getItem('marketdash_active_tab');
+    
+    // 4. [UX 유지] 이전에 News 탭을 보고 있었다면 News 데이터 로드, 아니면 Watchlist 데이터 로드
+    if (savedTab === 'news') {
+        const container = document.getElementById('news-container');
+        const isStale = (now - state.lastNewsFetch) > 60000;
+        const isEmpty = !container || container.children.length === 0 || container.querySelector('.empty-state');
         
+        if (isStale || isEmpty) fetchNews(); 
+        
+        // Watchlist 갱신 타이머는 백그라운드에서 돌아가도록 설정
         if (now - lastFetchTime < 60000) {
-            state.countdown = Math.ceil(60 - (now - lastFetchTime) / 1000);
+            state.countdown = Math.ceil(60 - ((now - lastFetchTime) / 1000));
             const countdownEl = document.getElementById('countdown');
             if (countdownEl) countdownEl.textContent = state.countdown;
         } else {
@@ -146,112 +127,204 @@ async function init() {
         }
     } else {
         if (now - lastFetchTime < 60000) {
-            state.countdown = Math.ceil(60 - (now - lastFetchTime) / 1000);
+            state.countdown = Math.ceil(60 - ((now - lastFetchTime) / 1000));
             const countdownEl = document.getElementById('countdown');
             if (countdownEl) countdownEl.textContent = state.countdown;
-            fetchNews();
+            fetchNews(); 
         } else {
-            fetchData();
+            fetchData(); 
         }
     }
 
-    initSwipeToDelete();
-
-    const refreshBtn = document.getElementById('btn-refresh');
-    if (refreshBtn) refreshBtn.addEventListener('click', forceRefresh);
+    initSwipeToDelete(); 
+    
+    const btnRefresh = document.getElementById('btn-refresh');
+    if (btnRefresh) btnRefresh.addEventListener('click', forceRefresh);
 
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.search-wrapper')) {
             document.querySelectorAll('.autocomplete-list').forEach(el => el.style.display = 'none');
             document.querySelectorAll('.input-guide').forEach(el => el.style.display = 'none');
         }
-        const dropdown = document.getElementById('settings-dropdown');
-        if (dropdown && !e.target.closest('.settings-wrapper')) {
-            dropdown.classList.remove('active');
+        const settingsDropdown = document.getElementById('settings-dropdown');
+        if (settingsDropdown && !e.target.closest('.settings-wrapper')) {
+            settingsDropdown.classList.remove('active');
         }
     });
 }
 
-// =========================================================
-// 5. 종목 검색 DB 처리 (Ticker DB)
-// =========================================================
 function processTickerDB(data) {
-    return data.map(item => ({
-        ...item,
-        cs_s: getChosung(item.s || '').toLowerCase(),
-        cs_n: getChosung(item.n || '').toLowerCase()
+    return data.map(q => ({
+        ...q, cs_s: getChosung(q.s || '').toLowerCase(), cs_n: getChosung(q.n || '').toLowerCase()
     }));
 }
 
 async function initTickerDB() {
     try {
-        const response = await fetch('/data/tickers.json?t=' + new Date().getTime());
-        if (!response.ok) throw new Error('HTTP error! status: ' + response.status);
-        const data = await response.json();
-        localTickerDB = processTickerDB(data);
-    } catch (e) {
-        console.error('Ticker DB Init Error', e);
+        const response = await fetch(`./finance/tickers_n.json?v=${new Date().getTime()}`);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const rawData = await response.json();
+        localTickerDB = processTickerDB(rawData);
+    } catch (error) {
+        console.error("Failed to load ticker DB:", error);
         localTickerDB = processTickerDB([
-            { s: 'AAPL', n: 'Apple Inc.', e: 'NASDAQ' },
-            { s: '005930', n: '삼성전자', e: 'KOSPI' }
+            { s: "AAPL", n: "Apple Inc.", e: "NASDAQ" }, 
+            { s: "005930", n: "삼성전자", e: "NAVER" }
         ]);
     }
 }
 
-// =========================================================
-// 6. UI 렌더링 (UI Rendering)
-// =========================================================
+// --- SWIPE TO DELETE GESTURE LOGIC ---
+function initSwipeToDelete() {
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let swipingRow = null;
+    let isSwiping = false;
+    let isScrolling = false;
+
+    const dashboard = document.getElementById('dashboard');
+    if (!dashboard) return;
+
+    dashboard.addEventListener('touchstart', e => {
+        const row = e.target.closest('tr[data-ticker]');
+        if (!row || e.target.closest('.drag-handle') || e.target.closest('.action-icon-btn')) return;
+        
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+        swipingRow = row;
+        isSwiping = false;
+        isScrolling = false; 
+        row.style.transition = 'none'; 
+    }, { passive: true });
+
+    dashboard.addEventListener('touchmove', e => {
+        if (!swipingRow) return;
+        
+        const touchCurrentX = e.touches[0].clientX;
+        const touchCurrentY = e.touches[0].clientY;
+        const diffX = touchCurrentX - touchStartX;
+        const diffY = touchCurrentY - touchStartY;
+        
+        const absDiffX = Math.abs(diffX);
+        const absDiffY = Math.abs(diffY);
+
+        if (!isSwiping && !isScrolling && (absDiffX > 10 || absDiffY > 10)) {
+            if (absDiffX > absDiffY * 1.5 && diffX < 0) {
+                isSwiping = true;
+            } else {
+                isScrolling = true; 
+            }
+        }
+
+        if (isScrolling) return;
+
+        if (isSwiping && diffX < 0) { 
+            if (e.cancelable) e.preventDefault();
+            const moveX = Math.max(diffX, -150); 
+            swipingRow.style.transform = `translateX(${moveX}px)`;
+            swipingRow.style.opacity = 1 - (Math.abs(moveX) / 200); 
+        }
+    }, { passive: false });
+
+    dashboard.addEventListener('touchend', e => {
+        if (!swipingRow) return;
+        const touchCurrentX = e.changedTouches[0].clientX;
+        const diffX = touchCurrentX - touchStartX;
+
+        swipingRow.style.transition = 'all 0.3s ease';
+        
+        if (isSwiping && diffX < -80) {
+            const ticker = swipingRow.dataset.ticker;
+            confirmRemoveTicker(ticker); 
+        } 
+        
+        swipingRow.style.transform = 'translateX(0)';
+        swipingRow.style.opacity = '1';
+        swipingRow = null;
+        isSwiping = false;
+        isScrolling = false;
+    });
+}
+
+// --- MOBILE TAB LOGIC ---
+window.switchMobileTab = function(tabName) {
+    localStorage.setItem('marketdash_active_tab', tabName);
+
+    const tabs = document.querySelectorAll('.tab-btn');
+    tabs.forEach(btn => btn.classList.remove('active'));
+    
+    if(tabName === 'news') {
+        document.body.classList.add('show-news');
+        const tabNewsBtn = document.getElementById('tab-btn-news');
+        if (tabNewsBtn) tabNewsBtn.classList.add('active');
+        
+        const container = document.getElementById('news-container');
+        const isStale = (Date.now() - state.lastNewsFetch) > 60000;
+        const isEmpty = !container || container.children.length === 0 || container.querySelector('.empty-state');
+        
+        if (isStale || isEmpty) {
+            fetchNews(); 
+        }
+    } else {
+        document.body.classList.remove('show-news');
+        const tabDashBtn = document.getElementById('tab-btn-dashboard');
+        if (tabDashBtn) tabDashBtn.classList.add('active');
+    }
+}
+
+// --- RENDERING & UI ---
 function renderLayout() {
     const dashboard = document.getElementById('dashboard');
     if (!dashboard) return;
     
-    dashboard.innerHTML = '';
-    rowNodes.clear();
-    sortables.forEach(s => s.destroy());
-    sortables = [];
-
+    dashboard.innerHTML = ''; rowNodes.clear();
+    sortables.forEach(s => s.destroy()); sortables = [];
     const fragment = document.createDocumentFragment();
 
-    state.sectionOrder.forEach(key => {
-        const sectionData = state.watchlists[key];
+    state.sectionOrder.forEach(sectionId => {
+        const sectionData = state.watchlists[sectionId];
         if (!sectionData) return;
 
-        const isExpanded = state.expanded[key];
+        const isExpanded = state.expanded[sectionId];
         const isEmpty = sectionData.tickers.length === 0;
-        const sectionEl = document.createElement('div');
-        sectionEl.className = 'section-container ' + (isExpanded ? '' : 'collapsed');
-        sectionEl.id = 'section-' + key;
-        sectionEl.dataset.id = key;
+        const sectionContainer = document.createElement('div');
+        sectionContainer.className = `section-container ${isExpanded ? '' : 'collapsed'}`;
+        sectionContainer.id = `section-${sectionId}`;
+        sectionContainer.dataset.id = sectionId;
 
-        const guideText = key === 'kr' ? 'Please choose a ticker from the search results only.' : 'Enter symbol or company name';
+        const guideText = sectionId === 'kr' 
+            ? "Please choose a ticker from the search results only." 
+            : "Please enter only the ticker symbol from Yahoo Finance.";
 
-        sectionEl.innerHTML = `
+        sectionContainer.innerHTML = `
             <div class="section-header">
-                <div class="section-header-left" onclick="toggleSection(event, '${key}')">
-                    <button class="action-icon-btn toggle-btn">${CHEVRON_ICON}</button>
+                <div class="section-header-left" onclick="toggleSection(event, '${sectionId}')">
                     <h2>${sectionData.title}</h2>
                 </div>
                 <div class="section-header-right">
-                    <button class="action-icon-btn btn-add-symbol" onclick="toggleAddForm(event, '${key}')">${PLUS_ICON}</button>
-                    <button class="action-icon-btn drag-handle hide-mobile">${DRAG_ICON}</button>
+                    <button class="action-icon-btn btn-add-symbol" onclick="toggleAddForm(event, '${sectionId}')">${PLUS_ICON}</button>
+                    <div class="action-icon-btn drag-handle">${DRAG_ICON}</div>
+                    <button class="action-icon-btn toggle-btn" onclick="toggleSection(event, '${sectionId}')">${CHEVRON_ICON}</button>
                 </div>
             </div>
             <div class="section-body">
-                <form class="add-ticker-form" id="form-${key}" onsubmit="handleAddTicker(event, '${key}')">
+                <form class="add-ticker-form" onsubmit="handleAddTicker(event, '${sectionId}')">
                     <div class="search-wrapper">
+                        <div class="input-guide" id="guide-${sectionId}">${guideText}</div>
                         ${SEARCH_ICON}
-                        <input type="text" id="input-${key}" placeholder="Search..." autocomplete="off">
-                        <ul class="autocomplete-list" id="autocomplete-${key}"></ul>
-                        <div class="input-guide" id="guide-${key}">${guideText}</div>
+                        <input type="text" id="input-${sectionId}" placeholder="Quote Lookup" autocomplete="off">
+                        <ul class="autocomplete-list" id="autocomplete-${sectionId}"></ul>
                     </div>
-                    <button type="submit" id="btn-add-${key}">${PLUS_ICON}<span class="hide-mobile-text">Add tickers</span></button>
+                    <button type="submit" id="btn-add-${sectionId}">
+                        ${PLUS_ICON}<span>Add tickers</span>
+                    </button>
                 </form>
                 <div class="table-wrapper">
-                    <div class="empty-state" id="empty-${key}" style="display: ${isEmpty ? 'flex' : 'none'};">
+                    <div class="empty-state" id="empty-${sectionId}" style="display: ${isEmpty ? 'flex' : 'none'};">
                         ${EMPTY_ICON}
-                        <p>No tickers added.</p>
+                        <p>Nothing here yet. <br>Tap the <strong>+ button</strong> at the top to add stocks.</p>
                     </div>
-                    <table style="display: ${isEmpty ? 'none' : 'table'};" id="table-${key}">
+                    <table style="display: ${isEmpty ? 'none' : 'table'};" id="table-${sectionId}">
                         <thead>
                             <tr>
                                 <th class="left-align col-symbol">Symbol</th>
@@ -264,322 +337,579 @@ function renderLayout() {
                                 <th class="handle-col"></th>
                             </tr>
                         </thead>
-                        <tbody id="tbody-${key}">
-                            ${sectionData.tickers.map(t => generateRowHTML(t)).join('')}
+                        <tbody id="tbody-${sectionId}">
+                            ${sectionData.tickers.map(ticker => generateRowHTML(ticker)).join('')}
                         </tbody>
                     </table>
                 </div>
             </div>
         `;
-        fragment.appendChild(sectionEl);
+        fragment.appendChild(sectionContainer);
     });
 
     dashboard.appendChild(fragment);
 
-    state.sectionOrder.forEach(key => {
-        const sectionData = state.watchlists[key];
-        if (sectionData) sectionData.tickers.forEach(t => cacheRowNodes(t));
-
-        const inputEl = document.getElementById('input-' + key);
-        if (inputEl) {
-            const onInput = debounce((e) => handleAutocomplete(e.target.value, key), 200);
-            inputEl.addEventListener('input', onInput);
-            inputEl.addEventListener('focus', onInput);
+    state.sectionOrder.forEach(sectionId => {
+        const sectionData = state.watchlists[sectionId];
+        if (sectionData) sectionData.tickers.forEach(ticker => cacheRowNodes(ticker));
+        
+        const inputEl = document.getElementById(`input-${sectionId}`);
+        if(inputEl) {
+            const debouncedSearch = debounce((e) => handleAutocomplete(e.target.value, sectionId), 150);
+            inputEl.addEventListener('input', debouncedSearch);
+            inputEl.addEventListener('focus', debouncedSearch);
         }
     });
 
     initDragAndDrop();
 }
 
+function handleAutocomplete(query, sectionId) {
+    const list = document.getElementById(`autocomplete-${sectionId}`);
+    const guide = document.getElementById(`guide-${sectionId}`);
+    const btn = document.getElementById(`btn-add-${sectionId}`);
+
+    if (btn && btn.disabled) return;
+    
+    if (!query || query.trim() === '') {
+        if(list) list.style.display = 'none'; 
+        if(guide) guide.style.display = 'none'; 
+        return;
+    }
+    
+    query = query.trim().toLowerCase();
+    
+    const isChosungQuery = /[ㄱ-ㅎ]/.test(query) && !/[가-힣]/.test(query);
+    const isKrSection = sectionId === 'kr';
+
+    const matchedQuotes = localTickerDB.filter(q => {
+        if (isKrSection && q.e !== "NAVER") return false;
+        if (!isKrSection && q.e === "NAVER") return false;
+        if (isChosungQuery) return (q.cs_s && q.cs_s.includes(query)) || (q.cs_n && q.cs_n.includes(query));
+        else return (q.s && q.s.toLowerCase().includes(query)) || (q.n && q.n.toLowerCase().includes(query));
+    }).slice(0, 8); 
+
+    if (matchedQuotes.length > 0) {
+        if(list) list.innerHTML = matchedQuotes.map(q => {
+            const safeSymbol = escapeHTML(q.s); const safeName = escapeHTML(q.n); const safeExch = escapeHTML(q.e);
+            return `
+            <li onclick="selectAutocomplete('${safeSymbol}', '${sectionId}')">
+                <div class="ac-info"><span class="ac-symbol">${safeSymbol}</span><span class="ac-name">${safeName}</span></div>
+                <span class="ac-exch">${safeExch}</span>
+            </li>
+        `}).join('');
+        if(list) list.style.display = 'block'; 
+        if(guide) guide.style.display = 'none';
+    } else {
+        if(list) list.style.display = 'none'; 
+        if(guide) guide.style.display = 'block';
+    }
+}
+
+window.selectAutocomplete = function(symbol, sectionId) {
+    const input = document.getElementById(`input-${sectionId}`);
+    const list = document.getElementById(`autocomplete-${sectionId}`);
+    const guide = document.getElementById(`guide-${sectionId}`);
+    const btn = document.getElementById(`btn-add-${sectionId}`);
+    if(input) input.value = symbol; 
+    if(list) list.style.display = 'none'; 
+    if(guide) guide.style.display = 'none'; 
+    if(btn) btn.click(); 
+};
+
 function generateRowHTML(ticker) {
-    const safeId = getSafeId(ticker);
-    const escapedTicker = escapeHTML(ticker);
+    const sid = getSafeId(ticker);
+    const safeTicker = escapeHTML(ticker);
     return `
-        <tr id="row-${safeId}" data-ticker="${escapedTicker}">
+        <tr id="row-${sid}" data-ticker="${safeTicker}">
             <td class="left-align col-symbol">
                 <div class="asset-col">
-                    <span class="symbol" id="symbol-${safeId}" title="${escapedTicker}">${escapedTicker}</span>
-                    <span class="name" id="name-${safeId}"><span class="skeleton sm"></span></span>
+                    <span class="symbol" id="symbol-${sid}" title="${safeTicker}">${safeTicker}</span>
+                    <span class="name" id="name-${sid}"><span class="skeleton sm"></span></span>
                 </div>
             </td>
-            <td class="col-price" id="price-cell-${safeId}">
-                <div class="price" id="price-${safeId}"><span class="skeleton"></span></div>
-                <div class="extended-price" id="ext-price-${safeId}"></div>
+            <td class="col-price" id="price-cell-${sid}">
+                <div class="price" id="price-${sid}"><span class="skeleton"></span></div>
+                <div class="extended-price" id="ext-price-${sid}"></div>
             </td>
-            <td class="col-change" id="change-cell-${safeId}">
+            <td class="col-change" id="change-cell-${sid}">
                 <div class="change-cell">
-                    <div id="change-${safeId}"><span class="skeleton"></span></div>
-                    <div id="pct-${safeId}"></div>
+                    <div id="change-${sid}"><span class="skeleton"></span></div>
+                    <div id="pct-${sid}"><span class="skeleton sm"></span></div>
                 </div>
             </td>
-            <td class="hide-mobile sub-data" id="vol-${safeId}">-</td>
-            <td class="hide-mobile sub-data" id="cap-${safeId}">-</td>
-            <td class="hide-mobile sub-data" id="range-${safeId}">-</td>
-            <td class="actions-col">
-                <button class="action-icon-btn danger" onclick="confirmRemoveTicker('${escapedTicker}')">${TRASH_ICON}</button>
-            </td>
-            <td class="handle-col">
-                <div class="action-icon-btn drag-handle">${DRAG_ICON}</div>
-            </td>
+            <td class="hide-mobile sub-data" id="vol-${sid}">-</td>
+            <td class="hide-mobile sub-data" id="cap-${sid}">-</td>
+            <td class="hide-mobile sub-data" id="range-${sid}">-</td>
+            <td class="actions-col"><button class="action-icon-btn danger" onclick="confirmRemoveTicker('${safeTicker}')">${TRASH_ICON}</button></td>
+            <td class="handle-col"><div class="action-icon-btn drag-handle">${DRAG_ICON}</div></td>
         </tr>
     `;
 }
 
-// =========================================================
-// 7. 검색 및 자동완성 (Autocomplete)
-// =========================================================
-function handleAutocomplete(value, sectionKey) {
-    const listEl = document.getElementById('autocomplete-' + sectionKey);
-    const guideEl = document.getElementById('guide-' + sectionKey);
-    const addBtn = document.getElementById('btn-add-' + sectionKey);
-
-    if (addBtn && addBtn.disabled) return;
-
-    if (!value || value.trim() === '') {
-        if (listEl) listEl.style.display = 'none';
-        if (guideEl) guideEl.style.display = 'none';
-        return;
-    }
-
-    value = value.trim().toLowerCase();
-    const isChosung = /[ㄱ-ㅎ]/.test(value) && !/[가-힣]/.test(value);
-    const isKr = sectionKey === 'kr';
-
-    const matches = localTickerDB.filter(item => {
-        if (isKr && item.e !== 'NAVER') return false;
-        if (!isKr && item.e === 'NAVER') return false;
-
-        if (isChosung) {
-            return (item.cs_s && item.cs_s.includes(value)) || (item.cs_n && item.cs_n.includes(value));
-        } else {
-            return (item.s && item.s.toLowerCase().includes(value)) || (item.n && item.n.toLowerCase().includes(value));
-        }
-    }).slice(0, 10);
-
-    if (matches.length > 0) {
-        if (listEl) {
-            listEl.innerHTML = matches.map(item => {
-                const s = escapeHTML(item.s);
-                const n = escapeHTML(item.n);
-                const e = escapeHTML(item.e);
-                return `
-                    <li onclick="selectAutocomplete('${s}', '${sectionKey}')">
-                        <div class="ac-info">
-                            <span class="ac-symbol">${s}</span>
-                            <span class="ac-name">${n}</span>
-                        </div>
-                        <span class="ac-exch">${e}</span>
-                    </li>
-                `;
-            }).join('');
-            listEl.style.display = 'block';
-        }
-        if (guideEl) guideEl.style.display = 'none';
-    } else {
-        if (listEl) listEl.style.display = 'none';
-        if (guideEl) guideEl.style.display = 'block';
+function checkEmptyState(sectionId) {
+    const tbody = document.getElementById(`tbody-${sectionId}`);
+    const emptyState = document.getElementById(`empty-${sectionId}`);
+    const table = document.getElementById(`table-${sectionId}`);
+    if(tbody && emptyState && table) {
+        const isEmpty = tbody.children.length === 0;
+        emptyState.style.display = isEmpty ? 'flex' : 'none';
+        table.style.display = isEmpty ? 'none' : 'table';
     }
 }
 
-window.selectAutocomplete = function(symbol, sectionKey) {
-    const inputEl = document.getElementById('input-' + sectionKey);
-    const listEl = document.getElementById('autocomplete-' + sectionKey);
-    const guideEl = document.getElementById('guide-' + sectionKey);
-    const formEl = document.getElementById('form-' + sectionKey);
-
-    if (inputEl) inputEl.value = symbol;
-    if (listEl) listEl.style.display = 'none';
-    if (guideEl) guideEl.style.display = 'none';
-    
-    // 자동 등록 방지 시 아래 줄 삭제. 원본 코드는 submit 트리거함
-    // if (formEl) formEl.dispatchEvent(new Event('submit')); 
-};
-
-// =========================================================
-// 8. 데이터 통신 및 갱신 (Data Fetching & Updating)
-// =========================================================
-async function fetchWithRetry(url, retries = 3, delay = 1000) {
-    for (let i = 0; i < retries; i++) {
+// --- DATA FETCHING & LOGIC ---
+async function fetchWithRetry(url, maxRetries = 3, baseDelayMs = 1000) {
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
         try {
-            const res = await fetch(url);
-            if (!res.ok) throw new Error('HTTP ' + res.status);
-            return await res.text();
-        } catch (err) {
-            if (i === retries - 1) throw err;
-            await new Promise(r => setTimeout(r, delay * Math.pow(2, i)));
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            return await response.text();
+        } catch (error) {
+            if (attempt === maxRetries - 1) throw error; 
+            await new Promise(res => setTimeout(res, baseDelayMs * Math.pow(2, attempt)));
         }
     }
 }
 
 async function fetchYahooFinance(symbols) {
     if (symbols.length === 0) return [];
-    if (!navigator.onLine) throw new Error('No network connection.');
-    const query = symbols.join(',');
-    const url = GAS_PROXY_URL + '?symbols=' + encodeURIComponent(query) + '&t=' + Date.now();
+    if (!navigator.onLine) throw new Error("No network connection.");
+
+    const symbolsStr = symbols.join(',');
+    const targetUrl = `${GAS_PROXY_URL}?symbols=${encodeURIComponent(symbolsStr)}&t=${Date.now()}`;
+
     try {
-        const text = await fetchWithRetry(url);
-        if (text.trim().startsWith('<')) throw new Error('GAS proxy permission denied.');
+        const text = await fetchWithRetry(targetUrl);
+        if (text.trim().startsWith('<')) throw new Error("GAS permission denied or limit reached.");
         const data = JSON.parse(text);
         if (data && data.quoteResponse && data.quoteResponse.result) return data.quoteResponse.result;
-        throw new Error('Invalid Data format');
-    } catch (e) {
-        console.error('Yahoo Fetch Error', e);
-        throw e;
-    }
+        else if (data && data.error) throw new Error(data.error);
+        throw new Error("Invalid data structure.");
+    } catch (e) { console.error("Failed to fetch data:", e); throw e; }
 }
 
 async function fetchNaverFinance(symbols) {
     if (symbols.length === 0) return [];
-    if (!navigator.onLine) throw new Error('No network connection.');
-    const query = symbols.join(',');
-    const url = NAVER_GAS_PROXY_URL + '?symbols=' + encodeURIComponent(query) + '&t=' + Date.now();
+    if (!navigator.onLine) throw new Error("No network connection.");
+
+    const symbolsStr = symbols.join(',');
+    const targetUrl = `${NAVER_GAS_PROXY_URL}?symbols=${encodeURIComponent(symbolsStr)}&t=${Date.now()}`;
+
     try {
-        const text = await fetchWithRetry(url);
-        if (text.trim().startsWith('<')) throw new Error('Naver GAS proxy permission denied.');
+        const text = await fetchWithRetry(targetUrl);
+        if (text.trim().startsWith('<')) throw new Error("Naver GAS proxy permission denied.");
         const data = JSON.parse(text);
         if (data && data.quoteResponse && data.quoteResponse.result) return data.quoteResponse.result;
-        throw new Error('Invalid Data format');
-    } catch (e) {
-        console.error('Naver Fetch Error', e);
-        throw e;
+        else if (data && data.error) throw new Error(data.error);
+        throw new Error("Invalid data structure from Naver proxy.");
+    } catch (e) { console.error("Failed to fetch Naver data:", e); throw e; }
+}
+
+async function handleAddTicker(e, sectionId) {
+    e.preventDefault();
+    const inputEl = document.getElementById(`input-${sectionId}`);
+    const btnEl = document.getElementById(`btn-add-${sectionId}`);
+    const listEl = document.getElementById(`autocomplete-${sectionId}`);
+    const guideEl = document.getElementById(`guide-${sectionId}`);
+    const ticker = inputEl.value.trim().toUpperCase();
+    
+    if (!ticker || state.watchlists[sectionId].tickers.includes(ticker)) {
+        inputEl.value = ''; 
+        if (listEl) listEl.style.display = 'none'; 
+        if (guideEl) guideEl.style.display = 'none'; 
+        return;
+    }
+
+    if (sectionId === 'kr') {
+        const isValidNaver = localTickerDB.some(q => q.s.toUpperCase() === ticker && q.e === "NAVER");
+        if (!isValidNaver) {
+            alert('KR stocks: search list only.');
+            inputEl.value = '';
+            if (listEl) listEl.style.display = 'none';
+            return;
+        }
+    }
+
+    const originalBtnContent = `${PLUS_ICON}<span>Add tickers</span>`;
+    if (btnEl) {
+        btnEl.disabled = true; 
+        btnEl.innerHTML = `${SPINNER_SVG}<span>Adding....</span>`; 
+    }
+    if (listEl) listEl.style.display = 'none';
+    if (guideEl) guideEl.style.display = 'none';
+
+    try {
+        const fetchFunc = sectionId === 'kr' ? fetchNaverFinance : fetchYahooFinance;
+        const data = await fetchFunc([ticker]);
+        if (!data || data.length === 0 || data[0].regularMarketPrice === undefined) {
+            alert(`${ticker} not found.`); return;
+        }
+        state.watchlists[sectionId].tickers.push(ticker); saveWatchlists();
+        const tbody = document.getElementById(`tbody-${sectionId}`);
+        if (tbody) tbody.insertAdjacentHTML('beforeend', generateRowHTML(ticker));
+        cacheRowNodes(ticker); checkEmptyState(sectionId); 
+        updateDOMWithData([data[0]]); 
+        if (inputEl) inputEl.value = '';
+        if (listEl) listEl.style.display = 'none';
+        fetchNews();
+    } catch (err) {
+        alert(`오류: ${err.message}`);
+    } finally {
+        if (btnEl) {
+            btnEl.disabled = false; 
+            btnEl.innerHTML = originalBtnContent;
+        }
     }
 }
 
-async function fetchData() {
-    localStorage.setItem('marketdash_last_fetch_time', Date.now().toString());
-    const promises = [];
-
-    for (const key of state.sectionOrder) {
-        if (!state.expanded[key]) continue;
-        const tickers = state.watchlists[key].tickers;
-        if (tickers.length === 0) continue;
-
-        const chunkSize = 10;
-        const fetchFunc = key === 'kr' ? fetchNaverFinance : fetchYahooFinance;
-
-        for (let i = 0; i < tickers.length; i += chunkSize) {
-            const chunk = tickers.slice(i, i + chunkSize);
-            const p = fetchFunc(chunk).then(data => {
-                updateDOMWithData(data);
-                markMissingData(chunk, data);
-            }).catch(err => {
-                markAllError(chunk, err.message);
-            });
-            promises.push(p);
+function executeRemoveTicker(ticker) {
+    let sectionIdToUpdate = null;
+    for (const sectionId in state.watchlists) {
+        if (state.watchlists[sectionId].tickers.includes(ticker)) {
+            state.watchlists[sectionId].tickers = state.watchlists[sectionId].tickers.filter(t => t !== ticker);
+            sectionIdToUpdate = sectionId;
+            break;
         }
     }
-    await Promise.all(promises);
+    saveWatchlists();
+    const sid = getSafeId(ticker); const row = document.getElementById(`row-${sid}`);
+    if (row) row.remove(); rowNodes.delete(ticker);
+    if(sectionIdToUpdate) checkEmptyState(sectionIdToUpdate);
+    fetchNews(); 
+}
+
+function cacheRowNodes(ticker) {
+    const sid = getSafeId(ticker);
+    rowNodes.set(ticker, {
+        row: document.getElementById('row-' + sid), symbol: document.getElementById('symbol-' + sid),
+        name: document.getElementById('name-' + sid), price: document.getElementById('price-' + sid),
+        extPrice: document.getElementById('ext-price-' + sid), change: document.getElementById('change-' + sid),
+        pct: document.getElementById('pct-' + sid), vol: document.getElementById('vol-' + sid),
+        cap: document.getElementById('cap-' + sid), range: document.getElementById('range-' + sid)
+    });
+}
+
+function initDragAndDrop() {
+    const dashboard = document.getElementById('dashboard');
+    if (!dashboard) return;
+    
+    Sortable.create(dashboard, {
+        handle: '.drag-handle', animation: 200, ghostClass: 'sortable-ghost', delay: 100, delayOnTouchOnly: true,
+        onEnd: function () {
+            state.sectionOrder = Array.from(dashboard.querySelectorAll('.section-container')).map(el => el.dataset.id);
+            localStorage.setItem('marketdash_sectionOrder', JSON.stringify(state.sectionOrder));
+        }
+    });
+
+    state.sectionOrder.forEach(sectionId => {
+        const tbody = document.getElementById(`tbody-${sectionId}`);
+        if (tbody) {
+            Sortable.create(tbody, {
+                handle: '.drag-handle', animation: 200, ghostClass: 'sortable-ghost', delay: 100, delayOnTouchOnly: true,
+                onEnd: function () {
+                    state.watchlists[sectionId].tickers = Array.from(tbody.querySelectorAll('tr')).map(el => el.dataset.ticker);
+                    saveWatchlists(); checkEmptyState(sectionId);
+                }
+            });
+        }
+    });
+}
+
+function toggleSection(e, sectionId) {
+    if (e.target.closest('.action-icon-btn') && !e.target.closest('.toggle-btn')) return; 
+    const container = document.getElementById(`section-${sectionId}`);
+    if (!container) return;
+    container.classList.toggle('collapsed');
+    state.expanded[sectionId] = !container.classList.contains('collapsed');
+    localStorage.setItem('marketdash_expanded', JSON.stringify(state.expanded));
+    if (state.expanded[sectionId]) forceRefresh();
+}
+
+function toggleAddForm(e, sectionId) {
+    e.stopPropagation();
+    const container = document.getElementById(`section-${sectionId}`);
+    if (!container) return;
+    const form = container.querySelector('.add-ticker-form');
+    if (container.classList.contains('collapsed')) {
+        container.classList.remove('collapsed');
+        state.expanded[sectionId] = true;
+        localStorage.setItem('marketdash_expanded', JSON.stringify(state.expanded));
+        forceRefresh();
+    }
+    if (form) form.classList.toggle('active');
+    container.classList.toggle('edit-mode');
+    if (form && form.classList.contains('active')) form.querySelector('input').focus();
+}
+
+let targetTickerToDelete = null;
+function confirmRemoveTicker(ticker) {
+    targetTickerToDelete = ticker;
+    const delTarget = document.getElementById('delete-target-ticker');
+    if (delTarget) delTarget.textContent = ticker;
+    const delModal = document.getElementById('delete-modal');
+    if (delModal) delModal.classList.add('active');
+    const btn = document.getElementById('confirm-delete-btn');
+    if (btn) {
+        btn.onclick = () => {
+            if (targetTickerToDelete) { executeRemoveTicker(targetTickerToDelete); closeDeleteModal(); }
+        };
+    }
+}
+function closeDeleteModal() { targetTickerToDelete = null; document.getElementById('delete-modal').classList.remove('active'); }
+
+function toggleSettingsMenu() { const el = document.getElementById('settings-dropdown'); if (el) el.classList.toggle('active'); }
+function applyTheme() { document.documentElement.setAttribute('data-theme', state.theme); }
+function toggleThemeDropdown() { state.theme = state.theme === 'dark' ? 'light' : 'dark'; localStorage.setItem('marketdash_theme', state.theme); applyTheme(); toggleSettingsMenu(); }
+function exportSettings() {
+    const data = { watchlists: state.watchlists, sectionOrder: state.sectionOrder, expanded: state.expanded, theme: state.theme };
+    const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+    const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url;
+    a.download = `1up_finance_settings_${new Date().toISOString().slice(0,10)}.json`; a.click();
+    URL.revokeObjectURL(url); toggleSettingsMenu();
+}
+function triggerImport() { const el = document.getElementById('import-file'); if(el) el.click(); toggleSettingsMenu(); }
+function importSettings(event) {
+    const file = event.target.files[0]; if (!file) return; const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
+            const data = JSON.parse(e.target.result);
+            if (data.watchlists && data.sectionOrder) {
+                localStorage.setItem('marketdash_watchlists', JSON.stringify(data.watchlists));
+                localStorage.setItem('marketdash_sectionOrder', JSON.stringify(data.sectionOrder));
+                if(data.expanded) localStorage.setItem('marketdash_expanded', JSON.stringify(data.expanded));
+                if(data.theme) localStorage.setItem('marketdash_theme', data.theme);
+                alert('Settings successfully restored.'); location.reload(); 
+            } else alert('Invalid settings file.');
+        } catch (err) { alert('File read error occurred.'); }
+    };
+    reader.readAsText(file); event.target.value = ''; 
+}
+function resetToDefaults() {
+    toggleSettingsMenu();
+    if(confirm("Reset all settings to default?")) {
+        localStorage.clear(); state.watchlists = JSON.parse(JSON.stringify(DEFAULT_WATCHLISTS));
+        state.sectionOrder = ['indicators', 'kr', 'us']; renderLayout(); forceRefresh();
+    }
+}
+function openAboutModal() { toggleSettingsMenu(); const el = document.getElementById('about-modal'); if (el) el.classList.add('active'); }
+function closeAboutModal() { const el = document.getElementById('about-modal'); if (el) el.classList.remove('active'); }
+function saveWatchlists() { localStorage.setItem('marketdash_watchlists', JSON.stringify(state.watchlists)); }
+
+// FetchData 
+async function fetchData() {
+    localStorage.setItem('marketdash_last_fetch_time', Date.now().toString());
+    const fetchPromises = []; 
+
+    for (const sectionId of state.sectionOrder) {
+        if (!state.expanded[sectionId]) continue;
+        const symbols = state.watchlists[sectionId].tickers;
+        if (symbols.length === 0) continue;
+
+        const chunkSize = 100; 
+        const fetchFunc = sectionId === 'kr' ? fetchNaverFinance : fetchYahooFinance;
+
+        for (let i = 0; i < symbols.length; i += chunkSize) {
+            const chunk = symbols.slice(i, i + chunkSize);
+            const promise = fetchFunc(chunk)
+                .then(results => {
+                    updateDOMWithData(results); 
+                    markMissingData(chunk, results);
+                })
+                .catch(error => { 
+                    markAllError(chunk, error.message); 
+                });
+            fetchPromises.push(promise);
+        }
+    }
+    await Promise.all(fetchPromises);
     fetchNews();
 }
 
-function updateDOMWithData(dataArray) {
+function forceRefresh() { 
+    state.countdown = 60; 
+    const el = document.getElementById('countdown');
+    if (el) el.textContent = state.countdown;
+    localStorage.setItem('marketdash_last_fetch_time', '0'); 
+    state.lastNewsFetch = 0; 
+    fetchData(); 
+}
+
+function startTimer() {
+    if (state.intervalId) clearInterval(state.intervalId);
+    state.intervalId = setInterval(() => {
+        state.countdown--;
+        if (state.countdown <= 0) forceRefresh(); else {
+            const el = document.getElementById('countdown');
+            if (el) el.textContent = state.countdown;
+        }
+    }, 1000);
+}
+
+// Update DOM 
+function updateDOMWithData(quotes) {
     requestAnimationFrame(() => {
-        dataArray.forEach(data => {
-            const symbol = data.symbol;
-            const nodes = rowNodes.get(symbol);
+        quotes.forEach(quote => {
+            const ticker = quote.symbol; const nodes = rowNodes.get(ticker);
             if (!nodes || !nodes.row) return;
 
-            // 1. 기본값(정규장) 설정
-            let mainPrice = data.regularMarketPrice || 0;
-            let mainChange = data.regularMarketChange || 0;
-            let mainPct = data.regularMarketChangePercent || 0;
-            let extHtml = '';
-
-            // 2. 연장장(프리/애프터) 데이터 수집 (변동액 'change' 속성 추가)
-            let extData = [];
-            if (data.preMarketPrice) {
-                extData.push({ price: data.preMarketPrice, change: data.preMarketChange || 0, pct: data.preMarketChangePercent || 0, label: '🔜', time: data.preMarketTime || 0 });
-            }
-            if (data.postMarketPrice) {
-                extData.push({ price: data.postMarketPrice, change: data.postMarketChange || 0, pct: data.postMarketChangePercent || 0, label: '🔚', time: data.postMarketTime || 0 });
-            }
-
-            // 3. 야후 파이낸스 상태값(marketState) 확인 및 스왑(Swap) 로직
-            const isRegularMarket = data.marketState === 'REGULAR'; // 현재 정규장 여부
-
-            if (!isRegularMarket && extData.length > 0) {
-                // 장중이 아닐 때: 가장 최근 연장장 데이터를 메인으로 올림
-                const latestExt = extData.reduce((prev, curr) => prev.time > curr.time ? prev : curr);
-                mainPrice = latestExt.price;
-                mainChange = latestExt.change;
-                mainPct = latestExt.pct;
-
-                // 하단 보조 영역에는 정규장 데이터(종가) 표시
-                const regIsUp = (data.regularMarketChange || 0) >= 0;
-                const regColor = regIsUp ? 'up' : 'down';
-                const regSign = regIsUp ? '+' : '';
-                extHtml = `<span class="ext-label">종가</span> ${formatNum(data.regularMarketPrice)} <span class="${regColor}">(${regSign}${formatPct(data.regularMarketChangePercent || 0)}%)</span>`;
-            } else if (extData.length > 0) {
-                // 장중이거나 스왑 조건이 아닐 때: 기존처럼 연장장 데이터를 하단에 표시
-                const latestExt = extData.reduce((prev, curr) => prev.time > curr.time ? prev : curr);
-                const extIsUp = latestExt.pct >= 0;
-                const extColor = extIsUp ? 'up' : 'down';
-                const extSign = extIsUp ? '+' : '';
-                extHtml = `<span class="ext-label">${latestExt.label}</span> ${formatNum(latestExt.price)} <span class="${extColor}">(${extSign}${formatPct(latestExt.pct)}%)</span>`;
-            }
-
-            // 4. UI 색상 및 애니메이션 처리 (메인 데이터 기준)
-            const isUp = mainChange >= 0;
-            const colorClass = isUp ? 'up' : 'down';
-            const sign = isUp ? '+' : '';
-            const arrow = isUp ? '▲' : '▼';
-
-            const prevPriceStr = nodes.price.getAttribute('data-price');
-            const prevPrice = prevPriceStr ? parseFloat(prevPriceStr) : null;
-
-            if (prevPrice !== null && prevPrice !== mainPrice) {
+            const price = quote.regularMarketPrice || 0; const change = quote.regularMarketChange || 0;
+            const pct = quote.regularMarketChangePercent || 0; const isUp = change >= 0;
+            const colorClass = isUp ? 'up' : 'down'; const sign = isUp ? '+' : ''; const arrow = isUp ? '▲' : '▼';
+            
+            const oldPriceStr = nodes.price.getAttribute('data-price');
+            const oldPrice = oldPriceStr ? parseFloat(oldPriceStr) : null;
+            if (oldPrice !== null && oldPrice !== price) {
                 nodes.row.classList.remove('flash-up', 'flash-down');
                 setTimeout(() => {
                     if (nodes && nodes.row) {
-                        nodes.row.classList.add(mainPrice > prevPrice ? 'flash-up' : 'flash-down');
+                        nodes.row.classList.add(price > oldPrice ? 'flash-up' : 'flash-down');
                     }
                 }, 10);
             }
+            nodes.price.setAttribute('data-price', price);
+            nodes.name.textContent = quote.shortName || quote.longName || ticker;
+            nodes.price.textContent = formatNum(price);
+            
+            let extOptions = [];
+            if (quote.preMarketPrice) extOptions.push({ price: quote.preMarketPrice, pct: quote.preMarketChangePercent || 0, label: '🔜', time: quote.preMarketTime || 0 });
+            if (quote.postMarketPrice) extOptions.push({ price: quote.postMarketPrice, pct: quote.postMarketChangePercent || 0, label: '🔚', time: quote.postMarketTime || 0 });
 
-            // 5. DOM 업데이트 (캐싱된 nodes 객체 사용)
-            nodes.price.setAttribute('data-price', mainPrice);
-            nodes.name.textContent = data.shortName || data.longName || symbol;
-            nodes.price.textContent = formatNum(mainPrice);
-            nodes.extPrice.innerHTML = extHtml; // 스왑된 하단 영역 주입
-
-            nodes.change.innerHTML = `<span class="${colorClass}">${sign}${formatNum(mainChange)}</span>`;
-            nodes.pct.innerHTML = `<span class="badge ${colorClass}"><span class="arrow">${arrow}</span>${formatPct(Math.abs(mainPct))}%</span>`;
-            nodes.vol.textContent = formatCompact(data.regularMarketVolume);
-            nodes.cap.textContent = formatCompact(data.marketCap);
-
-            if (data.fiftyTwoWeekLow && data.fiftyTwoWeekHigh) {
-                nodes.range.textContent = formatNum(data.fiftyTwoWeekLow) + ' - ' + formatNum(data.fiftyTwoWeekHigh);
-            } else {
-                nodes.range.textContent = '-';
+            let extPrice, extChangePct, extLabel;
+            if (extOptions.length > 0) {
+                const latestExt = extOptions.reduce((prev, current) => (prev.time > current.time) ? prev : current);
+                extPrice = latestExt.price; extChangePct = latestExt.pct; extLabel = latestExt.label;
             }
+
+            if (extPrice && extLabel) {
+                const isExtUp = extChangePct >= 0; const extColorClass = isExtUp ? 'up' : 'down'; const extSign = isExtUp ? '+' : '';
+                nodes.extPrice.innerHTML = `<span class="ext-label">${extLabel}</span> ${formatNum(extPrice)} <span class="${extColorClass}">(${extSign}${formatPct(extChangePct)}%)</span>`;
+            } else nodes.extPrice.innerHTML = '';
+            
+            nodes.change.innerHTML = `<span class="${colorClass}">${sign}${formatNum(change)}</span>`;
+            nodes.pct.innerHTML = `<span class="badge ${colorClass}"><span class="arrow">${arrow}</span>${formatPct(Math.abs(pct))}%</span>`;
+            nodes.vol.textContent = formatCompact(quote.regularMarketVolume); nodes.cap.textContent = formatCompact(quote.marketCap);
+            if (quote.fiftyTwoWeekLow && quote.fiftyTwoWeekHigh) nodes.range.textContent = `${formatNum(quote.fiftyTwoWeekLow)} - ${formatNum(quote.fiftyTwoWeekHigh)}`; else nodes.range.textContent = '-';
         });
     });
 
-    dataArray.forEach(data => {
-        memoryPriceCache[data.symbol] = data;
-    });
+    // --- [최적화] 직접 로컬 스토리지에 쓰지 않고 메모리 변수만 업데이트 후 Debounce 함수 호출 ---
+    quotes.forEach(q => { memoryPriceCache[q.symbol] = q; });
     saveCacheToStorage();
 }
 
-// ... 포맷터 등 기타 유틸리티 (생략 없이 사용 가능)
-function formatNum(val) {
-    if (val === undefined || val === null || isNaN(val)) return '-';
-    const abs = Math.abs(val);
-    let dec = 0;
-    if (abs > 0 && abs < 1) dec = 4;
-    else if (abs > 1000) dec = 0;
-    return new Intl.NumberFormat('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec }).format(val);
+function markMissingData(requestedSymbols, results) {
+    const returnedSymbols = new Set(results.map(r => r.symbol));
+    requestedSymbols.forEach(sym => { if (!returnedSymbols.has(sym)) setErrorState(sym, 'No Data'); });
+}
+function markAllError(symbols, errMsg) { symbols.forEach(sym => setErrorState(sym, errMsg)); }
+
+function setErrorState(ticker, msg) {
+    const nodes = rowNodes.get(ticker); if (!nodes) return;
+    requestAnimationFrame(() => {
+        nodes.name.textContent = 'Error'; nodes.price.innerHTML = `<span class="error-text">${escapeHTML(msg)}</span>`;
+        nodes.extPrice.innerHTML = ''; nodes.change.innerHTML = ''; nodes.pct.innerHTML = '';
+        nodes.vol.textContent = '-'; nodes.cap.textContent = '-'; nodes.range.textContent = '-';
+    });
 }
 
-function formatPct(val) {
-    if (val === undefined || val === null || isNaN(val)) return '-';
-    return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(val);
+function formatNum(num) {
+    if (num === undefined || num === null || isNaN(num)) return '-';
+    const abs = Math.abs(num); let decimals = 2;
+    if (abs > 0 && abs < 0.1) decimals = 4; else if (abs > 10000) decimals = 0; 
+    return new Intl.NumberFormat('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals }).format(num);
+}
+function formatPct(num) {
+    if (num === undefined || num === null || isNaN(num)) return '-';
+    return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num);
+}
+function formatCompact(num) {
+    if (!num || isNaN(num)) return '-';
+    return new Intl.NumberFormat('en-US', { notation: 'compact', compactDisplay: 'short', maximumFractionDigits: 2 }).format(num);
 }
 
-function formatCompact(val) {
-    if (!val || isNaN(val)) return '-';
-    return new Intl.NumberFormat('en-US', { notation: 'compact', compactDisplay: 'short', maximumFractionDigits: 2 }).format(val);
+// --- NEWS FETCHING & RENDERING LOGIC ---
+async function fetchNews() {
+    const spinner = document.getElementById('news-spinner');
+    const container = document.getElementById('news-container');
+    
+    if (spinner) spinner.style.display = 'block';
+
+    let allTickers = [];
+    Object.values(state.watchlists).forEach(section => {
+        allTickers = allTickers.concat(section.tickers);
+    });
+
+    if (!container) return; 
+
+    if (allTickers.length === 0) {
+        container.innerHTML = '<div class="empty-state"><p>No tickers to fetch news for.</p></div>';
+        if (spinner) spinner.style.display = 'none';
+        return;
+    }
+
+    try {
+        const url = `${NEWS_GAS_PROXY_URL}?symbols=${encodeURIComponent(allTickers.join(','))}&t=${Date.now()}`;
+        const response = await fetch(url);
+        
+        if (!response.ok) throw new Error("Network response was not ok");
+        const newsData = await response.json();
+        
+        state.lastNewsFetch = Date.now();
+        renderNews(newsData);
+    } catch (error) {
+        console.error("News fetch error:", error);
+        container.innerHTML = `<div class="empty-state"><p class="error-text">Failed to load news.</p></div>`;
+    } finally {
+        if (spinner) spinner.style.display = 'none';
+    }
 }
 
-// 초기화 실행
+function renderNews(newsList) {
+    const container = document.getElementById('news-container');
+    if (!container) return;
+
+    if (!newsList || newsList.length === 0) {
+        container.innerHTML = '<div class="empty-state"><p>No recent news found.</p></div>';
+        return;
+    }
+
+    const now = Date.now();
+    const kstFormatter = new Intl.DateTimeFormat('ko-KR', {
+        timeZone: 'Asia/Seoul',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+    });
+
+    const html = newsList.map(news => {
+        const diffMins = Math.floor((now - news.time) / 60000);
+        let timeDisplay = '';
+        
+        // 10분 미만 기사 -> n분 전 표기 / 10분 이상 기사 -> 한국 시각 고유 출고 시간(HH:MM) 표기
+        if (diffMins >= 0 && diffMins < 10) {
+            timeDisplay = diffMins === 0 ? '방금' : `${diffMins}분 전`;
+        } else {
+            timeDisplay = kstFormatter.format(new Date(news.time));
+        }
+
+        const sourceTagClass = news.source === 'Naver' ? 'tag-naver' : 'tag-yahoo';
+        const tickerLabel = news.ticker ? news.ticker : news.source; 
+
+        return `
+            <a href="${news.link}" target="_blank" rel="noopener noreferrer" class="news-item">
+                <div class="news-title">
+                    ${escapeHTML(news.title)} 
+                </div>
+                <div class="news-meta">
+                    <span class="news-time ${diffMins < 10 ? 'recent' : ''}">${timeDisplay}</span>
+                    <span class="news-tag ${sourceTagClass}">${escapeHTML(tickerLabel)} - ${escapeHTML(news.source)}</span>
+                </div>
+            </a>
+        `;
+    }).join('');
+
+    container.innerHTML = html;
+}
+
 document.addEventListener('DOMContentLoaded', init);
