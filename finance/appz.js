@@ -7,7 +7,7 @@ const DEFAULT_WATCHLISTS = {
     us: { title: '🇺🇸 US', tickers: ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'TSLA', 'META'] }
 };
 
-const GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbxnzxTjNkEC-ozjSzwn78UF4NAF_-BbmoafWZgaTMVLNL-kO6AKX12A9VSpNZYRspu7/exec";
+const GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbxc8Q5iI7WxZurtV-1FDjTWKPUx_i049HSBAap2AyKYSvs8QMRHD3ZTa3xqfu0tJ1Za/exec";
 const NAVER_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbygC4GrK-2abZUpWWCxD4ZVfFVzd-gjbGvyYBTWNP26J7zwkwbrWwttXNC-geENS1Nykw/exec"; 
 const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbwSD8MOLPrYjwTBVQX_Tq6pu-gTHlOeR7p0hUY2pHGACNc2NA6f4zICduC05ypO_EN6/exec"; 
 
@@ -754,43 +754,54 @@ function updateDOMWithData(quotes) {
             const nodes = rowNodes.get(ticker);
             if (!nodes || !nodes.row) return;
 
-            // 1. 기본 정규장(종가 및 장중 현재가) 데이터 세팅
+            // 1. 기본 정규장 데이터 세팅
             const regPrice = quote.regularMarketPrice || 0; 
             const regChange = quote.regularMarketChange || 0;
             const regPct = quote.regularMarketChangePercent || 0; 
 
             // 2. 장전(Pre) 데이터 준비
             let preData = null;
-            if (quote.preMarketPrice) {
+            if (quote.preMarketPrice !== undefined && quote.preMarketPrice !== null) {
                 const change = quote.preMarketChange !== undefined ? quote.preMarketChange : (quote.preMarketPrice - regPrice);
-                const pct = quote.preMarketChangePercent !== undefined ? quote.preMarketChangePercent : (change / regPrice * 100);
+                const pct = quote.preMarketChangePercent !== undefined ? quote.preMarketChangePercent : (regPrice ? change / regPrice * 100 : 0);
                 preData = { price: quote.preMarketPrice, change: change, pct: pct, label: 'pre', time: quote.preMarketTime || 0 };
             }
 
             // 3. 장후(Post) 데이터 준비
             let postData = null;
-            if (quote.postMarketPrice) {
+            if (quote.postMarketPrice !== undefined && quote.postMarketPrice !== null) {
                 const change = quote.postMarketChange !== undefined ? quote.postMarketChange : (quote.postMarketPrice - regPrice);
-                const pct = quote.postMarketChangePercent !== undefined ? quote.postMarketChangePercent : (change / regPrice * 100);
+                const pct = quote.postMarketChangePercent !== undefined ? quote.postMarketChangePercent : (regPrice ? change / regPrice * 100 : 0);
                 postData = { price: quote.postMarketPrice, change: change, pct: pct, label: 'post', time: quote.postMarketTime || 0 };
             }
 
-            // 4. 현재 시장 상태(State) 명확히 판별
-            const mState = (quote.marketState || 'REGULAR').toUpperCase();
-            let targetState = 'REGULAR'; // 기본값: 장중
+            // ★ 4. 절대 시간(Timestamp) 기반 상태 판별 로직 ★
+            // 야후 API의 문자열이 꼬였거나 전송되지 않았을 경우, 가장 마지막 거래 시간을 찾아 강제로 상태를 변경합니다.
+            const regTime = quote.regularMarketTime || 0;
+            const preTime = preData ? preData.time : 0;
+            const postTime = postData ? postData.time : 0;
+            
+            let targetState = 'REGULAR';
+            const mState = (quote.marketState || '').toUpperCase();
 
+            // API가 내려준 상태값을 우선 확인
             if (mState.includes('PRE') && preData) {
                 targetState = 'PRE';
             } else if (mState.includes('POST') && postData) {
                 targetState = 'POST';
             } else if (mState === 'CLOSED') {
-                // 주말이나 완전한 장 마감 상태일 때, 가장 마지막으로 열렸던 연장장이 무엇인지 확인
-                if (preData && postData) {
-                    targetState = preData.time > postData.time ? 'PRE' : 'POST';
-                } else if (postData) {
-                    targetState = 'POST';
-                } else if (preData) {
-                    targetState = 'PRE';
+                if (preData && postData) targetState = preTime > postTime ? 'PRE' : 'POST';
+                else if (postData) targetState = 'POST';
+                else if (preData) targetState = 'PRE';
+            } else {
+                // 상태값이 없거나 오류로 'REGULAR'로 고정되었을 때 -> 최신 시간을 수학적으로 비교
+                const maxTime = Math.max(regTime, preTime, postTime);
+                if (maxTime > 0) {
+                    if (maxTime === postTime && postTime > regTime && postData) {
+                        targetState = 'POST';
+                    } else if (maxTime === preTime && preTime > regTime && preData) {
+                        targetState = 'PRE';
+                    }
                 }
             }
 
@@ -801,13 +812,13 @@ function updateDOMWithData(quotes) {
             let mainIcon = ''; 
             let subHtml = '';
 
-            // ★ 6. 요청하신 3가지 시간대별 완벽 분기 처리 ★
+            // 6. 요청하신 3가지 시간대별 완벽 분기 처리
             if (targetState === 'PRE') {
                 // [장전 시간대] 메인: Pre / 하단: 전일 종가 Close
                 mainPrice = preData.price;
                 mainChange = preData.change;
                 mainPct = preData.pct;
-                mainIcon = preData.label + ' '; // "pre "
+                mainIcon = preData.label + ' '; 
                 
                 const regIsUp = regChange >= 0;
                 const regColor = regIsUp ? 'up' : 'down';
@@ -819,7 +830,7 @@ function updateDOMWithData(quotes) {
                 mainPrice = postData.price;
                 mainChange = postData.change;
                 mainPct = postData.pct;
-                mainIcon = postData.label + ' '; // "post "
+                mainIcon = postData.label + ' '; 
                 
                 const regIsUp = regChange >= 0;
                 const regColor = regIsUp ? 'up' : 'down';
@@ -827,7 +838,7 @@ function updateDOMWithData(quotes) {
                 subHtml = `<span class="ext-label">close</span> ${formatNum(regPrice)} <span class="${regColor}">(${regSign}${formatPct(regPct)}%)</span>`;
                 
             } else {
-                // [장중 시간대] 메인: 현재 시장 가격(REGULAR) / 하단: 당일 Pre (존재할 경우에만)
+                // [장중 시간대] 메인: 현재 시장 가격 / 하단: 당일 Pre
                 mainPrice = regPrice;
                 mainChange = regChange;
                 mainPct = regPct;
