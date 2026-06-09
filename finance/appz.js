@@ -810,7 +810,7 @@ function updateDOMWithData(quotes) {
             let subHtml = '';
 
             // ★ 메인 영역의 pre/post에 하단 close와 동일한 뱃지 스타일 적용 (css 분리 없이 직접 주입)
-            const labelStyle = "color: var(--text-secondary); font-size: 0.65rem; padding: 0.1rem 0.25rem; background: var(--input-bg); border-radius: 3px; margin-right: 0.3rem; vertical-align: middle; font-weight: 500;";
+            const labelStyle = "color: var(--text-secondary); font-size: 0.55rem; padding: 0.1rem 0.25rem; background: var(--input-bg); border-radius: 3px; margin-right: 0.3rem; vertical-align: middle; font-weight: 500;";
 
             // 6. 요청하신 3가지 시간대별 완벽 분기 처리
             if (targetState === 'PRE') {
