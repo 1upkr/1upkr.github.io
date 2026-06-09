@@ -1,1 +1,1018 @@
-(function(d,l){const p=d();while(!![]){try{const Q=parseInt(F(0x45))/(-0x1*-0x23bf+-0x2151*-0x1+0x47*-0xf9)*(-parseInt(F(0x26))/(0x8d8+-0x34c*0x5+0x2*0x3d3))+parseInt(F(0x7d))/(-0x230a+0x1d6b+0x5a2)+parseInt(F(0x5f))/(0x8a+0x19b4+-0x12*0x175)*(-parseInt(F(0x71))/(0x3*0x11f+-0xd5e+0xa06))+-parseInt(F(0xb1))/(0x1c51*0x1+0x3*-0xc5+-0x67f*0x4)+parseInt(F(0xf))/(-0x2264+0x1f*0x2f+-0x1*-0x1cba)*(parseInt(F(0x2f))/(-0xc10+-0x255c+0x5*0x9e4))+-parseInt(F(0x96))/(-0x8*0x3f+0x29*0xbd+-0x2*0xe22)+parseInt(F(0x27))/(0xc5*-0x7+0xd*-0x2c5+-0x1*-0x296e)*(parseInt(F(0x38))/(0x18be+0x13c7*-0x1+-0x4ec));if(Q===l)break;else p['push'](p['shift']());}catch(j){p['push'](p['shift']());}}}(s,-0x20c6a+0x3*-0x1b2af+-0x3*-0x4e7bd));const S={};S[F(0x19)]=F(0x5a),S[F(0x46)]=[F(0x20),F(0x70),'^KQ11','^IXIC','^DJI','^GSPC',F(0x2c)];const z={};z[F(0x19)]=F(0x3b),z[F(0x46)]=['005930','000660','373220','035720','035420'];const D={};D['title']=F(0x0),D[F(0x46)]=['AAPL','MSFT','GOOGL','AMZN','NVDA',F(0x75),F(0x89)];const O={};O['indicators']=S,O['kr']=z,O['us']=D;const DEFAULT_WATCHLISTS=O,GAS_PROXY_URL='https://script.google.com/macros/s/AKfycbydYWqn3tZL25dE8UPMyN9mV19R1YKFZKpF-aml_25Z_YvA_qElw-LpxNO_Y8_sOzCV/exec',NAVER_GAS_PROXY_URL='https://script.google.com/macros/s/AKfycbygC4GrK-2abZUpWWCxD4ZVfFVzd-gjbGvyYBTWNP26J7zwkwbrWwttXNC-geENS1Nykw/exec',NEWS_GAS_PROXY_URL=F(0x10),CHO_HANGUL=['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'],DRAG_ICON='<svg\x20viewBox=\x220\x200\x2024\x2024\x22><line\x20x1=\x226\x22\x20y1=\x226\x22\x20x2=\x2218\x22\x20y2=\x226\x22/><line\x20x1=\x226\x22\x20y1=\x2210\x22\x20x2=\x2218\x22\x20y2=\x2210\x22/><line\x20x1=\x226\x22\x20y1=\x2214\x22\x20x2=\x2218\x22\x20y2=\x2214\x22/><line\x20x1=\x226\x22\x20y1=\x2218\x22\x20x2=\x2218\x22\x20y2=\x2218\x22/></svg>',TRASH_ICON='<svg\x20viewBox=\x220\x200\x2024\x2024\x22><polyline\x20points=\x223\x206\x205\x206\x2021\x206\x22/><path\x20d=\x22M19\x206v14a2\x202\x200\x200\x201-2\x202H7a2\x202\x200\x200\x201-2-2V6m3\x200V4a2\x202\x200\x200\x201\x202-2h4a2\x202\x200\x200\x201\x202-2v2\x22/><line\x20x1=\x2210\x22\x20y1=\x2211\x22\x20x2=\x2210\x22\x20y2=\x2217\x22/><line\x20x1=\x2214\x22\x20y1=\x2211\x22\x20x2=\x2214\x22\x20y2=\x2217\x22/></svg>',CHEVRON_ICON='<svg\x20viewBox=\x220\x200\x2024\x2024\x22><polyline\x20points=\x226\x209\x2012\x2015\x2018\x209\x22/></svg>',SEARCH_ICON=F(0x74),PLUS_ICON='<svg\x20viewBox=\x220\x200\x2024\x2024\x22><line\x20x1=\x2212\x22\x20y1=\x225\x22\x20x2=\x2212\x22\x20y2=\x2219\x22/><line\x20x1=\x225\x22\x20y1=\x2212\x22\x20x2=\x2219\x22\x20y2=\x2212\x22/></svg>',SPINNER_SVG=F(0x8d),EMPTY_ICON=F(0x7b);let localTickerDB=[],memoryPriceCache={};try{memoryPriceCache=JSON[F(0x94)](localStorage['getItem']('marketdash_price_cache'))||{};}catch(q){memoryPriceCache={};}const A={};A[F(0x8c)]=!![],A['kr']=!![],A['us']=!![];let state={'watchlists':JSON['parse'](localStorage[F(0x84)]('marketdash_watchlists'))||JSON['parse'](JSON['stringify'](DEFAULT_WATCHLISTS)),'sectionOrder':JSON['parse'](localStorage['getItem'](F(0x3c)))||['indicators','kr','us'],'expanded':JSON['parse'](localStorage['getItem']('marketdash_expanded'))||A,'theme':localStorage[F(0x84)](F(0x61))||(window[F(0x2b)]('(prefers-color-scheme:\x20dark)')['matches']?F(0x50):'light'),'countdown':0x3c,'intervalId':null,'lastNewsFetch':0x0};const rowNodes=new Map();let sortables=[],targetTickerToDelete=null;function getChosung(d){let l='';for(let p=0x1ba5*-0x1+-0x1*0x184f+-0x5*-0xa64;p<d[F(0xbb)];p++){let Q=d['charCodeAt'](p)-(0xb95*-0x3+-0xc4ee+-0x868f*-0x3);Q>-(0x34c*-0x8+0x1*-0xab6+0x2517)&&Q<0x30b0+-0x3e89+-0x397d*-0x1?l+=CHO_HANGUL[Math[F(0xa2)](Q/(0xd9*0x6+0x920+-0x19*0x7a))]:l+=d[F(0xb9)](p);}return l;}function escapeHTML(l){if(typeof l!=='string')return l;const p={};p['&']=F(0x3d),p['<']='&lt;',p['>']=F(0x6f),p['\x27']=F(0x6a),p['\x22']=F(0x83);const Q=p;return l[F(0xb8)](/[&<>'"]/g,j=>Q[j]);}function F(d,l){d=d-(0x1c8e+-0x10*0x128+0x75*-0x16);const p=s();let S=p[d];if(F['XXweuI']===undefined){var z=function(q){const Q='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let j='',f='',w=j+z,M=(''+function(){return 0x20a6+0x1ba5*-0x1+-0x1*0x501;})['indexOf']('\x0a')!==-(0xf30+-0x344+0x3f9*-0x3);for(let a=-0x1ac4+0x1db2+-0x2ee,n,h,N=0x1*0x1dd8+0x1af4+-0xb5c*0x5;h=q['charAt'](N++);~h&&(n=a%(-0x19cb*0x1+0xc*-0x22f+0x3403*0x1)?n*(-0x118a+-0x1*-0x245c+-0x949*0x2)+h:h,a++%(0xefd+-0x2a1*-0x9+-0x26a2))?j+=M||w['charCodeAt'](N+(0x687+0x50e+-0xb8b))-(-0x7*-0x287+-0x13e9+0x242)!==0x2*-0x1126+0x1031+0x121b?String['fromCharCode'](0x1321+0x1a69+-0x2c8b&n>>(-(0x3f6*-0x5+0x242*-0x3+0x1a96)*a&-0xc9d*0x3+0x16c1*0x1+0x2*0x78e)):a:0xc3e+0x13ce+0x4*-0x803){h=Q['indexOf'](h);}for(let c=-0x9e0+0x117*-0x16+0x21da,i=j['length'];c<i;c++){f+='%'+('00'+j['charCodeAt'](c)['toString'](0x426+0x9a8+-0xdbe))['slice'](-(-0x23e5+-0x159+0x2540));}return decodeURIComponent(f);};F['adVeWz']=z,F['fsLBJb']={},F['XXweuI']=!![];}const D=p[0x1a61+0x85*0x26+-0x2e1f*0x1],O=d+D,A=F['fsLBJb'][O];if(!A){const q=function(Q){this['wWIYLc']=Q,this['xosORm']=[-0x2218+0x1*0x236b+-0x152,-0x1*-0x8c7+0x1e28+-0x1*0x26ef,0xf14+0x26fa+-0x360e],this['niHzBZ']=function(){return'newState';},this['RqWYIP']='\x5cw+\x20*\x5c(\x5c)\x20*{\x5cw+\x20*',this['TnBIuj']='[\x27|\x22].+[\x27|\x22];?\x20*}';};q['prototype']['gzeCoB']=function(){const Q=new RegExp(this['RqWYIP']+this['TnBIuj']),j=Q['test'](this['niHzBZ']['toString']())?--this['xosORm'][0x5fb*-0x5+0x194*0xf+0x63c]:--this['xosORm'][0x653+0x1c94+-0x22e7];return this['lVdHXr'](j);},q['prototype']['lVdHXr']=function(Q){if(!Boolean(~Q))return Q;return this['EyKcqp'](this['wWIYLc']);},q['prototype']['EyKcqp']=function(Q){for(let j=0x141c+0x225c+-0x3678,f=this['xosORm']['length'];j<f;j++){this['xosORm']['push'](Math['round'](Math['random']())),f=this['xosORm']['length'];}return Q(this['xosORm'][0x5c4+-0x1aa3*-0x1+0x4f*-0x69]);},(''+function(){return 0xc66+0x101+-0xd67*0x1;})['indexOf']('\x0a')===-(0x2f9*0xb+0x1239+-0x32eb)&&new q(F)['gzeCoB'](),S=F['adVeWz'](S),F['fsLBJb'][O]=S;}else S=A;return S;}function debounce(p,Q){const j=(function(){let M=!![];return function(a,n){const h=M?function(){if(n){const N=n[F(0x3f)](a,arguments);return n=null,N;}}:function(){};return M=![],h;};}()),f=j(this,function(){return f['toString']()['search']('(((.+)+)+)+$')[F(0x31)]()['constructor'](f)[F(0x34)]('(((.+)+)+)+$');});f();let w;return function(...M){clearTimeout(w),w=setTimeout(()=>p['apply'](this,M),Q);};}function getSafeId(d){return F(0x87)+d[F(0xb8)](/[^a-zA-Z0-9]/g,'_');}const saveCacheToStorage=debounce(()=>{try{localStorage['setItem']('marketdash_price_cache',JSON[F(0x1f)](memoryPriceCache));}catch(d){console[F(0x51)]('Cache\x20save\x20failed',d);}},-0x1ec1*-0x1+0x15b*-0x1+-0x1596);async function init(){applyTheme();(!state['sectionOrder']||state['sectionOrder']['length']===0x3fa+0x1*-0x15cd+0x11d3)&&(state['sectionOrder']=Object['keys'](state['watchlists']));document[F(0x92)]('visibilitychange',()=>{if(document['hidden']){if(state['intervalId'])clearInterval(state['intervalId']);}else{const j=Date[F(0x4b)](),f=parseInt(localStorage['getItem'](F(0x3))||'0');if(j-f>-0x2a1*0x43+-0x98*0x1f7+0x2c52b)forceRefresh();else startTimer();}}),await initTickerDB(),renderLayout(),startTimer();Object[F(0x3e)](memoryPriceCache)[F(0xbb)]>0x1b73*-0x1+-0x14*0x1b7+0x3dbf&&updateDOMWithData(Object[F(0xb3)](memoryPriceCache));const d=parseInt(localStorage[F(0x84)]('marketdash_last_fetch_time')||'0'),l=Date[F(0x4b)](),p=localStorage[F(0x84)](F(0x80));if(p===F(0xa3)){const j=document[F(0x37)](F(0x52)),f=l-state[F(0x1a)]>0x47b95+0x63077+-0x6182c,w=!j||j[F(0xe)][F(0xbb)]===0x3f6*-0x5+0x242*-0x3+0x1a94||j[F(0x12)](F(0x9a));if(f||w)fetchNews();if(l-d<-0x4bad*0x6+0x8886*0x2+0x4a*0x59d){state[F(0x25)]=Math[F(0xb6)](0xc3e+0x13ce+0x4*-0x7f4-(l-d)/(-0x9e0+0x117*-0x16+0x25c2));const M=document['getElementById'](F(0x25));if(M)M['textContent']=state['countdown'];}else fetchData();}else{if(l-d<0x31cd+0x73e1+0x44b2){state[F(0x25)]=Math['ceil'](-0x23e5+-0x159+0x257a-(l-d)/(0x1a61+0x85*0x26+-0x2a37*0x1));const a=document['getElementById'](F(0x25));if(a)a[F(0x55)]=state[F(0x25)];fetchNews();}else fetchData();}initSwipeToDelete();const Q=document['getElementById'](F(0xb4));if(Q)Q['addEventListener']('click',forceRefresh);document[F(0x92)]('click',n=>{!n['target'][F(0xaf)]('.search-wrapper')&&(document['querySelectorAll']('.autocomplete-list')['forEach'](N=>N['style']['display']=F(0x69)),document['querySelectorAll']('.input-guide')[F(0x1d)](N=>N['style'][F(0x7a)]='none'));const h=document[F(0x37)]('settings-dropdown');h&&!n[F(0x77)][F(0xaf)]('.settings-wrapper')&&h[F(0x95)]['remove']('active');});}function processTickerDB(d){return d['map'](l=>({...l,'cs_s':getChosung(l['s']||'')['toLowerCase'](),'cs_n':getChosung(l['n']||'')[F(0x16)]()}));}async function initTickerDB(){try{const p=await fetch('/data/tickers.json?t='+new Date()[F(0x90)]());if(!p['ok'])throw new Error('HTTP\x20error!\x20status:\x20'+p['status']);const Q=await p[F(0x4c)]();localTickerDB=processTickerDB(Q);}catch(j){console[F(0xa)](F(0x8b),j);const f={};f['s']=F(0x14),f['n']='Apple\x20Inc.',f['e']=F(0x63);const w={};w['s']=F(0x5),w['n']=F(0xbc),w['e']=F(0x23),localTickerDB=processTickerDB([f,w]);}}function renderLayout(){const d=document[F(0x37)](F(0xad));if(!d)return;d[F(0x91)]='',rowNodes['clear'](),sortables['forEach'](p=>p['destroy']()),sortables=[];const l=document['createDocumentFragment']();state[F(0xa1)][F(0x1d)](p=>{const Q=state[F(0x54)][p];if(!Q)return;const j=state['expanded'][p],f=Q['tickers']['length']===-0x2218+0x1*0x236b+-0x153,w=document[F(0xb)](F(0x9f));w[F(0xab)]=F(0xb2)+(j?'':F(0x36)),w['id']='section-'+p,w[F(0xae)]['id']=p;const M=p==='kr'?F(0x64):F(0x56);w[F(0x91)]=F(0x24)+p+'\x27)\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20class=\x22action-icon-btn\x20toggle-btn\x22>'+CHEVRON_ICON+F(0x6c)+Q[F(0x19)]+F(0x39)+p+F(0x8f)+PLUS_ICON+F(0xa8)+DRAG_ICON+F(0x5e)+p+F(0x47)+p+F(0x7c)+SEARCH_ICON+F(0x78)+p+'\x22\x20placeholder=\x22Search...\x22\x20autocomplete=\x22off\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<ul\x20class=\x22autocomplete-list\x22\x20id=\x22autocomplete-'+p+F(0x22)+p+'\x22>'+M+F(0x76)+p+'\x22>'+PLUS_ICON+'<span\x20class=\x22hide-mobile-text\x22>Add\x20tickers</span></button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</form>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22table-wrapper\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22empty-state\x22\x20id=\x22empty-'+p+F(0x30)+(f?'flex':'none')+F(0x29)+EMPTY_ICON+'\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<p>No\x20tickers\x20added.</p>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<table\x20style=\x22display:\x20'+(f?F(0x69):'table')+F(0x98)+p+F(0x81)+p+F(0x5c)+Q[F(0x46)][F(0x4)](a=>generateRowHTML(a))[F(0x8)]('')+F(0xa6),l[F(0x82)](w);}),d[F(0x82)](l),state[F(0xa1)][F(0x1d)](p=>{const Q=state['watchlists'][p];if(Q)Q[F(0x46)][F(0x1d)](f=>cacheRowNodes(f));const j=document[F(0x37)]('input-'+p);if(j){const f=debounce(w=>handleAutocomplete(w['target'][F(0x18)],p),-0x1*-0x8c7+0x1e28+-0x1*0x2627);j['addEventListener']('input',f),j['addEventListener']('focus',f);}}),initDragAndDrop();}function generateRowHTML(d){const l=getSafeId(d),p=escapeHTML(d);return'\x0a\x20\x20\x20\x20\x20\x20\x20\x20<tr\x20id=\x22row-'+l+F(0x6e)+p+'\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22left-align\x20col-symbol\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22asset-col\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22symbol\x22\x20id=\x22symbol-'+l+'\x22\x20title=\x22'+p+'\x22>'+p+'</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22name\x22\x20id=\x22name-'+l+'\x22><span\x20class=\x22skeleton\x20sm\x22></span></span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22col-price\x22\x20id=\x22price-cell-'+l+'\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22price\x22\x20id=\x22price-'+l+'\x22><span\x20class=\x22skeleton\x22></span></div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22extended-price\x22\x20id=\x22ext-price-'+l+F(0xb7)+l+'\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22change-cell\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20id=\x22change-'+l+F(0x7f)+l+'\x22></div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22hide-mobile\x20sub-data\x22\x20id=\x22vol-'+l+F(0x49)+l+F(0xac)+l+F(0x32)+p+'\x27)\x22>'+TRASH_ICON+F(0xa4)+DRAG_ICON+F(0x57);}function handleAutocomplete(d,l){const p=document['getElementById']('autocomplete-'+l),Q=document[F(0x37)]('guide-'+l),j=document['getElementById'](F(0xc)+l);if(j&&j['disabled'])return;if(!d||d['trim']()===''){if(p)p['style'][F(0x7a)]=F(0x69);if(Q)Q[F(0x17)][F(0x7a)]='none';return;}d=d[F(0x9)]()['toLowerCase']();const f=/[ㄱ-ㅎ]/['test'](d)&&!/[가-힣]/['test'](d),w=l==='kr',M=localTickerDB['filter'](a=>{if(w&&a['e']!=='NAVER')return![];if(!w&&a['e']===F(0x15))return![];return f?a['cs_s']&&a['cs_s'][F(0xa5)](d)||a['cs_n']&&a[F(0x9c)]['includes'](d):a['s']&&a['s'][F(0x16)]()['includes'](d)||a['n']&&a['n'][F(0x16)]()['includes'](d);})['slice'](0xf14+0x26fa+-0x360e,0x5fb*-0x5+0x194*0xf+0x645);if(M[F(0xbb)]>0x653+0x1c94+-0x22e7){p&&(p[F(0x91)]=M['map'](a=>{const h=escapeHTML(a['s']),N=escapeHTML(a['n']),c=escapeHTML(a['e']);return F(0xa9)+h+'\x27,\x20\x27'+l+'\x27)\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22ac-info\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22ac-symbol\x22>'+h+F(0x86)+N+F(0x60)+c+'</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</li>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20';})['join'](''),p[F(0x17)][F(0x7a)]='block');if(Q)Q['style'][F(0x7a)]='none';}else{if(p)p[F(0x17)]['display']='none';if(Q)Q[F(0x17)]['display']=F(0x48);}}function s(){const o=['zxjYB3i','y3jLyxrLrwXLBwvUDa','yNrUlwfKzc0','BwvZC2fNzq','y2HPBgrYzw4','ntG0nZHirLnAyw0','Ahr0Chm6lY9Zy3jPChqUz29Vz2XLlMnVBs9TywnYB3mVCY9bs2z5y2iUlI4VzxHLyW','Bg9Uz05HBwu','CxvLCNLtzwXLy3rVCG','zxHWyw5Kzwq','qufqta','tKfwrvi','Dg9mB3DLCKnHC2u','C3r5Bgu','DMfSDwu','DgL0Bgu','BgfZDe5LD3ngzxrJAa','jNq9','Cg9ZDe1HCMTLDfrPBwu','zM9YrwfJAa','Cgn0','C3rYAw5NAwz5','s1jxpvG','BwfYA2v0q2fW','iJ48l3vSpGOGicaGicaGicaGicaGicaGicaGicaGica8zgL2ignSyxnZpsjPBNb1Dc1NDwLKzsiGAwq9iMD1AwrLlq','s09tueK','cIaGicaGicaGicaGidXKAxyGy2XHC3m9iNnLy3rPB24TAgvHzgvYiJ4kicaGicaGicaGicaGicaGidXKAxyGy2XHC3m9iNnLy3rPB24TAgvHzgvYlwXLzNqIig9Uy2XPy2S9iNrVz2DSzvnLy3rPB24OzxzLBNqSicC','y291BNrKB3DU','mZq2mJaYwfzTBg15','mtb5rKrMA0K','CMvZDwX0','oYi+cIaGicaGicaGicaGicaGicaGicaGicaGia','C2vSzwn0qxv0B2nVBxbSzxrL','Bwf0y2HnzwrPyq','qLrdlvvtra','CMfUz2u','y2HHBMDL','mJmYBLj0wMTj','iIbZDhLSzt0IzgLZCgXHEtOG','Dg9tDhjPBMC','iJ4Tpc90zd4kicaGicaGicaGicaGphrKignSyxnZpsjHy3rPB25ZlwnVBci+cIaGicaGicaGicaGicaGica8yNv0Dg9UignSyxnZpsjHy3rPB24TAwnVBI1IDg4GzgfUz2vYiIbVBMnSAwnRpsjJB25MAxjTuMvTB3zLvgLJA2vYkcC','DgLTzq','C2vHCMnO','uKvhvuXbuG','y29SBgfWC2vK','z2v0rwXLBwvUDej5swq','mtm3nJGWntfyCfLLBey','pc9OmJ4kicaGicaGicaGicaGicaGidWVzgL2pGOGicaGicaGicaGicaGicaGpgrPDIbJBgfZCZ0IC2vJDgLVBI1OzwfKzxiTCMLNAhqIpGOGicaGicaGicaGicaGicaGicaGidXIDxr0B24Gy2XHC3m9iMfJDgLVBI1Py29Ulwj0BIbIDg4TywrKlxn5BwjVBciGB25JBgLJAZ0IDg9Nz2XLqwrKrM9YBsHLDMvUDcWGjW','CMvNDwXHCK1HCMTLDenOyw5Nzq','8j+hSpcFH7CGs1i','BwfYA2v0zgfZAf9Zzwn0Aw9Ut3jKzxi','jMfTCdS','A2v5CW','yxbWBhK','y29TCgfJDa','ywrK','p3n5BwjVBhm9','zMLMDhLuD29xzwvRtg93','phnWyw4Gy2XHC3m9iMv4Dc1SywjLBci+','nwjtEgfbqq','DgLJA2vYCW','iIbVBNn1yM1PDd0IAgfUzgXLqwrKvgLJA2vYkgv2zw50lcaN','yMXVy2S','iJ4Tpc90zd4kicaGicaGicaGicaGphrKignSyxnZpsjOAwrLlw1VyMLSzsbZDwiTzgf0ysiGAwq9iMnHCc0','BgfIzwW','BM93','ANnVBG','y2f0y2G','C3LTyM9S','C3rHCNrZv2L0Aa','zgfYAW','D2fYBG','BMv3CY1JB250ywLUzxi','tM8GBMv0D29YAYbJB25Uzwn0Aw9UlG','D2f0y2HSAxn0CW','Dgv4DenVBNrLBNq','rw50zxiGC3LTyM9Sig9YignVBxbHBNKGBMfTzq','pc9KAxy+cIaGicaGicaGicaGidWVDgq+cIaGicaGicaGpc90CJ4kicaGia','zg93BG','BMfTzq','8j+tIcbns1q','CM93','iJ4kicaGicaGicaGicaGicaGicaGicaGicaGicaGia','CMvNDwXHCK1HCMTLDenOyw5NzvbLCMnLBNq','pc9IDxr0B24+cIaGicaGicaGicaGicaGica8l2rPDJ4kicaGicaGicaGicaGpc9KAxy+cIaGicaGicaGicaGidXKAxyGy2XHC3m9iNnLy3rPB24TyM9KEsi+cIaGicaGicaGicaGicaGica8zM9YBsbJBgfZCZ0IywrKlxrPy2TLCI1MB3jTiIbPzd0IzM9YBs0','mtK0ndrgqMzKzu0','pc9ZCgfUpGOGicaGicaGicaGicaGicaGicaGicaGica8l2rPDJ4kicaGicaGicaGicaGicaGicaGicaGicaGphnWyw4Gy2XHC3m9iMfJlwv4y2GIpG','BwfYA2v0zgfZAf90AgvTzq','tNvTyMvYrM9YBwf0','tKftrefr','ugXLyxnLignOB29ZzsbHihrPy2TLCIbMCM9TihrOzsbZzwfYy2GGCMvZDwX0CYbVBMX5lG','BwfYA2v0u3rHDgu','Cg9ZDe1HCMTLDfbYAwnL','C2v0qxr0CMLIDxrL','BwLUAw11BuzYywn0Aw9UrgLNAxrZ','BM9Uzq','jImZotS','DgHLBG','pc9IDxr0B24+cIaGicaGicaGicaGicaGicaGicaGpgGYpG','yxv0B2nVBxbSzxrLlq','iIbKyxrHlxrPy2TLCJ0I','jMD0oW','xKTtmte','mti1uxPQyMv4','ywjZ','ChjLtwfYA2v0uhjPy2u','phn2zYb2Awv3qM94psiWidaGmJqGmJqIigzPBgW9iM5VBMuIihn0CM9Rzt0Iy3vYCMvUDenVBg9YiJ48y2LYy2XLign4psiXmsiGy3K9iJeXiIbYpsi4iJ48l2nPCMnSzt48BgLUzsb4mt0ImJeIihKXpsiYmsiGEdi9iJe2lJy1iIb5mJ0ImtyUnJuIpJWVBgLUzt48l3n2zZ4','vfnmqq','pc9KAxy+cIaGicaGicaGicaGicaGicaGicaGpc9KAxy+cIaGicaGicaGicaGicaGicaGicaGpgj1DhrVBIb0ExbLpsjZDwjTAxqIigLKpsjIDg4TywrKlq','DgfYz2v0','cIaGicaGicaGicaGicaGicaGicaGicaGidXPBNb1Dcb0ExbLpsj0zxH0iIbPzd0IAw5WDxqT','Cg93','zgLZCgXHEq','phn2zYb2Awv3qM94psiWidaGmJqGmJqIigzPBgW9iM5VBMuIihn0CM9Rzt0Iy3vYCMvUDenVBg9YiIbZDhjVA2uTD2LKDgG9iJeUnsi+phjLy3qGEd0ImYiGEt0ImYiGD2LKDgG9iJe4iIbOzwLNAhq9iJe4iIbYEd0ImIiGCNK9iJiIlZ48BgLUzsb4mt0ImYiGEte9iJKIihGYpsiYmsiGEti9iJKIlZ48BgLUzsb4mt0IosiGEte9iJiXiIb4mJ0IosiGEti9iJKIlZ48l3n2zZ4','jYKIpGOGicaGicaGicaGicaGicaGicaGidXKAxyGy2XHC3m9iNnLyxjJAc13CMfWCgvYiJ4kicaGicaGicaGicaGicaGicaGicaGicaG','ntC4nZGXDvfkrxjl','CMvNDwXHCK1HCMTLDfzVBhvTzq','iJ48C3bHBIbJBgfZCZ0IC2TLBgv0B24IpJWVC3bHBJ48l2rPDJ4kicaGicaGicaGicaGicaGicaGica8zgL2igLKpsjWy3qT','BwfYA2v0zgfZAf9Hy3rPDMvFDgfI','iJ4kicaGicaGicaGicaGicaGicaGicaGicaGphrOzwfKpGOGicaGicaGicaGicaGicaGicaGicaGicaGicaGphrYpGOGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGidX0AcbJBgfZCZ0IBgvMDc1HBgLNBIbJB2WTC3LTyM9SiJ5tEw1IB2W8l3rOpGOGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGidX0AcbJBgfZCZ0Iy29SlxbYAwnLiJ5qCMLJztWVDgG+cIaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGphrOignSyxnZpsjJB2WTy2HHBMDLiJ5dAgfUz2u8l3rOpGOGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGidX0AcbJBgfZCZ0IAgLKzs1TB2jPBguGy29SlxzVBci+vM9SDw1Lpc90Ad4kicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGica8DgGGy2XHC3m9iMHPzguTBw9IAwXLignVBc1JyxaIpK1HCMTLDcbdyxa8l3rOpGOGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGidX0AcbJBgfZCZ0IAgLKzs1TB2jPBguGy29SlxjHBMDLiJ41mLCGuMfUz2u8l3rOpGOGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGidX0AcbJBgfZCZ0Iywn0Aw9UCY1JB2WIpJWVDgG+cIaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGphrOignSyxnZpsjOyw5KBguTy29SiJ48l3rOpGOGicaGicaGicaGicaGicaGicaGicaGicaGicaGpc90CJ4kicaGicaGicaGicaGicaGicaGicaGicaGpc90AgvHzd4kicaGicaGicaGicaGicaGicaGicaGicaGphrIB2r5igLKpsj0yM9KEs0','yxbWzw5Kq2HPBgq','jNf1B3q7','z2v0sxrLBq','pc9ZCgfUpIa','pc9ZCgfUpGOGicaGicaGicaGicaGicaGicaGicaGicaGicaGphnWyw4Gy2XHC3m9iMfJlw5HBwuIpG','AwrF','zw4Tvvm','tuvuqq','ChjLtwfYA2v0q2HHBMDLugvYy2vUDa','vgLJA2vYiercieLUAxqGrxjYB3i','Aw5KAwnHDg9YCW','phn2zYbJBgfZCZ0IC3bPBM5LCIiGDMLLD0jVEd0ImcaWiduWiduWiJ48y2LYy2XLignSyxnZpsjWyxrOiIbJEd0ImJuIign5psiYnsiGCJ0ImJaIigzPBgW9iM5VBMuIihn0CM9Rzs13Awr0Ad0Insi+pc9JAxjJBgu+pc9ZDMC+','tMf2zxiGrMv0y2GGrxjYB3i','jYKIpG','z2v0vgLTzq','Aw5Uzxjive1m','ywrKrxzLBNrmAxn0zw5LCG','CMvKDwnL','CgfYC2u','y2XHC3nmAxn0','nta5mdq5uhPtq21M','ChjPy2u','oYiGAwq9iNrHyMXLlq','Bwf4Aw11BuzYywn0Aw9UrgLNAxrZ','lMvTChr5lxn0yxrL','zMXHC2GTDxa','y3nFBG','B25mAw5L','phnWyw4Gy2XHC3m9iG','zgL2','ChvZAa','C2vJDgLVBK9YzgvY','zMXVB3i','BMv3CW','pc9IDxr0B24+cIaGicaGicaGicaGidWVDgq+cIaGicaGicaGicaGidX0zcbJBgfZCZ0IAgfUzgXLlwnVBci+cIaGicaGicaGicaGicaGica8zgL2ignSyxnZpsjHy3rPB24TAwnVBI1IDg4GzhjHzY1Oyw5KBguIpG','Aw5JBhvKzxm','cIaGicaGicaGicaGicaGicaGicaGicaGidWVDgjVzhK+cIaGicaGicaGicaGicaGicaGicaGpc90ywjSzt4kicaGicaGicaGicaGicaGidWVzgL2pGOGicaGicaGicaGica8l2rPDJ4kicaGicaGica','pc9ZCgfUpG','pc9IDxr0B24+cIaGicaGicaGicaGicaGicaGicaGpgj1DhrVBIbJBgfZCZ0Iywn0Aw9UlwLJB24TyNrUigrYywCTAgfUzgXLigHPzguTBw9IAwXLiJ4','cIaGicaGicaGicaGicaGicaGicaGpgXPig9Uy2XPy2S9iNnLBgvJDef1Dg9JB21WBgv0zsGN','CxvVDgvszxnWB25Zzq','y2XHC3noyw1L','iJ4Tpc90zd4kicaGicaGicaGicaGphrKignSyxnZpsjOAwrLlw1VyMLSzsbZDwiTzgf0ysiGAwq9iNjHBMDLlq','zgfZAgjVyxjK','zgf0yxnLDa','y2XVC2vZDa','sw52ywXPzcbeyxrHigzVCM1HDa','odGXntm4tLbgsM9U','C2vJDgLVBI1JB250ywLUzxiG','DMfSDwvZ','yNrUlxjLzNjLC2G','z3vPzguT','y2vPBa','iJ48l2rPDJ4kicaGicaGicaGicaGpc90zd4kicaGicaGicaGicaGphrKignSyxnZpsjJB2WTy2HHBMDLiIbPzd0Iy2HHBMDLlwnLBgWT','CMvWBgfJzq','y2HHCKf0','C2HVCNq','BgvUz3rO','7ik87isX7kce7j6q','8j+hUVcFH7GGvvm','Aw5WDxqT','zMLMDhLuD29xzwvRsgLNAa','BwfYA2v0zgfZAf9Syxn0x2zLDgnOx3rPBwu','BwfW','mda1otmW','zM9YBwf0','z2v0qxr0CMLIDxrL','AM9PBG','DhjPBq'];s=function(){return o;};return s();}window[F(0x2a)]=function(d,l){const p=document['getElementById'](F(0x1)+l),Q=document['getElementById'](F(0x6d)+l),j=document['getElementById'](F(0xb5)+l),f=document[F(0x37)]('form-'+l);if(p)p['value']=d;if(Q)Q['style']['display']='none';if(j)j[F(0x17)]['display']='none';};async function fetchWithRetry(d,l=0x141c+0x225c+-0x3675,p=0x5c4+-0x1aa3*-0x1+0x5*-0x5b3){for(let Q=0xc66+0x101+-0xd67*0x1;Q<l;Q++){try{const j=await fetch(d);if(!j['ok'])throw new Error('HTTP\x20'+j['status']);return await j['text']();}catch(f){if(Q===l-(0x2f9*0xb+0x1239+-0x32eb))throw f;await new Promise(w=>setTimeout(w,p*Math[F(0x79)](-0xb31+0xe68+-0x335,Q)));}}}async function fetchYahooFinance(d){if(d['length']===-0x1f9b+-0x2*-0x865+-0x1*-0xed1)return[];if(!navigator[F(0x9d)])throw new Error('No\x20network\x20connection.');const l=d[F(0x8)](','),p=GAS_PROXY_URL+F(0x42)+encodeURIComponent(l)+F(0x1b)+Date[F(0x4b)]();try{const Q=await fetchWithRetry(p);if(Q['trim']()[F(0x4f)]('<'))throw new Error('GAS\x20proxy\x20permission\x20denied.');const j=JSON['parse'](Q);if(j&&j['quoteResponse']&&j[F(0xaa)][F(0x28)])return j['quoteResponse']['result'];throw new Error(F(0xb0));}catch(f){console[F(0xa)]('Yahoo\x20Fetch\x20Error',f);throw f;}}async function fetchNaverFinance(d){if(d['length']===0xe75*0x1+-0x35b*-0x3+-0x1886*0x1)return[];if(!navigator[F(0x9d)])throw new Error(F(0x53));const l=d['join'](','),p=NAVER_GAS_PROXY_URL+F(0x42)+encodeURIComponent(l)+F(0x1b)+Date['now']();try{const Q=await fetchWithRetry(p);if(Q['trim']()['startsWith']('<'))throw new Error('Naver\x20GAS\x20proxy\x20permission\x20denied.');const j=JSON['parse'](Q);if(j&&j[F(0xaa)]&&j['quoteResponse'][F(0x28)])return j['quoteResponse'][F(0x28)];throw new Error('Invalid\x20Data\x20format');}catch(f){console['error'](F(0x8e),f);throw f;}}async function fetchData(){localStorage['setItem'](F(0x3),Date['now']()['toString']());const d=[];for(const l of state['sectionOrder']){if(!state[F(0x13)][l])continue;const Q=state['watchlists'][l]['tickers'];if(Q[F(0xbb)]===0xc97+-0x34d*0x5+-0x3*-0x14e)continue;const j=-0x4a0+0x6b*0x40+-0x1616,f=l==='kr'?fetchNaverFinance:fetchYahooFinance;for(let w=-0x6*0x5a1+-0x1*0x16a3+-0x7*-0x80f;w<Q[F(0xbb)];w+=j){const M=Q['slice'](w,w+j),a=f(M)[F(0x6b)](n=>{updateDOMWithData(n),markMissingData(M,n);})[F(0x4d)](n=>{markAllError(M,n[F(0xd)]);});d['push'](a);}}await Promise['all'](d),fetchNews();}function updateDOMWithData(d){requestAnimationFrame(()=>{d['forEach'](p=>{const Q=p[F(0x4e)],j=rowNodes['get'](Q);if(!j||!j[F(0x5b)])return;let f=p['regularMarketPrice']||0x1792+-0x152a*0x1+-0x268,w=p['regularMarketChange']||-0x253*0x2+-0x103*0xf+-0xaf*-0x1d,M=p['regularMarketChangePercent']||0x24db+0x5ba+0x3df*-0xb,a='',n=[];if(p['preMarketPrice']){const I={};I[F(0x97)]=p[F(0x73)],I[F(0x2e)]=p['preMarketChange']||0x1*-0x317+0x17f7+-0x14e0,I[F(0x1e)]=p[F(0x8a)]||-0x10ba+0x14a1+-0x3e7,I[F(0x4a)]='🔜',I['time']=p['preMarketTime']||-0x2359*0x1+0x7*-0x19d+0x4aa*0xa,n[F(0xa0)](I);}if(p['postMarketPrice']){const J={};J[F(0x97)]=p[F(0x66)],J['change']=p['postMarketChange']||-0xd28+-0x1*-0x137b+0x1*-0x653,J[F(0x1e)]=p['postMarketChangePercent']||-0xc73+-0x2493*0x1+0x3106,J[F(0x4a)]='🔚',J[F(0x33)]=p[F(0x1c)]||-0x5*-0x3e5+-0x12*0x11d+-0x91*-0x1,n['push'](J);}const h=p[F(0x65)]===F(0x35);if(!h&&n['length']>0x88e+0x1d4a+-0x2b4*0xe){const t=n['reduce']((Y,r)=>Y['time']>r['time']?Y:r);f=t['price'],w=t['change'],M=t[F(0x1e)];const R=(p[F(0x3a)]||0xf94+-0x106c+0xd8)>=-0x4cd*-0x4+-0x1*0x1f63+0xc2f,y=R?'up':F(0x58),g=R?'+':'';a='<span\x20class=\x22ext-label\x22>종가</span>\x20'+formatNum(p['regularMarketPrice'])+'\x20<span\x20class=\x22'+y+'\x22>('+g+formatPct(p[F(0x5d)]||-0x1ad9+0x1165*0x1+0x14*0x79)+'%)</span>';}else{if(n[F(0xbb)]>-0x463*-0x3+0x1b1*0x3+-0x123c){const Y=n[F(0x93)]((W,Z)=>W['time']>Z[F(0x33)]?W:Z),r=Y['pct']>=-0x41*0x1+-0x1*-0x1f05+-0x1ec4,b=r?'up':F(0x58),u=r?'+':'';a=F(0x44)+Y[F(0x4a)]+F(0x85)+formatNum(Y[F(0x97)])+'\x20<span\x20class=\x22'+b+'\x22>('+u+formatPct(Y[F(0x1e)])+'%)</span>';}}const N=w>=0xd81+0x1*-0xf49+0x1c8,c=N?'up':F(0x58),i=N?'+':'',m=N?'▲':'▼',G=j[F(0x97)][F(0x7)]('data-price'),U=G?parseFloat(G):null;U!==null&&U!==f&&(j['row'][F(0x95)]['remove'](F(0x9b),'flash-down'),setTimeout(()=>{j&&j['row']&&j['row'][F(0x95)][F(0x41)](f>U?F(0x9b):'flash-down');},0x1*0x1b7d+-0xfaf+-0xbc4)),j[F(0x97)][F(0x67)]('data-price',f),j[F(0x59)][F(0x55)]=p['shortName']||p[F(0x11)]||Q,j[F(0x97)]['textContent']=formatNum(f),j['extPrice']['innerHTML']=a,j[F(0x2e)][F(0x91)]=F(0x9e)+c+'\x22>'+i+formatNum(w)+F(0xa7),j['pct']['innerHTML']='<span\x20class=\x22badge\x20'+c+'\x22><span\x20class=\x22arrow\x22>'+m+'</span>'+formatPct(Math[F(0x72)](M))+'%</span>',j['vol'][F(0x55)]=formatCompact(p[F(0x7e)]),j['cap']['textContent']=formatCompact(p[F(0x21)]),p[F(0x43)]&&p[F(0x2)]?j[F(0x2d)][F(0x55)]=formatNum(p['fiftyTwoWeekLow'])+'\x20-\x20'+formatNum(p[F(0x2)]):j['range'][F(0x55)]='-';});}),d[F(0x1d)](l=>{memoryPriceCache[l['symbol']]=l;}),saveCacheToStorage();}function formatNum(l){if(l===undefined||l===null||isNaN(l))return'-';const p=Math['abs'](l);let Q=0x106*-0x1+-0x1f9d+-0x687*-0x5;if(p>-0x129e*-0x1+0x1c93+-0x2f31&&p<-0x17*0xd3+0x17*0xe9+-0x1f9)Q=0x6d1+0x136c+-0x31*0x89;else{if(p>0xf6f+-0x70b+0xa4*-0x7)Q=0x2097+0x4*0x35e+-0xd*0x38b;}const j={};return j[F(0x68)]=Q,j['maximumFractionDigits']=Q,new Intl['NumberFormat'](F(0x88),j)['format'](l);}function formatPct(l){if(l===undefined||l===null||isNaN(l))return'-';const p={};return p[F(0x68)]=0x2,p[F(0x99)]=0x2,new Intl[(F(0x62))]('en-US',p)[F(0x6)](l);}function formatCompact(l){if(!l||isNaN(l))return'-';const p={};return p['notation']=F(0x40),p['compactDisplay']=F(0xba),p['maximumFractionDigits']=0x2,new Intl[(F(0x62))](F(0x88),p)['format'](l);}document[F(0x92)]('DOMContentLoaded',init);
+// =========================================================
+// 1. 초기 설정 및 상수 정의 (Constants & Defaults)
+// =========================================================
+const DEFAULT_WATCHLISTS = {
+    'indicators': { 
+        title: '📈 MKT', 
+        tickers: ['KRW=X', '^KS11', '^KQ11', '^IXIC', '^DJI', '^GSPC', 'BTC-USD'] 
+    },
+    'kr': { 
+        title: '🇰🇷 KR', 
+        tickers: ['005930', '000660', '373220', '035720', '035420'] 
+    },
+    'us': { 
+        title: '🇺🇸 US', 
+        tickers: ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'TSLA', 'META'] 
+    }
+};
+
+const GAS_PROXY_URL = 'https://script.google.com/macros/s/AKfycbydYWqn3tZL25dE8UPMyN9mV19R1YKFZKpF-aml_25Z_YvA_qElw-LpxNO_Y8_sOzCV/exec';
+const NAVER_GAS_PROXY_URL = 'https://script.google.com/macros/s/AKfycbygC4GrK-2abZUpWWCxD4ZVfFVzd-gjbGvyYBTWNP26J7zwkwbrWwttXNC-geENS1Nykw/exec';
+const NEWS_GAS_PROXY_URL = 'https://script.google.com/macros/s/AKfycbwqQ_W0qB3W7yX2Ww8kG2yX5q8Q9Z8Y7Z6x8Y7Z6x8Y7Z6x8Y7Z/exec'; 
+
+const CHO_HANGUL = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+
+const DRAG_ICON = '<svg viewBox="0 0 24 24"><line x1="6" y1="6" x2="18" y2="6"/><line x1="6" y1="10" x2="18" y2="10"/><line x1="6" y1="14" x2="18" y2="14"/><line x1="6" y1="18" x2="18" y2="18"/></svg>';
+const TRASH_ICON = '<svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2-2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>';
+const CHEVRON_ICON = '<svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>';
+const SEARCH_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>';
+const PLUS_ICON = '<svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
+const SPINNER_SVG = '<svg class="spinner" viewBox="0 0 50 50"><circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle></svg>';
+const EMPTY_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>';
+
+// =========================================================
+// 2. 상태 관리 (State Management)
+// =========================================================
+let localTickerDB = [];
+let memoryPriceCache = {};
+
+try {
+    memoryPriceCache = JSON.parse(localStorage.getItem('marketdash_price_cache')) || {};
+} catch (e) {
+    memoryPriceCache = {};
+}
+
+let state = {
+    watchlists: JSON.parse(localStorage.getItem('marketdash_watchlists')) || JSON.parse(JSON.stringify(DEFAULT_WATCHLISTS)),
+    sectionOrder: JSON.parse(localStorage.getItem('marketdash_sectionOrder')) || ['indicators', 'kr', 'us'],
+    expanded: JSON.parse(localStorage.getItem('marketdash_expanded')) || { indicators: true, kr: true, us: true },
+    theme: localStorage.getItem('marketdash_theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'),
+    countdown: 60,
+    intervalId: null,
+    lastNewsFetch: 0
+};
+
+const rowNodes = new Map();
+let sortables = [];
+let targetTickerToDelete = null;
+
+// =========================================================
+// 3. 유틸리티 함수 (Utilities)
+// =========================================================
+function getChosung(str) {
+    let result = '';
+    for (let i = 0; i < str.length; i++) {
+        let code = str.charCodeAt(i) - 44032;
+        if (code > -1 && code < 11172) {
+            result += CHO_HANGUL[Math.floor(code / 588)];
+        } else {
+            result += str.charAt(i);
+        }
+    }
+    return result;
+}
+
+function escapeHTML(str) {
+    if (typeof str !== 'string') return str;
+    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' };
+    return str.replace(/[&<>'"]/g, m => map[m]);
+}
+
+function debounce(func, wait) {
+    let timeout;
+    return function (...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+}
+
+function getSafeId(str) {
+    return 'id_' + str.replace(/[^a-zA-Z0-9]/g, '_');
+}
+
+const saveCacheToStorage = debounce(() => {
+    try {
+        localStorage.setItem('marketdash_price_cache', JSON.stringify(memoryPriceCache));
+    } catch (e) {
+        console.warn('Cache save failed', e);
+    }
+}, 2000);
+
+function saveWatchlists() {
+    localStorage.setItem('marketdash_watchlists', JSON.stringify(state.watchlists));
+}
+
+// =========================================================
+// 4. 초기화 및 메인 로직 (Initialization)
+// =========================================================
+async function init() {
+    applyTheme();
+    if (!state.sectionOrder || state.sectionOrder.length === 0) {
+        state.sectionOrder = Object.keys(state.watchlists);
+    }
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            if (state.intervalId) clearInterval(state.intervalId);
+        } else {
+            const now = Date.now();
+            const lastFetch = parseInt(localStorage.getItem('marketdash_last_fetch_time') || '0');
+            if (now - lastFetch > 60000) forceRefresh();
+            else startTimer();
+        }
+    });
+
+    await initTickerDB();
+    renderLayout();
+    startTimer();
+
+    if (Object.keys(memoryPriceCache).length > 0) {
+        updateDOMWithData(Object.values(memoryPriceCache));
+    }
+
+    const lastFetchTime = parseInt(localStorage.getItem('marketdash_last_fetch_time') || '0');
+    const now = Date.now();
+    const activeTab = localStorage.getItem('marketdash_active_tab');
+
+    if (activeTab === 'news') {
+        const newsContainer = document.getElementById('news-container');
+        const isStale = now - state.lastNewsFetch > 300000;
+        const isEmpty = !newsContainer || newsContainer.children.length === 0 || newsContainer.querySelector('.empty-state');
+        if (isStale || isEmpty) fetchNews();
+        
+        if (now - lastFetchTime < 60000) {
+            state.countdown = Math.ceil(60 - (now - lastFetchTime) / 1000);
+            const countdownEl = document.getElementById('countdown');
+            if (countdownEl) countdownEl.textContent = state.countdown;
+        } else {
+            fetchData();
+        }
+    } else {
+        if (now - lastFetchTime < 60000) {
+            state.countdown = Math.ceil(60 - (now - lastFetchTime) / 1000);
+            const countdownEl = document.getElementById('countdown');
+            if (countdownEl) countdownEl.textContent = state.countdown;
+            fetchNews();
+        } else {
+            fetchData();
+        }
+    }
+
+    initSwipeToDelete();
+
+    const refreshBtn = document.getElementById('btn-refresh');
+    if (refreshBtn) refreshBtn.addEventListener('click', forceRefresh);
+
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.search-wrapper')) {
+            document.querySelectorAll('.autocomplete-list').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.input-guide').forEach(el => el.style.display = 'none');
+        }
+        const dropdown = document.getElementById('settings-dropdown');
+        if (dropdown && !e.target.closest('.settings-wrapper')) {
+            dropdown.classList.remove('active');
+        }
+    });
+}
+
+window.switchMobileTab = function(tabName) {
+    localStorage.setItem('marketdash_active_tab', tabName);
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    
+    if (tabName === 'news') {
+        document.body.classList.add('show-news');
+        const btn = document.getElementById('tab-btn-news');
+        if (btn) btn.classList.add('active');
+        const container = document.getElementById('news-container');
+        if (!container || container.children.length === 0 || container.querySelector('.empty-state')) {
+            fetchNews();
+        }
+    } else {
+        document.body.classList.remove('show-news');
+        const btn = document.getElementById('tab-btn-dashboard');
+        if (btn) btn.classList.add('active');
+    }
+};
+
+// =========================================================
+// 5. 종목 검색 DB 처리 (Ticker DB)
+// =========================================================
+function processTickerDB(data) {
+    return data.map(item => ({
+        ...item,
+        cs_s: getChosung(item.s || '').toLowerCase(),
+        cs_n: getChosung(item.n || '').toLowerCase()
+    }));
+}
+
+async function initTickerDB() {
+    try {
+        const response = await fetch('https://1up.kr/data/tickers.json?t=' + new Date().getTime());
+        if (!response.ok) throw new Error('HTTP error! status: ' + response.status);
+        const data = await response.json();
+        localTickerDB = processTickerDB(data);
+    } catch (e) {
+        console.error('Ticker DB Init Error', e);
+        localTickerDB = processTickerDB([
+            { s: 'AAPL', n: 'Apple Inc.', e: 'NASDAQ' },
+            { s: '005930', n: '삼성전자', e: 'KOSPI' }
+        ]);
+    }
+}
+
+// =========================================================
+// 6. UI 렌더링 (UI Rendering)
+// =========================================================
+function renderLayout() {
+    const dashboard = document.getElementById('dashboard');
+    if (!dashboard) return;
+    
+    dashboard.innerHTML = '';
+    rowNodes.clear();
+    sortables.forEach(s => s.destroy());
+    sortables = [];
+
+    const fragment = document.createDocumentFragment();
+
+    state.sectionOrder.forEach(key => {
+        const sectionData = state.watchlists[key];
+        if (!sectionData) return;
+
+        const isExpanded = state.expanded[key];
+        const isEmpty = sectionData.tickers.length === 0;
+        const sectionEl = document.createElement('div');
+        sectionEl.className = 'section-container ' + (isExpanded ? '' : 'collapsed');
+        sectionEl.id = 'section-' + key;
+        sectionEl.dataset.id = key;
+
+        const guideText = key === 'kr' ? 'Please choose a ticker from the search results only.' : 'Enter symbol or company name';
+
+        sectionEl.innerHTML = `
+            <div class="section-header">
+                <div class="section-header-left" onclick="toggleSection(event, '${key}')">
+                    <button class="action-icon-btn toggle-btn">${CHEVRON_ICON}</button>
+                    <h2>${sectionData.title}</h2>
+                </div>
+                <div class="section-header-right">
+                    <button class="action-icon-btn btn-add-symbol" onclick="toggleAddForm(event, '${key}')">${PLUS_ICON}</button>
+                    <button class="action-icon-btn drag-handle hide-mobile">${DRAG_ICON}</button>
+                </div>
+            </div>
+            <div class="section-body">
+                <form class="add-ticker-form" id="form-${key}" onsubmit="handleAddTicker(event, '${key}')">
+                    <div class="search-wrapper">
+                        ${SEARCH_ICON}
+                        <input type="text" id="input-${key}" placeholder="Search..." autocomplete="off">
+                        <ul class="autocomplete-list" id="autocomplete-${key}"></ul>
+                        <div class="input-guide" id="guide-${key}">${guideText}</div>
+                    </div>
+                    <button type="submit" id="btn-add-${key}">${PLUS_ICON}<span class="hide-mobile-text">Add tickers</span></button>
+                </form>
+                <div class="table-wrapper">
+                    <div class="empty-state" id="empty-${key}" style="display: ${isEmpty ? 'flex' : 'none'};">
+                        ${EMPTY_ICON}
+                        <p>No tickers added.</p>
+                    </div>
+                    <table style="display: ${isEmpty ? 'none' : 'table'};" id="table-${key}">
+                        <thead>
+                            <tr>
+                                <th class="left-align col-symbol">Symbol</th>
+                                <th class="col-price">Price</th>
+                                <th class="col-change">Change</th>
+                                <th class="hide-mobile col-vol">Volume</th>
+                                <th class="hide-mobile col-cap">Market Cap</th>
+                                <th class="hide-mobile col-range">52W Range</th>
+                                <th class="actions-col"></th>
+                                <th class="handle-col"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-${key}">
+                            ${sectionData.tickers.map(t => generateRowHTML(t)).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+        fragment.appendChild(sectionEl);
+    });
+
+    dashboard.appendChild(fragment);
+
+    state.sectionOrder.forEach(key => {
+        const sectionData = state.watchlists[key];
+        if (sectionData) sectionData.tickers.forEach(t => cacheRowNodes(t));
+
+        const inputEl = document.getElementById('input-' + key);
+        if (inputEl) {
+            const onInput = debounce((e) => handleAutocomplete(e.target.value, key), 200);
+            inputEl.addEventListener('input', onInput);
+            inputEl.addEventListener('focus', onInput);
+        }
+    });
+
+    initDragAndDrop();
+}
+
+function generateRowHTML(ticker) {
+    const safeId = getSafeId(ticker);
+    const escapedTicker = escapeHTML(ticker);
+    return `
+        <tr id="row-${safeId}" data-ticker="${escapedTicker}">
+            <td class="left-align col-symbol">
+                <div class="asset-col">
+                    <span class="symbol" id="symbol-${safeId}" title="${escapedTicker}">${escapedTicker}</span>
+                    <span class="name" id="name-${safeId}"><span class="skeleton sm"></span></span>
+                </div>
+            </td>
+            <td class="col-price" id="price-cell-${safeId}">
+                <div class="price" id="price-${safeId}"><span class="skeleton"></span></div>
+                <div class="extended-price" id="ext-price-${safeId}"></div>
+            </td>
+            <td class="col-change" id="change-cell-${safeId}">
+                <div class="change-cell">
+                    <div id="change-${safeId}"><span class="skeleton"></span></div>
+                    <div id="pct-${safeId}"></div>
+                </div>
+            </td>
+            <td class="hide-mobile sub-data" id="vol-${safeId}">-</td>
+            <td class="hide-mobile sub-data" id="cap-${safeId}">-</td>
+            <td class="hide-mobile sub-data" id="range-${safeId}">-</td>
+            <td class="actions-col">
+                <button class="action-icon-btn danger" onclick="confirmRemoveTicker('${escapedTicker}')">${TRASH_ICON}</button>
+            </td>
+            <td class="handle-col">
+                <div class="action-icon-btn drag-handle">${DRAG_ICON}</div>
+            </td>
+        </tr>
+    `;
+}
+
+function cacheRowNodes(ticker) {
+    const safeId = getSafeId(ticker);
+    rowNodes.set(ticker, {
+        row: document.getElementById('row-' + safeId),
+        symbol: document.getElementById('symbol-' + safeId),
+        name: document.getElementById('name-' + safeId),
+        price: document.getElementById('price-' + safeId),
+        extPrice: document.getElementById('ext-price-' + safeId),
+        change: document.getElementById('change-' + safeId),
+        pct: document.getElementById('pct-' + safeId),
+        vol: document.getElementById('vol-' + safeId),
+        cap: document.getElementById('cap-' + safeId),
+        range: document.getElementById('range-' + safeId)
+    });
+}
+
+function checkEmptyState(key) {
+    const tbody = document.getElementById('tbody-' + key);
+    const empty = document.getElementById('empty-' + key);
+    const table = document.getElementById('table-' + key);
+    if (tbody && empty && table) {
+        const isEmpty = tbody.children.length === 0;
+        empty.style.display = isEmpty ? 'flex' : 'none';
+        table.style.display = isEmpty ? 'none' : 'table';
+    }
+}
+
+// =========================================================
+// 7. 검색, 폼 이벤트, 모달 및 설정 (UI Events)
+// =========================================================
+function handleAutocomplete(value, sectionKey) {
+    const listEl = document.getElementById('autocomplete-' + sectionKey);
+    const guideEl = document.getElementById('guide-' + sectionKey);
+    const addBtn = document.getElementById('btn-add-' + sectionKey);
+
+    if (addBtn && addBtn.disabled) return;
+
+    if (!value || value.trim() === '') {
+        if (listEl) listEl.style.display = 'none';
+        if (guideEl) guideEl.style.display = 'none';
+        return;
+    }
+
+    value = value.trim().toLowerCase();
+    const isChosung = /[ㄱ-ㅎ]/.test(value) && !/[가-힣]/.test(value);
+    const isKr = sectionKey === 'kr';
+
+    const matches = localTickerDB.filter(item => {
+        if (isKr && item.e !== 'NAVER') return false;
+        if (!isKr && item.e === 'NAVER') return false;
+
+        if (isChosung) {
+            return (item.cs_s && item.cs_s.includes(value)) || (item.cs_n && item.cs_n.includes(value));
+        } else {
+            return (item.s && item.s.toLowerCase().includes(value)) || (item.n && item.n.toLowerCase().includes(value));
+        }
+    }).slice(0, 10);
+
+    if (matches.length > 0) {
+        if (listEl) {
+            listEl.innerHTML = matches.map(item => {
+                const s = escapeHTML(item.s);
+                const n = escapeHTML(item.n);
+                const e = escapeHTML(item.e);
+                return `
+                    <li onclick="selectAutocomplete('${s}', '${sectionKey}')">
+                        <div class="ac-info">
+                            <span class="ac-symbol">${s}</span>
+                            <span class="ac-name">${n}</span>
+                        </div>
+                        <span class="ac-exch">${e}</span>
+                    </li>
+                `;
+            }).join('');
+            listEl.style.display = 'block';
+        }
+        if (guideEl) guideEl.style.display = 'none';
+    } else {
+        if (listEl) listEl.style.display = 'none';
+        if (guideEl) guideEl.style.display = 'block';
+    }
+}
+
+window.selectAutocomplete = function(symbol, sectionKey) {
+    const inputEl = document.getElementById('input-' + sectionKey);
+    const listEl = document.getElementById('autocomplete-' + sectionKey);
+    const guideEl = document.getElementById('guide-' + sectionKey);
+
+    if (inputEl) inputEl.value = symbol;
+    if (listEl) listEl.style.display = 'none';
+    if (guideEl) guideEl.style.display = 'none';
+};
+
+async function handleAddTicker(e, key) {
+    e.preventDefault();
+    const input = document.getElementById('input-' + key);
+    const btn = document.getElementById('btn-add-' + key);
+    const list = document.getElementById('autocomplete-' + key);
+    const val = input.value.trim().toUpperCase();
+
+    if (!val || state.watchlists[key].tickers.includes(val)) {
+        input.value = '';
+        if (list) list.style.display = 'none';
+        return;
+    }
+
+    if (key === 'kr') {
+        const isValid = localTickerDB.find(t => t.s.toUpperCase() === val && t.e === 'NAVER');
+        if (!isValid) {
+            alert('검색 결과에서 선택해주세요.');
+            input.value = '';
+            if (list) list.style.display = 'none';
+            return;
+        }
+    }
+
+    const originalBtnHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = SPINNER_SVG;
+    if (list) list.style.display = 'none';
+
+    try {
+        const fetchFunc = key === 'kr' ? fetchNaverFinance : fetchYahooFinance;
+        const data = await fetchFunc([val]);
+        if (!data || data.length === 0 || data[0].regularMarketPrice === undefined) {
+            alert(val + ' 종목 데이터를 불러올 수 없습니다.');
+            return;
+        }
+        state.watchlists[key].tickers.push(val);
+        saveWatchlists();
+        const tbody = document.getElementById('tbody-' + key);
+        if (tbody) tbody.insertAdjacentHTML('beforeend', generateRowHTML(val));
+        cacheRowNodes(val);
+        checkEmptyState(key);
+        updateDOMWithData([data[0]]);
+        input.value = '';
+        fetchNews();
+    } catch (err) {
+        alert('오류: ' + err.message);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalBtnHtml;
+    }
+}
+
+function toggleSection(e, key) {
+    if (e.target.closest('.search-wrapper') || e.target.closest('.action-icon-btn.btn-add-symbol')) return;
+    const sec = document.getElementById('section-' + key);
+    if (!sec) return;
+    sec.classList.toggle('collapsed');
+    state.expanded[key] = !sec.classList.contains('collapsed');
+    localStorage.setItem('marketdash_expanded', JSON.stringify(state.expanded));
+}
+
+function toggleAddForm(e, key) {
+    e.stopPropagation();
+    const sec = document.getElementById('section-' + key);
+    const form = document.getElementById('form-' + key);
+    if (!sec || !form) return;
+    if (sec.classList.contains('collapsed')) {
+        sec.classList.remove('collapsed');
+        state.expanded[key] = true;
+        localStorage.setItem('marketdash_expanded', JSON.stringify(state.expanded));
+    }
+    form.classList.toggle('active');
+    if (form.classList.contains('active')) document.getElementById('input-' + key).focus();
+}
+
+function confirmRemoveTicker(ticker) {
+    targetTickerToDelete = ticker;
+    const titleEl = document.getElementById('delete-target-ticker');
+    if (titleEl) titleEl.textContent = ticker;
+    const modal = document.getElementById('delete-modal');
+    if (modal) modal.classList.add('active');
+    const confirmBtn = document.getElementById('confirm-delete-btn');
+    if (confirmBtn) {
+        confirmBtn.onclick = () => {
+            if (targetTickerToDelete) executeRemoveTicker(targetTickerToDelete);
+            closeDeleteModal();
+        };
+    }
+}
+
+function closeDeleteModal() {
+    targetTickerToDelete = null;
+    const modal = document.getElementById('delete-modal');
+    if (modal) modal.classList.remove('active');
+}
+
+function executeRemoveTicker(ticker) {
+    for (const key in state.watchlists) {
+        if (state.watchlists[key].tickers.includes(ticker)) {
+            state.watchlists[key].tickers = state.watchlists[key].tickers.filter(t => t !== ticker);
+            saveWatchlists();
+            const safeId = getSafeId(ticker);
+            const row = document.getElementById('row-' + safeId);
+            if (row) row.remove();
+            rowNodes.delete(ticker);
+            checkEmptyState(key);
+            fetchNews();
+            break;
+        }
+    }
+}
+
+function toggleSettingsMenu() {
+    const el = document.getElementById('settings-dropdown');
+    if (el) el.classList.toggle('active');
+}
+
+function applyTheme() {
+    document.documentElement.setAttribute('data-theme', state.theme);
+}
+
+function toggleThemeDropdown() {
+    state.theme = state.theme === 'light' ? 'dark' : 'light';
+    localStorage.setItem('marketdash_theme', state.theme);
+    applyTheme();
+    toggleSettingsMenu();
+}
+
+function exportSettings() {
+    const data = { watchlists: state.watchlists, sectionOrder: state.sectionOrder, expanded: state.expanded, theme: state.theme };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'marketdash_backup_' + new Date().toISOString().slice(0, 10) + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    toggleSettingsMenu();
+}
+
+function triggerImport() {
+    const el = document.getElementById('import-file');
+    if (el) el.click();
+    toggleSettingsMenu();
+}
+
+function importSettings(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+        try {
+            const data = JSON.parse(event.target.result);
+            if (data.watchlists && data.sectionOrder) {
+                localStorage.setItem('marketdash_watchlists', JSON.stringify(data.watchlists));
+                localStorage.setItem('marketdash_sectionOrder', JSON.stringify(data.sectionOrder));
+                if (data.expanded) localStorage.setItem('marketdash_expanded', JSON.stringify(data.expanded));
+                if (data.theme) localStorage.setItem('marketdash_theme', data.theme);
+                alert('설정이 복원되었습니다.');
+                location.reload();
+            } else alert('잘못된 파일입니다.');
+        } catch (err) {
+            alert('파일 읽기 오류입니다.');
+        }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+}
+
+function resetToDefaults() {
+    toggleSettingsMenu();
+    if (confirm('모든 설정을 초기화하시겠습니까?')) {
+        localStorage.clear();
+        location.reload();
+    }
+}
+
+function openAboutModal() {
+    toggleSettingsMenu();
+    const el = document.getElementById('about-modal');
+    if (el) el.classList.add('active');
+}
+
+function closeAboutModal() {
+    const el = document.getElementById('about-modal');
+    if (el) el.classList.remove('active');
+}
+
+// =========================================================
+// 8. 데이터 통신 및 화면 갱신 (Fetching & Data Swapping)
+// =========================================================
+async function fetchWithRetry(url, retries = 3, delay = 1000) {
+    for (let i = 0; i < retries; i++) {
+        try {
+            const res = await fetch(url);
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            return await res.text();
+        } catch (err) {
+            if (i === retries - 1) throw err;
+            await new Promise(r => setTimeout(r, delay * Math.pow(2, i)));
+        }
+    }
+}
+
+async function fetchYahooFinance(symbols) {
+    if (symbols.length === 0) return [];
+    if (!navigator.onLine) throw new Error('No network connection.');
+    const query = symbols.join(',');
+    const url = GAS_PROXY_URL + '?symbols=' + encodeURIComponent(query) + '&t=' + Date.now();
+    try {
+        const text = await fetchWithRetry(url);
+        if (text.trim().startsWith('<')) throw new Error('GAS proxy permission denied.');
+        const data = JSON.parse(text);
+        if (data && data.quoteResponse && data.quoteResponse.result) return data.quoteResponse.result;
+        throw new Error('Invalid Data format');
+    } catch (e) {
+        console.error('Yahoo Fetch Error', e);
+        throw e;
+    }
+}
+
+async function fetchNaverFinance(symbols) {
+    if (symbols.length === 0) return [];
+    if (!navigator.onLine) throw new Error('No network connection.');
+    const query = symbols.join(',');
+    const url = NAVER_GAS_PROXY_URL + '?symbols=' + encodeURIComponent(query) + '&t=' + Date.now();
+    try {
+        const text = await fetchWithRetry(url);
+        if (text.trim().startsWith('<')) throw new Error('Naver GAS proxy permission denied.');
+        const data = JSON.parse(text);
+        if (data && data.quoteResponse && data.quoteResponse.result) return data.quoteResponse.result;
+        throw new Error('Invalid Data format');
+    } catch (e) {
+        console.error('Naver Fetch Error', e);
+        throw e;
+    }
+}
+
+async function fetchData() {
+    localStorage.setItem('marketdash_last_fetch_time', Date.now().toString());
+    const promises = [];
+
+    for (const key of state.sectionOrder) {
+        if (!state.expanded[key]) continue;
+        const tickers = state.watchlists[key].tickers;
+        if (tickers.length === 0) continue;
+
+        const chunkSize = 10;
+        const fetchFunc = key === 'kr' ? fetchNaverFinance : fetchYahooFinance;
+
+        for (let i = 0; i < tickers.length; i += chunkSize) {
+            const chunk = tickers.slice(i, i + chunkSize);
+            const p = fetchFunc(chunk).then(data => {
+                updateDOMWithData(data);
+                markMissingData(chunk, data);
+            }).catch(err => {
+                markAllError(chunk, err.message);
+            });
+            promises.push(p);
+        }
+    }
+    await Promise.all(promises);
+    fetchNews();
+}
+
+function startTimer() {
+    if (state.intervalId) clearInterval(state.intervalId);
+    state.intervalId = setInterval(() => {
+        state.countdown--;
+        if (state.countdown <= 0) forceRefresh();
+        else {
+            const el = document.getElementById('countdown');
+            if (el) el.textContent = state.countdown;
+        }
+    }, 1000);
+}
+
+function forceRefresh() {
+    state.countdown = 60;
+    const el = document.getElementById('countdown');
+    if (el) el.textContent = state.countdown;
+    localStorage.setItem('marketdash_last_fetch_time', '0');
+    state.lastNewsFetch = 0;
+    fetchData();
+    startTimer();
+}
+
+function updateDOMWithData(dataArray) {
+    requestAnimationFrame(() => {
+        dataArray.forEach(data => {
+            const symbol = data.symbol;
+            const nodes = rowNodes.get(symbol);
+            if (!nodes || !nodes.row) return;
+
+            // 1. 기본값(정규장) 설정
+            let mainPrice = data.regularMarketPrice || 0;
+            let mainChange = data.regularMarketChange || 0;
+            let mainPct = data.regularMarketChangePercent || 0;
+            let extHtml = '';
+
+            // 2. 연장장(프리/애프터) 데이터 수집
+            let extData = [];
+            if (data.preMarketPrice) {
+                extData.push({ price: data.preMarketPrice, change: data.preMarketChange || 0, pct: data.preMarketChangePercent || 0, label: '🔜', time: data.preMarketTime || 0 });
+            }
+            if (data.postMarketPrice) {
+                extData.push({ price: data.postMarketPrice, change: data.postMarketChange || 0, pct: data.postMarketChangePercent || 0, label: '🔚', time: data.postMarketTime || 0 });
+            }
+
+            // 3. 야후 파이낸스 상태값(marketState) 기반 스왑 로직 (프록시 누락 대비 방어코드 포함)
+            const isRegularMarket = !data.marketState || data.marketState === 'REGULAR'; 
+
+            if (!isRegularMarket && extData.length > 0) {
+                const latestExt = extData.reduce((prev, curr) => prev.time > curr.time ? prev : curr);
+                mainPrice = latestExt.price;
+                mainChange = latestExt.change;
+                mainPct = latestExt.pct;
+
+                const regIsUp = (data.regularMarketChange || 0) >= 0;
+                const regColor = regIsUp ? 'up' : 'down';
+                const regSign = regIsUp ? '+' : '';
+                extHtml = `<span class="ext-label">종가</span> ${formatNum(data.regularMarketPrice)} <span class="${regColor}">(${regSign}${formatPct(data.regularMarketChangePercent || 0)}%)</span>`;
+            } else if (extData.length > 0) {
+                const latestExt = extData.reduce((prev, curr) => prev.time > curr.time ? prev : curr);
+                const extIsUp = latestExt.pct >= 0;
+                const extColor = extIsUp ? 'up' : 'down';
+                const extSign = extIsUp ? '+' : '';
+                extHtml = `<span class="ext-label">${latestExt.label}</span> ${formatNum(latestExt.price)} <span class="${extColor}">(${extSign}${formatPct(latestExt.pct)}%)</span>`;
+            }
+
+            // 4. UI 렌더링 적용
+            const isUp = mainChange >= 0;
+            const colorClass = isUp ? 'up' : 'down';
+            const sign = isUp ? '+' : '';
+            const arrow = isUp ? '▲' : '▼';
+
+            const prevPriceStr = nodes.price.getAttribute('data-price');
+            const prevPrice = prevPriceStr ? parseFloat(prevPriceStr) : null;
+
+            if (prevPrice !== null && prevPrice !== mainPrice) {
+                nodes.row.classList.remove('flash-up', 'flash-down');
+                setTimeout(() => {
+                    if (nodes && nodes.row) {
+                        nodes.row.classList.add(mainPrice > prevPrice ? 'flash-up' : 'flash-down');
+                    }
+                }, 10);
+            }
+
+            nodes.price.setAttribute('data-price', mainPrice);
+            nodes.name.textContent = data.shortName || data.longName || symbol;
+            nodes.price.textContent = formatNum(mainPrice);
+            nodes.extPrice.innerHTML = extHtml; 
+
+            nodes.change.innerHTML = `<span class="${colorClass}">${sign}${formatNum(mainChange)}</span>`;
+            nodes.pct.innerHTML = `<span class="badge ${colorClass}"><span class="arrow">${arrow}</span>${formatPct(Math.abs(mainPct))}%</span>`;
+            nodes.vol.textContent = formatCompact(data.regularMarketVolume);
+            nodes.cap.textContent = formatCompact(data.marketCap);
+
+            if (data.fiftyTwoWeekLow && data.fiftyTwoWeekHigh) {
+                nodes.range.textContent = formatNum(data.fiftyTwoWeekLow) + ' - ' + formatNum(data.fiftyTwoWeekHigh);
+            } else {
+                nodes.range.textContent = '-';
+            }
+        });
+    });
+
+    dataArray.forEach(data => {
+        memoryPriceCache[data.symbol] = data;
+    });
+    saveCacheToStorage();
+}
+
+function markMissingData(chunk, dataArray) {
+    const symbols = new Set(dataArray.map(d => d.symbol));
+    chunk.forEach(sym => {
+        if (!symbols.has(sym)) setErrorState(sym, 'No data');
+    });
+}
+
+function markAllError(chunk, msg) {
+    chunk.forEach(sym => setErrorState(sym, msg));
+}
+
+function setErrorState(sym, msg) {
+    const nodes = rowNodes.get(sym);
+    if (!nodes) return;
+    requestAnimationFrame(() => {
+        nodes.name.textContent = 'Error';
+        nodes.price.innerHTML = `<span class="error-text">${escapeHTML(msg)}</span>`;
+        nodes.extPrice.innerHTML = '';
+        nodes.change.innerHTML = '';
+        nodes.pct.innerHTML = '';
+        nodes.vol.textContent = '-';
+        nodes.cap.textContent = '-';
+        nodes.range.textContent = '-';
+    });
+}
+
+// =========================================================
+// 9. 포맷터 및 뉴스 연동 등 (Utils & News)
+// =========================================================
+function formatNum(val) {
+    if (val === undefined || val === null || isNaN(val)) return '-';
+    const abs = Math.abs(val);
+    let dec = 0;
+    if (abs > 0 && abs < 1) dec = 4;
+    else if (abs > 1000) dec = 0;
+    return new Intl.NumberFormat('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec }).format(val);
+}
+
+function formatPct(val) {
+    if (val === undefined || val === null || isNaN(val)) return '-';
+    return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(val);
+}
+
+function formatCompact(val) {
+    if (!val || isNaN(val)) return '-';
+    return new Intl.NumberFormat('en-US', { notation: 'compact', compactDisplay: 'short', maximumFractionDigits: 2 }).format(val);
+}
+
+async function fetchNews() {
+    const spinner = document.getElementById('news-spinner');
+    const container = document.getElementById('news-container');
+    if (spinner) spinner.style.display = 'block';
+
+    let symbols = [];
+    Object.values(state.watchlists).forEach(w => {
+        symbols = symbols.concat(w.tickers);
+    });
+
+    if (!container) return;
+    if (symbols.length === 0) {
+        container.innerHTML = '<div class="empty-state"><p>No tickers to fetch news.</p></div>';
+        if (spinner) spinner.style.display = 'none';
+        return;
+    }
+
+    try {
+        const url = NEWS_GAS_PROXY_URL + '?symbols=' + encodeURIComponent(symbols.join(',')) + '&t=' + Date.now();
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('Network error');
+        const data = await res.json();
+        state.lastNewsFetch = Date.now();
+        renderNews(data);
+    } catch (e) {
+        console.error(e);
+        container.innerHTML = '<div class="empty-state"><p class="error-text">Failed to load news.</p></div>';
+    } finally {
+        if (spinner) spinner.style.display = 'none';
+    }
+}
+
+function renderNews(data) {
+    const container = document.getElementById('news-container');
+    if (!container) return;
+    if (!data || data.length === 0) {
+        container.innerHTML = '<div class="empty-state"><p>No recent news found.</p></div>';
+        return;
+    }
+
+    const now = Date.now();
+    const formatter = new Intl.DateTimeFormat('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false });
+
+    const html = data.map(item => {
+        const diffMin = Math.floor((now - item.time) / 60000);
+        let timeStr = '';
+        if (diffMin >= 0 && diffMin < 60) {
+            timeStr = diffMin === 0 ? '방금' : diffMin + '분 전';
+        } else {
+            timeStr = formatter.format(new Date(item.time));
+        }
+        const tagClass = item.source === 'Naver' ? 'tag-naver' : 'tag-yahoo';
+        const sourceName = item.publisher ? item.publisher : item.source;
+
+        return `
+            <a href="${item.link}" target="_blank" rel="noopener noreferrer" class="news-item">
+                <div class="news-title">${escapeHTML(item.title)}</div>
+                <div class="news-meta">
+                    <span class="news-time ${diffMin < 60 ? 'recent' : ''}">${timeStr}</span>
+                    <span class="news-tag ${tagClass}">${escapeHTML(sourceName)} - ${escapeHTML(item.symbol)}</span>
+                </div>
+            </a>
+        `;
+    }).join('');
+    container.innerHTML = html;
+}
+
+function initSwipeToDelete() {
+    let startX = 0, startY = 0, target = null, isSwiping = false, isScrolling = false;
+    const dashboard = document.getElementById('dashboard');
+    if (!dashboard) return;
+
+    dashboard.addEventListener('touchstart', e => {
+        const row = e.target.closest('tr');
+        if (!row || e.target.closest('.action-icon-btn') || e.target.closest('.search-wrapper')) return;
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+        target = row;
+        isSwiping = false;
+        isScrolling = false;
+        row.style.transition = 'none';
+    }, { passive: true });
+
+    dashboard.addEventListener('touchmove', e => {
+        if (!target) return;
+        const currentX = e.touches[0].clientX;
+        const currentY = e.touches[0].clientY;
+        const diffX = currentX - startX;
+        const diffY = currentY - startY;
+
+        if (!isSwiping && !isScrolling) {
+            if (Math.abs(diffX) > 10 || Math.abs(diffY) > 10) {
+                if (Math.abs(diffX) > Math.abs(diffY) * 0.5 && diffX < 0) isSwiping = true;
+                else isScrolling = true;
+            }
+        }
+        if (isScrolling) return;
+        if (isSwiping && diffX < 0) {
+            if (e.cancelable) e.preventDefault();
+            const moveX = Math.max(diffX, -100);
+            target.style.transform = `translateX(${moveX}px)`;
+            target.style.opacity = 1 - Math.abs(moveX) / 200;
+        }
+    }, { passive: false });
+
+    dashboard.addEventListener('touchend', e => {
+        if (!target) return;
+        const diffX = e.changedTouches[0].clientX - startX;
+        target.style.transition = 'all 0.3s ease';
+        if (isSwiping && diffX < -50) {
+            confirmRemoveTicker(target.dataset.ticker);
+        }
+        target.style.transform = 'translateX(0)';
+        target.style.opacity = '1';
+        target = null;
+        isSwiping = false;
+        isScrolling = false;
+    });
+}
+
+function initDragAndDrop() {
+    const dashboard = document.getElementById('dashboard');
+    if (!dashboard) return;
+    Sortable.create(dashboard, {
+        handle: '.drag-handle',
+        animation: 200,
+        ghostClass: 'sortable-ghost',
+        delay: 100,
+        delayOnTouchOnly: true,
+        onEnd: function() {
+            state.sectionOrder = Array.from(dashboard.querySelectorAll('.section-container')).map(el => el.dataset.id);
+            localStorage.setItem('marketdash_sectionOrder', JSON.stringify(state.sectionOrder));
+        }
+    });
+
+    state.sectionOrder.forEach(key => {
+        const tbody = document.getElementById('tbody-' + key);
+        if (tbody) {
+            Sortable.create(tbody, {
+                handle: '.drag-handle',
+                animation: 200,
+                ghostClass: 'sortable-ghost',
+                delay: 100,
+                delayOnTouchOnly: true,
+                onEnd: function() {
+                    state.watchlists[key].tickers = Array.from(tbody.querySelectorAll('tr')).map(row => row.dataset.ticker);
+                    saveWatchlists();
+                    checkEmptyState(key);
+                }
+            });
+        }
+    });
+}
+
+// 10. 초기화 실행
+document.addEventListener('DOMContentLoaded', init);
