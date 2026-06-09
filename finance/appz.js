@@ -753,85 +753,83 @@ function updateDOMWithData(quotes) {
             const ticker = quote.symbol; const nodes = rowNodes.get(ticker);
             if (!nodes || !nodes.row) return;
 
-            // 1. 기본 정규장 데이터 세팅
+            // 1. 기본 정규장(종가/장중가) 데이터 세팅
             const regPrice = quote.regularMarketPrice || 0; 
             const regChange = quote.regularMarketChange || 0;
             const regPct = quote.regularMarketChangePercent || 0; 
 
-            // 2. 연장장(프리/애프터) 데이터 수집 및 안전장치(직접 계산) 추가
+            // 2. 연장장(Pre/Post) 데이터 파싱 및 결측치 보정 (직접 계산)
             let preData = null;
             if (quote.preMarketPrice) {
-                // API 누락 시 (프리마켓 가격 - 정규장 종가)로 직접 계산
-                const pChange = quote.preMarketChange !== undefined ? quote.preMarketChange : (quote.preMarketPrice - regPrice);
-                const pPct = quote.preMarketChangePercent !== undefined ? quote.preMarketChangePercent : (pChange / regPrice * 100);
-                preData = { price: quote.preMarketPrice, change: pChange, pct: pPct, label: '🔜', time: quote.preMarketTime || 0 };
+                const change = quote.preMarketChange !== undefined ? quote.preMarketChange : (quote.preMarketPrice - regPrice);
+                const pct = quote.preMarketChangePercent !== undefined ? quote.preMarketChangePercent : (change / regPrice * 100);
+                preData = { price: quote.preMarketPrice, change: change, pct: pct, label: '🔜', time: quote.preMarketTime || 0 };
             }
 
             let postData = null;
             if (quote.postMarketPrice) {
-                // API 누락 시 (애프터마켓 가격 - 정규장 종가)로 직접 계산
-                const pChange = quote.postMarketChange !== undefined ? quote.postMarketChange : (quote.postMarketPrice - regPrice);
-                const pPct = quote.postMarketChangePercent !== undefined ? quote.postMarketChangePercent : (pChange / regPrice * 100);
-                postData = { price: quote.postMarketPrice, change: pChange, pct: pPct, label: '🔚', time: quote.postMarketTime || 0 };
+                const change = quote.postMarketChange !== undefined ? quote.postMarketChange : (quote.postMarketPrice - regPrice);
+                const pct = quote.postMarketChangePercent !== undefined ? quote.postMarketChangePercent : (change / regPrice * 100);
+                postData = { price: quote.postMarketPrice, change: change, pct: pct, label: '🔚', time: quote.postMarketTime || 0 };
             }
 
-            // 3. 현재 시장 상태(marketState)를 기준으로 정확한 데이터 선택 (시간 비교 오류 방지)
+            // 3. 현재 야후 시장 상태값(marketState) 및 시간 비교
             const mState = quote.marketState || 'REGULAR';
+            const isRegular = mState === 'REGULAR';
+
+            // 정규장이 아닐 때 보여줄 최우선 연장장(Active Extended) 데이터 판별
             let activeExt = null;
-            
-            if ((mState.includes('PRE') || mState === 'PREPRE') && preData) {
-                activeExt = preData;
-            } else if ((mState.includes('POST') || mState === 'CLOSED') && postData) {
-                activeExt = postData;
-            } else if (preData || postData) {
-                // 상태값이 모호할 때만 기존처럼 최신 시간 비교로 폴백
-                const extOptions = [preData, postData].filter(Boolean);
-                activeExt = extOptions.reduce((prev, curr) => (prev.time > curr.time) ? prev : curr);
+            if (!isRegular) {
+                if (mState.includes('PRE') && preData) {
+                    activeExt = preData;
+                } else if (mState.includes('POST') && postData) {
+                    activeExt = postData;
+                } else {
+                    // CLOSED 상태일 때: Pre와 Post 중 시간이 더 최신인 데이터를 스왑 대상으로 선정
+                    if (preData && postData) {
+                        activeExt = preData.time > postData.time ? preData : postData;
+                    } else {
+                        activeExt = preData || postData;
+                    }
+                }
             }
 
-            let extPrice, extChangePct, extChange, extLabel;
-            if (activeExt) {
-                extPrice = activeExt.price;
-                extChangePct = activeExt.pct;
-                extChange = activeExt.change;
-                extLabel = activeExt.label;
-            }
-
-            // 4. 렌더링에 사용할 메인 변수 초기화
+            // 4. 화면 출력용 변수 초기화 (메인 & 하단 서브)
             let mainPrice = regPrice;
             let mainChange = regChange;
             let mainPct = regPct;
             let mainIcon = ''; 
-            
-            // 5. 스왑(Swap) 로직
-            const isRegular = mState === 'REGULAR';
+            let subHtml = '';
 
-            if (!isRegular && extPrice) {
-                mainPrice = extPrice;
-                mainChange = extChange;
-                mainPct = extChangePct;
-                mainIcon = extLabel + ' '; // 아이콘 추가 (🔜 또는 🔚)
+            // ★ 5. 핵심 시나리오별 렌더링 로직 적용 ★
+            if (isRegular) {
+                // 시나리오 A [정규장]: 메인 = 정규장 / 하단 = 프리마켓(Pre)
+                if (preData) {
+                    const isExtUp = preData.change >= 0;
+                    const extColor = isExtUp ? 'up' : 'down';
+                    const extSign = isExtUp ? '+' : '';
+                    subHtml = `<span class="ext-label">${preData.label}</span> ${formatNum(preData.price)} <span class="${extColor}">(${extSign}${formatPct(preData.pct)}%)</span>`;
+                }
+            } else if (activeExt) {
+                // 시나리오 B [장외시간]: 메인 = 연장장(Pre/Post) / 하단 = 정규장 종가
+                mainPrice = activeExt.price;
+                mainChange = activeExt.change;
+                mainPct = activeExt.pct;
+                mainIcon = activeExt.label + ' '; // 🔜 또는 🔚
 
                 const regIsUp = regChange >= 0;
                 const regColor = regIsUp ? 'up' : 'down';
                 const regSign = regIsUp ? '+' : '';
-                nodes.extPrice.innerHTML = `<span class="ext-label">종가</span> ${formatNum(regPrice)} <span class="${regColor}">(${regSign}${formatPct(regPct)}%)</span>`;
-            } else if (activeExt) {
-                const isExtUp = extChangePct >= 0;
-                const extColorClass = isExtUp ? 'up' : 'down';
-                const extSign = isExtUp ? '+' : '';
-                nodes.extPrice.innerHTML = `<span class="ext-label">${extLabel}</span> ${formatNum(extPrice)} <span class="${extColorClass}">(${extSign}${formatPct(extChangePct)}%)</span>`;
-            } else {
-                nodes.extPrice.innerHTML = '';
+                subHtml = `<span class="ext-label">종가</span> ${formatNum(regPrice)} <span class="${regColor}">(${regSign}${formatPct(regPct)}%)</span>`;
             }
 
-            // 6. UI 색상 및 부호 결정
+            // 6. UI 색상 및 부호 결정 (메인 데이터 기준)
             const isUp = mainChange >= 0;
             const colorClass = isUp ? 'up' : 'down'; 
             const sign = isUp ? '+' : ''; 
             const arrow = isUp ? '▲' : '▼';
             
-            // 7. 가격 깜빡임 애니메이션
+            // 7. 가격 깜빡임 애니메이션 (메인 가격 기준)
             const oldPriceStr = nodes.price.getAttribute('data-price');
             const oldPrice = oldPriceStr ? parseFloat(oldPriceStr) : null;
             if (oldPrice !== null && oldPrice !== mainPrice) {
@@ -847,15 +845,20 @@ function updateDOMWithData(quotes) {
             nodes.price.setAttribute('data-price', mainPrice);
             nodes.name.textContent = quote.shortName || quote.longName || ticker;
             
-            // 아이콘(mainIcon)이 포함된 최종 가격 텍스트 출력
+            // 아이콘(mainIcon)이 포함된 최종 메인 가격 & 하단(subHtml) 처리
             nodes.price.textContent = mainIcon + formatNum(mainPrice);
+            nodes.extPrice.innerHTML = subHtml;
             
             nodes.change.innerHTML = `<span class="${colorClass}">${sign}${formatNum(mainChange)}</span>`;
             nodes.pct.innerHTML = `<span class="badge ${colorClass}"><span class="arrow">${arrow}</span>${formatPct(Math.abs(mainPct))}%</span>`;
             
             nodes.vol.textContent = formatCompact(quote.regularMarketVolume); 
             nodes.cap.textContent = formatCompact(quote.marketCap);
-            if (quote.fiftyTwoWeekLow && quote.fiftyTwoWeekHigh) nodes.range.textContent = `${formatNum(quote.fiftyTwoWeekLow)} - ${formatNum(quote.fiftyTwoWeekHigh)}`; else nodes.range.textContent = '-';
+            if (quote.fiftyTwoWeekLow && quote.fiftyTwoWeekHigh) {
+                nodes.range.textContent = `${formatNum(quote.fiftyTwoWeekLow)} - ${formatNum(quote.fiftyTwoWeekHigh)}`;
+            } else {
+                nodes.range.textContent = '-';
+            }
         });
     });
 
