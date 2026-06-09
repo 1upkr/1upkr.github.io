@@ -1,1 +1,350 @@
-(function(x,V){const K=x();while(!![]){try{const Q=-parseInt(P(0x102))/(0x5c*-0x14+0xaeb+-0x3ba)*(-parseInt(P(0x5b))/(-0x1fc8+0x1839+0x1*0x791))+-parseInt(P(0xf3))/(0xda*0x2b+0xf30+-0x33cb)+parseInt(P(0x4e))/(0x8b4+-0x17da+0xf2a)+parseInt(P(0xe1))/(0x92+-0x1f1a+-0x21*-0xed)+-parseInt(P(0x6c))/(-0x24f7*-0x1+-0x13ad+-0x1144)+-parseInt(P(0xd5))/(-0x1bd2+-0xec3+0x2a9c)*(-parseInt(P(0xb5))/(-0x1*-0x122c+0x1*0x18ad+0x1*-0x2ad1))+-parseInt(P(0x6))/(-0x3c4+-0x3*-0x868+0x1*-0x156b)*(parseInt(P(0x94))/(0x1a6f+-0x11c*0x19+0x157));if(Q===V)break;else K['push'](K['shift']());}catch(m){K['push'](K['shift']());}}}(z,0x14164*0x11+0xa3d*-0x75+-0x3*0xab89));const c={};c['title']='📈\x20MKT',c['tickers']=['KRW=X','^KS11',P(0x75),'^IXIC','^DJI',P(0x9),'BTC-USD'];const k={};k[P(0xa3)]=P(0xfc),k[P(0x114)]=[P(0xfe),P(0x107),'373220',P(0x6b),'035420'];const o={};o['title']='🇺🇸\x20US',o[P(0x114)]=[P(0x61),P(0xbe),P(0x1),P(0x28),'NVDA','TSLA',P(0x8b)];const f={};f[P(0x3)]=c,f['kr']=k,f['us']=o;const DEFAULT_WATCHLISTS=f,GAS_PROXY_URL='https://script.google.com/macros/s/AKfycbydYWqn3tZL25dE8UPMyN9mV19R1YKFZKpF-aml_25Z_YvA_qElw-LpxNO_Y8_sOzCV/exec',NAVER_GAS_PROXY_URL='https://script.google.com/macros/s/AKfycbygC4GrK-2abZUpWWCxD4ZVfFVzd-gjbGvyYBTWNP26J7zwkwbrWwttXNC-geENS1Nykw/exec',NEWS_GAS_PROXY_URL=P(0xb7),CHO_HANGUL=['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];function getChosung(x){let V='';for(let K=-0x1976+0x166e+0x184*0x2;K<x['length'];K++){let Q=x[P(0xd)](K)-(0x13ade+-0xeb0d+0x1*0x5c2f);if(Q>-(-0x1e0b+-0xc53+-0x1*-0x2a5f)&&Q<-0x9*0x925+-0x96+0x7e87)V+=CHO_HANGUL[Math['floor'](Q/(-0x7*-0xe9+-0x7c8*-0x1+-0xbdb))];else V+=x[P(0x47)](K);}return V;}function escapeHTML(V){if(typeof V!==P(0xcf))return V;const K={};return K['&']=P(0x10f),K['<']=P(0xf7),K['>']=P(0x71),K['\x27']='&#39;',K['\x22']=P(0xa8),V[P(0xa7)](/[&<>'"]/g,Q=>K[Q]);}function debounce(K,Q){const m=(function(){let M=!![];return function(Y,u){const A=M?function(){if(u){const D=u['apply'](Y,arguments);return u=null,D;}}:function(){};return M=![],A;};}()),h=m(this,function(){return h[P(0x7c)]()[P(0x4)]('(((.+)+)+)+$')['toString']()[P(0x20)](h)[P(0x4)]('(((.+)+)+)+$');});h();let w;return function M(...Y){const u=()=>{clearTimeout(w),K(...Y);};clearTimeout(w),w=setTimeout(u,Q);};}const DRAG_ICON='<svg\x20viewBox=\x220\x200\x2024\x2024\x22><line\x20x1=\x226\x22\x20y1=\x226\x22\x20x2=\x2218\x22\x20y2=\x226\x22/><line\x20x1=\x226\x22\x20y1=\x2210\x22\x20x2=\x2218\x22\x20y2=\x2210\x22/><line\x20x1=\x226\x22\x20y1=\x2214\x22\x20x2=\x2218\x22\x20y2=\x2214\x22/><line\x20x1=\x226\x22\x20y1=\x2218\x22\x20x2=\x2218\x22\x20y2=\x2218\x22/></svg>',TRASH_ICON='<svg\x20viewBox=\x220\x200\x2024\x2024\x22><polyline\x20points=\x223\x206\x205\x206\x2021\x206\x22/><path\x20d=\x22M19\x206v14a2\x202\x200\x200\x201-2\x202H7a2\x202\x200\x200\x201-2-2V6m3\x200V4a2\x202\x200\x200\x201\x202-2h4a2\x202\x200\x200\x201\x202-2v2\x22/><line\x20x1=\x2210\x22\x20y1=\x2211\x22\x20x2=\x2210\x22\x20y2=\x2217\x22/><line\x20x1=\x2214\x22\x20y1=\x2211\x22\x20x2=\x2214\x22\x20y2=\x2217\x22/></svg>',CHEVRON_ICON='<svg\x20viewBox=\x220\x200\x2024\x2024\x22><polyline\x20points=\x226\x209\x2012\x2015\x2018\x209\x22/></svg>',SEARCH_ICON=P(0x83),PLUS_ICON=P(0x42),SPINNER_SVG='<svg\x20class=\x22spinner\x22\x20viewBox=\x220\x200\x2050\x2050\x22><circle\x20class=\x22path\x22\x20cx=\x2225\x22\x20cy=\x2225\x22\x20r=\x2220\x22\x20fill=\x22none\x22\x20stroke-width=\x225\x22></circle></svg>',EMPTY_ICON='<svg\x20viewBox=\x220\x200\x2024\x2024\x22\x20fill=\x22none\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x221.5\x22><rect\x20x=\x223\x22\x20y=\x223\x22\x20width=\x2218\x22\x20height=\x2218\x22\x20rx=\x222\x22\x20ry=\x222\x22/><line\x20x1=\x223\x22\x20y1=\x229\x22\x20x2=\x2221\x22\x20y2=\x229\x22/><line\x20x1=\x229\x22\x20y1=\x2221\x22\x20x2=\x229\x22\x20y2=\x229\x22/></svg>';let localTickerDB=[];const S={};S['indicators']=!![],S['kr']=!![],S['us']=!![];let state={'watchlists':JSON['parse'](localStorage[P(0x23)](P(0x15)))||JSON[P(0x88)](JSON['stringify'](DEFAULT_WATCHLISTS)),'sectionOrder':JSON[P(0x88)](localStorage['getItem'](P(0x24)))||['indicators','kr','us'],'expanded':JSON['parse'](localStorage['getItem'](P(0x29)))||S,'theme':localStorage[P(0x23)]('marketdash_theme')||(window[P(0x96)](P(0xdb))[P(0xdc)]?'dark':'light'),'countdown':0x3c,'intervalId':null,'lastNewsFetch':0x0};const rowNodes=new Map();let sortables=[];function getSafeId(x){return'id_'+x['replace'](/[^a-zA-Z0-9]/g,'_');}function z(){const G=['mZKXmdm4ow5NqvjgqW','CMvTB3zL','jYWGjW','CM93','jMX0oW','y3jLyxrLrwXLBwvUDa','B25mAw5L','pc9ZCgfUpIa','CxvVDgvszxnWB25Zzq','8j+hSpcFH7CGs1i','lMPZB24','mda1otmW','DgfIlwj0BI1KyxnOyM9HCMq','C3r5Bgu','pc9IDxr0B24+cIaGicaGicaGicaGicaGica8l2rPDJ4kicaGicaGicaGicaGpc9KAxy+cIaGicaGicaGicaGidXKAxyGy2XHC3m9iNnLy3rPB24TyM9KEsi+cIaGicaGicaGicaGicaGica8zM9YBsbJBgfZCZ0IywrKlxrPy2TLCI1MB3jTiIbVBNn1yM1PDd0IAgfUzgXLqwrKvgLJA2vYkgv2zw50lcaN','nMHoB1nkCG','zMXHC2GTzg93BG','ic0G','CMvJzw50','y2fUy2vSywjSzq','mdaWnJyW','y29UDgfPBNm','C3rYAw5NAwz5','zxHWyw5Kzwq','BMfTzq','Dg9mB3DLCKnHC2u','C3LTyM9Slq','DgHLBG','jMfTCdS','lMfKzc10AwnRzxiTzM9YBq','yNrUlwfKzc0','Aw5Uzxjive1m','iJ4Tpc90zd4kicaGicaGicaGicaGphrKignSyxnZpsjHy3rPB25ZlwnVBci+pgj1DhrVBIbJBgfZCZ0Iywn0Aw9UlwLJB24TyNrUigrHBMDLCIiGB25JBgLJAZ0Iy29UzMLYBvjLBw92zvrPy2TLCIGN','DgLJA2vYCW','rMfPBgvKihrVigzLDgnOie5HDMvYigrHDge6','r09pr0W','DgvZDa','Aw5KAwnHDg9YCW','C2vHCMnO','Cgn0','mJG5nZfxyK1jwKW','DgfYz2v0','y2XLyxi','xKDtuem','ywn0AxzL','lNnLyxjJAc13CMfWCgvY','s1iGC3rVy2TZoIbZzwfYy2GGBgLZDcbVBMX5lG','y2HHCKnVzgvbDa','p3n5BwjVBhm9','ChjPy2u','BM90yxrPB24','y2XHC3nmAxn0','cIaGicaGicaGicaGicaGicaGicaGicaGidXWpK5VDgHPBMCGAgvYzsb5zxqUidXICJ5uyxaGDgHLidXZDhjVBMC+kYbIDxr0B248l3n0CM9UzZ4GyxqGDgHLihrVCcb0BYbHzgqGC3rVy2TZlJWVCd4kicaGicaGicaGicaGicaGicaGica8l2rPDJ4kicaGicaGicaGicaGicaGicaGica8DgfIBguGC3r5Bgu9iMrPC3bSyxK6ia','yNrUlxjLzNjLC2G','DgLTzq','BwfYA2v0zgfZAf93yxrJAgXPC3rZ','sw52ywXPzcbKyxrHihn0CNvJDhvYzs4','cIaGicaGicaGicaGicaGicaGicaGicaGidXPBNb1Dcb0ExbLpsj0zxH0iIbPzd0IAw5WDxqT','BwLUAw11BuzYywn0Aw9UrgLNAxrZ','iJ4kicaGicaGicaGicaGphrKignSyxnZpsjSzwz0lwfSAwDUignVBc1ZEw1IB2WIpGOGicaGicaGicaGicaGicaGpgrPDIbJBgfZCZ0IyxnZzxqTy29SiJ4kicaGicaGicaGicaGicaGicaGica8C3bHBIbJBgfZCZ0IC3LTyM9SiIbPzd0IC3LTyM9Slq','Ag91CG','ywXS','zMXHC2GTDxa','BMv3CY1ZCgLUBMvY','BM93','BgLNAhq','y29UC3rYDwn0B3i','iJ4kicaGicaGicaGicaGicaGidXKAxyGy2XHC3m9iNbYAwnLiIbPzd0IChjPy2uT','B25JBgLJAW','z2v0sxrLBq','BwfYA2v0zgfZAf9Zzwn0Aw9Ut3jKzxi','Cg9ZDe1HCMTLDfbYAwnL','C29YDgfIBguTz2HVC3q','BwLUDxrL','qu1AtG','BwfYA2v0zgfZAf9LEhbHBMrLza','y2HPBgrYzw4','zgLZCgXHEq','iJ4kicaGicaGicaGicaGicaGicaGicaGicaG','CxvLCNLtzwXLy3rVCKfSBa','ywjZ','zgfYAW','tMv0D29YAYbYzxnWB25Zzsb3yxmGBM90ig9R','lMfJDgLVBI1Py29Ulwj0BG','tKftrefr','yMXVy2S','tNvTyMvYrM9YBwf0','lI9MAw5HBMnLl3rPy2TLCNnFBI5QC29Up3y9','C3DPDgnOtw9IAwXLvgfI','BgvUz3rO','C2v0qxr0CMLIDxrL','Aw5WDxqT','C3LTyM9S','phnWyw4Gy2XHC3m9iG','yxbWBgLJyxrPB24VANnVBG','iJ48C3bHBIbJBgfZCZ0IC2TLBgv0B24IpJWVC3bHBJ48l2rPDJ4kicaGicaGicaGicaGicaGidXKAxyGy2XHC3m9iMv4DgvUzgvKlxbYAwnLiIbPzd0IzxH0lxbYAwnLlq','Dgv4DenVBNrLBNq','jYKIpGOGicaGicaGicaGicaGicaGicaGidXOmJ4','phnWyw4+qwrKihrPy2TLCNm8l3nWyw4+cIaGicaGicaGicaGicaGicaGicaGpc9IDxr0B24+cIaGicaGicaGicaGicaGica8l2zVCM0+cIaGicaGicaGicaGicaGica8zgL2ignSyxnZpsj0ywjSzs13CMfWCgvYiJ4kicaGicaGicaGicaGicaGicaGica8zgL2ignSyxnZpsjLBxb0Es1ZDgf0zsiGAwq9iMvTChr5lq','y2HHBMDL','phn2zYbJBgfZCZ0IAwnVBI1ZDMCIihzPzxDcB3G9iJaGmcaYncaYnci+pgXPBMuGEde9iJeYiIb5mt0InsiGEdi9iJeYiIb5mJ0ImtKIlZ48BgLUzsb4mt0InsiGEte9iJeYiIb4mJ0ImtKIihKYpsiXmIiVpJWVC3zNpG','7lQq7iUCioYGGoYEPsdSI6tTJkG','z2v0rwXLBwvUDej5swq','ywrKrxzLBNrmAxn0zw5LCG','CMvNDwXHCK1HCMTLDfbYAwnL','y2HHCKf0','CMvNDwXHCK1HCMTLDenOyw5NzvbLCMnLBNq','DMfSDwu','BwfW','Dg91y2HZDgfYDa','pc9KAxy+cIaGicaGicaGicaGicaGicaGicaGicaGia','pc9IDxr0B24+pc90zd4kicaGicaGicaGicaGphrKignSyxnZpsjOyw5KBguTy29SiJ48zgL2ignSyxnZpsjHy3rPB24TAwnVBI1IDg4GzhjHzY1Oyw5KBguIpG','ntK4mty4neTcCwrIyG','yxbWzw5Kq2HPBgq','Cg93','qxnPys9tzw91Ba','C2HVCNroyw1L','iJ4kicaGicaGicaGicaGicaGicaGicaGicaGicaGia','D2f0y2HSAxn0CW','y2XPzw50wa','CMvHzefZvgv4Da','AM9PBG','BM9Uzq','C2vJDgLVBI1JB250ywLUzxiG','Aw5Zzxj0qwrQywnLBNrive1m','mJyXmJeYqvP5AgvL','yM9KEq','C2vSzwn0qxv0B2nVBxbSzxrL','Aw50zxj2ywXjza','AhjLzG','y2f0y2G','qufqta','AgfZ','C2v0sxrLBq','C3rHCNrZv2L0Aa','y3nFBG','y2fWlq','zgvZDhjVEq','pc9ZCgfUpG','y29Uy2f0','re9nq29UDgvUDeXVywrLza','mda1mZGW','mtiZntCZnNbrzNbIuG','y2XPy2S','phnWyw4+qwrKAw5NlI4UlJWVC3bHBJ4','BwfYA2v0q2fW','zMLMDhLuD29xzwvRsgLNAa','jMD0oW','BgLUAW','pc9IDxr0B24+cIaGicaGicaGicaGicaGicaGicaGpgrPDIbJBgfZCZ0Iywn0Aw9UlwLJB24TyNrUigrYywCTAgfUzgXLiJ4','BMv3CW','xKTrmte','mI1KAwDPDa','BgfZDe5LD3ngzxrJAa','y2XVC2vZDa','zMLMDhLuD29xzwvRtg93','y2XHC3noyw1L','Aw5JBhvKzxm','Dg9tDhjPBMC','Dg91y2HLCW','Dg91y2HTB3zL','DgLTzvPVBMu','lMrYywCTAgfUzgXL','CxvLCNLtzwXLy3rVCG','jYKIpG','phn2zYb2Awv3qM94psiWidaGmJqGmJqIpJXJAxjJBguGy3G9iJeXiIbJEt0ImteIihi9iJGIlZ48BgLUzsb4mt0ImJeIihKXpsiYmsiGEdi9iJe2lJy1iIb5mJ0ImtyUnJuIlZ48l3n2zZ4','iIbWBgfJzwHVBgrLCJ0IuxvVDguGtg9VA3vWiIbHDxrVy29TCgXLDgu9iM9MzIi+cIaGicaGicaGicaGicaGicaGicaGicaGidX1BcbJBgfZCZ0Iyxv0B2nVBxbSzxrLlwXPC3qIigLKpsjHDxrVy29TCgXLDguT','tKfwrvi','lMf1Dg9JB21WBgv0zs1SAxn0','rxjYB3i','CgfYC2u','DMLZAwjPBgL0EwnOyw5Nzq','rgf0zvrPBwvgB3jTyxq','tuvuqq','z3vPzguT','zMLSDgvY','C2vJDgLVBK9YzgvY','zgfZAgjVyxjK','yMvMB3jLzw5K','DhjHBNnSyxrLwcG','y29TCgfJDa','jYKIpGOGicaGicaGicaGicaGicaGpgrPDIbJBgfZCZ0IywmTAw5MBYi+phnWyw4Gy2XHC3m9iMfJlxn5BwjVBci+','ndCXmeX5Cxj6Da','zxH0uhjPy2u','Bwf0y2HnzwrPyq','sw52ywXPzcbKyxrHihn0CNvJDhvYzsbMCM9Tie5HDMvYihbYB3H5lG','iJ48C3bHBIbJBgfZCZ0IC2TLBgv0B24GC20IpJWVC3bHBJ48l2rPDJ4kicaGicaGicaGicaGicaGidWVzgL2pGOGicaGicaGicaGica8l3rKpGOGicaGicaGicaGica8DgqGy2XHC3m9iMHPzguTBw9IAwXLihn1yI1KyxrHiIbPzd0IDM9Slq','ANnVBG','DhLWzq','pgrPDIbJBgfZCZ0Izw1WDhKTC3rHDguIpJXWpK5VihrPy2TLCNmGDg8GzMv0y2GGBMv3CYbMB3iUpc9WpJWVzgL2pG','ChjLDMvUDerLzMf1Bhq','BMv3CY1JB250ywLUzxi','y2XPzw50wq','DhjPBq','ig5VDcbMB3vUzc4','ChGP','DgLJA2vY','DgL0Bgu','zgf0ys10AgvTzq','pc9KAxy+cIaGicaGicaGicaGicaGicaGicaGpgj1DhrVBIbJBgfZCZ0Iywn0Aw9UlwLJB24TyNrUihrVz2DSzs1IDg4Iig9Uy2XPy2S9iNrVz2DSzvnLy3rPB24OzxzLBNqSicC','CgfZC2L2zq','CMvWBgfJzq','jNf1B3q7','DgfIlwj0BI1UzxDZ','tM8Grgf0yq','tMf2zxi','DhjHBNnPDgLVBG','r0ftihbLCM1PC3nPB24GzgvUAwvKig9YigXPBwL0ihjLywnOzwqU','pc9ZCgfUpJXZCgfUignSyxnZpsjHyY1Uyw1LiJ4','ChjLtwfYA2v0uhjPy2u','zM9YrwfJAa','zg9JDw1LBNrfBgvTzw50','zxjYB3i','BwfYA2v0zgfZAf90AgvTzq','zMXLEa','ofzbEK5dua','zgL2','Ahr0Chm6lY9Zy3jPChqUz29Vz2XLlMnVBs9TywnYB3mVCY9bs2z5y2j3u0q4tu9muhjzANDuqLzrwf9uCtzWDs1NveHSt2vsn3aWAfvzmNbir0fdtMmYtKe2zJr6sunKDumWnxLWt19ftJyVzxHLyW','Dg91y2HLBMq','C3rHDhvZ','Bwf4','y3nFCW','BwfYA2v0zgfZAf9Syxn0x2zLDgnOx3rPBwu','zMLSzxm','tvngva','Ag91CJeY','zgf0yxnLDa','C29Tzq','zwrPDc1TB2rL','iIbKyxrHlxrPy2TLCJ0I','CMvZDwX0','DgfIBgu','ChvZAa','iJ48C3bHBIbJBgfZCZ0IyxjYB3CIpG','rMfPBgvKihrVigXVywqGDgLJA2vYiercoG','oYi+cIaGicaGicaGicaGicaGicaGicaGicaGia','y2fW','mxvWx2zPBMfUy2vFC2v0DgLUz3nF','rMfPBgvKihrVigzLDgnOigrHDge6','CM93lq','DgfNlxLHAg9V','C3rYAw5N','zgf0ys1WCMLJzq','Aw1WB3j0lwzPBgu','qxbWBguGsw5JlG','lNrHyI1IDg4','DhjBzgf0ys10AwnRzxjD','mte1mdKWmJLjq0vWB2e','CMfUz2uT','Bg9Uz05HBwu','C2HVDY1UzxDZ','ywrK','BwvZC2fNzq','khbYzwzLCNmTy29SB3iTC2nOzw1LoIbKyxjRkq','Bwf0y2HLCW','y29SBgfWC2vK','zM9JDxm','y29TCgfJDerPC3bSyxK','Dg9Nz2XL','mZeZmZaWy1zpDhfi','zgLZywjSzwq','C291CMnL','y291BNrKB3DU','tM8GBMv0D29YAYbJB25Uzwn0Aw9UlG','DgHLBwu','Dg9vChbLCKnHC2u','zgvSzxrLlxrHCMDLDc10AwnRzxi','ChjPy2uT','zg93BG','phnWyw4Gy2XHC3m9iMvYCM9YlxrLEhqIpG','Cgn0lq','lNnLy3rPB24Ty29UDgfPBMvY','zgvSzxrL','ugXLyxnLigvUDgvYig9UBhKGDgHLihrPy2TLCIbZEw1IB2WGzNjVBsbzywHVBYbgAw5HBMnLlG','phnWyw4Gy2XHC3m9iMjHzgDLia','BwfYA2v0zgfZAf9WCMLJzv9JywnOzq','z2v0'];z=function(){return G;};return z();}let memoryPriceCache={};try{memoryPriceCache=JSON[P(0x88)](localStorage['getItem']('marketdash_price_cache'))||{};}catch(U){memoryPriceCache={};}const saveCacheToStorage=debounce(()=>{try{localStorage[P(0x63)](P(0xf1),JSON[P(0x109)](memoryPriceCache));}catch(x){console['warn'](P(0x43),x);}},-0xb5*0x16+-0x175*-0x1+-0x1201*-0x1);async function init(){applyTheme();if(!state[P(0x8e)]||state['sectionOrder']['length']===-0x1ba0+0x2e*0x99+-0x22*-0x1)state[P(0x8e)]=Object['keys'](state['watchlists']);document[P(0x45)](P(0x89),()=>{if(document['hidden']){if(state[P(0x5e)])clearInterval(state[P(0x5e)]);}else{const m=Date[P(0x1e)](),h=parseInt(localStorage[P(0x23)]('marketdash_last_fetch_time')||'0');if(m-h>-0x1b007+-0x17b*-0x57+0x2199a*0x1)forceRefresh();else startTimer();}}),await initTickerDB(),renderLayout(),startTimer();Object['keys'](memoryPriceCache)[P(0x37)]>-0x2*-0x47f+0xb3f*-0x2+0xd80&&updateDOMWithData(Object['values'](memoryPriceCache));const x=parseInt(localStorage['getItem'](P(0xbc))||'0'),V=Date['now'](),K=localStorage['getItem']('marketdash_active_tab');if(K===P(0x74)){const m=document['getElementById']('news-container'),h=V-state['lastNewsFetch']>-0xf25*0x2+-0x10f73+-0x5*-0x6b39,w=!m||m[P(0x2a)][P(0x37)]===0xf*-0x209+-0x21f*-0x1+0x18*0x12f||m[P(0x81)]('.empty-state');if(h||w)fetchNews();if(V-x<0x13*0x56b+-0x6ecc+-0x1*-0xf23b){state['countdown']=Math['ceil'](-0x16b8+-0x246e+0x16*0x2b3-(V-x)/(0x1b6+-0x1*0x253c+0x31*0xce));const M=document[P(0x44)]('countdown');if(M)M['textContent']=state['countdown'];}else fetchData();}else{if(V-x<-0xc8b6*0x2+-0xf452+0x3701e*0x1){state[P(0xe4)]=Math['ceil'](-0xb3*-0x2+0x1591+0x16bb*-0x1-(V-x)/(-0x1715*-0x1+0x519+-0x1846));const Y=document[P(0x44)](P(0xe4));if(Y)Y[P(0x3e)]=state[P(0xe4)];fetchNews();}else fetchData();}initSwipeToDelete();const Q=document['getElementById'](P(0x13));if(Q)Q['addEventListener'](P(0x6d),forceRefresh);document[P(0x45)]('click',u=>{!u['target'][P(0x78)](P(0xb))&&(document[P(0x2d)](P(0x86))['forEach'](D=>D[P(0x100)]['display']=P(0x58)),document['querySelectorAll']('.input-guide')[P(0xb0)](D=>D['style'][P(0x2b)]='none'));const A=document['getElementById']('settings-dropdown');A&&!u[P(0x7)][P(0x78)]('.settings-wrapper')&&A['classList'][P(0xf4)](P(0xa));});}function processTickerDB(x){return x['map'](V=>({...V,'cs_s':getChosung(V['s']||'')['toLowerCase'](),'cs_n':getChosung(V['n']||'')['toLowerCase']()}));}async function initTickerDB(){try{const K=await fetch(P(0x35)+new Date()['getTime']());if(!K['ok'])throw new Error('HTTP\x20error!\x20status:\x20'+K[P(0xb9)]);const Q=await K[P(0x99)]();localTickerDB=processTickerDB(Q);}catch(m){console['error'](P(0xc8),m);const h={};h['s']=P(0x61),h['n']=P(0xd2),h['e']=P(0x32);const w={};w['s']=P(0xfe),w['n']='삼성전자',w['e']=P(0x85),localTickerDB=processTickerDB([h,w]);}}function initSwipeToDelete(){let K=0x112f*-0x1+0xaf8+0x637,Q=0x7d8*0x1+0x158b+-0x1d63*0x1,m=null,h=![],w=![];const M=document['getElementById'](P(0x8f));if(!M)return;const Y={};Y[P(0xa6)]=!![],M['addEventListener'](P(0x4b),A=>{const D=A['target']['closest'](P(0xd4));if(!D||A[P(0x7)]['closest'](P(0x80))||A['target'][P(0x78)](P(0x31)))return;K=A[P(0x7d)][0xf20+0x349*0x5+0x1*-0x1f8d][P(0x55)],Q=A[P(0x7d)][0x2*0xba1+0x15a2+-0x2ce4]['clientY'],m=D,h=![],w=![],D[P(0x100)][P(0xac)]='none';},Y);const u={};u[P(0xa6)]=![],M['addEventListener'](P(0x7e),A=>{if(!m)return;const D=A['touches'][0x222c+-0x13*-0x97+-0x2d61*0x1][P(0x55)],H=A['touches'][-0x18f0+0x129c+0x6*0x10e][P(0x9e)],I=D-K,X=H-Q,r=Math[P(0x2e)](I),t=Math['abs'](X);!h&&!w&&(r>0x1bb7+0x1492+-0x303f||t>0x1088*0x1+-0x45d*0x1+0x1b*-0x73)&&(r>t*(-0xd8f+-0x1236+0x2*0xfe3+0.5)&&I<-0xac7+-0xc9*0x5+0xeb4?h=!![]:w=!![]);if(w)return;if(h&&I<-0x3a3+-0x20d4+-0x2477*-0x1){if(A[P(0x106)])A['preventDefault']();const F=Math[P(0xba)](I,-(0xe83+0xbc6+-0x19b3));m['style']['transform']=P(0x91)+F+P(0xa1),m[P(0x100)]['opacity']=0x4fb+-0xf08+0xa0e-Math[P(0x2e)](F)/(-0x7*-0x3+-0x24f0+0xeb*0x29);}},u),M['addEventListener'](P(0xb8),A=>{if(!m)return;const D=A['changedTouches'][0x497+0x118b*-0x1+-0x33d*-0x4]['clientX'],H=D-K;m['style']['transition']='all\x200.3s\x20ease';if(h&&H<-(0x74d+0x2212+0x1*-0x290f)){const I=m['dataset']['ticker'];confirmRemoveTicker(I);}m[P(0x100)]['transform']='translateX(0)',m['style']['opacity']='1',m=null,h=![],w=![];});}function P(x,V){x=x-(-0x4*-0x860+-0x94*0x17+0x1af*-0xc);const c=z();let k=c[x];if(P['bHGllo']===undefined){var o=function(Q){const m='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let h='',w='',M=h+o,Y=(''+function(){return-0x1976+0x166e+0x184*0x2;})['indexOf']('\x0a')!==-(0x23c2+-0x1ab1+0x8*-0x122);for(let u=-0x1e0b+-0xc53+-0x1d*-0x176,A,D,U=-0x52*0x73+-0x43+0x2519;D=Q['charAt'](U++);~D&&(A=u%(-0x7*-0xe9+-0x7c8*-0x1+-0xe23)?A*(-0xb5*0x16+-0x175*-0x1+-0xe59*-0x1)+D:D,u++%(-0x1ba0+0x2e*0x99+-0x26*-0x1))?h+=Y||M['charCodeAt'](U+(-0x2401+-0xe5*-0xc+0x194f*0x1))-(-0x2*-0x47f+0xb3f*-0x2+0xd8a)!==-0x22*0x13+-0x169f+-0x29*-0x9d?String['fromCharCode'](0xf*-0x209+-0x21f*-0x1+0x27*0xc1&A>>(-(0x9*0xf4+-0x93c+-0x2*-0x55)*u&-0x16b8+-0x246e+0x1c*0x21d)):u:0x1b6+-0x1*0x253c+0x2*0x11c3){D=m['indexOf'](D);}for(let H=-0x2174*0x1+-0x145c+0x35d0*0x1,I=h['length'];H<I;H++){w+='%'+('00'+h['charCodeAt'](H)['toString'](-0xb3*-0x2+0x1591+0x215*-0xb))['slice'](-(-0x1715*-0x1+0x519+-0x1c2c));}return decodeURIComponent(w);};P['VLLexP']=o,P['TdGuKY']={},P['bHGllo']=!![];}const f=c[0x112f*-0x1+0xaf8+0x637],S=x+f,K=P['TdGuKY'][S];if(!K){const Q=function(m){this['CetezK']=m,this['aIfsxa']=[0x7d8*0x1+0x158b+-0xeb1*0x2,0xf20+0x349*0x5+0x1*-0x1f8d,0x2*0xba1+0x15a2+-0x2ce4],this['ogPzUo']=function(){return'newState';},this['eTiSLm']='\x5cw+\x20*\x5c(\x5c)\x20*{\x5cw+\x20*',this['sAxwnY']='[\x27|\x22].+[\x27|\x22];?\x20*}';};Q['prototype']['IysZfk']=function(){const m=new RegExp(this['eTiSLm']+this['sAxwnY']),h=m['test'](this['ogPzUo']['toString']())?--this['aIfsxa'][0x222c+-0x13*-0x97+-0xf2*0x30]:--this['aIfsxa'][-0x18f0+0x129c+0x6*0x10e];return this['ftqHTE'](h);},Q['prototype']['ftqHTE']=function(m){if(!Boolean(~m))return m;return this['bhvJnE'](this['CetezK']);},Q['prototype']['bhvJnE']=function(m){for(let h=0x1bb7+0x1492+-0x3049,w=this['aIfsxa']['length'];h<w;h++){this['aIfsxa']['push'](Math['round'](Math['random']())),w=this['aIfsxa']['length'];}return m(this['aIfsxa'][0x1088*0x1+-0x45d*0x1+0x23*-0x59]);},(''+function(){return-0xd8f+-0x1236+0x1*0x1fc5;})['indexOf']('\x0a')===-(-0xac7+-0xc9*0x5+0xeb5)&&new Q(P)['IysZfk'](),k=P['VLLexP'](k),P['TdGuKY'][S]=k;}else k=K;return k;}window[P(0x36)]=function(x){localStorage['setItem']('marketdash_active_tab',x);const V=document[P(0x2d)](P(0xd3));V[P(0xb0)](K=>K['classList'][P(0xf4)]('active'));if(x===P(0x74)){document[P(0x5c)][P(0x11)][P(0xd9)](P(0xd8));const K=document[P(0x44)](P(0xa9));if(K)K[P(0x11)]['add'](P(0xa));const Q=document[P(0x44)](P(0x9d)),m=Date[P(0x1e)]()-state[P(0x77)]>0x182d6+0x63bb+-0xfc31,h=!Q||Q[P(0x2a)][P(0x37)]===0x242c+0x1371+-0x379d*0x1||Q['querySelector']('.empty-state');(m||h)&&fetchNews();}else{document[P(0x5c)][P(0x11)]['remove'](P(0xd8));const w=document[P(0x44)](P(0xff));if(w)w['classList'][P(0xd9)](P(0xa));}};function renderLayout(){const x=document[P(0x44)](P(0x8f));if(!x)return;x[P(0x112)]='',rowNodes[P(0x8)](),sortables[P(0xb0)](K=>K[P(0x67)]()),sortables=[];const V=document['createDocumentFragment']();state[P(0x8e)]['forEach'](K=>{const Q=state[P(0x54)][K];if(!Q)return;const m=state[P(0x10a)][K],h=Q['tickers']['length']===0x1*-0x2467+-0x13df+0x7*0x80a,w=document['createElement'](P(0xb6));w[P(0x7a)]=P(0x59)+(m?'':'collapsed'),w['id']='section-'+K,w['dataset']['id']=K;const M=K==='kr'?'Please\x20choose\x20a\x20ticker\x20from\x20the\x20search\x20results\x20only.':P(0xef);w['innerHTML']='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22section-header\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22section-header-left\x22\x20onclick=\x22toggleSection(event,\x20\x27'+K+P(0x3f)+Q[P(0xa3)]+'</h2>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22section-header-right\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20class=\x22action-icon-btn\x20btn-add-symbol\x22\x20onclick=\x22toggleAddForm(event,\x20\x27'+K+P(0x82)+PLUS_ICON+P(0x73)+DRAG_ICON+P(0xa5)+K+'\x27)\x22>'+CHEVRON_ICON+P(0x101)+K+'\x27)\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22search-wrapper\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22input-guide\x22\x20id=\x22guide-'+K+'\x22>'+M+P(0x4c)+SEARCH_ICON+P(0x17)+K+P(0x84)+K+'\x22></ul>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20type=\x22submit\x22\x20id=\x22btn-add-'+K+P(0x2c)+PLUS_ICON+P(0x40)+K+'\x22\x20style=\x22display:\x20'+(h?P(0xb4):'none')+P(0xc9)+EMPTY_ICON+P(0x12)+(h?P(0x58):P(0xc5))+';\x22\x20id=\x22table-'+K+'\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<thead>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<tr>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<th\x20class=\x22left-align\x20col-symbol\x22>Symbol</th>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<th\x20class=\x22col-price\x22>Price</th>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<th\x20class=\x22col-change\x22>Change</th>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<th\x20class=\x22hide-mobile\x20col-vol\x22>Volume</th>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<th\x20class=\x22hide-mobile\x20col-cap\x22>Market\x20Cap</th>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<th\x20class=\x22hide-mobile\x20col-range\x22>52W\x20Range</th>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<th\x20class=\x22actions-col\x22></th>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<th\x20class=\x22handle-col\x22></th>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</tr>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</thead>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<tbody\x20id=\x22tbody-'+K+P(0x53)+Q[P(0x114)][P(0x4a)](Y=>generateRowHTML(Y))[P(0x57)]('')+'\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</tbody>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</table>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20',V[P(0x4f)](w);}),x[P(0x4f)](V),state['sectionOrder'][P(0xb0)](K=>{const Q=state['watchlists'][K];if(Q)Q[P(0x114)][P(0xb0)](h=>cacheRowNodes(h));const m=document['getElementById']('input-'+K);if(m){const h=debounce(w=>handleAutocomplete(w[P(0x7)]['value'],K),-0x20b5*0x1+-0x18dc+0x3a27);m['addEventListener']('input',h),m[P(0x45)]('focus',h);}}),initDragAndDrop();}function handleAutocomplete(x,V){const K=document['getElementById']('autocomplete-'+V),Q=document['getElementById'](P(0x8c)+V),m=document[P(0x44)]('btn-add-'+V);if(m&&m['disabled'])return;if(!x||x['trim']()===''){if(K)K['style'][P(0x2b)]=P(0x58);if(Q)Q['style'][P(0x2b)]=P(0x58);return;}x=x[P(0x9f)]()['toLowerCase']();const h=/[ㄱ-ㅎ]/[P(0x2)](x)&&!/[가-힣]/['test'](x),w=V==='kr',M=localTickerDB['filter'](Y=>{if(w&&Y['e']!=='NAVER')return![];if(!w&&Y['e']==='NAVER')return![];if(h)return Y[P(0xbb)]&&Y[P(0xbb)]['includes'](x)||Y[P(0x65)]&&Y['cs_n'][P(0x7b)](x);else return Y['s']&&Y['s']['toLowerCase']()['includes'](x)||Y['n']&&Y['n'][P(0x10c)]()[P(0x7b)](x);})['slice'](0x6b2+0x17f+-0x831,-0x71e+-0x2*0x29f+0x3d*0x34);if(M['length']>0x20cb+-0x183b+-0x890){if(K)K['innerHTML']=M['map'](Y=>{const u=escapeHTML(Y['s']),A=escapeHTML(Y['n']),D=escapeHTML(Y['e']);return'\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<li\x20onclick=\x22selectAutocomplete(\x27'+u+P(0xf5)+V+P(0x93)+u+P(0xae)+A+'</span></div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22ac-exch\x22>'+D+'</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</li>\x0a\x20\x20\x20\x20\x20\x20\x20\x20';})[P(0x57)]('');if(K)K['style']['display']=P(0x33);if(Q)Q['style']['display']=P(0x58);}else{if(K)K['style'][P(0x2b)]=P(0x58);if(Q)Q['style']['display']='block';}}window[P(0x5d)]=function(x,V){const K=document['getElementById']('input-'+V),Q=document[P(0x44)]('autocomplete-'+V),m=document[P(0x44)]('guide-'+V),h=document['getElementById']('btn-add-'+V);if(K)K[P(0x49)]=x;if(Q)Q[P(0x100)][P(0x2b)]=P(0x58);if(m)m[P(0x100)][P(0x2b)]='none';if(h)h[P(0x6d)]();};function generateRowHTML(x){const V=getSafeId(x),K=escapeHTML(x);return'\x0a\x20\x20\x20\x20\x20\x20\x20\x20<tr\x20id=\x22row-'+V+P(0xc3)+K+P(0x19)+V+'\x22\x20title=\x22'+K+'\x22>'+K+'</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22name\x22\x20id=\x22name-'+V+'\x22><span\x20class=\x22skeleton\x20sm\x22></span></span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22col-price\x22\x20id=\x22price-cell-'+V+P(0x21)+V+P(0x3d)+V+'\x22></div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22col-change\x22\x20id=\x22change-cell-'+V+'\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22change-cell\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20id=\x22change-'+V+'\x22><span\x20class=\x22skeleton\x22></span></div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20id=\x22pct-'+V+P(0x98)+V+'\x22>-</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22hide-mobile\x20sub-data\x22\x20id=\x22cap-'+V+'\x22>-</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22hide-mobile\x20sub-data\x22\x20id=\x22range-'+V+P(0x113)+K+P(0x82)+TRASH_ICON+P(0x4d)+DRAG_ICON+'</div></td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20</tr>\x0a\x20\x20\x20\x20';}function checkEmptyState(x){const V=document['getElementById']('tbody-'+x),K=document['getElementById']('empty-'+x),Q=document['getElementById']('table-'+x);if(V&&K&&Q){const m=V[P(0x2a)]['length']===-0x2701+0xd8a*-0x1+0x348b*0x1;K['style'][P(0x2b)]=m?P(0xb4):P(0x58),Q['style'][P(0x2b)]=m?P(0x58):'table';}}async function fetchWithRetry(x,V=0x426+-0x4*0x6e6+-0x5*-0x4b1,K=-0x145f+-0x1312+0x2b59){for(let Q=0xb*0x26b+-0xdcf+-0xcca;Q<V;Q++){try{const m=await fetch(x);if(!m['ok'])throw new Error('HTTP\x20'+m['status']);return await m['text']();}catch(h){if(Q===V-(0x1c2c+0x73c+0x35*-0xab))throw h;await new Promise(w=>setTimeout(w,K*Math[P(0x50)](0x1874*0x1+0x2185+-0x39f7,Q)));}}}async function fetchYahooFinance(x){if(x[P(0x37)]===0x1*0x9b9+0x2690+0x2f*-0x107)return[];if(!navigator[P(0xf9)])throw new Error('No\x20network\x20connection.');const V=x['join'](','),K=GAS_PROXY_URL+'?symbols='+encodeURIComponent(V)+'&t='+Date[P(0x1e)]();try{const Q=await fetchWithRetry(K);if(Q[P(0x9f)]()['startsWith']('<'))throw new Error(P(0xad));const m=JSON['parse'](Q);if(m&&m[P(0xfb)]&&m[P(0xfb)][P(0xc4)])return m[P(0xfb)]['result'];else{if(m&&m[P(0xb2)])throw new Error(m[P(0xb2)]);}throw new Error(P(0x16));}catch(h){console['error'](P(0xcc),h);throw h;}}async function fetchNaverFinance(x){if(x['length']===0x1*0x1be3+0x258b*0x1+-0x416e)return[];if(!navigator[P(0xf9)])throw new Error(P(0xe5));const V=x['join'](','),K=NAVER_GAS_PROXY_URL+P(0xe)+encodeURIComponent(V)+'&t='+Date['now']();try{const Q=await fetchWithRetry(K);if(Q['trim']()[P(0x64)]('<'))throw new Error('Naver\x20GAS\x20proxy\x20permission\x20denied.');const m=JSON['parse'](Q);if(m&&m['quoteResponse']&&m[P(0xfb)][P(0xc4)])return m[P(0xfb)][P(0xc4)];else{if(m&&m['error'])throw new Error(m['error']);}throw new Error(P(0x97));}catch(h){console[P(0xb2)](P(0x0),h);throw h;}}async function handleAddTicker(x,V){x[P(0x9c)]();const K=document[P(0x44)](P(0x39)+V),Q=document['getElementById'](P(0x111)+V),m=document['getElementById']('autocomplete-'+V),h=document[P(0x44)](P(0x8c)+V),w=K[P(0x49)][P(0x9f)]()[P(0xe7)]();if(!w||state['watchlists'][V][P(0x114)]['includes'](w)){K['value']='';if(m)m['style'][P(0x2b)]='none';if(h)h[P(0x100)][P(0x2b)]='none';return;}if(V==='kr'){const Y=localTickerDB[P(0xc1)](u=>u['s']['toUpperCase']()===w&&u['e']==='NAVER');if(!Y){alert(P(0xc)),K[P(0x49)]='';if(m)m['style'][P(0x2b)]=P(0x58);return;}}const M=PLUS_ICON+'<span>Add\x20tickers</span>';Q&&(Q[P(0xe2)]=!![],Q[P(0x112)]=SPINNER_SVG+P(0x6e));if(m)m['style']['display']=P(0x58);if(h)h[P(0x100)][P(0x2b)]='none';try{const u=V==='kr'?fetchNaverFinance:fetchYahooFinance,A=await u([w]);if(!A||A[P(0x37)]===0xc*-0x32d+0x1*-0x137b+-0x17*-0x281||A[-0x14d*0x4+-0x2b*-0xbf+-0x1ae1]['regularMarketPrice']===undefined){alert(w+P(0xa0));return;}state['watchlists'][V]['tickers']['push'](w),saveWatchlists();const D=document['getElementById']('tbody-'+V);if(D)D[P(0x5a)](P(0x90),generateRowHTML(w));cacheRowNodes(w),checkEmptyState(V),updateDOMWithData([A[-0x1*-0xb11+-0x1266+0x755]]);if(K)K[P(0x49)]='';if(m)m[P(0x100)][P(0x2b)]='none';fetchNews();}catch(H){alert('오류:\x20'+H[P(0xda)]);}finally{Q&&(Q['disabled']=![],Q[P(0x112)]=M);}}function executeRemoveTicker(x){let V=null;for(const m in state['watchlists']){if(state[P(0x54)][m]['tickers']['includes'](x)){state[P(0x54)][m]['tickers']=state[P(0x54)][m][P(0x114)][P(0x8d)](h=>h!==x),V=m;break;}}saveWatchlists();const K=getSafeId(x),Q=document['getElementById'](P(0xcd)+K);if(Q)Q[P(0xf4)]();rowNodes[P(0xee)](x);if(V)checkEmptyState(V);fetchNews();}function cacheRowNodes(x){const V=getSafeId(x);rowNodes['set'](x,{'row':document[P(0x44)]('row-'+V),'symbol':document[P(0x44)](P(0x10d)+V),'name':document['getElementById']('name-'+V),'price':document[P(0x44)](P(0xe9)+V),'extPrice':document[P(0x44)]('ext-price-'+V),'change':document['getElementById']('change-'+V),'pct':document[P(0x44)](P(0xec)+V),'vol':document['getElementById']('vol-'+V),'cap':document[P(0x44)](P(0x66)+V),'range':document[P(0x44)](P(0xd6)+V)});}function initDragAndDrop(){const x=document[P(0x44)](P(0x8f));if(!x)return;Sortable['create'](x,{'handle':P(0x80),'animation':0xc8,'ghostClass':'sortable-ghost','delay':0x64,'delayOnTouchOnly':!![],'onEnd':function(){state[P(0x8e)]=Array['from'](x[P(0x2d)](P(0xed)))[P(0x4a)](V=>V['dataset']['id']),localStorage['setItem']('marketdash_sectionOrder',JSON[P(0x109)](state[P(0x8e)]));}}),state[P(0x8e)][P(0xb0)](V=>{const K=document['getElementById']('tbody-'+V);K&&Sortable['create'](K,{'handle':P(0x80),'animation':0xc8,'ghostClass':P(0x26),'delay':0x64,'delayOnTouchOnly':!![],'onEnd':function(){state['watchlists'][V]['tickers']=Array['from'](K['querySelectorAll']('tr'))[P(0x4a)](Q=>Q[P(0xc0)][P(0xa2)]),saveWatchlists(),checkEmptyState(V);}});});}function toggleSection(x,V){if(x['target']['closest'](P(0x31))&&!x['target']['closest']('.toggle-btn'))return;const K=document[P(0x44)]('section-'+V);if(!K)return;K[P(0x11)]['toggle']('collapsed'),state[P(0x10a)][V]=!K[P(0x11)][P(0x108)](P(0xdd)),localStorage['setItem']('marketdash_expanded',JSON[P(0x109)](state['expanded']));if(state[P(0x10a)][V])forceRefresh();}function toggleAddForm(x,V){x['stopPropagation']();const K=document[P(0x44)]('section-'+V);if(!K)return;const Q=K[P(0x81)](P(0x110));K[P(0x11)][P(0x108)]('collapsed')&&(K['classList']['remove'](P(0xdd)),state[P(0x10a)][V]=!![],localStorage['setItem'](P(0x29),JSON['stringify'](state['expanded'])),forceRefresh());if(Q)Q['classList']['toggle'](P(0xa));K['classList']['toggle'](P(0xc2));if(Q&&Q[P(0x11)]['contains']('active'))Q[P(0x81)]('input')[P(0xde)]();}let targetTickerToDelete=null;function confirmRemoveTicker(x){targetTickerToDelete=x;const V=document['getElementById'](P(0xe8));if(V)V['textContent']=x;const K=document['getElementById']('delete-modal');if(K)K['classList']['add']('active');const Q=document[P(0x44)]('confirm-delete-btn');Q&&(Q[P(0x22)]=()=>{targetTickerToDelete&&(executeRemoveTicker(targetTickerToDelete),closeDeleteModal());});}function closeDeleteModal(){targetTickerToDelete=null,document[P(0x44)]('delete-modal')['classList'][P(0xf4)]('active');}function toggleSettingsMenu(){const x=document['getElementById']('settings-dropdown');if(x)x[P(0x11)][P(0xe0)](P(0xa));}function applyTheme(){document[P(0xb1)][P(0x38)](P(0xa4),state['theme']);}function toggleThemeDropdown(){state['theme']=state[P(0xe6)]===P(0x2f)?P(0x1f):P(0x2f),localStorage['setItem'](P(0xb3),state['theme']),applyTheme(),toggleSettingsMenu();}function exportSettings(){const K={};K['watchlists']=state['watchlists'],K[P(0x8e)]=state[P(0x8e)],K['expanded']=state['expanded'],K[P(0xe6)]=state['theme'];const Q=K,m={};m[P(0x9a)]=P(0x3c);const h=new Blob([JSON[P(0x109)](Q,null,0x1*-0x98f+-0x7*0x241+0x2*0xcac)],m),w=URL['createObjectURL'](h),M=document[P(0xf8)]('a');M[P(0x5f)]=w,M['download']=P(0xcb)+new Date()['toISOString']()['slice'](0xa9*0x29+0xb*0x1df+-0x2fa6,0x2047+-0x1*-0x1c45+0x60d*-0xa)+P(0xfd),M['click'](),URL['revokeObjectURL'](w),toggleSettingsMenu();}function triggerImport(){const x=document[P(0x44)](P(0xd1));if(x)x['click']();toggleSettingsMenu();}function importSettings(x){const V=x['target'][P(0xbd)][-0x1f*0x8f+0x1ff9+-0xea8];if(!V)return;const K=new FileReader();K['onload']=Q=>{try{const m=JSON['parse'](Q['target']['result']);if(m[P(0x54)]&&m[P(0x8e)]){localStorage[P(0x63)]('marketdash_watchlists',JSON['stringify'](m['watchlists'])),localStorage['setItem']('marketdash_sectionOrder',JSON['stringify'](m['sectionOrder']));if(m[P(0x10a)])localStorage[P(0x63)]('marketdash_expanded',JSON['stringify'](m['expanded']));if(m['theme'])localStorage['setItem'](P(0xb3),m['theme']);alert('Settings\x20successfully\x20restored.'),location['reload']();}else alert('Invalid\x20settings\x20file.');}catch(h){alert('File\x20read\x20error\x20occurred.');}},K[P(0x56)](V),x[P(0x7)]['value']='';}function resetToDefaults(){toggleSettingsMenu(),confirm('Reset\x20all\x20settings\x20to\x20default?')&&(localStorage[P(0x8)](),state[P(0x54)]=JSON[P(0x88)](JSON['stringify'](DEFAULT_WATCHLISTS)),state['sectionOrder']=['indicators','kr','us'],renderLayout(),forceRefresh());}function openAboutModal(){toggleSettingsMenu();const x=document[P(0x44)]('about-modal');if(x)x['classList']['add']('active');}function closeAboutModal(){const x=document[P(0x44)]('about-modal');if(x)x['classList']['remove']('active');}function saveWatchlists(){localStorage[P(0x63)](P(0x15),JSON['stringify'](state['watchlists']));}async function fetchData(){localStorage['setItem'](P(0xbc),Date[P(0x1e)]()['toString']());const x=[];for(const V of state['sectionOrder']){if(!state['expanded'][V])continue;const K=state[P(0x54)][V]['tickers'];if(K[P(0x37)]===0x1524+0x184+-0x16a8)continue;const Q=0x2*-0x731+0x1*-0x133e+0x2204,m=V==='kr'?fetchNaverFinance:fetchYahooFinance;for(let h=-0x12fd*0x1+0x1804+-0x75*0xb;h<K[P(0x37)];h+=Q){const w=K['slice'](h,h+Q),M=m(w)[P(0x10e)](Y=>{updateDOMWithData(Y),markMissingData(w,Y);})[P(0x60)](Y=>{markAllError(w,Y[P(0xda)]);});x['push'](M);}}await Promise[P(0x1b)](x),fetchNews();}function forceRefresh(){state['countdown']=-0x729*0x1+-0x12b*0x18+0x236d;const x=document[P(0x44)](P(0xe4));if(x)x[P(0x3e)]=state[P(0xe4)];localStorage['setItem'](P(0xbc),'0'),state[P(0x77)]=-0x17a9+0x1b*-0x13f+0x394e,fetchData(),startTimer();}function startTimer(){if(state[P(0x5e)])clearInterval(state[P(0x5e)]);state['intervalId']=setInterval(()=>{state[P(0xe4)]--;if(state['countdown']<=-0x1*-0xa+-0x4b*0x3a+0x10f4)forceRefresh();else{const x=document['getElementById']('countdown');if(x)x['textContent']=state['countdown'];}},0xd7*0x26+0x1*-0x11c9+-0xa39);}function updateDOMWithData(x){requestAnimationFrame(()=>{x['forEach'](V=>{const K=V[P(0x3a)],Q=rowNodes[P(0xf2)](K);if(!Q||!Q[P(0xf6)])return;const m=V[P(0x46)]||0xb7a+0x1*0x1f0d+-0x1*0x2a87,h=V['regularMarketChange']||-0x39a*-0x6+-0xd5e+-0x83e,w=V[P(0x48)]||-0x1f*-0x124+0xf5*0xd+-0x2fcd,M=h>=0x83d+-0x141+0x2*-0x37e,Y=M?'up':P(0xea),u=M?'+':'',A=M?'▲':'▼',D=Q['price']['getAttribute'](P(0xd0)),H=D?parseFloat(D):null;H!==null&&H!==m&&(Q['row']['classList'][P(0xf4)](P(0x1c),P(0x103)),setTimeout(()=>{Q&&Q[P(0xf6)]&&Q[P(0xf6)][P(0x11)][P(0xd9)](m>H?'flash-up':P(0x103));},-0x2*-0x10ba+-0xc89*-0x2+0x3a7c*-0x1));Q[P(0xf)]['setAttribute']('data-price',m),Q['name']['textContent']=V[P(0x52)]||V[P(0xd7)]||K,Q['price']['textContent']=formatNum(m);let I=[];if(V[P(0xaf)])I[P(0xc6)]({'price':V['preMarketPrice'],'pct':V['preMarketChangePercent']||-0x6cd*-0x2+0x263f+-0x3fd*0xd,'label':'🔜','time':V['preMarketTime']||-0x1ca9+-0x212*-0xd+0x1bf});if(V[P(0x25)])I[P(0xc6)]({'price':V['postMarketPrice'],'pct':V['postMarketChangePercent']||-0xd5*-0x9+-0x1*-0x1b2f+-0x1156*0x2,'label':'🔚','time':V['postMarketTime']||-0x24b9+-0x73*-0x12+-0x1ca3*-0x1});let X,r,t;if(I['length']>0x15*-0x11b+0x1a*0xe4+0xf){const F=I['reduce']((d,L)=>d['time']>L[P(0x14)]?d:L);X=F['price'],r=F['pct'],t=F['label'];}if(X&&t){const d=r>=0x2509*0x1+-0x20c0+-0x449,L=d?'up':P(0xea),s=d?'+':'';Q[P(0x95)][P(0x112)]='<span\x20class=\x22ext-label\x22>'+t+P(0xfa)+formatNum(X)+'\x20<span\x20class=\x22'+L+'\x22>('+s+formatPct(r)+'%)</span>';}else Q[P(0x95)][P(0x112)]='';Q[P(0x41)]['innerHTML']=P(0x3b)+Y+'\x22>'+u+formatNum(h)+P(0x68),Q[P(0x5)]['innerHTML']=P(0xf0)+Y+P(0xc7)+A+'</span>'+formatPct(Math['abs'](w))+'%</span>',Q['vol']['textContent']=formatCompact(V['regularMarketVolume']),Q[P(0xca)]['textContent']=formatCompact(V[P(0x6f)]);if(V['fiftyTwoWeekLow']&&V[P(0x70)])Q['range'][P(0x3e)]=formatNum(V[P(0x79)])+P(0x104)+formatNum(V[P(0x70)]);else Q['range'][P(0x3e)]='-';});}),x['forEach'](V=>{memoryPriceCache[V[P(0x3a)]]=V;}),saveCacheToStorage();}function markMissingData(x,V){const K=new Set(V['map'](Q=>Q[P(0x3a)]));x[P(0xb0)](Q=>{if(!K[P(0x62)](Q))setErrorState(Q,P(0xaa));});}function markAllError(x,V){x[P(0xb0)](K=>setErrorState(K,V));}function setErrorState(x,V){const K=rowNodes['get'](x);if(!K)return;requestAnimationFrame(()=>{K[P(0x10b)]['textContent']=P(0x87),K['price']['innerHTML']=P(0xeb)+escapeHTML(V)+P(0x68),K['extPrice']['innerHTML']='',K[P(0x41)]['innerHTML']='',K['pct']['innerHTML']='',K['vol'][P(0x3e)]='-',K[P(0xca)][P(0x3e)]='-',K['range'][P(0x3e)]='-';});}function formatNum(V){if(V===undefined||V===null||isNaN(V))return'-';const K=Math[P(0x2e)](V);let Q=0x125b+-0x3a0+0xeb9*-0x1;if(K>-0x7*-0x4cd+0x1a*-0xc5+0x1*-0xd99&&K<-0x45a*-0x3+0x141*0x10+-0x211e+0.1)Q=0x10b2+-0x17f1+0x743;else{if(K>-0xb1*-0x33+-0x122e+0x15fb)Q=-0x149c+0x1d0e+-0x5e*0x17;}const m={};return m[P(0x18)]=Q,m['maximumFractionDigits']=Q,new Intl['NumberFormat']('en-US',m)['format'](V);}function formatPct(V){if(V===undefined||V===null||isNaN(V))return'-';const K={};return K[P(0x18)]=0x2,K['maximumFractionDigits']=0x2,new Intl[(P(0x34))]('en-US',K)['format'](V);}function formatCompact(V){if(!V||isNaN(V))return'-';const K={};return K[P(0x10)]=P(0x92),K[P(0xdf)]='short',K['maximumFractionDigits']=0x2,new Intl[(P(0x34))]('en-US',K)['format'](V);}async function fetchNews(){const x=document['getElementById'](P(0x1d)),V=document['getElementById'](P(0x9d));if(x)x['style']['display']=P(0x33);let K=[];Object['values'](state[P(0x54)])[P(0xb0)](Q=>{K=K[P(0x69)](Q['tickers']);});if(!V)return;if(K['length']===-0x565*-0x1+-0x24af+0x1f4a){V['innerHTML']=P(0x9b);if(x)x['style'][P(0x2b)]=P(0x58);return;}try{const Q=NEWS_GAS_PROXY_URL+'?symbols='+encodeURIComponent(K['join'](','))+'&t='+Date[P(0x1e)](),m=await fetch(Q);if(!m['ok'])throw new Error(P(0x30));const h=await m[P(0x99)]();state[P(0x77)]=Date['now'](),renderNews(h);}catch(w){console['error']('News\x20fetch\x20error:',w),V[P(0x112)]='<div\x20class=\x22empty-state\x22><p\x20class=\x22error-text\x22>Failed\x20to\x20load\x20news.</p></div>';}finally{if(x)x[P(0x100)][P(0x2b)]=P(0x58);}}function renderNews(V){const K=document[P(0x44)](P(0x9d));if(!K)return;if(!V||V['length']===-0xb6*-0x1+-0x11b*0xa+-0x52c*-0x2){K['innerHTML']='<div\x20class=\x22empty-state\x22><p>No\x20recent\x20news\x20found.</p></div>';return;}const Q=Date[P(0x1e)](),m={};m[P(0x7f)]=P(0x51),m[P(0x1a)]=P(0x76),m[P(0x27)]='2-digit',m[P(0xbf)]=![];const h=new Intl[(P(0x8a))]('ko-KR',m),w=V[P(0x4a)](M=>{const Y=Math['floor']((Q-M[P(0x14)])/(0x6c22*0x1+0x4*-0x194b+0xe36a));let u='';Y>=-0xb*0xb0+0x265*0x1+0x52b&&Y<-0x148*0xc+0x1cae+-0xd44?u=Y===0x1*0x11bf+-0x2622+0x1463?'방금':Y+'분\x20전':u=h['format'](new Date(M['time']));const A=M['source']===P(0xab)?'tag-naver':P(0xce),D=M[P(0xa2)]?M[P(0xa2)]:M['source'];return'\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<a\x20href=\x22'+M[P(0x72)]+'\x22\x20target=\x22_blank\x22\x20rel=\x22noopener\x20noreferrer\x22\x20class=\x22news-item\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22news-title\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20'+escapeHTML(M['title'])+'\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22news-meta\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22news-time\x20'+(Y<0x49c+-0x2*0x9eb+0xf44?P(0x105):'')+'\x22>'+u+'</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22news-tag\x20'+A+'\x22>'+escapeHTML(D)+'\x20-\x20'+escapeHTML(M[P(0xe3)])+'</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</a>\x0a\x20\x20\x20\x20\x20\x20\x20\x20';})['join']('');K['innerHTML']=w;}document['addEventListener'](P(0x6a),init);
+// =========================================================
+// 1. 초기 설정 및 상수 정의 (Constants & Defaults)
+// =========================================================
+const DEFAULT_WATCHLISTS = {
+    'indicators': { 
+        title: '📈 MKT', 
+        tickers: ['KRW=X', '^KS11', '^KQ11', '^IXIC', '^DJI', '^GSPC', 'BTC-USD'] 
+    },
+    'kr': { 
+        title: '🇰🇷 KR', 
+        tickers: ['005930', '000660', '373220', '035720', '035420'] // 삼성전자, SK하이닉스 등
+    },
+    'us': { 
+        title: '🇺🇸 US', 
+        tickers: ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'TSLA', 'META'] 
+    }
+};
+
+const GAS_PROXY_URL = 'https://script.google.com/macros/s/AKfycbydYWqn3tZL25dE8UPMyN9mV19R1YKFZKpF-aml_25Z_YvA_qElw-LpxNO_Y8_sOzCV/exec';
+const NAVER_GAS_PROXY_URL = 'https://script.google.com/macros/s/AKfycbygC4GrK-2abZUpWWCxD4ZVfFVzd-gjbGvyYBTWNP26J7zwkwbrWwttXNC-geENS1Nykw/exec';
+const NEWS_GAS_PROXY_URL = 'https://script.google.com/macros/s/AKfycb.../exec'; // 뉴스 프록시 URL
+
+const CHO_HANGUL = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+
+// SVG 아이콘 모음
+const DRAG_ICON = '<svg viewBox="0 0 24 24"><line x1="6" y1="6" x2="18" y2="6"/><line x1="6" y1="10" x2="18" y2="10"/><line x1="6" y1="14" x2="18" y2="14"/><line x1="6" y1="18" x2="18" y2="18"/></svg>';
+const TRASH_ICON = '<svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2-2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>';
+const CHEVRON_ICON = '<svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>';
+const SEARCH_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>';
+const PLUS_ICON = '<svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
+const SPINNER_SVG = '<svg class="spinner" viewBox="0 0 50 50"><circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle></svg>';
+const EMPTY_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>';
+
+// =========================================================
+// 2. 상태 관리 (State Management)
+// =========================================================
+let localTickerDB = [];
+let memoryPriceCache = {};
+
+try {
+    memoryPriceCache = JSON.parse(localStorage.getItem('marketdash_price_cache')) || {};
+} catch (e) {
+    memoryPriceCache = {};
+}
+
+let state = {
+    watchlists: JSON.parse(localStorage.getItem('marketdash_watchlists')) || JSON.parse(JSON.stringify(DEFAULT_WATCHLISTS)),
+    sectionOrder: JSON.parse(localStorage.getItem('marketdash_sectionOrder')) || ['indicators', 'kr', 'us'],
+    expanded: JSON.parse(localStorage.getItem('marketdash_expanded')) || { indicators: true, kr: true, us: true },
+    theme: localStorage.getItem('marketdash_theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'),
+    countdown: 60,
+    intervalId: null,
+    lastNewsFetch: 0
+};
+
+const rowNodes = new Map();
+let sortables = [];
+let targetTickerToDelete = null;
+
+// =========================================================
+// 3. 유틸리티 함수 (Utilities)
+// =========================================================
+function getChosung(str) {
+    let result = '';
+    for (let i = 0; i < str.length; i++) {
+        let code = str.charCodeAt(i) - 44032;
+        if (code > -1 && code < 11172) {
+            result += CHO_HANGUL[Math.floor(code / 588)];
+        } else {
+            result += str.charAt(i);
+        }
+    }
+    return result;
+}
+
+function escapeHTML(str) {
+    if (typeof str !== 'string') return str;
+    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' };
+    return str.replace(/[&<>'"]/g, m => map[m]);
+}
+
+function debounce(func, wait) {
+    let timeout;
+    return function (...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+}
+
+function getSafeId(str) {
+    return 'id_' + str.replace(/[^a-zA-Z0-9]/g, '_');
+}
+
+const saveCacheToStorage = debounce(() => {
+    try {
+        localStorage.setItem('marketdash_price_cache', JSON.stringify(memoryPriceCache));
+    } catch (e) {
+        console.warn('Cache save failed', e);
+    }
+}, 2000);
+
+// =========================================================
+// 4. 초기화 및 메인 로직 (Initialization)
+// =========================================================
+async function init() {
+    applyTheme();
+    if (!state.sectionOrder || state.sectionOrder.length === 0) {
+        state.sectionOrder = Object.keys(state.watchlists);
+    }
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            if (state.intervalId) clearInterval(state.intervalId);
+        } else {
+            const now = Date.now();
+            const lastFetch = parseInt(localStorage.getItem('marketdash_last_fetch_time') || '0');
+            if (now - lastFetch > 60000) forceRefresh();
+            else startTimer();
+        }
+    });
+
+    await initTickerDB();
+    renderLayout();
+    startTimer();
+
+    if (Object.keys(memoryPriceCache).length > 0) {
+        updateDOMWithData(Object.values(memoryPriceCache));
+    }
+
+    const lastFetchTime = parseInt(localStorage.getItem('marketdash_last_fetch_time') || '0');
+    const now = Date.now();
+    const activeTab = localStorage.getItem('marketdash_active_tab');
+
+    if (activeTab === 'news') {
+        const newsContainer = document.getElementById('news-container');
+        const isStale = now - state.lastNewsFetch > 300000;
+        const isEmpty = !newsContainer || newsContainer.children.length === 0 || newsContainer.querySelector('.empty-state');
+        if (isStale || isEmpty) fetchNews();
+        
+        if (now - lastFetchTime < 60000) {
+            state.countdown = Math.ceil(60 - (now - lastFetchTime) / 1000);
+            const countdownEl = document.getElementById('countdown');
+            if (countdownEl) countdownEl.textContent = state.countdown;
+        } else {
+            fetchData();
+        }
+    } else {
+        if (now - lastFetchTime < 60000) {
+            state.countdown = Math.ceil(60 - (now - lastFetchTime) / 1000);
+            const countdownEl = document.getElementById('countdown');
+            if (countdownEl) countdownEl.textContent = state.countdown;
+            fetchNews();
+        } else {
+            fetchData();
+        }
+    }
+
+    initSwipeToDelete();
+
+    const refreshBtn = document.getElementById('btn-refresh');
+    if (refreshBtn) refreshBtn.addEventListener('click', forceRefresh);
+
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.search-wrapper')) {
+            document.querySelectorAll('.autocomplete-list').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.input-guide').forEach(el => el.style.display = 'none');
+        }
+        const dropdown = document.getElementById('settings-dropdown');
+        if (dropdown && !e.target.closest('.settings-wrapper')) {
+            dropdown.classList.remove('active');
+        }
+    });
+}
+
+// =========================================================
+// 5. 종목 검색 DB 처리 (Ticker DB)
+// =========================================================
+function processTickerDB(data) {
+    return data.map(item => ({
+        ...item,
+        cs_s: getChosung(item.s || '').toLowerCase(),
+        cs_n: getChosung(item.n || '').toLowerCase()
+    }));
+}
+
+async function initTickerDB() {
+    try {
+        const response = await fetch('/data/tickers.json?t=' + new Date().getTime());
+        if (!response.ok) throw new Error('HTTP error! status: ' + response.status);
+        const data = await response.json();
+        localTickerDB = processTickerDB(data);
+    } catch (e) {
+        console.error('Ticker DB Init Error', e);
+        localTickerDB = processTickerDB([
+            { s: 'AAPL', n: 'Apple Inc.', e: 'NASDAQ' },
+            { s: '005930', n: '삼성전자', e: 'KOSPI' }
+        ]);
+    }
+}
+
+// =========================================================
+// 6. UI 렌더링 (UI Rendering)
+// =========================================================
+function renderLayout() {
+    const dashboard = document.getElementById('dashboard');
+    if (!dashboard) return;
+    
+    dashboard.innerHTML = '';
+    rowNodes.clear();
+    sortables.forEach(s => s.destroy());
+    sortables = [];
+
+    const fragment = document.createDocumentFragment();
+
+    state.sectionOrder.forEach(key => {
+        const sectionData = state.watchlists[key];
+        if (!sectionData) return;
+
+        const isExpanded = state.expanded[key];
+        const isEmpty = sectionData.tickers.length === 0;
+        const sectionEl = document.createElement('div');
+        sectionEl.className = 'section-container ' + (isExpanded ? '' : 'collapsed');
+        sectionEl.id = 'section-' + key;
+        sectionEl.dataset.id = key;
+
+        const guideText = key === 'kr' ? 'Please choose a ticker from the search results only.' : 'Enter symbol or company name';
+
+        sectionEl.innerHTML = `
+            <div class="section-header">
+                <div class="section-header-left" onclick="toggleSection(event, '${key}')">
+                    <button class="action-icon-btn toggle-btn">${CHEVRON_ICON}</button>
+                    <h2>${sectionData.title}</h2>
+                </div>
+                <div class="section-header-right">
+                    <button class="action-icon-btn btn-add-symbol" onclick="toggleAddForm(event, '${key}')">${PLUS_ICON}</button>
+                    <button class="action-icon-btn drag-handle hide-mobile">${DRAG_ICON}</button>
+                </div>
+            </div>
+            <div class="section-body">
+                <form class="add-ticker-form" id="form-${key}" onsubmit="handleAddTicker(event, '${key}')">
+                    <div class="search-wrapper">
+                        ${SEARCH_ICON}
+                        <input type="text" id="input-${key}" placeholder="Search..." autocomplete="off">
+                        <ul class="autocomplete-list" id="autocomplete-${key}"></ul>
+                        <div class="input-guide" id="guide-${key}">${guideText}</div>
+                    </div>
+                    <button type="submit" id="btn-add-${key}">${PLUS_ICON}<span class="hide-mobile-text">Add tickers</span></button>
+                </form>
+                <div class="table-wrapper">
+                    <div class="empty-state" id="empty-${key}" style="display: ${isEmpty ? 'flex' : 'none'};">
+                        ${EMPTY_ICON}
+                        <p>No tickers added.</p>
+                    </div>
+                    <table style="display: ${isEmpty ? 'none' : 'table'};" id="table-${key}">
+                        <thead>
+                            <tr>
+                                <th class="left-align col-symbol">Symbol</th>
+                                <th class="col-price">Price</th>
+                                <th class="col-change">Change</th>
+                                <th class="hide-mobile col-vol">Volume</th>
+                                <th class="hide-mobile col-cap">Market Cap</th>
+                                <th class="hide-mobile col-range">52W Range</th>
+                                <th class="actions-col"></th>
+                                <th class="handle-col"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-${key}">
+                            ${sectionData.tickers.map(t => generateRowHTML(t)).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+        fragment.appendChild(sectionEl);
+    });
+
+    dashboard.appendChild(fragment);
+
+    state.sectionOrder.forEach(key => {
+        const sectionData = state.watchlists[key];
+        if (sectionData) sectionData.tickers.forEach(t => cacheRowNodes(t));
+
+        const inputEl = document.getElementById('input-' + key);
+        if (inputEl) {
+            const onInput = debounce((e) => handleAutocomplete(e.target.value, key), 200);
+            inputEl.addEventListener('input', onInput);
+            inputEl.addEventListener('focus', onInput);
+        }
+    });
+
+    initDragAndDrop();
+}
+
+function generateRowHTML(ticker) {
+    const safeId = getSafeId(ticker);
+    const escapedTicker = escapeHTML(ticker);
+    return `
+        <tr id="row-${safeId}" data-ticker="${escapedTicker}">
+            <td class="left-align col-symbol">
+                <div class="asset-col">
+                    <span class="symbol" id="symbol-${safeId}" title="${escapedTicker}">${escapedTicker}</span>
+                    <span class="name" id="name-${safeId}"><span class="skeleton sm"></span></span>
+                </div>
+            </td>
+            <td class="col-price" id="price-cell-${safeId}">
+                <div class="price" id="price-${safeId}"><span class="skeleton"></span></div>
+                <div class="extended-price" id="ext-price-${safeId}"></div>
+            </td>
+            <td class="col-change" id="change-cell-${safeId}">
+                <div class="change-cell">
+                    <div id="change-${safeId}"><span class="skeleton"></span></div>
+                    <div id="pct-${safeId}"></div>
+                </div>
+            </td>
+            <td class="hide-mobile sub-data" id="vol-${safeId}">-</td>
+            <td class="hide-mobile sub-data" id="cap-${safeId}">-</td>
+            <td class="hide-mobile sub-data" id="range-${safeId}">-</td>
+            <td class="actions-col">
+                <button class="action-icon-btn danger" onclick="confirmRemoveTicker('${escapedTicker}')">${TRASH_ICON}</button>
+            </td>
+            <td class="handle-col">
+                <div class="action-icon-btn drag-handle">${DRAG_ICON}</div>
+            </td>
+        </tr>
+    `;
+}
+
+// =========================================================
+// 7. 검색 및 자동완성 (Autocomplete)
+// =========================================================
+function handleAutocomplete(value, sectionKey) {
+    const listEl = document.getElementById('autocomplete-' + sectionKey);
+    const guideEl = document.getElementById('guide-' + sectionKey);
+    const addBtn = document.getElementById('btn-add-' + sectionKey);
+
+    if (addBtn && addBtn.disabled) return;
+
+    if (!value || value.trim() === '') {
+        if (listEl) listEl.style.display = 'none';
+        if (guideEl) guideEl.style.display = 'none';
+        return;
+    }
+
+    value = value.trim().toLowerCase();
+    const isChosung = /[ㄱ-ㅎ]/.test(value) && !/[가-힣]/.test(value);
+    const isKr = sectionKey === 'kr';
+
+    const matches = localTickerDB.filter(item => {
+        if (isKr && item.e !== 'NAVER') return false;
+        if (!isKr && item.e === 'NAVER') return false;
