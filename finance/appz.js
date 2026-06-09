@@ -775,8 +775,7 @@ function updateDOMWithData(quotes) {
                 postData = { price: quote.postMarketPrice, change: change, pct: pct, label: 'post', time: quote.postMarketTime || 0 };
             }
 
-            // ★ 4. 절대 시간(Timestamp) 기반 상태 판별 로직 ★
-            // 야후 API의 문자열이 꼬였거나 전송되지 않았을 경우, 가장 마지막 거래 시간을 찾아 강제로 상태를 변경합니다.
+            // 4. 절대 시간(Timestamp) 기반 상태 판별 로직
             const regTime = quote.regularMarketTime || 0;
             const preTime = preData ? preData.time : 0;
             const postTime = postData ? postData.time : 0;
@@ -784,7 +783,6 @@ function updateDOMWithData(quotes) {
             let targetState = 'REGULAR';
             const mState = (quote.marketState || '').toUpperCase();
 
-            // API가 내려준 상태값을 우선 확인
             if (mState.includes('PRE') && preData) {
                 targetState = 'PRE';
             } else if (mState.includes('POST') && postData) {
@@ -794,7 +792,6 @@ function updateDOMWithData(quotes) {
                 else if (postData) targetState = 'POST';
                 else if (preData) targetState = 'PRE';
             } else {
-                // 상태값이 없거나 오류로 'REGULAR'로 고정되었을 때 -> 최신 시간을 수학적으로 비교
                 const maxTime = Math.max(regTime, preTime, postTime);
                 if (maxTime > 0) {
                     if (maxTime === postTime && postTime > regTime && postData) {
@@ -812,13 +809,16 @@ function updateDOMWithData(quotes) {
             let mainIcon = ''; 
             let subHtml = '';
 
+            // ★ 메인 영역의 pre/post에 하단 close와 동일한 뱃지 스타일 적용 (css 분리 없이 직접 주입)
+            const labelStyle = "color: var(--text-secondary); font-size: 0.65rem; padding: 0.1rem 0.25rem; background: var(--input-bg); border-radius: 3px; margin-right: 0.3rem; vertical-align: middle; font-weight: 500;";
+
             // 6. 요청하신 3가지 시간대별 완벽 분기 처리
             if (targetState === 'PRE') {
                 // [장전 시간대] 메인: Pre / 하단: 전일 종가 Close
                 mainPrice = preData.price;
                 mainChange = preData.change;
                 mainPct = preData.pct;
-                mainIcon = preData.label + ' '; 
+                mainIcon = `<span class="ext-label" style="${labelStyle}">${preData.label}</span>`; 
                 
                 const regIsUp = regChange >= 0;
                 const regColor = regIsUp ? 'up' : 'down';
@@ -830,7 +830,7 @@ function updateDOMWithData(quotes) {
                 mainPrice = postData.price;
                 mainChange = postData.change;
                 mainPct = postData.pct;
-                mainIcon = postData.label + ' '; 
+                mainIcon = `<span class="ext-label" style="${labelStyle}">${postData.label}</span>`; 
                 
                 const regIsUp = regChange >= 0;
                 const regColor = regIsUp ? 'up' : 'down';
@@ -873,8 +873,8 @@ function updateDOMWithData(quotes) {
             nodes.price.setAttribute('data-price', mainPrice);
             nodes.name.textContent = quote.shortName || quote.longName || ticker;
             
-            // 메인 텍스트 출력 및 하단 서브 영역 출력
-            nodes.price.textContent = mainIcon + formatNum(mainPrice);
+            // ★ 수정됨: mainIcon이 태그를 포함하므로 textContent 대신 innerHTML을 사용하여 렌더링
+            nodes.price.innerHTML = mainIcon + formatNum(mainPrice);
             nodes.extPrice.innerHTML = subHtml;
             
             nodes.change.innerHTML = `<span class="${colorClass}">${sign}${formatNum(mainChange)}</span>`;
