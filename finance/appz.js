@@ -7,7 +7,7 @@ const DEFAULT_WATCHLISTS = {
     us: { title: '🇺🇸 US', tickers: ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'TSLA', 'META'] }
 };
 
-const GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbydYWqn3tZL25dE8UPMyN9mV19R1YKFZKpF-aml_25Z_YvA_qElw-LpxNO_Y8_sOzCV/exec";
+const GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbxWZfWGdoaE3abC8Tz9darMAj8lkQMVnb1UEuECWytx_xaY-_Cq2qcpaHaf0fc5oICI/exec";
 const NAVER_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbygC4GrK-2abZUpWWCxD4ZVfFVzd-gjbGvyYBTWNP26J7zwkwbrWwttXNC-geENS1Nykw/exec"; 
 const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbwSD8MOLPrYjwTBVQX_Tq6pu-gTHlOeR7p0hUY2pHGACNc2NA6f4zICduC05ypO_EN6/exec"; 
 
@@ -753,47 +753,84 @@ function updateDOMWithData(quotes) {
             const ticker = quote.symbol; const nodes = rowNodes.get(ticker);
             if (!nodes || !nodes.row) return;
 
-            const price = quote.regularMarketPrice || 0; const change = quote.regularMarketChange || 0;
-            const pct = quote.regularMarketChangePercent || 0; const isUp = change >= 0;
-            const colorClass = isUp ? 'up' : 'down'; const sign = isUp ? '+' : ''; const arrow = isUp ? '▲' : '▼';
+            // 1. 기본 정규장 데이터 세팅
+            const regPrice = quote.regularMarketPrice || 0; 
+            const regChange = quote.regularMarketChange || 0;
+            const regPct = quote.regularMarketChangePercent || 0; 
+
+            // 2. 연장장(프리/애프터) 데이터 수집 (GAS에서 추가한 change 필드 매핑)
+            let extOptions = [];
+            if (quote.preMarketPrice) extOptions.push({ price: quote.preMarketPrice, change: quote.preMarketChange || 0, pct: quote.preMarketChangePercent || 0, label: '🔜', time: quote.preMarketTime || 0 });
+            if (quote.postMarketPrice) extOptions.push({ price: quote.postMarketPrice, change: quote.postMarketChange || 0, pct: quote.postMarketChangePercent || 0, label: '🔚', time: quote.postMarketTime || 0 });
+
+            let extPrice, extChangePct, extChange, extLabel;
+            if (extOptions.length > 0) {
+                const latestExt = extOptions.reduce((prev, current) => (prev.time > current.time) ? prev : current);
+                extPrice = latestExt.price; extChangePct = latestExt.pct; extChange = latestExt.change; extLabel = latestExt.label;
+            }
+
+            // 3. 렌더링에 사용할 메인 변수 초기화
+            let mainPrice = regPrice;
+            let mainChange = regChange;
+            let mainPct = regPct;
             
+            // 4. marketState 기반 스왑(Swap) 로직
+            // 야후 데이터 기준 장중('REGULAR')이 아니고, 연장장 데이터가 존재할 때만 스왑
+            const isRegular = (!quote.marketState || quote.marketState === 'REGULAR');
+
+            if (!isRegular && extPrice) {
+                // 연장장 데이터를 메인 영역으로 올림
+                mainPrice = extPrice;
+                mainChange = extChange;
+                mainPct = extChangePct;
+
+                // 기존 정규장 데이터를 '종가' 라벨과 함께 하단으로 내림
+                const regIsUp = regChange >= 0;
+                const regColor = regIsUp ? 'up' : 'down';
+                const regSign = regIsUp ? '+' : '';
+                nodes.extPrice.innerHTML = `<span class="ext-label">종가</span> ${formatNum(regPrice)} <span class="${regColor}">(${regSign}${formatPct(regPct)}%)</span>`;
+            } else if (extPrice && extLabel) {
+                // 장중이거나 스왑 조건이 아닐 경우: 기존처럼 연장장 데이터를 하단에 표시
+                const isExtUp = extChangePct >= 0;
+                const extColorClass = isExtUp ? 'up' : 'down';
+                const extSign = isExtUp ? '+' : '';
+                nodes.extPrice.innerHTML = `<span class="ext-label">${extLabel}</span> ${formatNum(extPrice)} <span class="${extColorClass}">(${extSign}${formatPct(extChangePct)}%)</span>`;
+            } else {
+                nodes.extPrice.innerHTML = '';
+            }
+
+            // 5. 결정된 메인 데이터(mainPrice, mainChange)를 기준으로 색상 및 부호 결정
+            const isUp = mainChange >= 0;
+            const colorClass = isUp ? 'up' : 'down'; 
+            const sign = isUp ? '+' : ''; 
+            const arrow = isUp ? '▲' : '▼';
+            
+            // 6. 가격 깜빡임 애니메이션 (메인 가격 기준)
             const oldPriceStr = nodes.price.getAttribute('data-price');
             const oldPrice = oldPriceStr ? parseFloat(oldPriceStr) : null;
-            if (oldPrice !== null && oldPrice !== price) {
+            if (oldPrice !== null && oldPrice !== mainPrice) {
                 nodes.row.classList.remove('flash-up', 'flash-down');
                 setTimeout(() => {
                     if (nodes && nodes.row) {
-                        nodes.row.classList.add(price > oldPrice ? 'flash-up' : 'flash-down');
+                        nodes.row.classList.add(mainPrice > oldPrice ? 'flash-up' : 'flash-down');
                     }
                 }, 10);
             }
-            nodes.price.setAttribute('data-price', price);
+
+            // 7. DOM 업데이트
+            nodes.price.setAttribute('data-price', mainPrice);
             nodes.name.textContent = quote.shortName || quote.longName || ticker;
-            nodes.price.textContent = formatNum(price);
+            nodes.price.textContent = formatNum(mainPrice);
             
-            let extOptions = [];
-            if (quote.preMarketPrice) extOptions.push({ price: quote.preMarketPrice, pct: quote.preMarketChangePercent || 0, label: '🔜', time: quote.preMarketTime || 0 });
-            if (quote.postMarketPrice) extOptions.push({ price: quote.postMarketPrice, pct: quote.postMarketChangePercent || 0, label: '🔚', time: quote.postMarketTime || 0 });
-
-            let extPrice, extChangePct, extLabel;
-            if (extOptions.length > 0) {
-                const latestExt = extOptions.reduce((prev, current) => (prev.time > current.time) ? prev : current);
-                extPrice = latestExt.price; extChangePct = latestExt.pct; extLabel = latestExt.label;
-            }
-
-            if (extPrice && extLabel) {
-                const isExtUp = extChangePct >= 0; const extColorClass = isExtUp ? 'up' : 'down'; const extSign = isExtUp ? '+' : '';
-                nodes.extPrice.innerHTML = `<span class="ext-label">${extLabel}</span> ${formatNum(extPrice)} <span class="${extColorClass}">(${extSign}${formatPct(extChangePct)}%)</span>`;
-            } else nodes.extPrice.innerHTML = '';
+            nodes.change.innerHTML = `<span class="${colorClass}">${sign}${formatNum(mainChange)}</span>`;
+            nodes.pct.innerHTML = `<span class="badge ${colorClass}"><span class="arrow">${arrow}</span>${formatPct(Math.abs(mainPct))}%</span>`;
             
-            nodes.change.innerHTML = `<span class="${colorClass}">${sign}${formatNum(change)}</span>`;
-            nodes.pct.innerHTML = `<span class="badge ${colorClass}"><span class="arrow">${arrow}</span>${formatPct(Math.abs(pct))}%</span>`;
-            nodes.vol.textContent = formatCompact(quote.regularMarketVolume); nodes.cap.textContent = formatCompact(quote.marketCap);
+            nodes.vol.textContent = formatCompact(quote.regularMarketVolume); 
+            nodes.cap.textContent = formatCompact(quote.marketCap);
             if (quote.fiftyTwoWeekLow && quote.fiftyTwoWeekHigh) nodes.range.textContent = `${formatNum(quote.fiftyTwoWeekLow)} - ${formatNum(quote.fiftyTwoWeekHigh)}`; else nodes.range.textContent = '-';
         });
     });
 
-    // --- [최적화] 직접 로컬 스토리지에 쓰지 않고 메모리 변수만 업데이트 후 Debounce 함수 호출 ---
     quotes.forEach(q => { memoryPriceCache[q.symbol] = q; });
     saveCacheToStorage();
 }
