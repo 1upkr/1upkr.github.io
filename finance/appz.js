@@ -7,7 +7,7 @@ const DEFAULT_WATCHLISTS = {
     us: { title: '🇺🇸 US', tickers: ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'TSLA', 'META'] }
 };
 
-const GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbxWZfWGdoaE3abC8Tz9darMAj8lkQMVnb1UEuECWytx_xaY-_Cq2qcpaHaf0fc5oICI/exec";
+const GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbxnzxTjNkEC-ozjSzwn78UF4NAF_-BbmoafWZgaTMVLNL-kO6AKX12A9VSpNZYRspu7/exec";
 const NAVER_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbygC4GrK-2abZUpWWCxD4ZVfFVzd-gjbGvyYBTWNP26J7zwkwbrWwttXNC-geENS1Nykw/exec"; 
 const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbwSD8MOLPrYjwTBVQX_Tq6pu-gTHlOeR7p0hUY2pHGACNc2NA6f4zICduC05ypO_EN6/exec"; 
 
@@ -750,15 +750,19 @@ function startTimer() {
 function updateDOMWithData(quotes) {
     requestAnimationFrame(() => {
         quotes.forEach(quote => {
-            const ticker = quote.symbol; const nodes = rowNodes.get(ticker);
+            const ticker = quote.symbol; 
+            const nodes = rowNodes.get(ticker);
             if (!nodes || !nodes.row) return;
 
-            // 1. 기본 정규장(종가/장중가) 데이터 세팅
+            // [디버깅용] 데이터가 안 나올 경우 F12(개발자 도구) 콘솔창에서 야후 원본 데이터를 확인할 수 있습니다.
+            // console.log(`[${ticker}] 야후 원본 데이터:`, quote);
+
+            // 1. 기본 정규장 데이터 세팅
             const regPrice = quote.regularMarketPrice || 0; 
             const regChange = quote.regularMarketChange || 0;
             const regPct = quote.regularMarketChangePercent || 0; 
 
-            // 2. 연장장(Pre/Post) 데이터 파싱 및 결측치 보정 (직접 계산)
+            // 2. 프리마켓(Pre) 데이터
             let preData = null;
             if (quote.preMarketPrice) {
                 const change = quote.preMarketChange !== undefined ? quote.preMarketChange : (quote.preMarketPrice - regPrice);
@@ -766,6 +770,7 @@ function updateDOMWithData(quotes) {
                 preData = { price: quote.preMarketPrice, change: change, pct: pct, label: '🔜', time: quote.preMarketTime || 0 };
             }
 
+            // 3. 애프터마켓(Post) 데이터
             let postData = null;
             if (quote.postMarketPrice) {
                 const change = quote.postMarketChange !== undefined ? quote.postMarketChange : (quote.postMarketPrice - regPrice);
@@ -773,37 +778,40 @@ function updateDOMWithData(quotes) {
                 postData = { price: quote.postMarketPrice, change: change, pct: pct, label: '🔚', time: quote.postMarketTime || 0 };
             }
 
-            // 3. 현재 야후 시장 상태값(marketState) 및 시간 비교
-            const mState = quote.marketState || 'REGULAR';
-            const isRegular = mState === 'REGULAR';
-
-            // 정규장이 아닐 때 보여줄 최우선 연장장(Active Extended) 데이터 판별
+            // ★ 4. 절대적인 상태 판별 로직 (시간 꼬임 방지) ★
+            // 야후 API의 marketState 텍스트 값 자체를 최우선 기준으로 삼습니다.
+            const mState = (quote.marketState || 'REGULAR').toUpperCase();
+            let isRegular = mState === 'REGULAR';
             let activeExt = null;
-            if (!isRegular) {
-                if (mState.includes('PRE') && preData) {
-                    activeExt = preData;
-                } else if (mState.includes('POST') && postData) {
-                    activeExt = postData;
+
+            if (mState.includes('PRE')) {
+                // 프리마켓 진행 중
+                isRegular = false;
+                activeExt = preData || postData;
+            } else if (mState.includes('POST')) {
+                // 애프터마켓 진행 중
+                isRegular = false;
+                activeExt = postData || preData;
+            } else if (mState === 'CLOSED') {
+                // 완전히 장이 닫힌 주말/새벽 시간대 (시간 비교로 가장 최근 열렸던 연장장 선택)
+                isRegular = false;
+                if (preData && postData) {
+                    activeExt = preData.time > postData.time ? preData : postData;
                 } else {
-                    // CLOSED 상태일 때: Pre와 Post 중 시간이 더 최신인 데이터를 스왑 대상으로 선정
-                    if (preData && postData) {
-                        activeExt = preData.time > postData.time ? preData : postData;
-                    } else {
-                        activeExt = preData || postData;
-                    }
+                    activeExt = postData || preData;
                 }
             }
 
-            // 4. 화면 출력용 변수 초기화 (메인 & 하단 서브)
+            // 5. 렌더링 변수 초기화
             let mainPrice = regPrice;
             let mainChange = regChange;
             let mainPct = regPct;
             let mainIcon = ''; 
             let subHtml = '';
 
-            // ★ 5. 핵심 시나리오별 렌더링 로직 적용 ★
+            // 6. 상태별 화면 분기
             if (isRegular) {
-                // 시나리오 A [정규장]: 메인 = 정규장 / 하단 = 프리마켓(Pre)
+                // [정규장] 메인 = 장중가 / 하단 = 프리마켓 흔적
                 if (preData) {
                     const isExtUp = preData.change >= 0;
                     const extColor = isExtUp ? 'up' : 'down';
@@ -811,11 +819,11 @@ function updateDOMWithData(quotes) {
                     subHtml = `<span class="ext-label">${preData.label}</span> ${formatNum(preData.price)} <span class="${extColor}">(${extSign}${formatPct(preData.pct)}%)</span>`;
                 }
             } else if (activeExt) {
-                // 시나리오 B [장외시간]: 메인 = 연장장(Pre/Post) / 하단 = 정규장 종가
+                // [장외시간] 메인 = 🔜/🔚 연장장 가격 / 하단 = 정규장 종가
                 mainPrice = activeExt.price;
                 mainChange = activeExt.change;
                 mainPct = activeExt.pct;
-                mainIcon = activeExt.label + ' '; // 🔜 또는 🔚
+                mainIcon = activeExt.label + ' '; 
 
                 const regIsUp = regChange >= 0;
                 const regColor = regIsUp ? 'up' : 'down';
@@ -823,13 +831,12 @@ function updateDOMWithData(quotes) {
                 subHtml = `<span class="ext-label">종가</span> ${formatNum(regPrice)} <span class="${regColor}">(${regSign}${formatPct(regPct)}%)</span>`;
             }
 
-            // 6. UI 색상 및 부호 결정 (메인 데이터 기준)
+            // 7. 색상 및 애니메이션 처리
             const isUp = mainChange >= 0;
             const colorClass = isUp ? 'up' : 'down'; 
             const sign = isUp ? '+' : ''; 
             const arrow = isUp ? '▲' : '▼';
             
-            // 7. 가격 깜빡임 애니메이션 (메인 가격 기준)
             const oldPriceStr = nodes.price.getAttribute('data-price');
             const oldPrice = oldPriceStr ? parseFloat(oldPriceStr) : null;
             if (oldPrice !== null && oldPrice !== mainPrice) {
@@ -845,7 +852,7 @@ function updateDOMWithData(quotes) {
             nodes.price.setAttribute('data-price', mainPrice);
             nodes.name.textContent = quote.shortName || quote.longName || ticker;
             
-            // 아이콘(mainIcon)이 포함된 최종 메인 가격 & 하단(subHtml) 처리
+            // 아이콘(mainIcon)이 포함된 메인 가격 및 서브(종가) 업데이트
             nodes.price.textContent = mainIcon + formatNum(mainPrice);
             nodes.extPrice.innerHTML = subHtml;
             
