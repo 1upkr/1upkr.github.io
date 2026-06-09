@@ -759,32 +759,31 @@ function updateDOMWithData(quotes) {
             const regChange = quote.regularMarketChange || 0;
             const regPct = quote.regularMarketChangePercent || 0; 
 
-            // 2. 프리마켓(Pre) 데이터 (🔜)
+            // 2. 프리마켓(Pre) 데이터 (이모지 대신 'pre' 텍스트 사용)
             let preData = null;
             if (quote.preMarketPrice) {
                 const change = quote.preMarketChange !== undefined ? quote.preMarketChange : (quote.preMarketPrice - regPrice);
                 const pct = quote.preMarketChangePercent !== undefined ? quote.preMarketChangePercent : (change / regPrice * 100);
-                preData = { price: quote.preMarketPrice, change: change, pct: pct, label: '🔜', time: quote.preMarketTime || 0 };
+                preData = { price: quote.preMarketPrice, change: change, pct: pct, label: 'pre', time: quote.preMarketTime || 0 };
             }
 
-            // 3. 애프터마켓(Post) 데이터 (🔚)
+            // 3. 애프터마켓(Post) 데이터 (이모지 대신 'post' 텍스트 사용)
             let postData = null;
             if (quote.postMarketPrice) {
                 const change = quote.postMarketChange !== undefined ? quote.postMarketChange : (quote.postMarketPrice - regPrice);
                 const pct = quote.postMarketChangePercent !== undefined ? quote.postMarketChangePercent : (change / regPrice * 100);
-                postData = { price: quote.postMarketPrice, change: change, pct: pct, label: '🔚', time: quote.postMarketTime || 0 };
+                postData = { price: quote.postMarketPrice, change: change, pct: pct, label: 'post', time: quote.postMarketTime || 0 };
             }
 
-            // ★ 4. "바뀐 것처럼 보이게 만든" 원인 제거 (교차 Fallback 삭제) ★
+            // 4. 상태 판별 로직
             const mState = (quote.marketState || 'REGULAR').toUpperCase();
             let activeExt = null;
 
             if (mState.includes('PRE') && preData) {
-                activeExt = preData; // PRE 장일 때는 오직 PRE 데이터만!
+                activeExt = preData; 
             } else if (mState.includes('POST') && postData) {
-                activeExt = postData; // POST 장일 때는 오직 POST 데이터만!
+                activeExt = postData; 
             } else if (mState === 'CLOSED') {
-                // 완전히 장이 닫혔을 때는 시간 비교로 가장 최근 데이터를 띄움
                 if (preData && postData) {
                     activeExt = preData.time > postData.time ? preData : postData;
                 } else {
@@ -792,7 +791,6 @@ function updateDOMWithData(quotes) {
                 }
             }
 
-            // 연장장 데이터가 없거나 조건에 안 맞으면 무조건 정규장 모드로 작동
             const isRegular = (mState === 'REGULAR' || !activeExt);
 
             // 5. 렌더링 변수 초기화
@@ -804,7 +802,7 @@ function updateDOMWithData(quotes) {
 
             // 6. 상태별 화면 분기
             if (isRegular) {
-                // [정규장] 메인 = 장중가 / 하단 = 🔜 프리마켓 데이터 (존재 시)
+                // [정규장] 메인 = 장중가 / 하단 = pre 프리마켓 데이터 (존재 시)
                 if (preData) {
                     const isExtUp = preData.change >= 0;
                     const extColor = isExtUp ? 'up' : 'down';
@@ -812,16 +810,17 @@ function updateDOMWithData(quotes) {
                     subHtml = `<span class="ext-label">${preData.label}</span> ${formatNum(preData.price)} <span class="${extColor}">(${extSign}${formatPct(preData.pct)}%)</span>`;
                 }
             } else if (activeExt) {
-                // [장외시간] 메인 = 🔜/🔚 연장장 가격 / 하단 = 정규장 종가
+                // [장외시간] 메인 = pre/post 연장장 가격 / 하단 = close (정규장 종가)
                 mainPrice = activeExt.price;
                 mainChange = activeExt.change;
                 mainPct = activeExt.pct;
-                mainIcon = activeExt.label + ' '; 
+                mainIcon = activeExt.label + ' '; // pre 또는 post 텍스트 적용
 
                 const regIsUp = regChange >= 0;
                 const regColor = regIsUp ? 'up' : 'down';
                 const regSign = regIsUp ? '+' : '';
-                subHtml = `<span class="ext-label">종가</span> ${formatNum(regPrice)} <span class="${regColor}">(${regSign}${formatPct(regPct)}%)</span>`;
+                // '종가' 대신 'close' 텍스트 사용
+                subHtml = `<span class="ext-label">close</span> ${formatNum(regPrice)} <span class="${regColor}">(${regSign}${formatPct(regPct)}%)</span>`;
             }
 
             // 7. 색상 및 애니메이션 처리
@@ -845,7 +844,7 @@ function updateDOMWithData(quotes) {
             nodes.price.setAttribute('data-price', mainPrice);
             nodes.name.textContent = quote.shortName || quote.longName || ticker;
             
-            // 아이콘(mainIcon)이 포함된 최종 가격
+            // 메인 텍스트 출력 (예: "pre 150.00" 또는 "post 150.00")
             nodes.price.textContent = mainIcon + formatNum(mainPrice);
             nodes.extPrice.innerHTML = subHtml;
             
