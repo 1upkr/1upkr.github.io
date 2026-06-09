@@ -348,3 +348,238 @@ function handleAutocomplete(value, sectionKey) {
     const matches = localTickerDB.filter(item => {
         if (isKr && item.e !== 'NAVER') return false;
         if (!isKr && item.e === 'NAVER') return false;
+
+        if (isChosung) {
+            return (item.cs_s && item.cs_s.includes(value)) || (item.cs_n && item.cs_n.includes(value));
+        } else {
+            return (item.s && item.s.toLowerCase().includes(value)) || (item.n && item.n.toLowerCase().includes(value));
+        }
+    }).slice(0, 10);
+
+    if (matches.length > 0) {
+        if (listEl) {
+            listEl.innerHTML = matches.map(item => {
+                const s = escapeHTML(item.s);
+                const n = escapeHTML(item.n);
+                const e = escapeHTML(item.e);
+                return `
+                    <li onclick="selectAutocomplete('${s}', '${sectionKey}')">
+                        <div class="ac-info">
+                            <span class="ac-symbol">${s}</span>
+                            <span class="ac-name">${n}</span>
+                        </div>
+                        <span class="ac-exch">${e}</span>
+                    </li>
+                `;
+            }).join('');
+            listEl.style.display = 'block';
+        }
+        if (guideEl) guideEl.style.display = 'none';
+    } else {
+        if (listEl) listEl.style.display = 'none';
+        if (guideEl) guideEl.style.display = 'block';
+    }
+}
+
+window.selectAutocomplete = function(symbol, sectionKey) {
+    const inputEl = document.getElementById('input-' + sectionKey);
+    const listEl = document.getElementById('autocomplete-' + sectionKey);
+    const guideEl = document.getElementById('guide-' + sectionKey);
+    const formEl = document.getElementById('form-' + sectionKey);
+
+    if (inputEl) inputEl.value = symbol;
+    if (listEl) listEl.style.display = 'none';
+    if (guideEl) guideEl.style.display = 'none';
+    
+    // 자동 등록 방지 시 아래 줄 삭제. 원본 코드는 submit 트리거함
+    // if (formEl) formEl.dispatchEvent(new Event('submit')); 
+};
+
+// =========================================================
+// 8. 데이터 통신 및 갱신 (Data Fetching & Updating)
+// =========================================================
+async function fetchWithRetry(url, retries = 3, delay = 1000) {
+    for (let i = 0; i < retries; i++) {
+        try {
+            const res = await fetch(url);
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            return await res.text();
+        } catch (err) {
+            if (i === retries - 1) throw err;
+            await new Promise(r => setTimeout(r, delay * Math.pow(2, i)));
+        }
+    }
+}
+
+async function fetchYahooFinance(symbols) {
+    if (symbols.length === 0) return [];
+    if (!navigator.onLine) throw new Error('No network connection.');
+    const query = symbols.join(',');
+    const url = GAS_PROXY_URL + '?symbols=' + encodeURIComponent(query) + '&t=' + Date.now();
+    try {
+        const text = await fetchWithRetry(url);
+        if (text.trim().startsWith('<')) throw new Error('GAS proxy permission denied.');
+        const data = JSON.parse(text);
+        if (data && data.quoteResponse && data.quoteResponse.result) return data.quoteResponse.result;
+        throw new Error('Invalid Data format');
+    } catch (e) {
+        console.error('Yahoo Fetch Error', e);
+        throw e;
+    }
+}
+
+async function fetchNaverFinance(symbols) {
+    if (symbols.length === 0) return [];
+    if (!navigator.onLine) throw new Error('No network connection.');
+    const query = symbols.join(',');
+    const url = NAVER_GAS_PROXY_URL + '?symbols=' + encodeURIComponent(query) + '&t=' + Date.now();
+    try {
+        const text = await fetchWithRetry(url);
+        if (text.trim().startsWith('<')) throw new Error('Naver GAS proxy permission denied.');
+        const data = JSON.parse(text);
+        if (data && data.quoteResponse && data.quoteResponse.result) return data.quoteResponse.result;
+        throw new Error('Invalid Data format');
+    } catch (e) {
+        console.error('Naver Fetch Error', e);
+        throw e;
+    }
+}
+
+async function fetchData() {
+    localStorage.setItem('marketdash_last_fetch_time', Date.now().toString());
+    const promises = [];
+
+    for (const key of state.sectionOrder) {
+        if (!state.expanded[key]) continue;
+        const tickers = state.watchlists[key].tickers;
+        if (tickers.length === 0) continue;
+
+        const chunkSize = 10;
+        const fetchFunc = key === 'kr' ? fetchNaverFinance : fetchYahooFinance;
+
+        for (let i = 0; i < tickers.length; i += chunkSize) {
+            const chunk = tickers.slice(i, i + chunkSize);
+            const p = fetchFunc(chunk).then(data => {
+                updateDOMWithData(data);
+                markMissingData(chunk, data);
+            }).catch(err => {
+                markAllError(chunk, err.message);
+            });
+            promises.push(p);
+        }
+    }
+    await Promise.all(promises);
+    fetchNews();
+}
+
+function updateDOMWithData(dataArray) {
+    requestAnimationFrame(() => {
+        dataArray.forEach(data => {
+            const symbol = data.symbol;
+            const nodes = rowNodes.get(symbol);
+            if (!nodes || !nodes.row) return;
+
+            // 1. 기본값(정규장) 설정
+            let mainPrice = data.regularMarketPrice || 0;
+            let mainChange = data.regularMarketChange || 0;
+            let mainPct = data.regularMarketChangePercent || 0;
+            let extHtml = '';
+
+            // 2. 연장장(프리/애프터) 데이터 수집 (변동액 'change' 속성 추가)
+            let extData = [];
+            if (data.preMarketPrice) {
+                extData.push({ price: data.preMarketPrice, change: data.preMarketChange || 0, pct: data.preMarketChangePercent || 0, label: '🔜', time: data.preMarketTime || 0 });
+            }
+            if (data.postMarketPrice) {
+                extData.push({ price: data.postMarketPrice, change: data.postMarketChange || 0, pct: data.postMarketChangePercent || 0, label: '🔚', time: data.postMarketTime || 0 });
+            }
+
+            // 3. 야후 파이낸스 상태값(marketState) 확인 및 스왑(Swap) 로직
+            const isRegularMarket = data.marketState === 'REGULAR'; // 현재 정규장 여부
+
+            if (!isRegularMarket && extData.length > 0) {
+                // 장중이 아닐 때: 가장 최근 연장장 데이터를 메인으로 올림
+                const latestExt = extData.reduce((prev, curr) => prev.time > curr.time ? prev : curr);
+                mainPrice = latestExt.price;
+                mainChange = latestExt.change;
+                mainPct = latestExt.pct;
+
+                // 하단 보조 영역에는 정규장 데이터(종가) 표시
+                const regIsUp = (data.regularMarketChange || 0) >= 0;
+                const regColor = regIsUp ? 'up' : 'down';
+                const regSign = regIsUp ? '+' : '';
+                extHtml = `<span class="ext-label">종가</span> ${formatNum(data.regularMarketPrice)} <span class="${regColor}">(${regSign}${formatPct(data.regularMarketChangePercent || 0)}%)</span>`;
+            } else if (extData.length > 0) {
+                // 장중이거나 스왑 조건이 아닐 때: 기존처럼 연장장 데이터를 하단에 표시
+                const latestExt = extData.reduce((prev, curr) => prev.time > curr.time ? prev : curr);
+                const extIsUp = latestExt.pct >= 0;
+                const extColor = extIsUp ? 'up' : 'down';
+                const extSign = extIsUp ? '+' : '';
+                extHtml = `<span class="ext-label">${latestExt.label}</span> ${formatNum(latestExt.price)} <span class="${extColor}">(${extSign}${formatPct(latestExt.pct)}%)</span>`;
+            }
+
+            // 4. UI 색상 및 애니메이션 처리 (메인 데이터 기준)
+            const isUp = mainChange >= 0;
+            const colorClass = isUp ? 'up' : 'down';
+            const sign = isUp ? '+' : '';
+            const arrow = isUp ? '▲' : '▼';
+
+            const prevPriceStr = nodes.price.getAttribute('data-price');
+            const prevPrice = prevPriceStr ? parseFloat(prevPriceStr) : null;
+
+            if (prevPrice !== null && prevPrice !== mainPrice) {
+                nodes.row.classList.remove('flash-up', 'flash-down');
+                setTimeout(() => {
+                    if (nodes && nodes.row) {
+                        nodes.row.classList.add(mainPrice > prevPrice ? 'flash-up' : 'flash-down');
+                    }
+                }, 10);
+            }
+
+            // 5. DOM 업데이트 (캐싱된 nodes 객체 사용)
+            nodes.price.setAttribute('data-price', mainPrice);
+            nodes.name.textContent = data.shortName || data.longName || symbol;
+            nodes.price.textContent = formatNum(mainPrice);
+            nodes.extPrice.innerHTML = extHtml; // 스왑된 하단 영역 주입
+
+            nodes.change.innerHTML = `<span class="${colorClass}">${sign}${formatNum(mainChange)}</span>`;
+            nodes.pct.innerHTML = `<span class="badge ${colorClass}"><span class="arrow">${arrow}</span>${formatPct(Math.abs(mainPct))}%</span>`;
+            nodes.vol.textContent = formatCompact(data.regularMarketVolume);
+            nodes.cap.textContent = formatCompact(data.marketCap);
+
+            if (data.fiftyTwoWeekLow && data.fiftyTwoWeekHigh) {
+                nodes.range.textContent = formatNum(data.fiftyTwoWeekLow) + ' - ' + formatNum(data.fiftyTwoWeekHigh);
+            } else {
+                nodes.range.textContent = '-';
+            }
+        });
+    });
+
+    dataArray.forEach(data => {
+        memoryPriceCache[data.symbol] = data;
+    });
+    saveCacheToStorage();
+}
+
+// ... 포맷터 등 기타 유틸리티 (생략 없이 사용 가능)
+function formatNum(val) {
+    if (val === undefined || val === null || isNaN(val)) return '-';
+    const abs = Math.abs(val);
+    let dec = 0;
+    if (abs > 0 && abs < 1) dec = 4;
+    else if (abs > 1000) dec = 0;
+    return new Intl.NumberFormat('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec }).format(val);
+}
+
+function formatPct(val) {
+    if (val === undefined || val === null || isNaN(val)) return '-';
+    return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(val);
+}
+
+function formatCompact(val) {
+    if (!val || isNaN(val)) return '-';
+    return new Intl.NumberFormat('en-US', { notation: 'compact', compactDisplay: 'short', maximumFractionDigits: 2 }).format(val);
+}
+
+// 초기화 실행
+document.addEventListener('DOMContentLoaded', init);
