@@ -754,12 +754,12 @@ function updateDOMWithData(quotes) {
             const nodes = rowNodes.get(ticker);
             if (!nodes || !nodes.row) return;
 
-            // 1. 기본 정규장 데이터 세팅
+            // 1. 기본 정규장(종가 및 장중 현재가) 데이터 세팅
             const regPrice = quote.regularMarketPrice || 0; 
             const regChange = quote.regularMarketChange || 0;
             const regPct = quote.regularMarketChangePercent || 0; 
 
-            // 2. 프리마켓(Pre) 데이터 (이모지 대신 'pre' 텍스트 사용)
+            // 2. 장전(Pre) 데이터 준비
             let preData = null;
             if (quote.preMarketPrice) {
                 const change = quote.preMarketChange !== undefined ? quote.preMarketChange : (quote.preMarketPrice - regPrice);
@@ -767,7 +767,7 @@ function updateDOMWithData(quotes) {
                 preData = { price: quote.preMarketPrice, change: change, pct: pct, label: 'pre', time: quote.preMarketTime || 0 };
             }
 
-            // 3. 애프터마켓(Post) 데이터 (이모지 대신 'post' 텍스트 사용)
+            // 3. 장후(Post) 데이터 준비
             let postData = null;
             if (quote.postMarketPrice) {
                 const change = quote.postMarketChange !== undefined ? quote.postMarketChange : (quote.postMarketPrice - regPrice);
@@ -775,55 +775,73 @@ function updateDOMWithData(quotes) {
                 postData = { price: quote.postMarketPrice, change: change, pct: pct, label: 'post', time: quote.postMarketTime || 0 };
             }
 
-            // 4. 상태 판별 로직
+            // 4. 현재 시장 상태(State) 명확히 판별
             const mState = (quote.marketState || 'REGULAR').toUpperCase();
-            let activeExt = null;
+            let targetState = 'REGULAR'; // 기본값: 장중
 
             if (mState.includes('PRE') && preData) {
-                activeExt = preData; 
+                targetState = 'PRE';
             } else if (mState.includes('POST') && postData) {
-                activeExt = postData; 
+                targetState = 'POST';
             } else if (mState === 'CLOSED') {
+                // 주말이나 완전한 장 마감 상태일 때, 가장 마지막으로 열렸던 연장장이 무엇인지 확인
                 if (preData && postData) {
-                    activeExt = preData.time > postData.time ? preData : postData;
-                } else {
-                    activeExt = postData || preData;
+                    targetState = preData.time > postData.time ? 'PRE' : 'POST';
+                } else if (postData) {
+                    targetState = 'POST';
+                } else if (preData) {
+                    targetState = 'PRE';
                 }
             }
 
-            const isRegular = (mState === 'REGULAR' || !activeExt);
-
-            // 5. 렌더링 변수 초기화
+            // 5. 출력용 변수 초기화
             let mainPrice = regPrice;
             let mainChange = regChange;
             let mainPct = regPct;
             let mainIcon = ''; 
             let subHtml = '';
 
-            // 6. 상태별 화면 분기
-            if (isRegular) {
-                // [정규장] 메인 = 장중가 / 하단 = pre 프리마켓 데이터 (존재 시)
-                if (preData) {
-                    const isExtUp = preData.change >= 0;
-                    const extColor = isExtUp ? 'up' : 'down';
-                    const extSign = isExtUp ? '+' : '';
-                    subHtml = `<span class="ext-label">${preData.label}</span> ${formatNum(preData.price)} <span class="${extColor}">(${extSign}${formatPct(preData.pct)}%)</span>`;
-                }
-            } else if (activeExt) {
-                // [장외시간] 메인 = pre/post 연장장 가격 / 하단 = close (정규장 종가)
-                mainPrice = activeExt.price;
-                mainChange = activeExt.change;
-                mainPct = activeExt.pct;
-                mainIcon = activeExt.label + ' '; // pre 또는 post 텍스트 적용
-
+            // ★ 6. 요청하신 3가지 시간대별 완벽 분기 처리 ★
+            if (targetState === 'PRE') {
+                // [장전 시간대] 메인: Pre / 하단: 전일 종가 Close
+                mainPrice = preData.price;
+                mainChange = preData.change;
+                mainPct = preData.pct;
+                mainIcon = preData.label + ' '; // "pre "
+                
                 const regIsUp = regChange >= 0;
                 const regColor = regIsUp ? 'up' : 'down';
                 const regSign = regIsUp ? '+' : '';
-                // '종가' 대신 'close' 텍스트 사용
                 subHtml = `<span class="ext-label">close</span> ${formatNum(regPrice)} <span class="${regColor}">(${regSign}${formatPct(regPct)}%)</span>`;
+                
+            } else if (targetState === 'POST') {
+                // [장후 시간대] 메인: Post / 하단: 당일 종가 Close
+                mainPrice = postData.price;
+                mainChange = postData.change;
+                mainPct = postData.pct;
+                mainIcon = postData.label + ' '; // "post "
+                
+                const regIsUp = regChange >= 0;
+                const regColor = regIsUp ? 'up' : 'down';
+                const regSign = regIsUp ? '+' : '';
+                subHtml = `<span class="ext-label">close</span> ${formatNum(regPrice)} <span class="${regColor}">(${regSign}${formatPct(regPct)}%)</span>`;
+                
+            } else {
+                // [장중 시간대] 메인: 현재 시장 가격(REGULAR) / 하단: 당일 Pre (존재할 경우에만)
+                mainPrice = regPrice;
+                mainChange = regChange;
+                mainPct = regPct;
+                mainIcon = ''; 
+                
+                if (preData) {
+                    const preIsUp = preData.change >= 0;
+                    const preColor = preIsUp ? 'up' : 'down';
+                    const preSign = preIsUp ? '+' : '';
+                    subHtml = `<span class="ext-label">${preData.label}</span> ${formatNum(preData.price)} <span class="${preColor}">(${preSign}${formatPct(preData.pct)}%)</span>`;
+                }
             }
 
-            // 7. 색상 및 애니메이션 처리
+            // 7. 색상 및 애니메이션 처리 (메인 데이터 기준)
             const isUp = mainChange >= 0;
             const colorClass = isUp ? 'up' : 'down'; 
             const sign = isUp ? '+' : ''; 
@@ -844,7 +862,7 @@ function updateDOMWithData(quotes) {
             nodes.price.setAttribute('data-price', mainPrice);
             nodes.name.textContent = quote.shortName || quote.longName || ticker;
             
-            // 메인 텍스트 출력 (예: "pre 150.00" 또는 "post 150.00")
+            // 메인 텍스트 출력 및 하단 서브 영역 출력
             nodes.price.textContent = mainIcon + formatNum(mainPrice);
             nodes.extPrice.innerHTML = subHtml;
             
