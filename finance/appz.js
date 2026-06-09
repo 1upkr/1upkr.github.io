@@ -758,7 +758,7 @@ function updateDOMWithData(quotes) {
             const regChange = quote.regularMarketChange || 0;
             const regPct = quote.regularMarketChangePercent || 0; 
 
-            // 2. 연장장(프리/애프터) 데이터 수집 (GAS에서 추가한 change 필드 매핑)
+            // 2. 연장장(프리/애프터) 데이터 수집
             let extOptions = [];
             if (quote.preMarketPrice) extOptions.push({ price: quote.preMarketPrice, change: quote.preMarketChange || 0, pct: quote.preMarketChangePercent || 0, label: '🔜', time: quote.preMarketTime || 0 });
             if (quote.postMarketPrice) extOptions.push({ price: quote.postMarketPrice, change: quote.postMarketChange || 0, pct: quote.postMarketChangePercent || 0, label: '🔚', time: quote.postMarketTime || 0 });
@@ -769,13 +769,13 @@ function updateDOMWithData(quotes) {
                 extPrice = latestExt.price; extChangePct = latestExt.pct; extChange = latestExt.change; extLabel = latestExt.label;
             }
 
-            // 3. 렌더링에 사용할 메인 변수 초기화
+            // 3. 렌더링에 사용할 메인 변수 초기화 (+ 아이콘 변수 추가)
             let mainPrice = regPrice;
             let mainChange = regChange;
             let mainPct = regPct;
+            let mainIcon = ''; // 정규장일 때는 빈 값
             
             // 4. marketState 기반 스왑(Swap) 로직
-            // 야후 데이터 기준 장중('REGULAR')이 아니고, 연장장 데이터가 존재할 때만 스왑
             const isRegular = (!quote.marketState || quote.marketState === 'REGULAR');
 
             if (!isRegular && extPrice) {
@@ -783,12 +783,13 @@ function updateDOMWithData(quotes) {
                 mainPrice = extPrice;
                 mainChange = extChange;
                 mainPct = extChangePct;
+                mainIcon = extLabel + ' '; // 프리(🔜) 또는 애프터(🔚) 아이콘 할당
 
-                // 기존 정규장 데이터를 '종가' 라벨과 함께 하단으로 내림
+                // 기존 정규장 데이터를 '종가' 라벨 = 🏁
                 const regIsUp = regChange >= 0;
                 const regColor = regIsUp ? 'up' : 'down';
                 const regSign = regIsUp ? '+' : '';
-                nodes.extPrice.innerHTML = `<span class="ext-label">종가</span> ${formatNum(regPrice)} <span class="${regColor}">(${regSign}${formatPct(regPct)}%)</span>`;
+                nodes.extPrice.innerHTML = `<span class="ext-label">🏁</span> ${formatNum(regPrice)} <span class="${regColor}">(${regSign}${formatPct(regPct)}%)</span>`;
             } else if (extPrice && extLabel) {
                 // 장중이거나 스왑 조건이 아닐 경우: 기존처럼 연장장 데이터를 하단에 표시
                 const isExtUp = extChangePct >= 0;
@@ -820,7 +821,9 @@ function updateDOMWithData(quotes) {
             // 7. DOM 업데이트
             nodes.price.setAttribute('data-price', mainPrice);
             nodes.name.textContent = quote.shortName || quote.longName || ticker;
-            nodes.price.textContent = formatNum(mainPrice);
+            
+            // ★ 수정된 부분: mainIcon(🔜/🔚)을 가격 앞에 붙여서 출력
+            nodes.price.textContent = mainIcon + formatNum(mainPrice);
             
             nodes.change.innerHTML = `<span class="${colorClass}">${sign}${formatNum(mainChange)}</span>`;
             nodes.pct.innerHTML = `<span class="badge ${colorClass}"><span class="arrow">${arrow}</span>${formatPct(Math.abs(mainPct))}%</span>`;
