@@ -758,40 +758,65 @@ function updateDOMWithData(quotes) {
             const regChange = quote.regularMarketChange || 0;
             const regPct = quote.regularMarketChangePercent || 0; 
 
-            // 2. 연장장(프리/애프터) 데이터 수집
-            let extOptions = [];
-            if (quote.preMarketPrice) extOptions.push({ price: quote.preMarketPrice, change: quote.preMarketChange || 0, pct: quote.preMarketChangePercent || 0, label: '🔜', time: quote.preMarketTime || 0 });
-            if (quote.postMarketPrice) extOptions.push({ price: quote.postMarketPrice, change: quote.postMarketChange || 0, pct: quote.postMarketChangePercent || 0, label: '🔚', time: quote.postMarketTime || 0 });
-
-            let extPrice, extChangePct, extChange, extLabel;
-            if (extOptions.length > 0) {
-                const latestExt = extOptions.reduce((prev, current) => (prev.time > current.time) ? prev : current);
-                extPrice = latestExt.price; extChangePct = latestExt.pct; extChange = latestExt.change; extLabel = latestExt.label;
+            // 2. 연장장(프리/애프터) 데이터 수집 및 안전장치(직접 계산) 추가
+            let preData = null;
+            if (quote.preMarketPrice) {
+                // API 누락 시 (프리마켓 가격 - 정규장 종가)로 직접 계산
+                const pChange = quote.preMarketChange !== undefined ? quote.preMarketChange : (quote.preMarketPrice - regPrice);
+                const pPct = quote.preMarketChangePercent !== undefined ? quote.preMarketChangePercent : (pChange / regPrice * 100);
+                preData = { price: quote.preMarketPrice, change: pChange, pct: pPct, label: '🔜', time: quote.preMarketTime || 0 };
             }
 
-            // 3. 렌더링에 사용할 메인 변수 초기화 (+ 아이콘 변수 추가)
+            let postData = null;
+            if (quote.postMarketPrice) {
+                // API 누락 시 (애프터마켓 가격 - 정규장 종가)로 직접 계산
+                const pChange = quote.postMarketChange !== undefined ? quote.postMarketChange : (quote.postMarketPrice - regPrice);
+                const pPct = quote.postMarketChangePercent !== undefined ? quote.postMarketChangePercent : (pChange / regPrice * 100);
+                postData = { price: quote.postMarketPrice, change: pChange, pct: pPct, label: '🔚', time: quote.postMarketTime || 0 };
+            }
+
+            // 3. 현재 시장 상태(marketState)를 기준으로 정확한 데이터 선택 (시간 비교 오류 방지)
+            const mState = quote.marketState || 'REGULAR';
+            let activeExt = null;
+            
+            if ((mState.includes('PRE') || mState === 'PREPRE') && preData) {
+                activeExt = preData;
+            } else if ((mState.includes('POST') || mState === 'CLOSED') && postData) {
+                activeExt = postData;
+            } else if (preData || postData) {
+                // 상태값이 모호할 때만 기존처럼 최신 시간 비교로 폴백
+                const extOptions = [preData, postData].filter(Boolean);
+                activeExt = extOptions.reduce((prev, curr) => (prev.time > curr.time) ? prev : curr);
+            }
+
+            let extPrice, extChangePct, extChange, extLabel;
+            if (activeExt) {
+                extPrice = activeExt.price;
+                extChangePct = activeExt.pct;
+                extChange = activeExt.change;
+                extLabel = activeExt.label;
+            }
+
+            // 4. 렌더링에 사용할 메인 변수 초기화
             let mainPrice = regPrice;
             let mainChange = regChange;
             let mainPct = regPct;
-            let mainIcon = ''; // 정규장일 때는 빈 값
+            let mainIcon = ''; 
             
-            // 4. marketState 기반 스왑(Swap) 로직
-            const isRegular = (!quote.marketState || quote.marketState === 'REGULAR');
+            // 5. 스왑(Swap) 로직
+            const isRegular = mState === 'REGULAR';
 
             if (!isRegular && extPrice) {
-                // 연장장 데이터를 메인 영역으로 올림
                 mainPrice = extPrice;
                 mainChange = extChange;
                 mainPct = extChangePct;
-                mainIcon = extLabel + ' '; // 프리(🔜) 또는 애프터(🔚) 아이콘 할당
+                mainIcon = extLabel + ' '; // 아이콘 추가 (🔜 또는 🔚)
 
-                // 기존 정규장 데이터를 '종가' 라벨 = 🏁
                 const regIsUp = regChange >= 0;
                 const regColor = regIsUp ? 'up' : 'down';
                 const regSign = regIsUp ? '+' : '';
-                nodes.extPrice.innerHTML = `<span class="ext-label">🏁</span> ${formatNum(regPrice)} <span class="${regColor}">(${regSign}${formatPct(regPct)}%)</span>`;
-            } else if (extPrice && extLabel) {
-                // 장중이거나 스왑 조건이 아닐 경우: 기존처럼 연장장 데이터를 하단에 표시
+                nodes.extPrice.innerHTML = `<span class="ext-label">종가</span> ${formatNum(regPrice)} <span class="${regColor}">(${regSign}${formatPct(regPct)}%)</span>`;
+            } else if (activeExt) {
                 const isExtUp = extChangePct >= 0;
                 const extColorClass = isExtUp ? 'up' : 'down';
                 const extSign = isExtUp ? '+' : '';
@@ -800,13 +825,13 @@ function updateDOMWithData(quotes) {
                 nodes.extPrice.innerHTML = '';
             }
 
-            // 5. 결정된 메인 데이터(mainPrice, mainChange)를 기준으로 색상 및 부호 결정
+            // 6. UI 색상 및 부호 결정
             const isUp = mainChange >= 0;
             const colorClass = isUp ? 'up' : 'down'; 
             const sign = isUp ? '+' : ''; 
             const arrow = isUp ? '▲' : '▼';
             
-            // 6. 가격 깜빡임 애니메이션 (메인 가격 기준)
+            // 7. 가격 깜빡임 애니메이션
             const oldPriceStr = nodes.price.getAttribute('data-price');
             const oldPrice = oldPriceStr ? parseFloat(oldPriceStr) : null;
             if (oldPrice !== null && oldPrice !== mainPrice) {
@@ -818,11 +843,11 @@ function updateDOMWithData(quotes) {
                 }, 10);
             }
 
-            // 7. DOM 업데이트
+            // 8. DOM 업데이트
             nodes.price.setAttribute('data-price', mainPrice);
             nodes.name.textContent = quote.shortName || quote.longName || ticker;
             
-            // ★ 수정된 부분: mainIcon(🔜/🔚)을 가격 앞에 붙여서 출력
+            // 아이콘(mainIcon)이 포함된 최종 가격 텍스트 출력
             nodes.price.textContent = mainIcon + formatNum(mainPrice);
             
             nodes.change.innerHTML = `<span class="${colorClass}">${sign}${formatNum(mainChange)}</span>`;
