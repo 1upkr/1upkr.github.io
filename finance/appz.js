@@ -8,7 +8,7 @@ const DEFAULT_WATCHLISTS = {
 };
 
 const GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbxc8Q5iI7WxZurtV-1FDjTWKPUx_i049HSBAap2AyKYSvs8QMRHD3ZTa3xqfu0tJ1Za/exec";
-const NAVER_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbzS8LiXX04pI_P8YJhnEiwo_bgZ2WU5VRjIH0vZG28Fgdz5UPZGwPkFtOQNH_z_sjlw-w/exec"; 
+const NAVER_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbygC4GrK-2abZUpWWCxD4ZVfFVzd-gjbGvyYBTWNP26J7zwkwbrWwttXNC-geENS1Nykw/exec"; 
 const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbwSD8MOLPrYjwTBVQX_Tq6pu-gTHlOeR7p0hUY2pHGACNc2NA6f4zICduC05ypO_EN6/exec"; 
 
 const CHO_HANGUL = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
@@ -96,7 +96,7 @@ async function init() {
             const elapsedSeconds = Math.floor((now - lastFetch) / 1000);
 
             if (lastFetch === 0 || elapsedSeconds >= 60) {
-                // 60초 이상 지났다면 즉시 갱신 (forceRefresh 내에서 startTimer가 호출됨)
+                // 60초 이상 지났다면 즉시 갱신
                 forceRefresh();
             } else {
                 // 60초 미만이라면 흐른 시간만큼 카운터 차감 후 타이머 재개
@@ -735,7 +735,7 @@ async function fetchData() {
     fetchNews();
 }
 
-// 👇 새로 추가 파이 차트 카운터 애니메이션
+// 👇 추가된 파이 차트 애니메이션 렌더링 함수
 function updateTimerUI(seconds) {
     const pie = document.getElementById('timer-pie');
     if (pie) {
@@ -747,23 +747,21 @@ function updateTimerUI(seconds) {
     }
 }
 
-// 기존 forceRefresh 교체
 function forceRefresh() { 
     state.countdown = 60; 
-    updateTimerUI(state.countdown); 
+    updateTimerUI(state.countdown); // UI 동기화
     localStorage.setItem('marketdash_last_fetch_time', '0'); 
     state.lastNewsFetch = 0; 
     fetchData(); 
     startTimer(); 
 }
 
-// 기존 startTimer 교체
 function startTimer() {
     if (state.intervalId) clearInterval(state.intervalId);
     state.intervalId = setInterval(() => {
         state.countdown--;
         if (state.countdown <= 0) forceRefresh(); 
-        else updateTimerUI(state.countdown); // 1초마다 파이 차트 렌더링
+        else updateTimerUI(state.countdown); // 매초 UI 동기화
     }, 1000);
 }
 
@@ -830,7 +828,7 @@ function updateDOMWithData(quotes) {
             let mainIcon = ''; 
             let subHtml = '';
 
-            // 6. 3가지 시간대별 분기 처리 
+            // 6. 3가지 시간대별 완벽 분기 처리 (인라인 스타일 제거 및 띄어쓰기 통일 적용)
             if (targetState === 'PRE') {
                 // [장전 시간대] 메인: Pre / 하단: 전일 종가 Close
                 mainPrice = preData.price;
@@ -841,8 +839,7 @@ function updateDOMWithData(quotes) {
                 const regIsUp = regChange >= 0;
                 const regColor = regIsUp ? 'up' : 'down';
                 const regSign = regIsUp ? '+' : '';
-                // 뱃지 닫는 태그(</span>) 바로 뒤에 있던 띄어쓰기 제거
-                subHtml = `<span class="ext-label">closed</span>${formatNum(regPrice)} <span class="${regColor}">(${regSign}${formatPct(regPct)}%)</span>`;
+                subHtml = `<span class="ext-label">close</span>${formatNum(regPrice)} <span class="${regColor}">(${regSign}${formatPct(regPct)}%)</span>`;
                 
             } else if (targetState === 'POST') {
                 // [장후 시간대] 메인: Post / 하단: 당일 종가 Close
@@ -854,8 +851,7 @@ function updateDOMWithData(quotes) {
                 const regIsUp = regChange >= 0;
                 const regColor = regIsUp ? 'up' : 'down';
                 const regSign = regIsUp ? '+' : '';
-                // 뱃지 닫는 태그(</span>) 바로 뒤에 있던 띄어쓰기 제거
-                subHtml = `<span class="ext-label">closed</span>${formatNum(regPrice)} <span class="${regColor}">(${regSign}${formatPct(regPct)}%)</span>`;
+                subHtml = `<span class="ext-label">close</span>${formatNum(regPrice)} <span class="${regColor}">(${regSign}${formatPct(regPct)}%)</span>`;
                 
             } else {
                 // [장중 시간대] 메인: 현재 시장 가격 / 하단: 당일 Pre
@@ -868,7 +864,6 @@ function updateDOMWithData(quotes) {
                     const preIsUp = preData.change >= 0;
                     const preColor = preIsUp ? 'up' : 'down';
                     const preSign = preIsUp ? '+' : '';
-                    // 뱃지 닫는 태그(</span>) 바로 뒤에 있던 띄어쓰기 제거
                     subHtml = `<span class="ext-label">${preData.label}</span>${formatNum(preData.price)} <span class="${preColor}">(${preSign}${formatPct(preData.pct)}%)</span>`;
                 }
             }
