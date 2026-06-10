@@ -96,7 +96,31 @@ header {
 }
 .header-left h1 { font-size: 1.00rem; font-weight: 900; display: flex; align-items: center; gap: 0.5rem; letter-spacing: -0.02em;} 
 .header-controls { display: flex; align-items: center; gap: 1.5rem; font-size: 0.875rem; font-weight: 500; }
-.timer { color: var(--text-secondary); font-variant-numeric: tabular-nums; display: flex; align-items: center; gap: 0.4rem; font-size: 0.7em; opacity: 0.7; }
+
+.timer { display: flex; align-items: center; color: var(--text-secondary); opacity: 0.8; }
+
+/* 파이 차트 타이머 UI */
+.progress-pie {
+    width: 18px;
+    height: 18px;
+    transform: rotate(-90deg);
+    border-radius: 50%;
+}
+.progress-pie__bg {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    opacity: 0.3;
+}
+.progress-pie__fill {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 10;
+    stroke-dasharray: 31.4159;
+    stroke-dashoffset: 31.4159;
+    transition: stroke-dashoffset 1s linear;
+}
+
 .action-btns { display: flex; flex-direction: row; align-items: center; gap: 0.5rem; }
 
 .icon-btn {
@@ -193,7 +217,7 @@ main { flex: 1; width: 100%; overflow-x: hidden; }
     box-shadow: 0 10px 20px rgba(0,0,0,0.1); 
     background-color: var(--card-bg) !important; 
     cursor: grabbing !important; 
-    will-change: transform; /* 드래그 중에만 하드웨어 가속 사용 */
+    will-change: transform; 
 }
 
 .section-header {
@@ -281,7 +305,20 @@ tbody tr { transition: background-color 0.15s, transform 0.2s ease; } tbody tr:h
 .symbol { display: block; width: 100%; font-weight: 600; font-size: 0.95rem; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .name { display: block; width: 100%; color: var(--text-secondary); font-size: 0.75rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .price { font-weight: 600; font-size: 1.05rem; font-variant-numeric: tabular-nums; color: var(--text-primary); }
- 
+
+/* 메인 영역 장전/장후 뱃지 */
+.main-ext-label {
+    color: var(--text-secondary);
+    font-size: 0.55rem;
+    padding: 0.1rem 0.25rem;
+    background: var(--input-bg);
+    border-radius: 3px;
+    margin-right: 0.3rem;
+    vertical-align: middle;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
 .extended-price { font-size: 0.75rem; color: var(--text-primary); margin-top: 0.2rem; font-weight: 600; font-variant-numeric: tabular-nums; }
 .extended-price .ext-label { color: var(--text-secondary); font-size: 0.65rem; padding: 0.1rem 0.2rem; background: var(--input-bg); border-radius: 3px; margin-right: 0.2rem; }
 .extended-price .up { color: var(--green); } .extended-price .down { color: var(--red); }
@@ -315,7 +352,6 @@ tbody tr { transition: background-color 0.15s, transform 0.2s ease; } tbody tr:h
 .error-text { color: var(--red); font-size: 0.75rem; font-weight: 600; white-space: pre-wrap; line-height: 1.2; }
 
 footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); font-size: 0.8rem; font-weight: 900; opacity: 0.8; margin-top: auto; }
-
 
 /* =========================================================
    NEWS LIST & TABS CSS
@@ -501,51 +537,4 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
     .autocomplete-list { max-height: 220px; box-shadow: 0 8px 16px rgba(0,0,0,0.15); }
     .autocomplete-list li { padding: 0.7rem 0.75rem; } 
     .ac-symbol { font-size: 0.85rem; } .ac-name { font-size: 0.7rem; max-width: 140px; }
-
-/* =========================================================
-   UI 최적화 & 타이머 프로그레스 (Filled Pie)
-   ========================================================= */
-.main-ext-label {
-    color: var(--text-secondary);
-    font-size: 0.55rem;
-    padding: 0.1rem 0.25rem;
-    background: var(--input-bg);
-    border-radius: 3px;
-    margin-right: 0.3rem;
-    vertical-align: middle;
-    font-weight: 600;
-    text-transform: uppercase;
-}
-
-/* 숫자가 없는 Filled Progress 파이 타이머 */
-.timer {
-    display: flex;
-    align-items: center;
-    color: var(--text-secondary);
-    opacity: 0.7;
-}
-
-.progress-pie {
-    width: 18px; /* 기존 아이콘들과 동일한 크기 */
-    height: 18px;
-    transform: rotate(-90deg); /* 12시 방향부터 채워지도록 회전 */
-    border-radius: 50%;
-}
-
-.progress-pie__bg {
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 2;
-    opacity: 0.3; /* 배경 원의 투명도 */
-}
-
-.progress-pie__fill {
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 10; /* 반지름(r=5)의 두 배로 주어 내부를 꽉 채움 */
-    stroke-dasharray: 31.4159; /* 원의 둘레 (2 * pi * r(5)) */
-    stroke-dashoffset: 31.4159; /* 시작 시 완전히 비어있음 */
-    transition: stroke-dashoffset 1s linear; /* 1초마다 부드럽게 채워짐 */
-}
-    
 }
