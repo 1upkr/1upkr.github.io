@@ -83,7 +83,7 @@ async function init() {
     applyTheme(); 
     if (!state.sectionOrder || state.sectionOrder.length === 0) state.sectionOrder = Object.keys(state.watchlists);
 
-    // 2. [최적화] Page Visibility API: 백그라운드 전환 시 불필요한 리소스 방지
+    // 2. [최적화] Page Visibility API: 백그라운드 전환 시 불필요한 리소스 방지 및 타이머 보정
     document.addEventListener('visibilitychange', () => {
         if (document.hidden) {
             // 백그라운드 진입 시 타이머 일시 정지
@@ -101,8 +101,7 @@ async function init() {
             } else {
                 // 60초 미만이라면 흐른 시간만큼 카운터 차감 후 타이머 재개
                 state.countdown = 60 - elapsedSeconds;
-                const countdownEl = document.getElementById('countdown');
-                if (countdownEl) countdownEl.textContent = state.countdown;
+                updateTimerUI(state.countdown);
                 startTimer();
             }
         }
@@ -132,16 +131,14 @@ async function init() {
         // Watchlist 갱신 타이머는 백그라운드에서 돌아가도록 설정
         if (now - lastFetchTime < 60000) {
             state.countdown = Math.ceil(60 - ((now - lastFetchTime) / 1000));
-            const countdownEl = document.getElementById('countdown');
-            if (countdownEl) countdownEl.textContent = state.countdown;
+            updateTimerUI(state.countdown);
         } else {
             fetchData();
         }
     } else {
         if (now - lastFetchTime < 60000) {
             state.countdown = Math.ceil(60 - ((now - lastFetchTime) / 1000));
-            const countdownEl = document.getElementById('countdown');
-            if (countdownEl) countdownEl.textContent = state.countdown;
+            updateTimerUI(state.countdown);
             fetchNews(); 
         } else {
             fetchData(); 
@@ -738,24 +735,34 @@ async function fetchData() {
     fetchNews();
 }
 
+// UI 타이머 동기화 함수
+function updateTimerUI(seconds) {
+    const el = document.getElementById('countdown');
+    if (el) el.textContent = seconds;
+    
+    const circle = document.getElementById('timer-circle');
+    if (circle) {
+        const pct = seconds / 60;
+        const offset = 56.548 - (pct * 56.548);
+        circle.style.strokeDashoffset = offset;
+    }
+}
+
 function forceRefresh() { 
     state.countdown = 60; 
-    const el = document.getElementById('countdown');
-    if (el) el.textContent = state.countdown;
+    updateTimerUI(state.countdown);
     localStorage.setItem('marketdash_last_fetch_time', '0'); 
     state.lastNewsFetch = 0; 
     fetchData(); 
-    startTimer(); // 타이머가 멈춰있을 때 재시작
+    startTimer(); 
 }
 
 function startTimer() {
     if (state.intervalId) clearInterval(state.intervalId);
     state.intervalId = setInterval(() => {
         state.countdown--;
-        if (state.countdown <= 0) forceRefresh(); else {
-            const el = document.getElementById('countdown');
-            if (el) el.textContent = state.countdown;
-        }
+        if (state.countdown <= 0) forceRefresh(); 
+        else updateTimerUI(state.countdown); 
     }, 1000);
 }
 
@@ -822,16 +829,13 @@ function updateDOMWithData(quotes) {
             let mainIcon = ''; 
             let subHtml = '';
 
-            // ★ 메인 영역의 pre/post에 하단 close와 동일한 뱃지 스타일 적용 (css 분리 없이 직접 주입)
-            const labelStyle = "color: var(--text-secondary); font-size: 0.55rem; padding: 0.1rem 0.25rem; background: var(--input-bg); border-radius: 3px; margin-right: 0.3rem; vertical-align: middle; font-weight: 500;";
-
-            // 6. 요청하신 3가지 시간대별 완벽 분기 처리
+            // 6. 요청하신 3가지 시간대별 완벽 분기 처리 (CSS 클래스 적용)
             if (targetState === 'PRE') {
                 // [장전 시간대] 메인: Pre / 하단: 전일 종가 Close
                 mainPrice = preData.price;
                 mainChange = preData.change;
                 mainPct = preData.pct;
-                mainIcon = `<span class="ext-label" style="${labelStyle}">${preData.label}</span>`; 
+                mainIcon = `<span class="main-ext-label">${preData.label}</span>`; 
                 
                 const regIsUp = regChange >= 0;
                 const regColor = regIsUp ? 'up' : 'down';
@@ -843,7 +847,7 @@ function updateDOMWithData(quotes) {
                 mainPrice = postData.price;
                 mainChange = postData.change;
                 mainPct = postData.pct;
-                mainIcon = `<span class="ext-label" style="${labelStyle}">${postData.label}</span>`; 
+                mainIcon = `<span class="main-ext-label">${postData.label}</span>`; 
                 
                 const regIsUp = regChange >= 0;
                 const regColor = regIsUp ? 'up' : 'down';
@@ -886,7 +890,6 @@ function updateDOMWithData(quotes) {
             nodes.price.setAttribute('data-price', mainPrice);
             nodes.name.textContent = quote.shortName || quote.longName || ticker;
             
-            // ★ 수정됨: mainIcon이 태그를 포함하므로 textContent 대신 innerHTML을 사용하여 렌더링
             nodes.price.innerHTML = mainIcon + formatNum(mainPrice);
             nodes.extPrice.innerHTML = subHtml;
             
