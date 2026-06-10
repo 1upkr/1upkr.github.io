@@ -110,7 +110,7 @@ header {
     fill: none;
     stroke: currentColor;
     stroke-width: 2;
-    opacity: 0.3;
+    opacity: 0.2;
 }
 .progress-pie__fill {
     fill: none;
@@ -120,6 +120,7 @@ header {
     stroke-dashoffset: 31.4159;
     stroke-linecap: butt !important; 
     transition: stroke-dashoffset 1s linear;
+    opacity: 0.7;  
 }
 
 .action-btns { display: flex; flex-direction: row; align-items: center; gap: 0.25rem; }
