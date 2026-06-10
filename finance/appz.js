@@ -8,7 +8,7 @@ const DEFAULT_WATCHLISTS = {
 };
 
 const GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbxc8Q5iI7WxZurtV-1FDjTWKPUx_i049HSBAap2AyKYSvs8QMRHD3ZTa3xqfu0tJ1Za/exec";
-const NAVER_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbzeH_ptrdMPq2cZrZISx9x8Nn33MgmIicEyz7ZqBVphxlXp2VuBHJKOr3JwtqBL2dVnBw/exec"; 
+const NAVER_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbxm_c64Tt3OisXLB-0IPcLKZ5z4fWjXa0UE-h0L1n983el90aCAx6txnXKKnBi1ZCUoAw/exec"; 
 const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbwSD8MOLPrYjwTBVQX_Tq6pu-gTHlOeR7p0hUY2pHGACNc2NA6f4zICduC05ypO_EN6/exec"; 
 
 const CHO_HANGUL = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
@@ -735,21 +735,19 @@ async function fetchData() {
     fetchNews();
 }
 
-// 👇 추가된 파이 차트 애니메이션 렌더링 함수
 function updateTimerUI(seconds) {
     const pie = document.getElementById('timer-pie');
     if (pie) {
-        // 시간이 지날수록 (60 -> 0) 색상이 채워짐 (0% -> 100%)
         const maxOffset = 31.4159;
-        const pct = seconds / 60; // 60초일 때 1, 0초일 때 0
-        const offset = pct * maxOffset; // 60초일 때 빈 원, 0초일 때 꽉 찬 원
+        const pct = seconds / 60; 
+        const offset = pct * maxOffset; 
         pie.style.strokeDashoffset = offset;
     }
 }
 
 function forceRefresh() { 
     state.countdown = 60; 
-    updateTimerUI(state.countdown); // UI 동기화
+    updateTimerUI(state.countdown); 
     localStorage.setItem('marketdash_last_fetch_time', '0'); 
     state.lastNewsFetch = 0; 
     fetchData(); 
@@ -761,7 +759,7 @@ function startTimer() {
     state.intervalId = setInterval(() => {
         state.countdown--;
         if (state.countdown <= 0) forceRefresh(); 
-        else updateTimerUI(state.countdown); // 매초 UI 동기화
+        else updateTimerUI(state.countdown); 
     }, 1000);
 }
 
@@ -778,7 +776,7 @@ function updateDOMWithData(quotes) {
             const regChange = quote.regularMarketChange || 0;
             const regPct = quote.regularMarketChangePercent || 0; 
 
-            // 2. 장전(Pre) 데이터 준비 (거래량 수집 매핑 추가)
+            // 2. 장전(Pre) 데이터 준비 (volume 추가)
             let preData = null;
             if (quote.preMarketPrice !== undefined && quote.preMarketPrice !== null) {
                 const change = quote.preMarketChange !== undefined ? quote.preMarketChange : (quote.preMarketPrice - regPrice);
@@ -787,7 +785,7 @@ function updateDOMWithData(quotes) {
                 preData = { price: quote.preMarketPrice, change: change, pct: pct, label: 'pre', time: quote.preMarketTime || 0, volume: vol };
             }
 
-            // 3. 장후(Post) 데이터 준비 (거래량 수집 매핑 추가)
+            // 3. 장후(Post) 데이터 준비 (volume 추가)
             let postData = null;
             if (quote.postMarketPrice !== undefined && quote.postMarketPrice !== null) {
                 const change = quote.postMarketChange !== undefined ? quote.postMarketChange : (quote.postMarketPrice - regPrice);
@@ -823,11 +821,23 @@ function updateDOMWithData(quotes) {
                 }
             }
 
-            // [완벽 보정] 가격 변동폭이 아니라 '장외 누적 거래량(volume)이 0'일 때만 CLOSED_H(미거래마감) 상태로 격하 처리합니다.
-            if (targetState === 'PRE' && (!preData || preData.volume === 0)) {
-                targetState = 'CLOSED_H';
-            } else if (targetState === 'POST' && (!postData || postData.volume === 0)) {
-                targetState = 'CLOSED_H';
+            // [완벽 보정] 한국/미국 시장 분리 판별
+            const isKR = /^\d+$/.test(ticker); // 티커가 숫자로만 구성되어 있으면 한국(Naver) 종목으로 판별
+
+            if (targetState === 'PRE') {
+                if (isKR) {
+                    // 한국 시장: 거래량 0이면 미체결/보합 상태로 간주
+                    if (!preData || preData.volume === 0) targetState = 'CLOSED_H';
+                } else {
+                    // 미국 시장(야후): 과거 롤백 (종가 대비 가격 변동이 0이면 보합 간주)
+                    if (!preData || Math.abs(preData.price - regPrice) === 0) targetState = 'CLOSED_H';
+                }
+            } else if (targetState === 'POST') {
+                if (isKR) {
+                    if (!postData || postData.volume === 0) targetState = 'CLOSED_H';
+                } else {
+                    if (!postData || Math.abs(postData.price - regPrice) === 0) targetState = 'CLOSED_H';
+                }
             } else if (mState === 'CLOSED') {
                 targetState = 'CLOSED_H';
             }
@@ -839,9 +849,8 @@ function updateDOMWithData(quotes) {
             let mainIcon = ''; 
             let subHtml = '';
 
-            // 6. 시간대별 완벽 분기 처리 (CLOSED_H 연동)
+            // 6. 3가지 시간대별 완벽 분기 처리 (CLOSED_H 연동)
             if (targetState === 'PRE') {
-                // [장전 거래 유효] 메인: Pre 가격 / 하단: 전일 종가 Close
                 mainPrice = preData.price;
                 mainChange = preData.change;
                 mainPct = preData.pct;
@@ -853,7 +862,6 @@ function updateDOMWithData(quotes) {
                 subHtml = `<span class="ext-label">closed</span>${formatNum(regPrice)} <span class="${regColor}">(${regSign}${formatPct(regPct)}%)</span>`;
                 
             } else if (targetState === 'POST') {
-                // [장후 거래 유효] 메인: Post 가격 / 하단: 당일 종가 Close
                 mainPrice = postData.price;
                 mainChange = postData.change;
                 mainPct = postData.pct;
@@ -865,14 +873,12 @@ function updateDOMWithData(quotes) {
                 subHtml = `<span class="ext-label">closed</span>${formatNum(regPrice)} <span class="${regColor}">(${regSign}${formatPct(regPct)}%)</span>`;
                 
             } else if (targetState === 'CLOSED_H') {
-                // [장외 미변동/장마감] 정규장 데이터를 메인에 그대로 뿌리되, 메인 옆에 closed 라벨만 표기
                 mainPrice = regPrice;
                 mainChange = regChange;
                 mainPct = regPct;
                 mainIcon = `<span class="main-ext-label">closed</span>`;
                 subHtml = ''; // 하단 보조 가격 영역을 제거하여 정규장 마감 상태처럼 직관적으로 노출
             } else {
-                // [장중 시간대] REGULAR
                 mainPrice = regPrice;
                 mainChange = regChange;
                 mainPct = regPct;
