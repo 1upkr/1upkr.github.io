@@ -8,7 +8,7 @@ const DEFAULT_WATCHLISTS = {
 };
 
 const GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbxc8Q5iI7WxZurtV-1FDjTWKPUx_i049HSBAap2AyKYSvs8QMRHD3ZTa3xqfu0tJ1Za/exec";
-const NAVER_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbzdNCgZgZhu7Yo2j5o7Kvtcg2hIoLXaNPmBiTpyGj95LGEvetGkujkMDXVPliaWWcnElQ/exec"; 
+const NAVER_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbzeH_ptrdMPq2cZrZISx9x8Nn33MgmIicEyz7ZqBVphxlXp2VuBHJKOr3JwtqBL2dVnBw/exec"; 
 const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbwSD8MOLPrYjwTBVQX_Tq6pu-gTHlOeR7p0hUY2pHGACNc2NA6f4zICduC05ypO_EN6/exec"; 
 
 const CHO_HANGUL = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
@@ -778,23 +778,25 @@ function updateDOMWithData(quotes) {
             const regChange = quote.regularMarketChange || 0;
             const regPct = quote.regularMarketChangePercent || 0; 
 
-            // 2. 장전(Pre) 데이터 준비
+            // 2. 장전(Pre) 데이터 준비 (거래량 수집 매핑 추가)
             let preData = null;
             if (quote.preMarketPrice !== undefined && quote.preMarketPrice !== null) {
                 const change = quote.preMarketChange !== undefined ? quote.preMarketChange : (quote.preMarketPrice - regPrice);
                 const pct = quote.preMarketChangePercent !== undefined ? quote.preMarketChangePercent : (regPrice ? change / regPrice * 100 : 0);
-                preData = { price: quote.preMarketPrice, change: change, pct: pct, label: 'pre', time: quote.preMarketTime || 0 };
+                const vol = quote.preMarketVolume || 0; 
+                preData = { price: quote.preMarketPrice, change: change, pct: pct, label: 'pre', time: quote.preMarketTime || 0, volume: vol };
             }
 
-            // 3. 장후(Post) 데이터 준비
+            // 3. 장후(Post) 데이터 준비 (거래량 수집 매핑 추가)
             let postData = null;
             if (quote.postMarketPrice !== undefined && quote.postMarketPrice !== null) {
                 const change = quote.postMarketChange !== undefined ? quote.postMarketChange : (quote.postMarketPrice - regPrice);
                 const pct = quote.postMarketChangePercent !== undefined ? quote.postMarketChangePercent : (regPrice ? change / regPrice * 100 : 0);
-                postData = { price: quote.postMarketPrice, change: change, pct: pct, label: 'post', time: quote.postMarketTime || 0 };
+                const vol = quote.postMarketVolume || 0;
+                postData = { price: quote.postMarketPrice, change: change, pct: pct, label: 'post', time: quote.postMarketTime || 0, volume: vol };
             }
 
-// 4. 절대 시간(Timestamp) 기반 상태 판별 로직
+            // 4. 절대 시간(Timestamp) 기반 상태 판별 로직
             const regTime = quote.regularMarketTime || 0;
             const preTime = preData ? preData.time : 0;
             const postTime = postData ? postData.time : 0;
@@ -821,10 +823,10 @@ function updateDOMWithData(quotes) {
                 }
             }
 
-            // [추가 보정] 장외 거래 시간인데 가격 변동이 0이거나 데이터가 없는 경우 CLOSED_H 상태로 강제 전환
-            if (targetState === 'PRE' && (!preData || Math.abs(preData.price - regPrice) === 0)) {
+            // [완벽 보정] 가격 변동폭이 아니라 '장외 누적 거래량(volume)이 0'일 때만 CLOSED_H(미거래마감) 상태로 격하 처리합니다.
+            if (targetState === 'PRE' && (!preData || preData.volume === 0)) {
                 targetState = 'CLOSED_H';
-            } else if (targetState === 'POST' && (!postData || Math.abs(postData.price - regPrice) === 0)) {
+            } else if (targetState === 'POST' && (!postData || postData.volume === 0)) {
                 targetState = 'CLOSED_H';
             } else if (mState === 'CLOSED') {
                 targetState = 'CLOSED_H';
