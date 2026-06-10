@@ -840,7 +840,7 @@ function updateDOMWithData(quotes) {
                 const regColor = regIsUp ? 'up' : 'down';
                 const regSign = regIsUp ? '+' : '';
                 // 뱃지 닫는 태그(</span>) 바로 뒤에 있던 띄어쓰기 제거
-                subHtml = `<span class="ext-label">close</span>${formatNum(regPrice)} <span class="${regColor}">(${regSign}${formatPct(regPct)}%)</span>`;
+                subHtml = `<span class="ext-label">closed</span>${formatNum(regPrice)} <span class="${regColor}">(${regSign}${formatPct(regPct)}%)</span>`;
                 
             } else if (targetState === 'POST') {
                 // [장후 시간대] 메인: Post / 하단: 당일 종가 Close
@@ -853,7 +853,7 @@ function updateDOMWithData(quotes) {
                 const regColor = regIsUp ? 'up' : 'down';
                 const regSign = regIsUp ? '+' : '';
                 // 뱃지 닫는 태그(</span>) 바로 뒤에 있던 띄어쓰기 제거
-                subHtml = `<span class="ext-label">close</span>${formatNum(regPrice)} <span class="${regColor}">(${regSign}${formatPct(regPct)}%)</span>`;
+                subHtml = `<span class="ext-label">closed</span>${formatNum(regPrice)} <span class="${regColor}">(${regSign}${formatPct(regPct)}%)</span>`;
                 
             } else {
                 // [장중 시간대] 메인: 현재 시장 가격 / 하단: 당일 Pre
