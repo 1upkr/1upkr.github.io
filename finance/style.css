@@ -314,8 +314,8 @@ tbody tr { transition: background-color 0.15s, transform 0.2s ease; } tbody tr:h
 .extended-price .ext-label {
     color: var(--text-secondary);
     background: var(--input-bg);
-    font-size: 0.50rem;     /* 요청하신 0.50rem 폰트 사이즈 통일 */
-    font-weight: 600;       /* 요청하신 600 폰트 굵기 통일 */
+    font-size: 0.40rem;     
+    font-weight: 700;      
     padding: 0.15rem 0.3rem; 
     border-radius: 3px;
     margin-right: 0.3rem;
