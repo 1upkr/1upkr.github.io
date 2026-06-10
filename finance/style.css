@@ -120,7 +120,7 @@ header {
     stroke-dashoffset: 31.4159;
     stroke-linecap: butt !important; 
     transition: stroke-dashoffset 1s linear;
-    opacity: 0.7;  
+    opacity: 0.8;  
 }
 
 .action-btns { display: flex; flex-direction: row; align-items: center; gap: 0.25rem; }
