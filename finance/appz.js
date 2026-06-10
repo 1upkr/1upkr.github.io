@@ -8,7 +8,7 @@ const DEFAULT_WATCHLISTS = {
 };
 
 const GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbxc8Q5iI7WxZurtV-1FDjTWKPUx_i049HSBAap2AyKYSvs8QMRHD3ZTa3xqfu0tJ1Za/exec";
-const NAVER_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbygC4GrK-2abZUpWWCxD4ZVfFVzd-gjbGvyYBTWNP26J7zwkwbrWwttXNC-geENS1Nykw/exec"; 
+const NAVER_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbzS8LiXX04pI_P8YJhnEiwo_bgZ2WU5VRjIH0vZG28Fgdz5UPZGwPkFtOQNH_z_sjlw-w/exec"; 
 const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbwSD8MOLPrYjwTBVQX_Tq6pu-gTHlOeR7p0hUY2pHGACNc2NA6f4zICduC05ypO_EN6/exec"; 
 
 const CHO_HANGUL = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
