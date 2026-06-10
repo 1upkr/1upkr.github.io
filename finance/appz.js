@@ -8,7 +8,7 @@ const DEFAULT_WATCHLISTS = {
 };
 
 const GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbxc8Q5iI7WxZurtV-1FDjTWKPUx_i049HSBAap2AyKYSvs8QMRHD3ZTa3xqfu0tJ1Za/exec";
-const NAVER_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbzDhPX5J2mCd_yTHsR80pq_kVEWuWHZ6K2hWFNXsEVEZ90fxhgmXQEOyszOnFUVgTAOXQ/exec"; 
+const NAVER_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbzdNCgZgZhu7Yo2j5o7Kvtcg2hIoLXaNPmBiTpyGj95LGEvetGkujkMDXVPliaWWcnElQ/exec"; 
 const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbwSD8MOLPrYjwTBVQX_Tq6pu-gTHlOeR7p0hUY2pHGACNc2NA6f4zICduC05ypO_EN6/exec"; 
 
 const CHO_HANGUL = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
@@ -794,7 +794,7 @@ function updateDOMWithData(quotes) {
                 postData = { price: quote.postMarketPrice, change: change, pct: pct, label: 'post', time: quote.postMarketTime || 0 };
             }
 
-            // 4. 절대 시간(Timestamp) 기반 상태 판별 로직
+// 4. 절대 시간(Timestamp) 기반 상태 판별 로직
             const regTime = quote.regularMarketTime || 0;
             const preTime = preData ? preData.time : 0;
             const postTime = postData ? postData.time : 0;
@@ -821,6 +821,15 @@ function updateDOMWithData(quotes) {
                 }
             }
 
+            // [추가 보정] 장외 거래 시간인데 가격 변동이 0이거나 데이터가 없는 경우 CLOSED_H 상태로 강제 전환
+            if (targetState === 'PRE' && (!preData || Math.abs(preData.price - regPrice) === 0)) {
+                targetState = 'CLOSED_H';
+            } else if (targetState === 'POST' && (!postData || Math.abs(postData.price - regPrice) === 0)) {
+                targetState = 'CLOSED_H';
+            } else if (mState === 'CLOSED') {
+                targetState = 'CLOSED_H';
+            }
+
             // 5. 출력용 변수 초기화
             let mainPrice = regPrice;
             let mainChange = regChange;
@@ -828,9 +837,9 @@ function updateDOMWithData(quotes) {
             let mainIcon = ''; 
             let subHtml = '';
 
-            // 6. 3가지 시간대별 완벽 분기 처리 (인라인 스타일 제거 및 띄어쓰기 통일 적용)
+            // 6. 시간대별 완벽 분기 처리 (CLOSED_H 연동)
             if (targetState === 'PRE') {
-                // [장전 시간대] 메인: Pre / 하단: 전일 종가 Close
+                // [장전 거래 유효] 메인: Pre 가격 / 하단: 전일 종가 Close
                 mainPrice = preData.price;
                 mainChange = preData.change;
                 mainPct = preData.pct;
@@ -842,7 +851,7 @@ function updateDOMWithData(quotes) {
                 subHtml = `<span class="ext-label">closed</span>${formatNum(regPrice)} <span class="${regColor}">(${regSign}${formatPct(regPct)}%)</span>`;
                 
             } else if (targetState === 'POST') {
-                // [장후 시간대] 메인: Post / 하단: 당일 종가 Close
+                // [장후 거래 유효] 메인: Post 가격 / 하단: 당일 종가 Close
                 mainPrice = postData.price;
                 mainChange = postData.change;
                 mainPct = postData.pct;
@@ -853,8 +862,15 @@ function updateDOMWithData(quotes) {
                 const regSign = regIsUp ? '+' : '';
                 subHtml = `<span class="ext-label">closed</span>${formatNum(regPrice)} <span class="${regColor}">(${regSign}${formatPct(regPct)}%)</span>`;
                 
+            } else if (targetState === 'CLOSED_H') {
+                // [장외 미변동/장마감] 정규장 데이터를 메인에 그대로 뿌리되, 메인 옆에 closed 라벨만 표기
+                mainPrice = regPrice;
+                mainChange = regChange;
+                mainPct = regPct;
+                mainIcon = `<span class="main-ext-label">closed</span>`;
+                subHtml = ''; // 하단 보조 가격 영역을 제거하여 정규장 마감 상태처럼 직관적으로 노출
             } else {
-                // [장중 시간대] 메인: 현재 시장 가격 / 하단: 당일 Pre
+                // [장중 시간대] REGULAR
                 mainPrice = regPrice;
                 mainChange = regChange;
                 mainPct = regPct;
