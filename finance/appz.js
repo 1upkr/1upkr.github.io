@@ -735,7 +735,7 @@ async function fetchData() {
     fetchNews();
 }
 
-// 숫자가 없는 파이 UI 타이머 동기화 함수
+// 👇 새로 추가 파이 차트 카운터 애니메이션
 function updateTimerUI(seconds) {
     const pie = document.getElementById('timer-pie');
     if (pie) {
@@ -747,21 +747,23 @@ function updateTimerUI(seconds) {
     }
 }
 
+// 기존 forceRefresh 교체
 function forceRefresh() { 
     state.countdown = 60; 
-    updateTimerUI(state.countdown);
+    updateTimerUI(state.countdown); 
     localStorage.setItem('marketdash_last_fetch_time', '0'); 
     state.lastNewsFetch = 0; 
     fetchData(); 
     startTimer(); 
 }
 
+// 기존 startTimer 교체
 function startTimer() {
     if (state.intervalId) clearInterval(state.intervalId);
     state.intervalId = setInterval(() => {
         state.countdown--;
         if (state.countdown <= 0) forceRefresh(); 
-        else updateTimerUI(state.countdown); 
+        else updateTimerUI(state.countdown); // 1초마다 파이 차트 렌더링
     }, 1000);
 }
 
