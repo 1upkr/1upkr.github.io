@@ -21,7 +21,7 @@ layout: null
     
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     
-    <link rel="stylesheet" href="https://1up.kr/finance/style.css?ver=3.3.4">
+    <link rel="stylesheet" href="https://1up.kr/finance/style.css?ver=3.3.5">
 </head>
 <body>
     <script>
@@ -35,12 +35,11 @@ layout: null
             <h1>F I N A N C E : ¹ U P</h1>
         </div>
         <div class="header-controls">
-            <div class="timer-wrapper" title="Auto Refresh">
-                <svg class="progress-ring" viewBox="0 0 24 24">
-                    <circle class="progress-ring__bg" cx="12" cy="12" r="9" />
-                    <circle class="progress-ring__circle" id="timer-circle" cx="12" cy="12" r="9" />
+            <div class="timer" title="Auto Refresh">
+                <svg class="progress-pie" viewBox="0 0 24 24">
+                    <circle class="progress-pie__bg" cx="12" cy="12" r="10" />
+                    <circle class="progress-pie__fill" id="timer-pie" cx="12" cy="12" r="5" />
                 </svg>
-                <div><span id="countdown">60</span>s</div>
             </div>
             <div class="action-btns">
                 <button id="btn-refresh" class="icon-btn" title="Force Refresh">
@@ -90,12 +89,12 @@ layout: null
                         <h2>📰 Scoped in</h2>
                     </div>
                     <div class="section-header-right">
-                        <div id="news-spinner" class="spinner" style="display: none; width: 16px; height: 16px;">
+                        <div id="news-spinner" class="spinner" style="display: none;">
                             <svg viewBox="0 0 50 50"><circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle></svg>
                         </div>
                     </div>
                 </div>
-                <div class="news-list" id="news-container" style="border-radius: 0 0 12px 12px;">
+                <div class="news-list" id="news-container">
                     <div class="empty-state">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19 20H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h10l6 6v10a2 2 0 0 1-2 2z"></path><polyline points="15 4 15 10 21 10"></polyline></svg>
                         <p>Loading latest news...</p>
@@ -125,7 +124,7 @@ layout: null
             <div class="modal-title">credits</div>
             <div class="modal-desc" style="text-align: left; padding: 1rem 0;">
                 <div style="font-weight: 900; font-size: 1.3rem; color: var(--text-primary); margin-bottom: 0.5rem;">F I N A N C E : ¹ U P</div>
-                <div style="margin-bottom: 0.3rem;"><span style="font-weight: 600;">ver.3.3.4</span></div>
+                <div style="margin-bottom: 0.3rem;"><span style="font-weight: 600;">ver.3.3.5</span></div>
                 <div><span>N3RD - 1UP YOUR VIBE!!</span></div>
             </div>
             <div class="modal-actions">
@@ -134,6 +133,6 @@ layout: null
         </div>
     </div>
 
-    <script src="https://1up.kr/finance/appz.js?ver=3.3.4"></script>
+    <script src="https://1up.kr/finance/appz.js?ver=3.3.5"></script>
 </body>
 </html>
