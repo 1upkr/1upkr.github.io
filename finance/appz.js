@@ -83,16 +83,28 @@ async function init() {
     applyTheme(); 
     if (!state.sectionOrder || state.sectionOrder.length === 0) state.sectionOrder = Object.keys(state.watchlists);
 
-    // 2. [최적화] Page Visibility API: 백그라운드 전환 시 불필요한 리소스 낭비 방지
+    // 2. [최적화] Page Visibility API: 백그라운드 전환 시 불필요한 리소스 방지
     document.addEventListener('visibilitychange', () => {
         if (document.hidden) {
+            // 백그라운드 진입 시 타이머 일시 정지
             if (state.intervalId) clearInterval(state.intervalId);
         } else {
             const now = Date.now();
             const lastFetch = parseInt(localStorage.getItem('marketdash_last_fetch_time') || '0');
-            // 복귀 시 데이터가 60초 이상 지났다면 즉시 갱신
-            if (now - lastFetch > 60000) forceRefresh();
-            else startTimer();
+            
+            // 마지막 갱신 후 경과된 시간(초) 계산
+            const elapsedSeconds = Math.floor((now - lastFetch) / 1000);
+
+            if (lastFetch === 0 || elapsedSeconds >= 60) {
+                // 60초 이상 지났다면 즉시 갱신 (forceRefresh 내에서 startTimer가 호출됨)
+                forceRefresh();
+            } else {
+                // 60초 미만이라면 흐른 시간만큼 카운터 차감 후 타이머 재개
+                state.countdown = 60 - elapsedSeconds;
+                const countdownEl = document.getElementById('countdown');
+                if (countdownEl) countdownEl.textContent = state.countdown;
+                startTimer();
+            }
         }
     });
     
@@ -733,6 +745,7 @@ function forceRefresh() {
     localStorage.setItem('marketdash_last_fetch_time', '0'); 
     state.lastNewsFetch = 0; 
     fetchData(); 
+    startTimer(); // 타이머가 멈춰있을 때 재시작
 }
 
 function startTimer() {
