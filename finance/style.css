@@ -318,12 +318,12 @@ tbody tr { transition: background-color 0.15s, transform 0.2s ease; } tbody tr:h
     font-weight: 700;      
     padding: 0.15rem 0.3rem; 
     border-radius: 3px;
-    margin-right: 0.3rem;
+    margin-right: 0.15rem;
     vertical-align: middle;
     text-transform: uppercase;
     display: inline-block;
     line-height: 1.1;
-    letter-spacing: 0.02em;
+    letter-spacing: -0.02em;
 }
 
 .extended-price { font-size: 0.75rem; color: var(--text-primary); margin-top: 0.2rem; font-weight: 600; font-variant-numeric: tabular-nums; }
