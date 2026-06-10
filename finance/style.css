@@ -501,4 +501,55 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
     .autocomplete-list { max-height: 220px; box-shadow: 0 8px 16px rgba(0,0,0,0.15); }
     .autocomplete-list li { padding: 0.7rem 0.75rem; } 
     .ac-symbol { font-size: 0.85rem; } .ac-name { font-size: 0.7rem; max-width: 140px; }
+
+/* =========================================================
+   UI 최적화 & 타이머 프로그레스 링
+   ========================================================= */
+/* JS에서 분리된 장전/장후 뱃지 스타일 */
+.main-ext-label {
+    color: var(--text-secondary);
+    font-size: 0.55rem;
+    padding: 0.1rem 0.25rem;
+    background: var(--input-bg);
+    border-radius: 3px;
+    margin-right: 0.3rem;
+    vertical-align: middle;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+/* 60초 프로그레스 링 타이머 */
+.timer-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--text-secondary);
+    font-variant-numeric: tabular-nums;
+    font-size: 0.75rem;
+    font-weight: 600;
+    opacity: 0.8;
+}
+
+.progress-ring {
+    width: 18px;
+    height: 18px;
+    transform: rotate(-90deg); /* 12시 방향부터 시작하도록 회전 */
+}
+
+.progress-ring__bg {
+    fill: none;
+    stroke: var(--input-bg);
+    stroke-width: 3.5;
+}
+
+.progress-ring__circle {
+    fill: none;
+    stroke: var(--text-primary);
+    stroke-width: 3.5;
+    stroke-dasharray: 56.548; /* 원의 둘레 (2 * pi * r(9)) */
+    stroke-dashoffset: 0;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s linear; /* 1초마다 부드럽게 감소 */
+}
+    
 }
