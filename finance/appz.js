@@ -821,15 +821,16 @@ function updateDOMWithData(quotes) {
                 }
             }
 
-            // [완벽 보정] 한국/미국 시장 분리 판별
-            const isKR = /^\d+$/.test(ticker); // 티커가 숫자로만 구성되어 있으면 한국(Naver) 종목으로 판별
+            // [핵심] 한국(KR)과 미국(US) 시장 분리 처리
+            // 종목 코드(ticker)가 숫자로만 되어있으면 네이버(한국) 데이터로 판별
+            const isKR = /^\d+$/.test(ticker); 
 
             if (targetState === 'PRE') {
                 if (isKR) {
-                    // 한국 시장: 거래량 0이면 미체결/보합 상태로 간주
+                    // 한국 시장: 장외 거래량이 0이면 미체결이므로 정규장처럼 마감 표시
                     if (!preData || preData.volume === 0) targetState = 'CLOSED_H';
                 } else {
-                    // 미국 시장(야후): 과거 롤백 (종가 대비 가격 변동이 0이면 보합 간주)
+                    // 미국 시장: 야후는 거래량 파악 불가. 가격 변동폭이 0이면 과거 방식대로 마감 표시
                     if (!preData || Math.abs(preData.price - regPrice) === 0) targetState = 'CLOSED_H';
                 }
             } else if (targetState === 'POST') {
@@ -849,7 +850,7 @@ function updateDOMWithData(quotes) {
             let mainIcon = ''; 
             let subHtml = '';
 
-            // 6. 3가지 시간대별 완벽 분기 처리 (CLOSED_H 연동)
+            // 6. 상태별 UI 바인딩
             if (targetState === 'PRE') {
                 mainPrice = preData.price;
                 mainChange = preData.change;
@@ -873,12 +874,14 @@ function updateDOMWithData(quotes) {
                 subHtml = `<span class="ext-label">closed</span>${formatNum(regPrice)} <span class="${regColor}">(${regSign}${formatPct(regPct)}%)</span>`;
                 
             } else if (targetState === 'CLOSED_H') {
+                // 미국 주식 보합이거나, 한국 장외 거래량 0일 때
                 mainPrice = regPrice;
                 mainChange = regChange;
                 mainPct = regPct;
                 mainIcon = `<span class="main-ext-label">closed</span>`;
-                subHtml = ''; // 하단 보조 가격 영역을 제거하여 정규장 마감 상태처럼 직관적으로 노출
+                subHtml = '';
             } else {
+                // REGULAR (장중)
                 mainPrice = regPrice;
                 mainChange = regChange;
                 mainPct = regPct;
