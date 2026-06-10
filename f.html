@@ -21,7 +21,7 @@ layout: null
     
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     
-    <link rel="stylesheet" href="https://1up.kr/finance/style.css?ver=3.3.3">
+    <link rel="stylesheet" href="https://1up.kr/finance/style.css?ver=3.3.4">
 </head>
 <body>
     <script>
@@ -35,9 +35,12 @@ layout: null
             <h1>F I N A N C E : ¹ U P</h1>
         </div>
         <div class="header-controls">
-            <div class="timer">
-                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                <span id="countdown">60</span>s
+            <div class="timer-wrapper" title="Auto Refresh">
+                <svg class="progress-ring" viewBox="0 0 24 24">
+                    <circle class="progress-ring__bg" cx="12" cy="12" r="9" />
+                    <circle class="progress-ring__circle" id="timer-circle" cx="12" cy="12" r="9" />
+                </svg>
+                <div><span id="countdown">60</span>s</div>
             </div>
             <div class="action-btns">
                 <button id="btn-refresh" class="icon-btn" title="Force Refresh">
@@ -122,7 +125,7 @@ layout: null
             <div class="modal-title">credits</div>
             <div class="modal-desc" style="text-align: left; padding: 1rem 0;">
                 <div style="font-weight: 900; font-size: 1.3rem; color: var(--text-primary); margin-bottom: 0.5rem;">F I N A N C E : ¹ U P</div>
-                <div style="margin-bottom: 0.3rem;"><span style="font-weight: 600;">ver.3.3.3</span></div>
+                <div style="margin-bottom: 0.3rem;"><span style="font-weight: 600;">ver.3.3.4</span></div>
                 <div><span>N3RD - 1UP YOUR VIBE!!</span></div>
             </div>
             <div class="modal-actions">
@@ -131,6 +134,6 @@ layout: null
         </div>
     </div>
 
-    <script src="https://1up.kr/finance/appz.js?ver=3.3.3"></script>
+    <script src="https://1up.kr/finance/appz.js?ver=3.3.4"></script>
 </body>
 </html>
