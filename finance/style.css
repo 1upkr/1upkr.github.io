@@ -101,8 +101,8 @@ header {
 
 /* 파이 차트 타이머 UI */
 .progress-pie {
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
     transform: rotate(-90deg);
     border-radius: 50%;
 }
@@ -496,6 +496,20 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
     
     .news-list { overflow-y: visible; flex: none; height: auto; }
 
+    /* ★ 추가/수정: 가로 모드에서 부가 정보(Range, Cap 등)가 잘리지 않도록 공간 확보 */
+    th, td { padding: 0.875rem 0.5rem; } /* 좌우 패딩을 줄여서 실제 데이터 공간 확보 */
+    .section-container th.col-symbol, .section-container td.col-symbol { padding-left: 1.25rem; }
+    .section-container th.handle-col, .section-container td.handle-col { padding-right: 0.75rem; width: 44px; }
+    
+    th.col-symbol { width: 20%; }
+    th.col-price { width: 18%; }
+    th.col-change { width: 14%; }
+    th.col-vol { width: 11%; }
+    th.col-cap { width: 11%; }
+    th.col-range { width: 26%; } /* 가장 긴 데이터인 52주 변동폭에 너비를 대폭 할당 */
+
+    .sub-data { font-size: 0.75rem; } /* 부가 정보 폰트 사이즈 미세 조절 */
+
     .add-ticker-form { 
         flex-direction: row; 
         align-items: center; 
@@ -523,8 +537,8 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
     .ac-symbol { font-size: 0.85rem; } .ac-name { font-size: 0.7rem; max-width: 140px; }
 }
 
-/* 2단계: 실제 가로 폭이 좁은 스마트폰 환경 (650px 이하) */
-/* 여기서만 부가 정보(Volume, Cap, 52W Range)를 숨기고 너비를 압축합니다. */
+/* 2단계: 실제 가로 폭이 좁은 스마트폰 세로 환경 (650px 이하) */
+/* 여기서만 부가 정보(Volume, Cap, 52W Range)를 완전히 숨기고 핵심 정보만 노출합니다. */
 @media (max-width: 650px) {
     .hide-mobile { display: none; }
     
