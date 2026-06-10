@@ -307,21 +307,26 @@ tbody tr { transition: background-color 0.15s, transform 0.2s ease; } tbody tr:h
 .name { display: block; width: 100%; color: var(--text-secondary); font-size: 0.75rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .price { font-weight: 600; font-size: 1.05rem; font-variant-numeric: tabular-nums; color: var(--text-primary); }
 
-/* 메인 영역 장전/장후 뱃지 */
-.main-ext-label {
+/* =========================================================
+   ★ 메인 영역 및 하단 확장 가격의 PRE/POST/CLOSE 뱃지 통일
+   ========================================================= */
+.main-ext-label, 
+.extended-price .ext-label {
     color: var(--text-secondary);
-    font-size: 0.55rem;
-    padding: 0.1rem 0.25rem;
     background: var(--input-bg);
+    font-size: 0.50rem;     /* 요청하신 0.50rem 폰트 사이즈 통일 */
+    font-weight: 600;       /* 요청하신 600 폰트 굵기 통일 */
+    padding: 0.15rem 0.3rem; 
     border-radius: 3px;
     margin-right: 0.3rem;
     vertical-align: middle;
-    font-weight: 500;
     text-transform: uppercase;
+    display: inline-block;
+    line-height: 1.1;
+    letter-spacing: 0.02em;
 }
 
 .extended-price { font-size: 0.75rem; color: var(--text-primary); margin-top: 0.2rem; font-weight: 600; font-variant-numeric: tabular-nums; }
-.extended-price .ext-label { color: var(--text-secondary); font-size: 0.65rem; padding: 0.1rem 0.2rem; background: var(--input-bg); border-radius: 3px; margin-right: 0.2rem; }
 .extended-price .up { color: var(--green); } .extended-price .down { color: var(--red); }
 
 .change-cell { display: flex; flex-direction: column; align-items: flex-end; font-variant-numeric: tabular-nums; font-weight: 500; font-size: 0.95rem; }
@@ -510,7 +515,14 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
     .name { font-size: 0.65rem; }
     .price { font-size: 0.85rem; }
     .extended-price { font-size: 0.65rem; margin-top: 0.15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .extended-price .ext-label { font-size: 0.55rem; padding: 0.1rem 0.2rem; }
+    
+    /* ★ 모바일 환경에서도 동일한 뱃지 폰트 사이즈 유지 */
+    .extended-price .ext-label, 
+    .main-ext-label { 
+        font-size: 0.50rem; 
+        padding: 0.1rem 0.2rem; 
+    }
+    
     .change-cell { font-size: 0.8rem; } .badge { padding: 0.15rem 0.25rem; font-size: 0.65rem; }
 
     .add-ticker-form { 
