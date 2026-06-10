@@ -95,13 +95,13 @@ header {
     position: sticky; top: 0; z-index: 100; box-shadow: var(--shadow-sm);
 }
 .header-left h1 { font-size: 1.00rem; font-weight: 900; display: flex; align-items: center; gap: 0.5rem; letter-spacing: -0.02em;} 
-.header-controls { display: flex; align-items: center; gap: 1.5rem; font-size: 0.875rem; font-weight: 500; }
+.header-controls { display: flex; align-items: center; gap: 0.25rem; font-size: 0.875rem; font-weight: 500; }
 
-.timer { display: flex; align-items: center; color: var(--text-secondary); opacity: 0.8; }
+.timer { display: flex; align-items: center; justify-content: center; padding: 0.5rem; opacity: 0.8; }
 
 /* 파이 차트 타이머 UI */
 .progress-pie {
-    width: 22px;  /* 기존 18px에서 22px로 크기 살짝 확대 */
+    width: 22px;
     height: 22px;
     transform: rotate(-90deg);
     border-radius: 50%;
@@ -118,14 +118,11 @@ header {
     stroke-width: 10;
     stroke-dasharray: 31.4159;
     stroke-dashoffset: 31.4159;
-    
-    /* ★ 핵심 수정: 전역으로 적용된 round를 무시하고 직각(엣지) 형태로 렌더링 */
     stroke-linecap: butt !important; 
-    
     transition: stroke-dashoffset 1s linear;
 }
 
-.action-btns { display: flex; flex-direction: row; align-items: center; gap: 0.5rem; }
+.action-btns { display: flex; flex-direction: row; align-items: center; gap: 0.25rem; }
 
 .icon-btn {
     background: none; border: none; color: var(--text-secondary); cursor: pointer;
@@ -313,13 +310,13 @@ tbody tr { transition: background-color 0.15s, transform 0.2s ease; } tbody tr:h
 /* 메인 영역 장전/장후 뱃지 */
 .main-ext-label {
     color: var(--text-secondary);
-    font-size: 0.50rem;
+    font-size: 0.55rem;
     padding: 0.1rem 0.25rem;
     background: var(--input-bg);
     border-radius: 3px;
     margin-right: 0.3rem;
     vertical-align: middle;
-    font-weight: 600;
+    font-weight: 500;
     text-transform: uppercase;
 }
 
@@ -449,7 +446,7 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
     .header-controls { 
         width: auto; 
         justify-content: flex-end; 
-        gap: 1rem; 
+        gap: 0.25rem; 
     }
     .header-left h1 { font-size: 0.95rem; }
     
@@ -513,7 +510,7 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
     .name { font-size: 0.65rem; }
     .price { font-size: 0.85rem; }
     .extended-price { font-size: 0.65rem; margin-top: 0.15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .extended-price .ext-label { font-size: 0.50rem; padding: 0.1rem 0.2rem; font-weight: 600;}
+    .extended-price .ext-label { font-size: 0.55rem; padding: 0.1rem 0.2rem; }
     .change-cell { font-size: 0.8rem; } .badge { padding: 0.15rem 0.25rem; font-size: 0.65rem; }
 
     .add-ticker-form { 
