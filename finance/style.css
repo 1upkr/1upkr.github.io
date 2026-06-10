@@ -324,6 +324,7 @@ tbody tr { transition: background-color 0.15s, transform 0.2s ease; } tbody tr:h
     display: inline-block;
     line-height: 1.1;
     letter-spacing: -0.02em;
+    transform: translateY(-1px);
 }
 
 .extended-price { font-size: 0.75rem; color: var(--text-primary); margin-top: 0.2rem; font-weight: 600; font-variant-numeric: tabular-nums; }
