@@ -735,16 +735,15 @@ async function fetchData() {
     fetchNews();
 }
 
-// UI 타이머 동기화 함수
+// 숫자가 없는 파이 UI 타이머 동기화 함수
 function updateTimerUI(seconds) {
-    const el = document.getElementById('countdown');
-    if (el) el.textContent = seconds;
-    
-    const circle = document.getElementById('timer-circle');
-    if (circle) {
-        const pct = seconds / 60;
-        const offset = 56.548 - (pct * 56.548);
-        circle.style.strokeDashoffset = offset;
+    const pie = document.getElementById('timer-pie');
+    if (pie) {
+        // 시간이 지날수록 (60 -> 0) 색상이 채워짐 (0% -> 100%)
+        const maxOffset = 31.4159;
+        const pct = seconds / 60; // 60초일 때 1, 0초일 때 0
+        const offset = pct * maxOffset; // 60초일 때 빈 원, 0초일 때 꽉 찬 원
+        pie.style.strokeDashoffset = offset;
     }
 }
 
