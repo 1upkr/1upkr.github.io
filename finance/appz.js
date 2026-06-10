@@ -828,7 +828,7 @@ function updateDOMWithData(quotes) {
             let mainIcon = ''; 
             let subHtml = '';
 
-            // 6. 요청하신 3가지 시간대별 완벽 분기 처리 (CSS 클래스 적용)
+            // 6. 3가지 시간대별 분기 처리 
             if (targetState === 'PRE') {
                 // [장전 시간대] 메인: Pre / 하단: 전일 종가 Close
                 mainPrice = preData.price;
@@ -839,7 +839,8 @@ function updateDOMWithData(quotes) {
                 const regIsUp = regChange >= 0;
                 const regColor = regIsUp ? 'up' : 'down';
                 const regSign = regIsUp ? '+' : '';
-                subHtml = `<span class="ext-label">close</span> ${formatNum(regPrice)} <span class="${regColor}">(${regSign}${formatPct(regPct)}%)</span>`;
+                // 뱃지 닫는 태그(</span>) 바로 뒤에 있던 띄어쓰기 제거
+                subHtml = `<span class="ext-label">close</span>${formatNum(regPrice)} <span class="${regColor}">(${regSign}${formatPct(regPct)}%)</span>`;
                 
             } else if (targetState === 'POST') {
                 // [장후 시간대] 메인: Post / 하단: 당일 종가 Close
@@ -851,7 +852,8 @@ function updateDOMWithData(quotes) {
                 const regIsUp = regChange >= 0;
                 const regColor = regIsUp ? 'up' : 'down';
                 const regSign = regIsUp ? '+' : '';
-                subHtml = `<span class="ext-label">close</span> ${formatNum(regPrice)} <span class="${regColor}">(${regSign}${formatPct(regPct)}%)</span>`;
+                // 뱃지 닫는 태그(</span>) 바로 뒤에 있던 띄어쓰기 제거
+                subHtml = `<span class="ext-label">close</span>${formatNum(regPrice)} <span class="${regColor}">(${regSign}${formatPct(regPct)}%)</span>`;
                 
             } else {
                 // [장중 시간대] 메인: 현재 시장 가격 / 하단: 당일 Pre
@@ -864,7 +866,8 @@ function updateDOMWithData(quotes) {
                     const preIsUp = preData.change >= 0;
                     const preColor = preIsUp ? 'up' : 'down';
                     const preSign = preIsUp ? '+' : '';
-                    subHtml = `<span class="ext-label">${preData.label}</span> ${formatNum(preData.price)} <span class="${preColor}">(${preSign}${formatPct(preData.pct)}%)</span>`;
+                    // 뱃지 닫는 태그(</span>) 바로 뒤에 있던 띄어쓰기 제거
+                    subHtml = `<span class="ext-label">${preData.label}</span>${formatNum(preData.price)} <span class="${preColor}">(${preSign}${formatPct(preData.pct)}%)</span>`;
                 }
             }
 
