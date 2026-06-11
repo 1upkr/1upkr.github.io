@@ -956,8 +956,10 @@ function setErrorState(ticker, msg) {
 
 function formatNum(num) {
     if (num === undefined || num === null || isNaN(num)) return '-';
-    const abs = Math.abs(num); let decimals = 2;
-    if (abs > 0 && abs < 0.1) decimals = 4; else if (abs > 10000) decimals = 0; 
+    const abs = Math.abs(num); 
+    let decimals = 2;
+    if (abs > 10000) decimals = 0;     
+    // 0.1 미만일 때 4자리로 늘리던 로직을 삭제하여 무조건 2자리(혹은 큰 수는 0자리)로 고정합니다.
     return new Intl.NumberFormat('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals }).format(num);
 }
 function formatPct(num) {
