@@ -8,7 +8,7 @@ const DEFAULT_WATCHLISTS = {
 };
 
 const GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbxc8Q5iI7WxZurtV-1FDjTWKPUx_i049HSBAap2AyKYSvs8QMRHD3ZTa3xqfu0tJ1Za/exec";
-const NAVER_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbwDfZb4Y-R6G1Vjx6K_qYjxulBh7arbehO5CEC98psKVX6X8RyjR2WLxhdULWeY_qcr2Q/exec"; 
+const NAVER_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbyvxAbCrlCKbEZ4X1UCAsVoCO5ilxAvRcZN2PR38mpgcLVriv5YEN41TqfIPYyTy2X-Qg/exec"; 
 const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbwSD8MOLPrYjwTBVQX_Tq6pu-gTHlOeR7p0hUY2pHGACNc2NA6f4zICduC05ypO_EN6/exec"; 
 
 const CHO_HANGUL = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
@@ -341,7 +341,7 @@ function renderLayout() {
                                 <th class="col-change">Change</th>
                                 <th class="hide-mobile col-vol">Volume</th>
                                 <th class="hide-mobile col-cap">Market Cap</th>
-                                <th class="hide-mobile col-range">52W Range</th>
+                                <th class="hide-mobile col-range">Day Range</th>
                                 <th class="actions-col"></th>
                                 <th class="handle-col"></th>
                             </tr>
@@ -924,8 +924,10 @@ function updateDOMWithData(quotes) {
             
             nodes.vol.textContent = formatCompact(quote.regularMarketVolume); 
             nodes.cap.textContent = formatCompact(quote.marketCap);
-            if (quote.fiftyTwoWeekLow && quote.fiftyTwoWeekHigh) {
-                nodes.range.textContent = `${formatNum(quote.fiftyTwoWeekLow)} - ${formatNum(quote.fiftyTwoWeekHigh)}`;
+            
+            // 당일 최고/최저가(Day Range) 데이터 바인딩으로 교체
+            if (quote.regularMarketDayLow && quote.regularMarketDayHigh) {
+                nodes.range.textContent = `${formatNum(quote.regularMarketDayLow)} - ${formatNum(quote.regularMarketDayHigh)}`;
             } else {
                 nodes.range.textContent = '-';
             }
