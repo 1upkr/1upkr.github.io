@@ -822,16 +822,13 @@ function updateDOMWithData(quotes) {
             }
 
             // [핵심] 한국(KR)과 미국(US) 시장 분리 처리
-            // ticker_n.json(localTickerDB)를 조회하여 'e' 값이 "NAVER"인지 확인 (없을 경우를 대비해 기존 정규식은 안전망으로 남김)
             const dbMatch = localTickerDB.find(q => q.s.toUpperCase() === ticker.toUpperCase());
             const isKR = dbMatch ? (dbMatch.e === 'NAVER') : /^\d/.test(ticker);
 
             if (targetState === 'PRE') {
                 if (isKR) {
-                    // 한국 시장: 장외 거래량이 0이면 미체결이므로 정규장처럼 마감 표시
                     if (!preData || preData.volume === 0) targetState = 'CLOSED_H';
                 } else {
-                    // 미국 시장: 야후는 거래량 파악 불가. 가격 변동폭이 0이면 과거 방식대로 마감 표시
                     if (!preData || Math.abs(preData.price - regPrice) === 0) targetState = 'CLOSED_H';
                 }
             } else if (targetState === 'POST') {
@@ -875,14 +872,12 @@ function updateDOMWithData(quotes) {
                 subHtml = `<span class="ext-label">closed</span>${formatNum(regPrice)} <span class="${regColor}">(${regSign}${formatPct(regPct)}%)</span>`;
                 
             } else if (targetState === 'CLOSED_H') {
-                // 미국 주식 보합이거나, 한국 장외 거래량 0일 때
                 mainPrice = regPrice;
                 mainChange = regChange;
                 mainPct = regPct;
                 mainIcon = `<span class="main-ext-label">closed</span>`;
                 subHtml = '';
             } else {
-                // REGULAR (장중)
                 mainPrice = regPrice;
                 mainChange = regChange;
                 mainPct = regPct;
@@ -896,7 +891,7 @@ function updateDOMWithData(quotes) {
                 }
             }
 
-            // 7. 색상 및 애니메이션 처리 (메인 데이터 기준)
+            // 7. 색상 및 애니메이션 처리
             const isUp = mainChange >= 0;
             const colorClass = isUp ? 'up' : 'down'; 
             const sign = isUp ? '+' : ''; 
@@ -919,22 +914,21 @@ function updateDOMWithData(quotes) {
             const dbInfo = localTickerDB.find(q => q.s.toUpperCase() === ticker.toUpperCase());
             nodes.name.textContent = (dbInfo ? dbInfo.n : null) || quote.shortName || quote.longName || ticker;
             
-            // 여기서 formatNum(mainPrice)가 HTML 태그를 포함한 문자열을 리턴하므로
-            // 반드시 innerHTML을 사용해야 소수점이 작게 렌더링됩니다.
+            // PRICE: 태그를 포함하므로 innerHTML
             nodes.price.innerHTML = mainIcon + formatNum(mainPrice);
             nodes.extPrice.innerHTML = subHtml;
             
-            nodes.change.innerHTML = `<span class="${colorClass}">${sign}${formatNum(mainChange)}</span>`;
+            // CHANGE: 태그 제거된 전용 함수 formatChangeNum 적용 (innerHTML에서 span은 색상 처리를 위해 유지하되, 숫자 자체는 태그 없이 렌더링)
+            nodes.change.innerHTML = `<span class="${colorClass}">${sign}${formatChangeNum(mainChange)}</span>`;
             nodes.pct.innerHTML = `<span class="badge ${colorClass}"><span class="arrow">${arrow}</span>${formatPct(Math.abs(mainPct))}%</span>`;
             
             nodes.vol.textContent = formatCompact(quote.regularMarketVolume); 
             nodes.cap.textContent = formatCompact(quote.marketCap);
             
-            // [수정] Day Range를 표시할 때 소수점 처리가 된 HTML 문자열을 안전하게 렌더링
+            // DAY RANGE: 태그를 포함하므로 innerHTML
             if (quote.regularMarketDayLow && quote.regularMarketDayHigh) {
                 const low = formatNum(quote.regularMarketDayLow);
                 const high = formatNum(quote.regularMarketDayHigh);
-                // 태그가 깨지지 않도록 하이픈(-)을 중심으로 안전하게 결합
                 nodes.range.innerHTML = `${low} <span style="opacity: 0.5; margin: 0 2px;">-</span> ${high}`;
             } else {
                 nodes.range.innerHTML = '-';
@@ -961,6 +955,7 @@ function setErrorState(ticker, msg) {
     });
 }
 
+// PRICE, DAY RANGE용 (소수점 작게 처리)
 function formatNum(num) {
     if (num === undefined || num === null || isNaN(num)) return '-';
     let result = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num);
@@ -969,7 +964,6 @@ function formatNum(num) {
         return result.slice(0, -3); // 정수 형태면 그대로 반환
     }
     
-    // [추가] 소수점이 있는 경우, 소수점 앞뒤를 분리하여 span 태그
     if (result.includes('.')) {
         const parts = result.split('.');
         return `${parts[0]}<span class="decimal">.${parts[1]}</span>`;
@@ -977,6 +971,19 @@ function formatNum(num) {
     
     return result;
 }
+
+// CHANGE 전용 (태그 씌우지 않음)
+function formatChangeNum(num) {
+    if (num === undefined || num === null || isNaN(num)) return '-';
+    let result = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Math.abs(num));
+    
+    if (result.endsWith('.00')) {
+        return result.slice(0, -3);
+    }
+    
+    return result;
+}
+
 function formatPct(num) {
     if (num === undefined || num === null || isNaN(num)) return '-';
     return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num);
