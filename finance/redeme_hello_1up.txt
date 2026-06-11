@@ -1,6 +1,8 @@
-3.4.
+3.4.8.
 -네이버 pre, post, closed 적용
 -모바일 가로모드 시 부가정보 추가
+-네이버 basic, realtime api 차단 방지 로직 추가
+-숫자 깔끔하게 처리
 - https://m.stock.naver.com/front-api/realTime/marketPrice?itemCodes=0072R0&endType=stock&stockType=domestic
 - https://m.stock.naver.com/api/stock/000660/basic
 
