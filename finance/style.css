@@ -285,15 +285,15 @@ main { flex: 1; width: 100%; overflow-x: hidden; }
 
 .vader-scene {
     position: relative;
-    width: 250px;
-    height: 250px;
+    width: 350px;
+    height: 200px;
     margin-bottom: 1.5rem;
 }
 
 /* 다스베이더 유영 애니메이션 */
 .vader-icon {
-    width: 120px;
-    height: 120px;
+    width: 130px;
+    height: 130px;
     position: absolute;
     top: 15px;
     left: 15px;
@@ -313,14 +313,17 @@ main { flex: 1; width: 100%; overflow-x: hidden; }
 /* 무중력 우주 느낌을 살려주는 배경의 작은 별들 */
 .vader-scene .star {
     position: absolute;
-    background-color: var(--text-secondary);
+    background-color: var(--text-primary);
     border-radius: 50%;
-    opacity: 0.5;
+    opacity: 0.8;
     animation: float-star 3s linear infinite;
 }
 .star1 { width: 3px; height: 3px; top: 10%; left: 20%; animation-delay: 0s; }
 .star2 { width: 2px; height: 2px; top: 70%; left: 80%; animation-delay: 1s; }
 .star3 { width: 4px; height: 4px; top: 40%; left: 10%; animation-delay: 2s; }
+.star4 { width: 2px; height: 2px; top: 20%; left: 60%; animation-delay: 0.5s; }
+.star5 { width: 3px; height: 3px; top: 80%; left: 30%; animation-delay: 1.5s; }
+.star6 { width: 4px; height: 4px; top: 50%; left: 90%; animation-delay: 2.5s; }
 
 /* --- Keyframes Animations --- */
 
