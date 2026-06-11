@@ -21,7 +21,7 @@ layout: null
     
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     
-    <link rel="stylesheet" href="https://1up.kr/finance/style.css?ver=3.5.1">
+    <link rel="stylesheet" href="https://1up.kr/finance/style.css?ver=3.5.2">
 </head>
 <body>
     <script>
@@ -98,9 +98,19 @@ layout: null
                 </div>
                 </div>
                 <div class="news-list" id="news-container">
-                    <div class="empty-state">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19 20H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h10l6 6v10a2 2 0 0 1-2 2z"></path><polyline points="15 4 15 10 21 10"></polyline></svg>
-                        <p>Loading latest news...</p>
+                    <div class="retro-loader">
+                        <div class="invader-scene">
+                            <svg class="invader-icon" viewBox="0 0 11 8">
+                                <path d="M3,0 h1 v1 h-1 z M7,0 h1 v1 h-1 z M4,1 h3 v1 h-3 z M2,2 h7 v1 h-7 z M1,3 h2 v1 h-2 z M4,3 h3 v1 h-3 z M8,3 h2 v1 h-2 z M0,4 h11 v1 h-11 z M1,5 h1 v1 h-1 z M3,5 h5 v1 h-5 z M9,5 h1 v1 h-1 z M2,6 h1 v1 h-1 z M8,6 h1 v1 h-1 z M3,7 h2 v1 h-5 z M6,7 h2 v1 h-2 z" fill="currentColor"/>
+                            </svg>
+                            <svg class="ufo-icon" viewBox="0 0 16 7">
+                                <path d="M5,0 h6 v1 h-6 z M3,1 h10 v1 h-10 z M1,2 h14 v1 h-14 z M0,3 h2 v1 h-2 z M3,3 h2 v1 h-3 z M6,3 h4 v1 h-4 z M11,3 h2 v1 h-2 z M14,3 h2 v1 h-2 z M1,4 h14 v1 h-14 z M3,5 h3 v1 h-3 z M10,5 h3 v1 h-3 z M5,6 h6 v1 h-6 z" fill="currentColor" opacity="0.3"/>
+                            </svg>
+                        </div>
+                        <p class="retro-text">SCANNING SECTOR: NEWS</p>
+                        <div class="pixel-bar-container">
+                            <div class="pixel-bar-fill"></div>
+                        </div>
                     </div>
                 </div>
             </div>
