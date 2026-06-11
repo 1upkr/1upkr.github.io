@@ -956,13 +956,16 @@ function setErrorState(ticker, msg) {
 
 function formatNum(num) {
     if (num === undefined || num === null || isNaN(num)) return '-';
-    
-    // 소수점 2자리까지만 계산
     let result = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num);
     
-    // '.00'으로 끝나는 정수 형태일 때만 소수점 제거
     if (result.endsWith('.00')) {
-        result = result.slice(0, -3);
+        return result.slice(0, -3); // 정수 형태면 그대로 반환
+    }
+    
+    // [추가] 소수점이 있는 경우, 소수점 앞뒤를 분리하여 span 태그
+    if (result.includes('.')) {
+        const parts = result.split('.');
+        return `${parts[0]}<span class="decimal">.${parts[1]}</span>`;
     }
     
     return result;
