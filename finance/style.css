@@ -550,20 +550,19 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
    News Loading Dot Animation
    ========================================================= */
 .dot-loader {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    height: 100%;
-    padding-right: 4px;
+    /* JS에서 'block' 속성으로 켜지더라도 내부 점들이 가로로 정렬되도록 보조 */
+    text-align: center;
+    white-space: nowrap;
 }
 
 .dot-loader .dot {
+    display: inline-block; /* 핵심! 세로로 쌓이는 기본 성질을 막고 가로로 나열합니다 */
     width: 6px;
     height: 6px;
     background-color: var(--text-secondary);
     border-radius: 50%;
-    /* 1.2초 주기로 무한 반복되는 바운스 애니메이션 */
+    margin: 0 2px; /* gap 대신 margin으로 점 사이 간격 설정 */
+    vertical-align: middle;
     animation: dotBounce 1.2s infinite ease-in-out both;
 }
 
