@@ -839,7 +839,8 @@ function updateDOMWithData(quotes) {
                 } else {
                     if (!postData || Math.abs(postData.price - regPrice) === 0) targetState = 'CLOSED_H';
                 }
-            } else if (mState === 'CLOSED') {
+            // 👇 아래 else if 조건을 수정합니다.
+            } else if (mState === 'CLOSED' || mState.includes('POST') || mState.includes('PRE')) {
                 targetState = 'CLOSED_H';
             }
 
