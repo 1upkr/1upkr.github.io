@@ -912,11 +912,15 @@ function updateDOMWithData(quotes) {
                     }
                 }, 10);
             }
-
+            
             // 8. DOM 업데이트
             nodes.price.setAttribute('data-price', mainPrice);
-            nodes.name.textContent = quote.shortName || quote.longName || ticker;
             
+            const dbInfo = localTickerDB.find(q => q.s.toUpperCase() === ticker.toUpperCase());
+            nodes.name.textContent = (dbInfo ? dbInfo.n : null) || quote.shortName || quote.longName || ticker;
+            
+            // 여기서 formatNum(mainPrice)가 HTML 태그를 포함한 문자열을 리턴하므로
+            // 반드시 innerHTML을 사용해야 소수점이 작게 렌더링됩니다.
             nodes.price.innerHTML = mainIcon + formatNum(mainPrice);
             nodes.extPrice.innerHTML = subHtml;
             
