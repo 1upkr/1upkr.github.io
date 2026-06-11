@@ -956,13 +956,11 @@ function setErrorState(ticker, msg) {
 
 function formatNum(num) {
     if (num === undefined || num === null || isNaN(num)) return '-';
-    const abs = Math.abs(num); 
-    let decimals = 2;
-    if (abs > 10000) decimals = 0; 
     
-    let result = new Intl.NumberFormat('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals }).format(num);
+    // 소수점 2자리까지만 계산
+    let result = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num);
     
-    // [추가] 변환된 숫자가 '.00'으로 끝나면 소수점 부분을 깔끔하게 제거
+    // '.00'으로 끝나는 정수 형태일 때만 소수점 제거
     if (result.endsWith('.00')) {
         result = result.slice(0, -3);
     }
