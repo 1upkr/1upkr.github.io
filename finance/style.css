@@ -556,9 +556,11 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
     
     th.col-price, td.col-price { width: 44%; } 
     th.col-change, td.col-change { width: 24%; padding-right: 0.5rem; }
-    
+  
     .section-container th.actions-col, 
-    .section-container td.actions-col { display: none; }
+    .section-container td.actions-col,
+    .section-container.edit-mode th.actions-col,
+    .section-container.edit-mode td.actions-col { display: none !important; }
     
     .symbol { font-size: 0.8rem; } 
     .name { font-size: 0.65rem; }
