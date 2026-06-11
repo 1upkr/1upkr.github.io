@@ -538,6 +538,13 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
     .ac-symbol { font-size: 0.85rem; } .ac-name { font-size: 0.7rem; max-width: 140px; }
 }
 
+    /* 소수점 디자인 최적화 */
+    .decimal {
+        font-size: 0.85em !important;  /* !important를 추가해 강제 적용 */
+        font-weight: 600 !important;
+        opacity: 0.80 !important;
+    }
+
 /* 2단계: 실제 가로 폭이 좁은 스마트폰 세로 환경 (650px 이하) */
 /* 여기서만 부가 정보(Volume, Cap, 52W Range)를 완전히 숨기고 핵심 정보만 노출합니다. */
 @media (max-width: 650px) {
@@ -572,13 +579,6 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
         font-size: 0.50rem; 
         padding: 0.1rem 0.2rem; 
     }
-    
-    /* 소수점 디자인 최적화 */
-    .decimal {
-        font-size: 0.75em !important;  /* !important를 추가해 강제 적용 */
-        font-weight: 500 !important;
-        opacity: 0.85 !important;
-    }
-        
+
     .change-cell { font-size: 0.8rem; } .badge { padding: 0.15rem 0.25rem; font-size: 0.65rem; }
 }
