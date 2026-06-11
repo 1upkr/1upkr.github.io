@@ -894,7 +894,7 @@ function updateDOMWithData(quotes) {
             // 7. 색상 및 애니메이션 처리
             const isUp = mainChange >= 0;
             const colorClass = isUp ? 'up' : 'down'; 
-            const sign = isUp ? '+' : ''; 
+            const sign = isUp ? '+' : '-'; 
             const arrow = isUp ? '▲' : '▼';
             
             const oldPriceStr = nodes.price.getAttribute('data-price');
