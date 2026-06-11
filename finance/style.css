@@ -285,18 +285,18 @@ main { flex: 1; width: 100%; overflow-x: hidden; }
 
 .vader-scene {
     position: relative;
-    width: 100px;
-    height: 100px;
+    width: 250px;
+    height: 250px;
     margin-bottom: 1.5rem;
 }
 
 /* 다스베이더 유영 애니메이션 */
 .vader-icon {
-    width: 80px;
-    height: 80px;
+    width: 120px;
+    height: 120px;
     position: absolute;
-    top: 10px;
-    left: 10px;
+    top: 15px;
+    left: 15px;
     color: var(--text-primary);
     animation: float-vader 4s ease-in-out infinite;
 }
