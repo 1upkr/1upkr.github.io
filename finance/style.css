@@ -109,7 +109,7 @@ header {
 .progress-pie__bg {
     fill: none;
     stroke: currentColor;
-    stroke-width: 2;
+    stroke-width: 1;
     opacity: 0.2;
 }
 .progress-pie__fill {
