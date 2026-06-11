@@ -342,7 +342,7 @@ function renderLayout() {
                                 <th class="hide-mobile col-range">Day Range</th>
                                 <th class="hide-mobile col-vol">Volume</th>
                                 <th class="hide-mobile col-cap">Market Cap</th>
-                                <th class="actions-col"></th>
+                                <th class="hide-mobile actions-col"></th>
                                 <th class="handle-col"></th>
                             </tr>
                         </thead>
@@ -450,7 +450,7 @@ function generateRowHTML(ticker) {
             <td class="hide-mobile sub-data" id="range-${sid}">-</td>
             <td class="hide-mobile sub-data" id="vol-${sid}">-</td>
             <td class="hide-mobile sub-data" id="cap-${sid}">-</td>
-            <td class="actions-col"><button class="action-icon-btn danger" onclick="confirmRemoveTicker('${safeTicker}')">${TRASH_ICON}</button></td>
+            <td class="hide-mobile actions-col"><button class="action-icon-btn danger" onclick="confirmRemoveTicker('${safeTicker}')">${TRASH_ICON}</button></td>
             <td class="handle-col"><div class="action-icon-btn drag-handle">${DRAG_ICON}</div></td>
         </tr>
     `;
