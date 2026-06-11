@@ -190,6 +190,7 @@
   { "s": "KOSDAQ", "n": "코스닥 지수", "e": "NAVER" },
   { "s": "FUT", "n": "코스피 200 선물", "e": "NAVER" },
   { "s": "496080", "n": "TIGER 코리아밸류업", "e": "NAVER" },
+  { "s": "0072R0", "n": "TIGER KRX금현물", "e": "NAVER" },  
   { "s": "005930", "n": "삼성전자 (Samsung Electronics)", "e": "NAVER" },
   { "s": "000660", "n": "SK하이닉스 (SK Hynix)", "e": "NAVER" },
   { "s": "373220", "n": "LG에너지솔루션 (LG Energy Solution)", "e": "NAVER" },
