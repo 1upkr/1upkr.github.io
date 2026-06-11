@@ -550,36 +550,36 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
    News Loading Dot Animation
    ========================================================= */
 .dot-loader {
-    /* JS에서 'block' 속성으로 켜지더라도 내부 점들이 가로로 정렬되도록 보조 */
     text-align: center;
     white-space: nowrap;
 }
 
 .dot-loader .dot {
-    display: inline-block; /* 핵심! 세로로 쌓이는 기본 성질을 막고 가로로 나열합니다 */
+    display: inline-block; 
     width: 6px;
     height: 6px;
     background-color: var(--text-secondary);
     border-radius: 50%;
-    margin: 0 2px; /* gap 대신 margin으로 점 사이 간격 설정 */
+    margin: 0 2px; 
     vertical-align: middle;
-    animation: dotBounce 1.2s infinite ease-in-out both;
+    animation: dotBounce 1.4s infinite ease-in-out both; /* 점이 늘어난 만큼 시간을 살짝(1.4s) 늘려 여유롭게 */
 }
 
-/* 각 점마다 시작 시간을 살짝 다르게 주어 파도타기 효과를 만듭니다 */
-.dot-loader .dot:nth-child(1) { animation-delay: -0.32s; }
-.dot-loader .dot:nth-child(2) { animation-delay: -0.16s; }
-.dot-loader .dot:nth-child(3) { animation-delay: 0s; }
+/* 4개의 점이 부드럽게 이어지도록 간격을 0.15초씩 배치합니다 */
+.dot-loader .dot:nth-child(1) { animation-delay: -0.45s; }
+.dot-loader .dot:nth-child(2) { animation-delay: -0.30s; }
+.dot-loader .dot:nth-child(3) { animation-delay: -0.15s; }
+.dot-loader .dot:nth-child(4) { animation-delay: 0s; }
 
 @keyframes dotBounce {
     0%, 80%, 100% { 
-        transform: scale(0.5); /* 작아짐 */
+        transform: scale(0.5); 
         opacity: 0.3;
     }
     40% { 
-        transform: scale(1); /* 커짐 */
+        transform: scale(1); 
         opacity: 1;
-        background-color: var(--text-primary); /* 커질 때 색상이 살짝 진해짐 */
+        background-color: var(--text-primary); 
     }
 }
 
