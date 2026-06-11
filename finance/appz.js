@@ -926,11 +926,14 @@ function updateDOMWithData(quotes) {
             nodes.vol.textContent = formatCompact(quote.regularMarketVolume); 
             nodes.cap.textContent = formatCompact(quote.marketCap);
             
-            // 당일 최고/최저가(Day Range) 데이터 바인딩으로 교체
+            // [수정] Day Range를 표시할 때 소수점 처리가 된 HTML 문자열을 안전하게 렌더링
             if (quote.regularMarketDayLow && quote.regularMarketDayHigh) {
-                nodes.range.textContent = `${formatNum(quote.regularMarketDayLow)} - ${formatNum(quote.regularMarketDayHigh)}`;
+                const low = formatNum(quote.regularMarketDayLow);
+                const high = formatNum(quote.regularMarketDayHigh);
+                // 태그가 깨지지 않도록 하이픈(-)을 중심으로 안전하게 결합
+                nodes.range.innerHTML = `${low} <span style="opacity: 0.5; margin: 0 2px;">-</span> ${high}`;
             } else {
-                nodes.range.textContent = '-';
+                nodes.range.innerHTML = '-';
             }
         });
     });
