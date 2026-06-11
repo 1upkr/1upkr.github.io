@@ -822,8 +822,9 @@ function updateDOMWithData(quotes) {
             }
 
             // [핵심] 한국(KR)과 미국(US) 시장 분리 처리
-            // 종목 코드(ticker)가 숫자로만 되어있으면 네이버(한국) 데이터로 판별
-            const isKR = /^\d+$/.test(ticker); 
+            // ticker_n.json(localTickerDB)를 조회하여 'e' 값이 "NAVER"인지 확인 (없을 경우를 대비해 기존 정규식은 안전망으로 남김)
+            const dbMatch = localTickerDB.find(q => q.s.toUpperCase() === ticker.toUpperCase());
+            const isKR = dbMatch ? (dbMatch.e === 'NAVER') : /^\d/.test(ticker);
 
             if (targetState === 'PRE') {
                 if (isKR) {
