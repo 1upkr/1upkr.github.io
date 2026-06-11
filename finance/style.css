@@ -299,6 +299,7 @@ main { flex: 1; width: 100%; overflow-x: hidden; }
     left: 15px;
     color: var(--text-primary);
     animation: float-vader 4s ease-in-out infinite;
+    stroke: none;
 }
 
 .vader-text {
