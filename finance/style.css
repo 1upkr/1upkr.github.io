@@ -272,42 +272,47 @@ main { flex: 1; width: 100%; overflow-x: hidden; }
 /* --- Darth Vader Floating News Loader --- */
 
 .vader-loader {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start; /* 데스크탑에서 영역 중앙으로 밀려 안 보이는 현상 해결 */
-    padding-top: 3.5rem;         /* top에서 조금 아래부분부터 시작하도록 공간 확보 */
+    position: relative;
+    width: 100%;
     height: 100%;
     min-height: 250px;
-    background-color: transparent; /* 배경색을 투명하게 두어 하얀색 테마(card-bg)에 자연스럽게 묻히게 함 */
+    background-color: transparent;
     color: var(--text-primary);
+    overflow: hidden; /* 별들이 영역 밖으로 삐져나가지 않게 마스킹 */
 }
 
 .vader-scene {
-    position: relative;
-    width: 350px;
-    height: 200px;
-    margin-bottom: 1.5rem;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;  /* 부모 영역 100% 사용 */
+    height: 100%; /* 부모 영역 100% 사용 */
 }
 
 /* 다스베이더 유영 애니메이션 */
 .vader-icon {
-    width: 130px;
-    height: 130px;
+    width: 140px; /* 기존보다 살짝 더 키움 */
+    height: 140px;
     position: absolute;
-    top: 15px;
-    left: 15px;
+    top: 15%; /* news 영역 상단에서 약간 내려온 위치 */
+    left: calc(50% - 70px); /* 완벽한 가로 중앙 정렬 (width의 절반을 빼줌) */
     color: var(--text-primary);
-    animation: float-vader 4s ease-in-out infinite;
+    animation: float-vader 4.5s ease-in-out infinite; /* 애니메이션 시간을 약간 늘려 부드럽고 웅장하게 */
     stroke: none;
+    z-index: 2; /* 배경 별들 위로 올라오게 설정 */
 }
 
 .vader-text {
+    position: absolute;
+    top: calc(15% + 160px); /* 아이콘 위치(15%) + 아이콘 높이 + 적당한 여백 */
+    width: 100%; /* text-align 정렬을 위해 100% 할당 */
+    text-align: center;
     font-size: 0.875rem;
     font-weight: 600;
     color: var(--text-secondary);
     letter-spacing: 1px;
     animation: pulse-text 2s ease-in-out infinite;
+    z-index: 2;
 }
 
 /* 무중력 우주 느낌을 살려주는 배경의 작은 별들 */
@@ -327,18 +332,18 @@ main { flex: 1; width: 100%; overflow-x: hidden; }
 
 /* --- Keyframes Animations --- */
 
-/* 위아래로 둥둥 떠다니며 살짝 회전하는 무중력 효과 */
+/* 위아래로 크게 출렁이며 회전하는 무중력 효과 */
 @keyframes float-vader {
     0% { transform: translateY(0) rotate(0deg); }
-    33% { transform: translateY(-8px) rotate(4deg); }
-    66% { transform: translateY(6px) rotate(-3deg); }
+    33% { transform: translateY(-22px) rotate(7deg); } /* 위로 올라가는 폭 대폭 증가 */
+    66% { transform: translateY(18px) rotate(-5deg); } /* 아래로 내려가는 폭 대폭 증가 */
     100% { transform: translateY(0) rotate(0deg); }
 }
 
 /* 별들이 위로 슥 지나가는 효과 */
 @keyframes float-star {
     0% { transform: translateY(20px); opacity: 0; }
-    50% { opacity: 0.5; }
+    50% { opacity: 0.8; }
     100% { transform: translateY(-20px); opacity: 0; }
 }
 
