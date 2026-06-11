@@ -8,7 +8,7 @@ const DEFAULT_WATCHLISTS = {
 };
 
 const GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbxc8Q5iI7WxZurtV-1FDjTWKPUx_i049HSBAap2AyKYSvs8QMRHD3ZTa3xqfu0tJ1Za/exec";
-const NAVER_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbxDFSS5OnWhSJp8OdVz9WhHb-FnB2fwY6awgrww_4sOAGmiPDkJ9W31Q8NYNjBRRK7v2Q/exec"; 
+const NAVER_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbymIKO0njjKUqFvgcjY39To9E2rkJMCqbwL0uWUjyyvVQREn6foLLdI44rVnoehvi6Ztg/exec"; 
 const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbwSD8MOLPrYjwTBVQX_Tq6pu-gTHlOeR7p0hUY2pHGACNc2NA6f4zICduC05ypO_EN6/exec"; 
 
 const CHO_HANGUL = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
@@ -779,8 +779,9 @@ function updateDOMWithData(quotes) {
             // 2. 장전(Pre) 데이터 준비 (volume 추가)
             let preData = null;
             if (quote.preMarketPrice !== undefined && quote.preMarketPrice !== null) {
-                const change = quote.preMarketChange !== undefined ? quote.preMarketChange : (quote.preMarketPrice - regPrice);
-                const pct = quote.preMarketChangePercent !== undefined ? quote.preMarketChangePercent : (regPrice ? change / regPrice * 100 : 0);
+                // API 변동폭 무시하고 직접 수학적 계산 적용
+                const change = quote.preMarketPrice - regPrice;
+                const pct = regPrice ? (change / regPrice * 100) : 0;
                 const vol = quote.preMarketVolume || 0; 
                 preData = { price: quote.preMarketPrice, change: change, pct: pct, label: 'pre', time: quote.preMarketTime || 0, volume: vol };
             }
@@ -788,8 +789,9 @@ function updateDOMWithData(quotes) {
             // 3. 장후(Post) 데이터 준비 (volume 추가)
             let postData = null;
             if (quote.postMarketPrice !== undefined && quote.postMarketPrice !== null) {
-                const change = quote.postMarketChange !== undefined ? quote.postMarketChange : (quote.postMarketPrice - regPrice);
-                const pct = quote.postMarketChangePercent !== undefined ? quote.postMarketChangePercent : (regPrice ? change / regPrice * 100 : 0);
+                // API 변동폭 무시하고 직접 수학적 계산 적용
+                const change = quote.postMarketPrice - regPrice;
+                const pct = regPrice ? (change / regPrice * 100) : 0;
                 const vol = quote.postMarketVolume || 0;
                 postData = { price: quote.postMarketPrice, change: change, pct: pct, label: 'post', time: quote.postMarketTime || 0, volume: vol };
             }
