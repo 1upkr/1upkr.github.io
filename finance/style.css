@@ -540,7 +540,7 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
 
     /* 소수점 디자인 */
     .decimal {
-        font-size: 0.90em !important;  /* !important를 추가해 강제 적용 */
+        font-size: 0.94em !important;  /* !important를 추가해 강제 적용 */
         font-weight: 500 !important;
         opacity: 0.70 !important;
     }
