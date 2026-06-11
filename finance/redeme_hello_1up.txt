@@ -1,7 +1,8 @@
 3.4.
 -네이버 pre, post, closed 적용
 -모바일 가로모드 시 부가정보 추가
-
+- https://m.stock.naver.com/front-api/realTime/marketPrice?itemCodes=0072R0&endType=stock&stockType=domestic
+- https://m.stock.naver.com/api/stock/000660/basic
 
 3.0
 -US, pre, post 스왑 기능 추가
