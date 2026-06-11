@@ -269,108 +269,81 @@ main { flex: 1; width: 100%; overflow-x: hidden; }
 .empty-state svg { width: 48px; height: 48px; opacity: 0.3; margin-bottom: 0.5rem; }
 .empty-state p { font-size: 0.875rem; font-weight: 500; line-height: 1.5; }
 
-/* --- Retro Invader News Loader --- */
+/* --- Darth Vader Floating News Loader --- */
 
-.retro-loader {
+.vader-loader {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start; /* 데스크탑에서 영역 중앙으로 밀려 안 보이는 현상 해결 */
+    padding-top: 3.5rem;         /* top에서 조금 아래부분부터 시작하도록 공간 확보 */
     height: 100%;
     min-height: 250px;
-    background-color: rgba(10, 15, 25, 0.8); /* 어두운 아케이드 배경 */
-    border: 2px solid var(--color-border);
-    font-family: 'Courier New', Courier, monospace; /* 픽셀 느낌의 고정폭 폰트 */
-    color: var(--color-text-positive); /* 네온 그린 시스템 폰트색 사용 */
-    image-rendering: pixelated; /* SVG를 픽셀화하여 렌더링 */
-    padding: var(--spacing-md);
+    background-color: transparent; /* 배경색을 투명하게 두어 하얀색 테마(card-bg)에 자연스럽게 묻히게 함 */
+    color: var(--text-primary);
 }
 
-.invader-scene {
+.vader-scene {
     position: relative;
-    width: 100%;
+    width: 100px;
+    height: 100px;
+    margin-bottom: 1.5rem;
+}
+
+/* 다스베이더 유영 애니메이션 */
+.vader-icon {
+    width: 80px;
     height: 80px;
-    margin-bottom: var(--spacing-md);
-    overflow: hidden;
-}
-
-/* 인베이더 본체 애니메이션: 좌우로 흔들리며 하강 */
-.invader-icon {
     position: absolute;
-    width: 44px; /* 픽셀 크기 조절 */
-    height: 32px;
-    color: var(--color-text-positive);
     top: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    animation: invader-descend 4s infinite linear;
+    left: 10px;
+    color: var(--text-primary);
+    animation: float-vader 4s ease-in-out infinite;
 }
 
-/* 배경 UFO: 은은하게 반짝임 */
-.ufo-icon {
+.vader-text {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    letter-spacing: 1px;
+    animation: pulse-text 2s ease-in-out infinite;
+}
+
+/* 무중력 우주 느낌을 살려주는 배경의 작은 별들 */
+.vader-scene .star {
     position: absolute;
-    width: 64px;
-    height: 28px;
-    color: var(--color-text-positive);
-    top: -10px;
-    right: 10%;
-    animation: ufo-flicker 2s infinite ease-in-out;
+    background-color: var(--text-secondary);
+    border-radius: 50%;
+    opacity: 0.5;
+    animation: float-star 3s linear infinite;
 }
-
-.retro-text {
-    font-size: 14px;
-    font-weight: bold;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    margin: 0 0 var(--spacing-xs) 0;
-    text-shadow: 0 0 5px var(--color-text-positive);
-}
-
-/* 픽셀 로딩 바 */
-.pixel-bar-container {
-    width: 150px;
-    height: 8px;
-    border: 2px solid var(--color-text-positive);
-    padding: 2px;
-    box-sizing: content-box;
-}
-
-.pixel-bar-fill {
-    height: 100%;
-    background-color: var(--color-text-positive);
-    width: 0%;
-    animation: pixel-bar-fill 4s infinite steps(10); /* 픽셀 단위로 차오르는 느낌 */
-}
+.star1 { width: 3px; height: 3px; top: 10%; left: 20%; animation-delay: 0s; }
+.star2 { width: 2px; height: 2px; top: 70%; left: 80%; animation-delay: 1s; }
+.star3 { width: 4px; height: 4px; top: 40%; left: 10%; animation-delay: 2s; }
 
 /* --- Keyframes Animations --- */
 
-/* 인베이더 하강 및 좌우 움직임 */
-@keyframes invader-descend {
-    0% { top: 0px; left: 10%; transform: translateX(0) scaleX(1); }
-    10% { top: 10px; left: 10%; }
-    20% { top: 20px; left: 90%; transform: translateX(-100%) scaleX(1); }
-    30% { top: 30px; left: 90%; }
-    40% { top: 40px; left: 10%; transform: translateX(0) scaleX(-1); } /* 방향 전환 */
-    50% { top: 50px; left: 10%; }
-    60% { top: 60px; left: 90%; transform: translateX(-100%) scaleX(-1); }
-    70% { top: 70px; left: 90%; }
-    80% { top: 80px; left: 50%; transform: translateX(-50%) scaleX(1); } /* 중앙으로 */
-    90% { top: 80px; left: 50%; opacity: 1; }
-    100% { top: 80px; left: 50%; opacity: 0; } /* 사라짐 */
+/* 위아래로 둥둥 떠다니며 살짝 회전하는 무중력 효과 */
+@keyframes float-vader {
+    0% { transform: translateY(0) rotate(0deg); }
+    33% { transform: translateY(-8px) rotate(4deg); }
+    66% { transform: translateY(6px) rotate(-3deg); }
+    100% { transform: translateY(0) rotate(0deg); }
 }
 
-/* UFO 반짝임 */
-@keyframes ufo-flicker {
-    0%, 100% { opacity: 0.1; transform: translateY(0); }
-    50% { opacity: 0.4; transform: translateY(-5px); }
+/* 별들이 위로 슥 지나가는 효과 */
+@keyframes float-star {
+    0% { transform: translateY(20px); opacity: 0; }
+    50% { opacity: 0.5; }
+    100% { transform: translateY(-20px); opacity: 0; }
 }
 
-/* 픽셀 바 채우기 */
-@keyframes pixel-bar-fill {
-    0% { width: 0%; }
-    80% { width: 100%; opacity: 1; }
-    90%, 100% { width: 100%; opacity: 0; }
+@keyframes pulse-text {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
 }
+
+
 
 .autocomplete-list {
     position: absolute; top: 100%; left: 0; right: 0;
