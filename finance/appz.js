@@ -958,9 +958,16 @@ function formatNum(num) {
     if (num === undefined || num === null || isNaN(num)) return '-';
     const abs = Math.abs(num); 
     let decimals = 2;
-    if (abs > 10000) decimals = 0;     
-    // 0.1 미만일 때 4자리로 늘리던 로직을 삭제하여 무조건 2자리(혹은 큰 수는 0자리)로 고정합니다.
-    return new Intl.NumberFormat('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals }).format(num);
+    if (abs > 10000) decimals = 0; 
+    
+    let result = new Intl.NumberFormat('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals }).format(num);
+    
+    // [추가] 변환된 숫자가 '.00'으로 끝나면 소수점 부분을 깔끔하게 제거
+    if (result.endsWith('.00')) {
+        result = result.slice(0, -3);
+    }
+    
+    return result;
 }
 function formatPct(num) {
     if (num === undefined || num === null || isNaN(num)) return '-';
