@@ -560,7 +560,7 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
     height: 6px;
     background-color: var(--text-secondary);
     border-radius: 50%;
-    margin: 0 0.4px; 
+    margin: 0 0.2px; 
     vertical-align: middle;
     animation: dotBounce 1.4s infinite ease-in-out both; /* 점이 늘어난 만큼 시간을 살짝(1.4s) 늘려 여유롭게 */
 }
