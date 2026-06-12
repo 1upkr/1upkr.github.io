@@ -1091,23 +1091,19 @@ async function fetchMarketTrend(tradeType = currentTrendTradeType) {
     if (!container) return;
 
     const now = new Date();
-    // 0: 일요일, 6: 토요일
     const isWeekend = (now.getDay() === 0 || now.getDay() === 6);
     
-    // 1. 날짜에 종속되지 않는 영구 캐시 키 사용
     const cacheKey = `market_trend_last_known_${tradeType}`;
     let cached = null;
     try { 
         cached = JSON.parse(localStorage.getItem(cacheKey)); 
     } catch(e) { console.warn("Trend cache parse error"); }
 
-    // 2. 주말이거나 무조건 화면을 빨리 그리기 위해 캐시가 있다면 즉시 렌더링
     if (cached && cached.data) {
         renderTrendChart(cached.data, cached.dateStr);
-        if (isWeekend) return; // 주말이면 API 호출 없이 여기서 종료
+        if (isWeekend) return; 
     }
 
-    // 3. 평일이라면 최신 데이터 패치
     try {
         const url = `${TREND_GAS_PROXY_URL}?tradeType=${tradeType}&marketType=ALL&t=${Date.now()}`;
         const response = await fetch(url);
@@ -1117,17 +1113,13 @@ async function fetchMarketTrend(tradeType = currentTrendTradeType) {
         if (json.success && json.data && Array.isArray(json.data.content)) {
             const data = json.data.content;
 
-            // 데이터가 아예 없다면(휴일 등) 기존 캐시 유지하고 종료
             if (data.length === 0) return;
 
-            // KST 기준 현재 날짜 문자열 생성 (예: "2026.06.12.")
             const kstOptions = { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' };
             const todayStr = new Intl.DateTimeFormat('ko-KR', kstOptions).format(now).replace(/\s/g, ''); 
 
-            // 새 데이터로 차트 렌더링
             renderTrendChart(data, todayStr);
 
-            // [핵심] 15:30 데이터가 포함되어 있다면(장 마감) 영구 캐시에 저장
             const hasFinalData = data.some(d => d.time === "153000" || d.time === "1530");
             if (hasFinalData || !cached) {
                 localStorage.setItem(cacheKey, JSON.stringify({
@@ -1140,14 +1132,12 @@ async function fetchMarketTrend(tradeType = currentTrendTradeType) {
         }
     } catch (error) {
         console.error("Trend Chart Error:", error);
-        // 에러 시 캐시조차 없었다면 에러 문구 표시 (캐시가 있으면 이전 차트 유지)
         if (!cached) {
             container.innerHTML = '<div class="empty-state"><p class="error-text">Failed to load trend data.</p></div>';
         }
     }
 }
 
-// 매개변수에 dateStr 추가
 function renderTrendChart(dataList, dateStr = "") {
     const canvas = document.getElementById('trend-chart-canvas');
     if (!canvas) return;
@@ -1207,8 +1197,8 @@ function renderTrendChart(dataList, dateStr = "") {
     const tooltipBg = isDark ? 'rgba(30, 30, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)';
     const tooltipBorder = isDark ? '#2b2b2b' : '#e2e6eb';
 
-    const redColor = '#eb0f29';
-    const greenColor = '#00873c';
+    const redColor = isDark ? '#ff453a' : '#eb0f29';
+    const greenColor = isDark ? '#00c853' : '#00873c';
     const instColor = '#f5a623';
 
     const createGradient = (colorHex, r, g, b) => {
@@ -1220,17 +1210,34 @@ function renderTrendChart(dataList, dateStr = "") {
 
     trendChartInstance = new Chart(ctx, {
         type: 'line',
+        // [개선 1] 캔버스 내부 여백을 활용해 범례 좌측에 날짜를 그리는 커스텀 플러그인
+        plugins: [{
+            id: 'trendDatePlugin',
+            afterDraw: (chart) => {
+                if (!dateStr) return;
+                const chartCtx = chart.ctx;
+                chartCtx.save();
+                chartCtx.font = "600 12px 'Inter', sans-serif";
+                chartCtx.fillStyle = textSecondary;
+                chartCtx.textAlign = 'left';
+                chartCtx.textBaseline = 'middle';
+                // 범례(Legend)의 수직 중앙 정렬선에 맞춰 좌측 끝에 배치
+                const y = chart.legend ? chart.legend.top + (chart.legend.height / 2) : 15;
+                chartCtx.fillText(dateStr, chart.chartArea.left, y);
+                chartCtx.restore();
+            }
+        }],
         data: {
             labels: labels,
             datasets: [
                 { 
                     label: '개인', data: individualData, borderColor: redColor, 
-                    backgroundColor: createGradient(redColor, 235, 15, 41),
+                    backgroundColor: createGradient(redColor, isDark ? 255 : 235, isDark ? 69 : 15, isDark ? 58 : 41),
                     borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 5, fill: true, tension: 0.4 
                 },
                 { 
                     label: '외국인', data: foreignData, borderColor: greenColor, 
-                    backgroundColor: createGradient(greenColor, 0, 135, 60),
+                    backgroundColor: createGradient(greenColor, isDark ? 0 : 0, isDark ? 200 : 135, isDark ? 83 : 60),
                     borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 5, fill: true, tension: 0.4 
                 },
                 { 
@@ -1245,15 +1252,7 @@ function renderTrendChart(dataList, dateStr = "") {
             maintainAspectRatio: false,
             interaction: { mode: 'index', intersect: false },
             plugins: {
-                // [신규 추가] 좌측 상단에 날짜 표시 플러그인
-                title: {
-                    display: !!dateStr,
-                    text: dateStr,
-                    align: 'start',
-                    color: textSecondary,
-                    font: { family: "'Inter', sans-serif", size: 12, weight: 600 },
-                    padding: { bottom: 10 }
-                },
+                title: { display: false }, // 기존 타이틀 비활성화하여 차트 종횡비 최적화
                 legend: { 
                     position: 'top',
                     align: 'end', 
@@ -1264,17 +1263,27 @@ function renderTrendChart(dataList, dateStr = "") {
                 },
                 tooltip: {
                     backgroundColor: tooltipBg, titleColor: textPrimary, bodyColor: textPrimary,
-                    borderColor: tooltipBorder, borderWidth: 1, padding: 12, boxPadding: 6, usePointStyle: true,
+                    borderColor: tooltipBorder, borderWidth: 1, padding: 12, boxPadding: 6, 
+                    usePointStyle: false, // [개선 3-1] 동그라미 대신 기본 사각형(막대 스타일) 범례로 복원
                     titleFont: { family: "'Inter', sans-serif", size: 13, weight: 700 },
-                    bodyFont: { family: "'Inter', sans-serif", size: 12, weight: 500 },
+                    bodyFont: { family: "'Inter', sans-serif", size: 12, weight: 600 },
                     callbacks: {
                         label: function(context) {
                             let label = context.dataset.label || '';
                             if (label) label += ': ';
                             if (context.parsed.y !== null) {
-                                label += new Intl.NumberFormat('ko-KR').format(Math.round(context.parsed.y)) + '억';
+                                const val = context.parsed.y;
+                                const sign = val > 0 ? '+' : ''; // [개선 3-2] 양수일 때 기호 기재 추가
+                                label += sign + new Intl.NumberFormat('ko-KR').format(Math.round(val)) + '억';
                             }
                             return label;
+                        },
+                        // [개선 3-2] 툴팁 수치 조건별 색상 다이나믹 지정 (+초록 / -빨강)
+                        labelTextColor: function(context) {
+                            const val = context.parsed.y;
+                            if (val > 0) return greenColor;
+                            if (val < 0) return redColor;
+                            return textPrimary;
                         }
                     }
                 }
@@ -1286,13 +1295,18 @@ function renderTrendChart(dataList, dateStr = "") {
                 },
                 y: { 
                     grid: { color: gridColor, drawBorder: false, borderDash: [4, 4] }, 
-                    ticks: { color: textSecondary, font: { family: "'Inter', sans-serif", size: 11 }, padding: 10 } 
+                    ticks: { 
+                        color: textSecondary, font: { family: "'Inter', sans-serif", size: 11 }, padding: 10,
+                        // [개선 2] Y축 레이블 단위를 1,000으로 나누어 가독성 확보 (10,000 -> 10 표기)
+                        callback: function(value) {
+                            return new Intl.NumberFormat('ko-KR').format(value / 1000);
+                        }
+                    } 
                 }
             }
         }
     });
 }
-
 // 외부에서 코스피/코스닥 탭 버튼 클릭 시 호출할 수 있도록 window 객체에 할당
 window.switchTrendMarket = function(tradeType) {
     fetchMarketTrend(tradeType);
