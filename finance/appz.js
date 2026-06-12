@@ -1143,14 +1143,10 @@ function renderTrendChart(dataList) {
         const mm = parseInt(t.substring(2, 4), 10);
         const timeVal = hh * 100 + mm;
 
-        // 09:00 ~ 15:30 필터링
         if (timeVal >= 900 && timeVal <= 1530) {
-            // [핵심 수정] 정확한 분(%) 계산 대신, 10분 단위 구간(Bucket)으로 묶습니다.
-            // 예: 13:01~13:09 모두 "13:00" 구간으로 인식
             const bucketMm = Math.floor(mm / 10) * 10;
             const label = `${String(hh).padStart(2, '0')}:${String(bucketMm).padStart(2, '0')}`;
             
-            // 해당 10분 구간의 첫 데이터만 캡처하여 차트에 추가
             if (label !== lastAddedLabel) {
                 labels.push(label);
                 lastAddedLabel = label;
@@ -1176,18 +1172,68 @@ function renderTrendChart(dataList) {
     }
 
     const ctx = canvas.getContext('2d');
+    
+    // 현재 테마 인식 (Light / Dark)
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    const gridColor = isDark ? '#2b2b2b' : '#e2e6eb';
-    const textColor = isDark ? '#a0a4a8' : '#5f6368';
+    
+    // 테마별 모던 색상 세팅
+    const textPrimary = isDark ? '#e3e3e3' : '#18191a';
+    const textSecondary = isDark ? '#a0a4a8' : '#5f6368';
+    const gridColor = isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)';
+    const tooltipBg = isDark ? 'rgba(30, 30, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)';
+    const tooltipBorder = isDark ? '#2b2b2b' : '#e2e6eb';
+
+    // 1UP 포인트 컬러
+    const redColor = '#eb0f29';
+    const greenColor = '#00873c';
+    const instColor = '#f5a623'; // 쨍한 노란색 대신 고급스러운 앰버-오렌지 톤으로 변경
+
+    // 라인 아래로 은은하게 깔리는 그라데이션 생성 함수
+    const createGradient = (colorHex, r, g, b) => {
+        const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+        gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, 0.25)`);
+        gradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0.0)`);
+        return gradient;
+    };
 
     trendChartInstance = new Chart(ctx, {
         type: 'line',
         data: {
             labels: labels,
             datasets: [
-                { label: '개인', data: individualData, borderColor: '#eb0f29', borderWidth: 2, pointRadius: 0, tension: 0.2 },
-                { label: '외국인', data: foreignData, borderColor: '#00873c', borderWidth: 2, pointRadius: 0, tension: 0.2 },
-                { label: '기관', data: institutionData, borderColor: '#fbbc04', borderWidth: 2, pointRadius: 0, tension: 0.2 }
+                { 
+                    label: '개인', 
+                    data: individualData, 
+                    borderColor: redColor, 
+                    backgroundColor: createGradient(redColor, 235, 15, 41),
+                    borderWidth: 2.5, 
+                    pointRadius: 0, 
+                    pointHoverRadius: 5,
+                    fill: true,
+                    tension: 0.4 // 곡선을 부드럽게 (모던함의 핵심)
+                },
+                { 
+                    label: '외국인', 
+                    data: foreignData, 
+                    borderColor: greenColor, 
+                    backgroundColor: createGradient(greenColor, 0, 135, 60),
+                    borderWidth: 2.5, 
+                    pointRadius: 0, 
+                    pointHoverRadius: 5,
+                    fill: true,
+                    tension: 0.4 
+                },
+                { 
+                    label: '기관', 
+                    data: institutionData, 
+                    borderColor: instColor, 
+                    backgroundColor: createGradient(instColor, 245, 166, 35),
+                    borderWidth: 2.5, 
+                    pointRadius: 0, 
+                    pointHoverRadius: 5,
+                    fill: true,
+                    tension: 0.4 
+                }
             ]
         },
         options: {
@@ -1195,14 +1241,34 @@ function renderTrendChart(dataList) {
             maintainAspectRatio: false,
             interaction: { mode: 'index', intersect: false },
             plugins: {
-                legend: { labels: { color: textColor, font: { family: "'Inter', sans-serif", weight: 600 } } },
+                legend: { 
+                    position: 'top',
+                    align: 'end', // 우측 상단으로 깔끔하게 밀어버림
+                    labels: { 
+                        color: textSecondary, 
+                        font: { family: "'Inter', sans-serif", size: 12, weight: 600 },
+                        usePointStyle: true, // 투박한 네모 대신 둥근 점 사용
+                        boxWidth: 8,
+                        padding: 15
+                    } 
+                },
                 tooltip: {
+                    backgroundColor: tooltipBg,
+                    titleColor: textPrimary,
+                    bodyColor: textPrimary,
+                    borderColor: tooltipBorder,
+                    borderWidth: 1,
+                    padding: 12,
+                    boxPadding: 6,
+                    usePointStyle: true,
+                    titleFont: { family: "'Inter', sans-serif", size: 13, weight: 700 },
+                    bodyFont: { family: "'Inter', sans-serif", size: 12, weight: 500 },
                     callbacks: {
                         label: function(context) {
                             let label = context.dataset.label || '';
                             if (label) label += ': ';
                             if (context.parsed.y !== null) {
-                                label += new Intl.NumberFormat('ko-KR').format(Math.round(context.parsed.y)) + '억원';
+                                label += new Intl.NumberFormat('ko-KR').format(Math.round(context.parsed.y)) + '억';
                             }
                             return label;
                         }
@@ -1210,12 +1276,32 @@ function renderTrendChart(dataList) {
                 }
             },
             scales: {
-                x: { grid: { display: false }, ticks: { color: textColor, maxTicksLimit: 6 } },
-                y: { grid: { color: gridColor }, ticks: { color: textColor } }
+                x: { 
+                    grid: { display: false }, 
+                    ticks: { 
+                        color: textSecondary, 
+                        font: { family: "'Inter', sans-serif", size: 11 }, 
+                        maxTicksLimit: 7, 
+                        maxRotation: 0 
+                    } 
+                },
+                y: { 
+                    grid: { 
+                        color: gridColor, 
+                        drawBorder: false, 
+                        borderDash: [4, 4] // 희미한 점선으로 처리하여 데이터에 집중
+                    }, 
+                    ticks: { 
+                        color: textSecondary, 
+                        font: { family: "'Inter', sans-serif", size: 11 }, 
+                        padding: 10 
+                    } 
+                }
             }
         }
     });
 }
+
 // 외부에서 코스피/코스닥 탭 버튼 클릭 시 호출할 수 있도록 window 객체에 할당
 window.switchTrendMarket = function(tradeType) {
     fetchMarketTrend(tradeType);
