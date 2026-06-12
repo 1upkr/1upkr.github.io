@@ -1248,8 +1248,8 @@ function renderTrendChart(dataList) {
                         color: textSecondary, 
                         font: { family: "'Inter', sans-serif", size: 12, weight: 600 },
                         usePointStyle: false, // 투박한 네모 대신 둥근 점 사용
-                        boxWidth: 5,
-                        boxHeight: 2,
+                        boxWidth: 8,
+                        boxHeight: 1,
                         padding: 20
                     } 
                 },
