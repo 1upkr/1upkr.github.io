@@ -1210,7 +1210,6 @@ function renderTrendChart(dataList, dateStr = "") {
 
     trendChartInstance = new Chart(ctx, {
         type: 'line',
-        // [개선 1] 캔버스 내부 여백을 활용해 범례 좌측에 날짜를 그리는 커스텀 플러그인
         plugins: [{
             id: 'trendDatePlugin',
             afterDraw: (chart) => {
@@ -1221,7 +1220,6 @@ function renderTrendChart(dataList, dateStr = "") {
                 chartCtx.fillStyle = textSecondary;
                 chartCtx.textAlign = 'left';
                 chartCtx.textBaseline = 'middle';
-                // 범례(Legend)의 수직 중앙 정렬선에 맞춰 좌측 끝에 배치
                 const y = chart.legend ? chart.legend.top + (chart.legend.height / 2) : 15;
                 chartCtx.fillText(dateStr, chart.chartArea.left, y);
                 chartCtx.restore();
@@ -1233,17 +1231,17 @@ function renderTrendChart(dataList, dateStr = "") {
                 { 
                     label: '개인', data: individualData, borderColor: redColor, 
                     backgroundColor: createGradient(redColor, isDark ? 255 : 235, isDark ? 69 : 15, isDark ? 58 : 41),
-                    borderWidth: 1, pointRadius: 0, pointHoverRadius: 5, fill: true, tension: 0.4 
+                    borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 5, fill: true, tension: 0.4 
                 },
                 { 
                     label: '외국인', data: foreignData, borderColor: greenColor, 
                     backgroundColor: createGradient(greenColor, isDark ? 0 : 0, isDark ? 200 : 135, isDark ? 83 : 60),
-                    borderWidth: 1, pointRadius: 0, pointHoverRadius: 5, fill: true, tension: 0.4 
+                    borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 5, fill: true, tension: 0.4 
                 },
                 { 
                     label: '기관', data: institutionData, borderColor: instColor, 
                     backgroundColor: createGradient(instColor, 245, 166, 35),
-                    borderWidth: 1, pointRadius: 0, pointHoverRadius: 5, fill: true, tension: 0.4 
+                    borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 5, fill: true, tension: 0.4 
                 }
             ]
         },
@@ -1252,39 +1250,95 @@ function renderTrendChart(dataList, dateStr = "") {
             maintainAspectRatio: false,
             interaction: { mode: 'index', intersect: false },
             plugins: {
-                title: { display: false }, // 기존 타이틀 비활성화하여 차트 종횡비 최적화
+                title: { display: false }, 
                 legend: { 
                     position: 'top',
                     align: 'end', 
                     labels: { 
                         color: textSecondary, font: { family: "'Inter', sans-serif", size: 12, weight: 600 },
-                        usePointStyle: false, boxWidth: 8, boxHeight: 1, padding: 20
+                        usePointStyle: false, boxWidth: 8, boxHeight: 2, padding: 20
                     } 
                 },
                 tooltip: {
-                    backgroundColor: tooltipBg, titleColor: textPrimary, bodyColor: textPrimary,
-                    borderColor: tooltipBorder, borderWidth: 1, padding: 12, boxPadding: 6, 
-                    usePointStyle: false, // [개선 3-1] 동그라미 대신 기본 사각형(막대 스타일) 범례로 복원
-                    titleFont: { family: "'Inter', sans-serif", size: 13, weight: 700 },
-                    bodyFont: { family: "'Inter', sans-serif", size: 12, weight: 600 },
-                    callbacks: {
-                        label: function(context) {
-                            let label = context.dataset.label || '';
-                            if (label) label += ': ';
-                            if (context.parsed.y !== null) {
-                                const val = context.parsed.y;
-                                const sign = val > 0 ? '+' : ''; // [개선 3-2] 양수일 때 기호 기재 추가
-                                label += sign + new Intl.NumberFormat('ko-KR').format(Math.round(val)) + '억';
-                            }
-                            return label;
-                        },
-                        // [개선 3-2] 툴팁 수치 조건별 색상 다이나믹 지정 (+초록 / -빨강)
-                        labelTextColor: function(context) {
-                            const val = context.parsed.y;
-                            if (val > 0) return greenColor;
-                            if (val < 0) return redColor;
-                            return textPrimary;
+                    // [핵심 로직] 기본 캔버스 툴팁을 끄고 완벽히 통제 가능한 HTML 툴팁으로 대체
+                    enabled: false,
+                    position: 'nearest',
+                    external: function(context) {
+                        let tooltipEl = document.getElementById('chartjs-custom-tooltip');
+
+                        if (!tooltipEl) {
+                            tooltipEl = document.createElement('div');
+                            tooltipEl.id = 'chartjs-custom-tooltip';
+                            tooltipEl.style.background = tooltipBg;
+                            tooltipEl.style.borderRadius = '8px';
+                            tooltipEl.style.border = `1px solid ${tooltipBorder}`;
+                            tooltipEl.style.pointerEvents = 'none';
+                            tooltipEl.style.position = 'absolute';
+                            tooltipEl.style.transition = 'all .1s ease';
+                            tooltipEl.style.padding = '12px';
+                            tooltipEl.style.boxShadow = '0 4px 6px -1px rgba(0,0,0,0.05)';
+                            tooltipEl.style.zIndex = 100;
+                            
+                            // 부모 요소(Wrapper) 안에 생성하여 상대 좌표 활용
+                            context.chart.canvas.parentNode.appendChild(tooltipEl);
+                            context.chart.canvas.parentNode.style.position = 'relative';
                         }
+
+                        const tooltipModel = context.tooltip;
+                        if (tooltipModel.opacity === 0) {
+                            tooltipEl.style.opacity = 0;
+                            return;
+                        }
+
+                        if (tooltipModel.body) {
+                            const titleLines = tooltipModel.title || [];
+                            let innerHtml = `<div style="font-family:'Inter', sans-serif;">`;
+
+                            // 툴팁 상단 시간 표시
+                            titleLines.forEach(function(title) {
+                                innerHtml += `<div style="font-weight:700; font-size:13px; color:${textPrimary}; margin-bottom:10px;">${title}</div>`;
+                            });
+
+                            innerHtml += `<div style="display:flex; flex-direction:column; gap:8px;">`;
+
+                            // 데이터 렌더링
+                            tooltipModel.dataPoints.forEach(function(dp) {
+                                const val = dp.parsed.y;
+                                const sign = val > 0 ? '+' : '';
+                                
+                                // 값 색상 조건부 설정
+                                const valColor = val > 0 ? greenColor : (val < 0 ? redColor : textPrimary);
+                                const formattedVal = sign + new Intl.NumberFormat('ko-KR').format(Math.round(val)) + '억';
+
+                                // 범례 선 두께 설정 (boxWidth: 8, 높이 2px)
+                                const borderColor = dp.dataset.borderColor;
+
+                                // Flexbox의 space-between으로 콜론 없이 양끝 정렬 적용
+                                innerHtml += `
+                                    <div style="display:flex; align-items:center; font-size:12px; font-weight:600; justify-content:space-between; gap: 20px;">
+                                        <div style="display:flex; align-items:center;">
+                                            <span style="display:inline-block; width:8px; height:2px; background:${borderColor}; margin-right:8px; border-radius:1px;"></span>
+                                            <span style="color:${textSecondary};">${dp.dataset.label}</span>
+                                        </div>
+                                        <span style="color:${valColor}; text-align:right;">${formattedVal}</span>
+                                    </div>
+                                `;
+                            });
+                            innerHtml += `</div></div>`;
+                            tooltipEl.innerHTML = innerHtml;
+                        }
+
+                        // 위치 보정 로직 (툴팁이 캔버스 화면 밖으로 잘리지 않게 방어)
+                        const position = context.chart.canvas.getBoundingClientRect();
+                        tooltipEl.style.opacity = 1;
+                        
+                        let transformX = '-50%';
+                        if (tooltipModel.caretX < 80) transformX = '0%';
+                        else if (tooltipModel.caretX > context.chart.width - 80) transformX = '-100%';
+                        
+                        tooltipEl.style.transform = `translate(${transformX}, -100%)`;
+                        tooltipEl.style.left = tooltipModel.caretX + 'px';
+                        tooltipEl.style.top = (tooltipModel.caretY - 12) + 'px'; // 마우스 포인트 살짝 위로
                     }
                 }
             },
@@ -1297,7 +1351,6 @@ function renderTrendChart(dataList, dateStr = "") {
                     grid: { color: gridColor, drawBorder: false, borderDash: [4, 4] }, 
                     ticks: { 
                         color: textSecondary, font: { family: "'Inter', sans-serif", size: 11 }, padding: 10,
-                        // [개선 2] Y축 레이블 단위를 1,000으로 나누어 가독성 확보 (10,000 -> 10 표기)
                         callback: function(value) {
                             return new Intl.NumberFormat('ko-KR').format(value / 1000);
                         }
