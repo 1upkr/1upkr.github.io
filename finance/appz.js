@@ -1127,40 +1127,56 @@ function renderTrendChart(dataList) {
     const foreignData = [];
     const institutionData = [];
 
-    // 기관 합계를 구하기 위한 코드 (금융투자, 보험, 투신, 사모, 은행, 기타금융, 연기금)
+    // 기관 합계를 구하기 위한 코드
     const instCodes = ['1000', '2000', '3000', '3100', '4000', '5000', '6000'];
+    let lastAddedLabel = "";
 
     sortedData.forEach(d => {
-        // 시간 포맷 (예: "150400" -> "15:04")
         const t = d.time;
-        if (t && t.length >= 4) {
-            labels.push(`${t.substring(0, 2)}:${t.substring(2, 4)}`);
-        } else {
-            labels.push(t);
-        }
+        if (!t || t.length < 4) return;
 
-        let ind = 0, forgn = 0, inst = 0;
+        // 시간, 분 추출 (예: "150400" -> hh=15, mm=4, timeVal=1504)
+        const hh = parseInt(t.substring(0, 2), 10);
+        const mm = parseInt(t.substring(2, 4), 10);
+        const timeVal = hh * 100 + mm;
 
-        // netAmounts 배열 안에서 주체별 금액(diffValue)을 추출하여 억원 단위로 변환
-        if (Array.isArray(d.netAmounts)) {
-            d.netAmounts.forEach(item => {
-                const val = (parseFloat(item.diffValue) || 0) / 100000000; // 억원 단위로 스케일링
+        // 1. 09:00(900)부터 15:30(1530)까지만 필터링
+        if (timeVal >= 900 && timeVal <= 1530) {
+            // 2. 10분 단위 필터링 (분 단위가 10으로 나누어 떨어지는 시간만)
+            if (mm % 10 === 0) {
+                const label = `${t.substring(0, 2)}:${t.substring(2, 4)}`;
+                
+                // 혹시라도 중복된 시간이 넘어올 경우 방지
+                if (label !== lastAddedLabel) {
+                    labels.push(label);
+                    lastAddedLabel = label;
 
-                if (item.investorGubun === '8000') {
-                    ind = val;
-                } else if (item.investorGubun === '9000') {
-                    forgn = val;
-                } else if (instCodes.includes(item.investorGubun)) {
-                    inst += val;
+                    let ind = 0, forgn = 0, inst = 0;
+
+                    // netAmounts 배열 안에서 주체별 금액(diffValue)을 추출하여 억원 단위로 변환
+                    if (Array.isArray(d.netAmounts)) {
+                        d.netAmounts.forEach(item => {
+                            const val = (parseFloat(item.diffValue) || 0) / 100000000;
+
+                            if (item.investorGubun === '8000') {
+                                ind = val;
+                            } else if (item.investorGubun === '9000') {
+                                forgn = val;
+                            } else if (instCodes.includes(item.investorGubun)) {
+                                inst += val;
+                            }
+                        });
+                    }
+
+                    individualData.push(ind);
+                    foreignData.push(forgn);
+                    institutionData.push(inst);
                 }
-            });
+            }
         }
-
-        individualData.push(ind);
-        foreignData.push(forgn);
-        institutionData.push(inst);
     });
 
+    // 기존 차트가 있으면 삭제 후 다시 생성
     if (trendChartInstance) {
         trendChartInstance.destroy();
     }
@@ -1192,7 +1208,6 @@ function renderTrendChart(dataList) {
                             let label = context.dataset.label || '';
                             if (label) label += ': ';
                             if (context.parsed.y !== null) {
-                                // 툴팁에 콤마와 '억원'을 예쁘게 붙여줍니다.
                                 label += new Intl.NumberFormat('ko-KR').format(Math.round(context.parsed.y)) + '억원';
                             }
                             return label;
