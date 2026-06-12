@@ -1148,14 +1148,14 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
     const canvas = document.getElementById('trend-chart-canvas');
     if (!canvas) return;
 
-    // 💡 [신규 로직] 우측 하단 HTML 뱃지 오버레이 생성
+    // 우측 하단 HTML 뱃지 오버레이 (LIVE / CLOSED 및 날짜)
     let badgeContainer = document.getElementById('trend-date-badge');
     if (!badgeContainer) {
         badgeContainer = document.createElement('div');
         badgeContainer.id = 'trend-date-badge';
         badgeContainer.style.position = 'absolute';
         badgeContainer.style.right = '0';
-        badgeContainer.style.bottom = '0'; // 컨테이너 우측 하단 고정
+        badgeContainer.style.bottom = '0'; 
         badgeContainer.style.display = 'flex';
         badgeContainer.style.alignItems = 'center';
         badgeContainer.style.gap = '4px';
@@ -1165,7 +1165,6 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
         if(wrapper) wrapper.appendChild(badgeContainer);
     }
     
-    // 기존 종목에 쓰이는 CSS 클래스를 재활용하여 완벽한 일체감 제공
     const badgeText = isLive ? 'LIVE' : 'CLOSED';
     badgeContainer.innerHTML = `
         <span class="main-ext-label" style="margin: 0;">${badgeText}</span>
@@ -1239,7 +1238,6 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
 
     trendChartInstance = new Chart(ctx, {
         type: 'line',
-        // 캔버스 날짜 그리기 플러그인은 HTML 뱃지로 교체되었으므로 제거했습니다.
         data: {
             labels: labels,
             datasets: [
@@ -1265,7 +1263,6 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
             maintainAspectRatio: false,
             interaction: { mode: 'index', intersect: false },
             layout: {
-                // 💡 HTML 뱃지가 놓일 우측 하단의 충분한 여백 확보 (bottom: 22)
                 padding: { left: 0, right: 0, top: 0, bottom: 22 }
             },
             plugins: {
@@ -1273,9 +1270,12 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                 legend: { 
                     position: 'top',
                     align: 'end', 
+                    // 💡 [수정됨] 차트 본문과의 간격을 여기서 확보
+                    padding: 15, 
                     labels: { 
                         color: textSecondary, font: { family: "'Inter', sans-serif", size: 12, weight: 600 },
-                        usePointStyle: false, boxWidth: 8, boxHeight: 2, padding: 20
+                        // 💡 [수정됨] 범례 텍스트 상하좌우 여백을 20 -> 8로 줄여 윗부분 불필요한 공간 제거
+                        usePointStyle: false, boxWidth: 8, boxHeight: 2, padding: 8
                     } 
                 },
                 tooltip: {
