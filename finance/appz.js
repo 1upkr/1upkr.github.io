@@ -1157,7 +1157,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
         badgeContainer.style.right = '0';
         badgeContainer.style.bottom = '0'; 
         badgeContainer.style.display = 'flex';
-        badgeContainer.style.alignItems = 'center';
+        badgeContainer.style.alignItems = 'center'; // 1차: 컨테이너 기준 수직 중앙 정렬
         badgeContainer.style.gap = '4px';
         badgeContainer.style.zIndex = '10';
         
@@ -1167,8 +1167,9 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
     
     const badgeText = isLive ? 'LIVE' : 'CLOSED';
     badgeContainer.innerHTML = `
-        <span class="main-ext-label" style="margin: 0;">${badgeText}</span>
-        <span style="font-size: 0.75rem; font-weight: 500; color: var(--text-secondary); font-family: 'Inter', sans-serif;">${dateStr}</span>
+        <span class="main-ext-label" style="margin: 0; font-size: 0.65rem; padding: 0.15rem 0.35rem; line-height: 1; transform: none; display: block;">${badgeText}</span>
+        
+        <span style="font-size: 11px; font-weight: 600; color: var(--text-secondary); font-family: 'Inter', sans-serif; line-height: 1; display: block; transform: translateY(0.5px);">${dateStr}</span>
     `;
 
     const sortedData = dataList.slice().reverse();
