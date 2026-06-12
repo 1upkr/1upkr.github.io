@@ -10,7 +10,7 @@ const DEFAULT_WATCHLISTS = {
 const GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbxc8Q5iI7WxZurtV-1FDjTWKPUx_i049HSBAap2AyKYSvs8QMRHD3ZTa3xqfu0tJ1Za/exec";
 const NAVER_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbymIKO0njjKUqFvgcjY39To9E2rkJMCqbwL0uWUjyyvVQREn6foLLdI44rVnoehvi6Ztg/exec"; 
 const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbwSD8MOLPrYjwTBVQX_Tq6pu-gTHlOeR7p0hUY2pHGACNc2NA6f4zICduC05ypO_EN6/exec"; 
-const TREND_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbw3DbMvkDeWk5uCwzNqLnFqQnPpY2ZJDRyYraI3Z87xltgkh0UnnMAcvNICtOpaBifElQ/exec";
+const TREND_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbxpD4fwimvR6M4_g8AJeh6QB9q_6sF3hiKc3TnXEFXtLpZfzdINyiVK6xu0HijW924Pog/exec";
 
 const CHO_HANGUL = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
 function getChosung(str) {
@@ -1119,7 +1119,6 @@ function renderTrendChart(dataList) {
     const canvas = document.getElementById('trend-chart-canvas');
     if (!canvas) return;
 
-    // 데이터가 최신순(역순)이므로 차트를 위해 시간순(오름차순)으로 반전
     const sortedData = dataList.slice().reverse();
 
     const labels = [];
@@ -1127,7 +1126,6 @@ function renderTrendChart(dataList) {
     const foreignData = [];
     const institutionData = [];
 
-    // 기관 합계를 구하기 위한 코드
     const instCodes = ['1000', '2000', '3000', '3100', '4000', '5000', '6000'];
     let lastAddedLabel = "";
 
@@ -1135,48 +1133,38 @@ function renderTrendChart(dataList) {
         const t = d.time;
         if (!t || t.length < 4) return;
 
-        // 시간, 분 추출 (예: "150400" -> hh=15, mm=4, timeVal=1504)
         const hh = parseInt(t.substring(0, 2), 10);
         const mm = parseInt(t.substring(2, 4), 10);
         const timeVal = hh * 100 + mm;
 
-        // 1. 09:00(900)부터 15:30(1530)까지만 필터링
+        // 09:00 ~ 15:30 필터링
         if (timeVal >= 900 && timeVal <= 1530) {
-            // 2. 10분 단위 필터링 (분 단위가 10으로 나누어 떨어지는 시간만)
-            if (mm % 10 === 0) {
-                const label = `${t.substring(0, 2)}:${t.substring(2, 4)}`;
-                
-                // 혹시라도 중복된 시간이 넘어올 경우 방지
-                if (label !== lastAddedLabel) {
-                    labels.push(label);
-                    lastAddedLabel = label;
+            // [핵심 수정] 정확한 분(%) 계산 대신, 10분 단위 구간(Bucket)으로 묶습니다.
+            // 예: 13:01~13:09 모두 "13:00" 구간으로 인식
+            const bucketMm = Math.floor(mm / 10) * 10;
+            const label = `${String(hh).padStart(2, '0')}:${String(bucketMm).padStart(2, '0')}`;
+            
+            // 해당 10분 구간의 첫 데이터만 캡처하여 차트에 추가
+            if (label !== lastAddedLabel) {
+                labels.push(label);
+                lastAddedLabel = label;
 
-                    let ind = 0, forgn = 0, inst = 0;
-
-                    // netAmounts 배열 안에서 주체별 금액(diffValue)을 추출하여 억원 단위로 변환
-                    if (Array.isArray(d.netAmounts)) {
-                        d.netAmounts.forEach(item => {
-                            const val = (parseFloat(item.diffValue) || 0) / 100000000;
-
-                            if (item.investorGubun === '8000') {
-                                ind = val;
-                            } else if (item.investorGubun === '9000') {
-                                forgn = val;
-                            } else if (instCodes.includes(item.investorGubun)) {
-                                inst += val;
-                            }
-                        });
-                    }
-
-                    individualData.push(ind);
-                    foreignData.push(forgn);
-                    institutionData.push(inst);
+                let ind = 0, forgn = 0, inst = 0;
+                if (Array.isArray(d.netAmounts)) {
+                    d.netAmounts.forEach(item => {
+                        const val = (parseFloat(item.diffValue) || 0) / 100000000;
+                        if (item.investorGubun === '8000') ind = val;
+                        else if (item.investorGubun === '9000') forgn = val;
+                        else if (instCodes.includes(item.investorGubun)) inst += val;
+                    });
                 }
+                individualData.push(ind);
+                foreignData.push(forgn);
+                institutionData.push(inst);
             }
         }
     });
 
-    // 기존 차트가 있으면 삭제 후 다시 생성
     if (trendChartInstance) {
         trendChartInstance.destroy();
     }
