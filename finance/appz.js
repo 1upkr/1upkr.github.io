@@ -1096,29 +1096,10 @@ async function fetchMarketTrend(tradeType = currentTrendTradeType) {
         if (!response.ok) throw new Error("Trend fetch failed");
         
         const json = await response.json();
-        
-        // 💡 [디버깅용] 원본 데이터가 어떻게 생겼는지 콘솔에 출력합니다.
-        console.log("📈 네이버 API 원본 데이터:", json); 
 
-        if (json.success && json.data) {
-            // 1. 배열 데이터가 어디에 숨어있는지 자동 탐색
-            let dataList = null;
-            if (Array.isArray(json.data)) {
-                dataList = json.data;
-            } else if (json.data.result && Array.isArray(json.data.result.marketTrendTimeList)) {
-                dataList = json.data.result.marketTrendTimeList;
-            } else if (json.data.result && Array.isArray(json.data.result)) {
-                dataList = json.data.result;
-            } else {
-                const possibleArray = Object.values(json.data).find(Array.isArray);
-                if (possibleArray) dataList = possibleArray;
-            }
-
-            if (!dataList || dataList.length === 0) {
-                 throw new Error("데이터 배열을 찾을 수 없습니다.");
-            }
-
-            renderTrendChart(dataList);
+        // json.data 자체가 배열 100개짜리인 구조 확인
+        if (json.success && Array.isArray(json.data)) {
+            renderTrendChart(json.data);
         } else {
             throw new Error("Invalid trend data structure");
         }
@@ -1126,7 +1107,6 @@ async function fetchMarketTrend(tradeType = currentTrendTradeType) {
         console.error("Trend Chart Error:", error);
         container.innerHTML = `<div class="empty-state">
             <p class="error-text">Failed to load trend data.</p>
-            <p style="font-size:10px; margin-top:5px; color:var(--text-secondary);">F12를 눌러 콘솔 창을 확인해주세요.</p>
         </div>`;
     }
 }
@@ -1135,25 +1115,47 @@ function renderTrendChart(dataList) {
     const canvas = document.getElementById('trend-chart-canvas');
     if (!canvas) return;
 
-    // 데이터가 최신순으로 오므로 차트를 위해 시간순(오름차순)으로 반전
+    // 데이터가 최신순(역순)이므로 차트를 위해 시간순(오름차순)으로 반전
     const sortedData = dataList.slice().reverse();
 
-    // 2. 키(Key) 이름 자동 감지 로직 (네이버가 어떤 단어를 썼는지 탐색)
-    const sample = sortedData[0];
-    const keyTime = sample.time !== undefined ? 'time' : (sample.localTrdTime !== undefined ? 'localTrdTime' : 'time');
-    const keyInd = sample.retail !== undefined ? 'retail' : 'individual';
-    const keyFor = sample.foreigner !== undefined ? 'foreigner' : 'foreign';
-    const keyInst = sample.institution !== undefined ? 'institution' : 'institutional';
+    const labels = [];
+    const individualData = [];
+    const foreignData = [];
+    const institutionData = [];
 
-    const labels = sortedData.map(d => {
-        const timeStr = String(d[keyTime] || '0000');
-        // '1530' 이면 '15:30', '153000' 이면 '15:30' 처리
-        return `${timeStr.substring(0,2)}:${timeStr.substring(2,4)}`;
+    // 기관 합계를 구하기 위한 코드 (금융투자, 보험, 투신, 사모, 은행, 기타금융, 연기금)
+    const instCodes = ['1000', '2000', '3000', '3100', '4000', '5000', '6000'];
+
+    sortedData.forEach(d => {
+        // 시간 포맷 (예: "150400" -> "15:04")
+        const t = d.time;
+        if (t && t.length >= 4) {
+            labels.push(`${t.substring(0, 2)}:${t.substring(2, 4)}`);
+        } else {
+            labels.push(t);
+        }
+
+        let ind = 0, forgn = 0, inst = 0;
+
+        // netAmounts 배열 안에서 주체별 금액(diffValue)을 추출하여 억원 단위로 변환
+        if (Array.isArray(d.netAmounts)) {
+            d.netAmounts.forEach(item => {
+                const val = (parseFloat(item.diffValue) || 0) / 100000000; // 억원 단위로 스케일링
+
+                if (item.investorGubun === '8000') {
+                    ind = val;
+                } else if (item.investorGubun === '9000') {
+                    forgn = val;
+                } else if (instCodes.includes(item.investorGubun)) {
+                    inst += val;
+                }
+            });
+        }
+
+        individualData.push(ind);
+        foreignData.push(forgn);
+        institutionData.push(inst);
     });
-    
-    const individualData = sortedData.map(d => d[keyInd] || 0);
-    const foreignData = sortedData.map(d => d[keyFor] || 0);
-    const institutionData = sortedData.map(d => d[keyInst] || 0);
 
     if (trendChartInstance) {
         trendChartInstance.destroy();
@@ -1179,7 +1181,20 @@ function renderTrendChart(dataList) {
             maintainAspectRatio: false,
             interaction: { mode: 'index', intersect: false },
             plugins: {
-                legend: { labels: { color: textColor, font: { family: "'Inter', sans-serif", weight: 600 } } }
+                legend: { labels: { color: textColor, font: { family: "'Inter', sans-serif", weight: 600 } } },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) label += ': ';
+                            if (context.parsed.y !== null) {
+                                // 툴팁에 콤마와 '억원'을 예쁘게 붙여줍니다.
+                                label += new Intl.NumberFormat('ko-KR').format(Math.round(context.parsed.y)) + '억원';
+                            }
+                            return label;
+                        }
+                    }
+                }
             },
             scales: {
                 x: { grid: { display: false }, ticks: { color: textColor, maxTicksLimit: 6 } },
