@@ -1090,34 +1090,41 @@ async function fetchMarketTrend(tradeType = currentTrendTradeType) {
     const container = document.getElementById('trend-chart-wrapper');
     if (!container) return;
 
+    // 1. 먼저 로컬 스토리지를 확인 (이미 마감 처리된 데이터가 있는지)
+    const cacheKey = `market_trend_closed_${tradeType}_${new Date().toISOString().slice(0, 10)}`;
+    const cachedData = localStorage.getItem(cacheKey);
+    
+    // 2. 이미 마감 데이터가 있다면 API를 부르지 않고 즉시 렌더링
+    if (cachedData) {
+        renderTrendChart(JSON.parse(cachedData));
+        return;
+    }
+
+    // 3. 마감 데이터가 없다면 API 호출
     try {
         const url = `${TREND_GAS_PROXY_URL}?tradeType=${tradeType}&marketType=ALL&t=${Date.now()}`;
         const response = await fetch(url);
         if (!response.ok) throw new Error("Trend fetch failed");
         
         const json = await response.json();
-
         if (json.success && json.data && Array.isArray(json.data.content)) {
-            const rawData = json.data.content;
-            
-            // 🔥 [범인 찾기] JS가 받은 데이터의 민낯을 확인합니다.
-            console.log("📊 JS가 받은 총 데이터 개수:", rawData.length);
-            if (rawData.length > 0) {
-                console.log("⏰ 가장 최신 시간:", rawData[0].time);
-                console.log("⏰ 가장 오래된 시간:", rawData[rawData.length - 1].time);
-            }
+            const data = json.data.content;
 
-            renderTrendChart(rawData);
-        } else if (json.success && Array.isArray(json.data)) {
-            renderTrendChart(json.data);
+            // [핵심] 데이터 중 15:30 데이터가 존재하는지 검증
+            const hasFinalData = data.some(d => d.time === "153000" || d.time === "1530");
+
+            // 4. 장 마감 데이터가 확인되면 로컬 스토리지에 저장
+            if (hasFinalData) {
+                localStorage.setItem(cacheKey, JSON.stringify(data));
+            }
+            
+            renderTrendChart(data);
         } else {
             throw new Error("Invalid trend data structure");
         }
     } catch (error) {
         console.error("Trend Chart Error:", error);
-        container.innerHTML = `<div class="empty-state">
-            <p class="error-text">Failed to load trend data.</p>
-        </div>`;
+        container.innerHTML = '<div class="empty-state"><p class="error-text">Failed to load trend data.</p></div>';
     }
 }
 
