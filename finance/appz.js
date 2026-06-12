@@ -1221,7 +1221,8 @@ function renderTrendChart(dataList, dateStr = "") {
                 chartCtx.textAlign = 'left';
                 chartCtx.textBaseline = 'middle';
                 const y = chart.legend ? chart.legend.top + (chart.legend.height / 2) : 15;
-                chartCtx.fillText(dateStr, chart.chartArea.left, y);
+                
+                chartCtx.fillText(dateStr, 0, y);
                 chartCtx.restore();
             }
         }],
@@ -1249,6 +1250,9 @@ function renderTrendChart(dataList, dateStr = "") {
             responsive: true,
             maintainAspectRatio: false,
             interaction: { mode: 'index', intersect: false },
+            layout: {
+                padding: { left: 0, right: 0, top: 0, bottom: 0 }
+            },
             plugins: {
                 title: { display: false }, 
                 legend: { 
@@ -1320,7 +1324,6 @@ function renderTrendChart(dataList, dateStr = "") {
                             tooltipEl.innerHTML = innerHtml;
                         }
 
-                        // 💡 위치 및 방향 보정 로직 (Y축 중앙 고정 적용)
                         tooltipEl.style.opacity = 1;
                         
                         let transformX = '-50%';
@@ -1330,14 +1333,12 @@ function renderTrendChart(dataList, dateStr = "") {
                             transformX = '-100%';
                         }
                         
-                        // 차트 실제 그리기 영역(chartArea)의 상하단 높이를 가져와 정확히 중앙 좌표 도출
                         const chartArea = context.chart.chartArea;
                         const centerY = chartArea.top + (chartArea.bottom - chartArea.top) / 2;
 
-                        // Y축 transform을 -50%로 설정하여 툴팁의 중앙이 정확히 캔버스 중앙(centerY)에 위치하도록 함
                         tooltipEl.style.transform = `translate(${transformX}, -50%)`;
                         tooltipEl.style.left = tooltipModel.caretX + 'px';
-                        tooltipEl.style.top = centerY + 'px'; // 기존 caretY(데이터 높이) 대신 중앙값 주입
+                        tooltipEl.style.top = centerY + 'px';
                     }
                 }
             },
