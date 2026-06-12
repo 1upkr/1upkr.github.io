@@ -1250,7 +1250,7 @@ function renderTrendChart(dataList) {
                         usePointStyle: false, // 투박한 네모 대신 둥근 점 사용
                         boxWidth: 5,
                         boxHeight: 2,
-                        padding: 15
+                        padding: 20
                     } 
                 },
                 tooltip: {
