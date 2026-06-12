@@ -1367,6 +1367,10 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                     grid: { color: gridColor, drawBorder: false, borderDash: [4, 4] }, 
                     ticks: { 
                         color: textSecondary, font: { family: "'Inter', sans-serif", size: 11 }, padding: 10,
+                        
+                        // 💡 [추가] Y축 텍스트 가로 중앙 정렬
+                        crossAlign: 'center', 
+                        
                         callback: function(value) {
                             return new Intl.NumberFormat('ko-KR').format(value / 1000);
                         }
