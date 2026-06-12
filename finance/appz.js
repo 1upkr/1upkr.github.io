@@ -1097,14 +1097,20 @@ async function fetchMarketTrend(tradeType = currentTrendTradeType) {
         
         const json = await response.json();
 
-        // 배열이 들어있는 정확한 위치(json.data.content)를 지정합니다.
         if (json.success && json.data && Array.isArray(json.data.content)) {
-            renderTrendChart(json.data.content);
+            const rawData = json.data.content;
+            
+            // 🔥 [범인 찾기] JS가 받은 데이터의 민낯을 확인합니다.
+            console.log("📊 JS가 받은 총 데이터 개수:", rawData.length);
+            if (rawData.length > 0) {
+                console.log("⏰ 가장 최신 시간:", rawData[0].time);
+                console.log("⏰ 가장 오래된 시간:", rawData[rawData.length - 1].time);
+            }
+
+            renderTrendChart(rawData);
         } else if (json.success && Array.isArray(json.data)) {
-            // 혹시 모를 다른 응답 패턴 대비
             renderTrendChart(json.data);
         } else {
-            console.error("데이터 구조 불일치:", json);
             throw new Error("Invalid trend data structure");
         }
     } catch (error) {
