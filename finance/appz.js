@@ -1260,7 +1260,6 @@ function renderTrendChart(dataList, dateStr = "") {
                     } 
                 },
                 tooltip: {
-                    // [핵심 로직] 기본 캔버스 툴팁을 끄고 완벽히 통제 가능한 HTML 툴팁으로 대체
                     enabled: false,
                     position: 'nearest',
                     external: function(context) {
@@ -1274,12 +1273,12 @@ function renderTrendChart(dataList, dateStr = "") {
                             tooltipEl.style.border = `1px solid ${tooltipBorder}`;
                             tooltipEl.style.pointerEvents = 'none';
                             tooltipEl.style.position = 'absolute';
-                            tooltipEl.style.transition = 'all .1s ease';
+                            tooltipEl.style.transition = 'all .08s ease'; 
                             tooltipEl.style.padding = '12px';
                             tooltipEl.style.boxShadow = '0 4px 6px -1px rgba(0,0,0,0.05)';
                             tooltipEl.style.zIndex = 100;
+                            tooltipEl.style.whiteSpace = 'nowrap';
                             
-                            // 부모 요소(Wrapper) 안에 생성하여 상대 좌표 활용
                             context.chart.canvas.parentNode.appendChild(tooltipEl);
                             context.chart.canvas.parentNode.style.position = 'relative';
                         }
@@ -1294,28 +1293,21 @@ function renderTrendChart(dataList, dateStr = "") {
                             const titleLines = tooltipModel.title || [];
                             let innerHtml = `<div style="font-family:'Inter', sans-serif;">`;
 
-                            // 툴팁 상단 시간 표시
                             titleLines.forEach(function(title) {
                                 innerHtml += `<div style="font-weight:700; font-size:13px; color:${textPrimary}; margin-bottom:10px;">${title}</div>`;
                             });
 
                             innerHtml += `<div style="display:flex; flex-direction:column; gap:8px;">`;
 
-                            // 데이터 렌더링
                             tooltipModel.dataPoints.forEach(function(dp) {
                                 const val = dp.parsed.y;
                                 const sign = val > 0 ? '+' : '';
-                                
-                                // 값 색상 조건부 설정
                                 const valColor = val > 0 ? greenColor : (val < 0 ? redColor : textPrimary);
                                 const formattedVal = sign + new Intl.NumberFormat('ko-KR').format(Math.round(val)) + '억';
-
-                                // 범례 선 두께 설정 (boxWidth: 8, 높이 2px)
                                 const borderColor = dp.dataset.borderColor;
 
-                                // Flexbox의 space-between으로 콜론 없이 양끝 정렬 적용
                                 innerHtml += `
-                                    <div style="display:flex; align-items:center; font-size:12px; font-weight:600; justify-content:space-between; gap: 20px;">
+                                    <div style="display:flex; align-items:center; font-size:12px; font-weight:600; justify-content:space-between; gap: 30px;">
                                         <div style="display:flex; align-items:center;">
                                             <span style="display:inline-block; width:8px; height:2px; background:${borderColor}; margin-right:8px; border-radius:1px;"></span>
                                             <span style="color:${textSecondary};">${dp.dataset.label}</span>
@@ -1328,17 +1320,24 @@ function renderTrendChart(dataList, dateStr = "") {
                             tooltipEl.innerHTML = innerHtml;
                         }
 
-                        // 위치 보정 로직 (툴팁이 캔버스 화면 밖으로 잘리지 않게 방어)
-                        const position = context.chart.canvas.getBoundingClientRect();
+                        // 💡 위치 및 방향 보정 로직 (Y축 중앙 고정 적용)
                         tooltipEl.style.opacity = 1;
                         
                         let transformX = '-50%';
-                        if (tooltipModel.caretX < 80) transformX = '0%';
-                        else if (tooltipModel.caretX > context.chart.width - 80) transformX = '-100%';
+                        if (tooltipModel.caretX < 80) {
+                            transformX = '0%';
+                        } else if (tooltipModel.caretX > context.chart.width - 100) {
+                            transformX = '-100%';
+                        }
                         
-                        tooltipEl.style.transform = `translate(${transformX}, -100%)`;
+                        // 차트 실제 그리기 영역(chartArea)의 상하단 높이를 가져와 정확히 중앙 좌표 도출
+                        const chartArea = context.chart.chartArea;
+                        const centerY = chartArea.top + (chartArea.bottom - chartArea.top) / 2;
+
+                        // Y축 transform을 -50%로 설정하여 툴팁의 중앙이 정확히 캔버스 중앙(centerY)에 위치하도록 함
+                        tooltipEl.style.transform = `translate(${transformX}, -50%)`;
                         tooltipEl.style.left = tooltipModel.caretX + 'px';
-                        tooltipEl.style.top = (tooltipModel.caretY - 12) + 'px'; // 마우스 포인트 살짝 위로
+                        tooltipEl.style.top = centerY + 'px'; // 기존 caretY(데이터 높이) 대신 중앙값 주입
                     }
                 }
             },
