@@ -1203,7 +1203,6 @@ function renderTrendChart(dataList) {
         }
     });
 }
-
 // 외부에서 코스피/코스닥 탭 버튼 클릭 시 호출할 수 있도록 window 객체에 할당
 window.switchTrendMarket = function(tradeType) {
     fetchMarketTrend(tradeType);
