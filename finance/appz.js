@@ -1084,7 +1084,7 @@ function renderNews(newsList) {
     container.innerHTML = html;
 }
 
-// --- TREND FETCHING & RENDERING LOGIC ---
+// --- TREND FETCHING LOGIC ---
 async function fetchMarketTrend(tradeType = currentTrendTradeType) {
     currentTrendTradeType = tradeType;
     const container = document.getElementById('trend-chart-wrapper');
@@ -1097,10 +1097,14 @@ async function fetchMarketTrend(tradeType = currentTrendTradeType) {
         
         const json = await response.json();
 
-        // json.data 자체가 배열 100개짜리인 구조 확인
-        if (json.success && Array.isArray(json.data)) {
+        // 배열이 들어있는 정확한 위치(json.data.content)를 지정합니다.
+        if (json.success && json.data && Array.isArray(json.data.content)) {
+            renderTrendChart(json.data.content);
+        } else if (json.success && Array.isArray(json.data)) {
+            // 혹시 모를 다른 응답 패턴 대비
             renderTrendChart(json.data);
         } else {
+            console.error("데이터 구조 불일치:", json);
             throw new Error("Invalid trend data structure");
         }
     } catch (error) {
