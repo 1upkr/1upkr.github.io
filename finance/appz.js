@@ -1088,7 +1088,6 @@ function renderNews(newsList) {
 async function fetchMarketTrend(tradeType = currentTrendTradeType) {
     currentTrendTradeType = tradeType;
     const container = document.getElementById('trend-chart-wrapper');
-    // HTML에 해당 컨테이너가 구현되지 않았다면 조용히 종료 (에러 방지)
     if (!container) return;
 
     try {
@@ -1097,14 +1096,38 @@ async function fetchMarketTrend(tradeType = currentTrendTradeType) {
         if (!response.ok) throw new Error("Trend fetch failed");
         
         const json = await response.json();
-        if (json.success && json.data && json.data.result) {
-            renderTrendChart(json.data.result.marketTrendTimeList);
+        
+        // 💡 [디버깅용] 원본 데이터가 어떻게 생겼는지 콘솔에 출력합니다.
+        console.log("📈 네이버 API 원본 데이터:", json); 
+
+        if (json.success && json.data) {
+            // 1. 배열 데이터가 어디에 숨어있는지 자동 탐색
+            let dataList = null;
+            if (Array.isArray(json.data)) {
+                dataList = json.data;
+            } else if (json.data.result && Array.isArray(json.data.result.marketTrendTimeList)) {
+                dataList = json.data.result.marketTrendTimeList;
+            } else if (json.data.result && Array.isArray(json.data.result)) {
+                dataList = json.data.result;
+            } else {
+                const possibleArray = Object.values(json.data).find(Array.isArray);
+                if (possibleArray) dataList = possibleArray;
+            }
+
+            if (!dataList || dataList.length === 0) {
+                 throw new Error("데이터 배열을 찾을 수 없습니다.");
+            }
+
+            renderTrendChart(dataList);
         } else {
             throw new Error("Invalid trend data structure");
         }
     } catch (error) {
         console.error("Trend Chart Error:", error);
-        container.innerHTML = '<div class="empty-state"><p class="error-text">Failed to load trend data.</p></div>';
+        container.innerHTML = `<div class="empty-state">
+            <p class="error-text">Failed to load trend data.</p>
+            <p style="font-size:10px; margin-top:5px; color:var(--text-secondary);">F12를 눌러 콘솔 창을 확인해주세요.</p>
+        </div>`;
     }
 }
 
@@ -1112,25 +1135,31 @@ function renderTrendChart(dataList) {
     const canvas = document.getElementById('trend-chart-canvas');
     if (!canvas) return;
 
-    // 데이터가 최신순으로 오므로, 차트에 그리기 위해 시간순(오름차순)으로 반전
+    // 데이터가 최신순으로 오므로 차트를 위해 시간순(오름차순)으로 반전
     const sortedData = dataList.slice().reverse();
 
+    // 2. 키(Key) 이름 자동 감지 로직 (네이버가 어떤 단어를 썼는지 탐색)
+    const sample = sortedData[0];
+    const keyTime = sample.time !== undefined ? 'time' : (sample.localTrdTime !== undefined ? 'localTrdTime' : 'time');
+    const keyInd = sample.retail !== undefined ? 'retail' : 'individual';
+    const keyFor = sample.foreigner !== undefined ? 'foreigner' : 'foreign';
+    const keyInst = sample.institution !== undefined ? 'institution' : 'institutional';
+
     const labels = sortedData.map(d => {
-        const timeStr = d.time.toString();
+        const timeStr = String(d[keyTime] || '0000');
+        // '1530' 이면 '15:30', '153000' 이면 '15:30' 처리
         return `${timeStr.substring(0,2)}:${timeStr.substring(2,4)}`;
     });
     
-    const individualData = sortedData.map(d => d.individual);
-    const foreignData = sortedData.map(d => d.foreign);
-    const institutionData = sortedData.map(d => d.institution);
+    const individualData = sortedData.map(d => d[keyInd] || 0);
+    const foreignData = sortedData.map(d => d[keyFor] || 0);
+    const institutionData = sortedData.map(d => d[keyInst] || 0);
 
     if (trendChartInstance) {
         trendChartInstance.destroy();
     }
 
     const ctx = canvas.getContext('2d');
-    
-    // 현재 테마에 따른 텍스트 및 그리드 컬러 설정
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     const gridColor = isDark ? '#2b2b2b' : '#e2e6eb';
     const textColor = isDark ? '#a0a4a8' : '#5f6368';
@@ -1148,10 +1177,7 @@ function renderTrendChart(dataList) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            interaction: {
-                mode: 'index',
-                intersect: false,
-            },
+            interaction: { mode: 'index', intersect: false },
             plugins: {
                 legend: { labels: { color: textColor, font: { family: "'Inter', sans-serif", weight: 600 } } }
             },
