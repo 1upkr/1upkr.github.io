@@ -10,6 +10,7 @@ const DEFAULT_WATCHLISTS = {
 const GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbxc8Q5iI7WxZurtV-1FDjTWKPUx_i049HSBAap2AyKYSvs8QMRHD3ZTa3xqfu0tJ1Za/exec";
 const NAVER_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbymIKO0njjKUqFvgcjY39To9E2rkJMCqbwL0uWUjyyvVQREn6foLLdI44rVnoehvi6Ztg/exec"; 
 const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbwSD8MOLPrYjwTBVQX_Tq6pu-gTHlOeR7p0hUY2pHGACNc2NA6f4zICduC05ypO_EN6/exec"; 
+const TREND_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbyQuqBnYJsvNQAo6j9Zz5XbAlGmBGoceIFy5DenMgGTpfsiO8Ct7LGSONYmqz9IvP_3LQ/exec";
 
 const CHO_HANGUL = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
 function getChosung(str) {
@@ -44,9 +45,12 @@ const CHEVRON_ICON = `<svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"
 const SEARCH_ICON = `<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`;
 const PLUS_ICON = `<svg class="icon-svg" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
 const SPINNER_SVG = `<svg class="spinner" viewBox="0 0 50 50"><circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle></svg>`;
-const EMPTY_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>`;
+const EMPTY_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="21"/></svg>`;
 
 let localTickerDB = [];
+let trendChartInstance = null;
+let currentTrendTradeType = 'KRX';
+
 let state = {
     watchlists: JSON.parse(localStorage.getItem('marketdash_watchlists')) || JSON.parse(JSON.stringify(DEFAULT_WATCHLISTS)),
     sectionOrder: JSON.parse(localStorage.getItem('marketdash_sectionOrder')) || ['indicators', 'kr', 'us'],
@@ -144,6 +148,9 @@ async function init() {
             fetchData(); 
         }
     }
+
+    // 초기화 시 마켓 트렌드 차트 데이터 패치 추가
+    fetchMarketTrend();
 
     initSwipeToDelete(); 
     
@@ -669,7 +676,13 @@ function closeDeleteModal() { targetTickerToDelete = null; document.getElementBy
 
 function toggleSettingsMenu() { const el = document.getElementById('settings-dropdown'); if (el) el.classList.toggle('active'); }
 function applyTheme() { document.documentElement.setAttribute('data-theme', state.theme); }
-function toggleThemeDropdown() { state.theme = state.theme === 'dark' ? 'light' : 'dark'; localStorage.setItem('marketdash_theme', state.theme); applyTheme(); toggleSettingsMenu(); }
+function toggleThemeDropdown() { 
+    state.theme = state.theme === 'dark' ? 'light' : 'dark'; 
+    localStorage.setItem('marketdash_theme', state.theme); 
+    applyTheme(); 
+    toggleSettingsMenu(); 
+    if (trendChartInstance) fetchMarketTrend(); // 테마 변경 시 차트 다시 그리기
+}
 function exportSettings() {
     const data = { watchlists: state.watchlists, sectionOrder: state.sectionOrder, expanded: state.expanded, theme: state.theme };
     const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
@@ -751,6 +764,7 @@ function forceRefresh() {
     localStorage.setItem('marketdash_last_fetch_time', '0'); 
     state.lastNewsFetch = 0; 
     fetchData(); 
+    fetchMarketTrend(); // 강제 갱신 시 트렌드 차트도 새로고침
     startTimer(); 
 }
 
@@ -779,7 +793,6 @@ function updateDOMWithData(quotes) {
             // 2. 장전(Pre) 데이터 준비 (volume 추가)
             let preData = null;
             if (quote.preMarketPrice !== undefined && quote.preMarketPrice !== null) {
-                // API 변동폭 무시하고 직접 수학적 계산 적용
                 const change = quote.preMarketPrice - regPrice;
                 const pct = regPrice ? (change / regPrice * 100) : 0;
                 const vol = quote.preMarketVolume || 0; 
@@ -789,7 +802,6 @@ function updateDOMWithData(quotes) {
             // 3. 장후(Post) 데이터 준비 (volume 추가)
             let postData = null;
             if (quote.postMarketPrice !== undefined && quote.postMarketPrice !== null) {
-                // API 변동폭 무시하고 직접 수학적 계산 적용
                 const change = quote.postMarketPrice - regPrice;
                 const pct = regPrice ? (change / regPrice * 100) : 0;
                 const vol = quote.postMarketVolume || 0;
@@ -823,7 +835,6 @@ function updateDOMWithData(quotes) {
                 }
             }
 
-            // [핵심] 한국(KR)과 미국(US) 시장 분리 처리
             const dbMatch = localTickerDB.find(q => q.s.toUpperCase() === ticker.toUpperCase());
             const isKR = dbMatch ? (dbMatch.e === 'NAVER') : /^\d/.test(ticker);
 
@@ -839,7 +850,6 @@ function updateDOMWithData(quotes) {
                 } else {
                     if (!postData || Math.abs(postData.price - regPrice) === 0) targetState = 'CLOSED_H';
                 }
-            // 👇 아래 else if 조건을 수정합니다.
             } else if (mState === 'CLOSED' || mState.includes('POST') || mState.includes('PRE')) {
                 targetState = 'CLOSED_H';
             }
@@ -917,18 +927,15 @@ function updateDOMWithData(quotes) {
             const dbInfo = localTickerDB.find(q => q.s.toUpperCase() === ticker.toUpperCase());
             nodes.name.textContent = (dbInfo ? dbInfo.n : null) || quote.shortName || quote.longName || ticker;
             
-            // PRICE: 태그를 포함하므로 innerHTML
             nodes.price.innerHTML = mainIcon + formatNum(mainPrice);
             nodes.extPrice.innerHTML = subHtml;
             
-            // CHANGE: 태그 제거된 전용 함수 formatChangeNum 적용 (innerHTML에서 span은 색상 처리를 위해 유지하되, 숫자 자체는 태그 없이 렌더링)
             nodes.change.innerHTML = `<span class="${colorClass}">${sign}${formatChangeNum(mainChange)}</span>`;
             nodes.pct.innerHTML = `<span class="badge ${colorClass}"><span class="arrow">${arrow}</span>${formatPct(Math.abs(mainPct))}%</span>`;
             
             nodes.vol.textContent = formatCompact(quote.regularMarketVolume); 
             nodes.cap.textContent = formatCompact(quote.marketCap);
             
-            // DAY RANGE: 태그를 포함하므로 innerHTML
             if (quote.regularMarketDayLow && quote.regularMarketDayHigh) {
                 const low = formatNum(quote.regularMarketDayLow);
                 const high = formatNum(quote.regularMarketDayHigh);
@@ -958,13 +965,12 @@ function setErrorState(ticker, msg) {
     });
 }
 
-// PRICE, DAY RANGE용 (소수점 작게 처리)
 function formatNum(num) {
     if (num === undefined || num === null || isNaN(num)) return '-';
     let result = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num);
     
     if (result.endsWith('.00')) {
-        return result.slice(0, -3); // 정수 형태면 그대로 반환
+        return result.slice(0, -3); 
     }
     
     if (result.includes('.')) {
@@ -975,7 +981,6 @@ function formatNum(num) {
     return result;
 }
 
-// CHANGE 전용 (태그 씌우지 않음)
 function formatChangeNum(num) {
     if (num === undefined || num === null || isNaN(num)) return '-';
     let result = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Math.abs(num));
@@ -1054,7 +1059,6 @@ function renderNews(newsList) {
         const diffMins = Math.floor((now - news.time) / 60000);
         let timeDisplay = '';
         
-        // 10분 미만 기사 -> n분 전 표기 / 10분 이상 기사 -> 한국 시각 고유 출고 시간(HH:MM) 표기
         if (diffMins >= 0 && diffMins < 10) {
             timeDisplay = diffMins === 0 ? '방금' : `${diffMins}분 전`;
         } else {
@@ -1079,5 +1083,89 @@ function renderNews(newsList) {
 
     container.innerHTML = html;
 }
+
+// --- TREND FETCHING & RENDERING LOGIC ---
+async function fetchMarketTrend(tradeType = currentTrendTradeType) {
+    currentTrendTradeType = tradeType;
+    const container = document.getElementById('trend-chart-wrapper');
+    // HTML에 해당 컨테이너가 구현되지 않았다면 조용히 종료 (에러 방지)
+    if (!container) return;
+
+    try {
+        const url = `${TREND_GAS_PROXY_URL}?tradeType=${tradeType}&marketType=ALL&t=${Date.now()}`;
+        const response = await fetch(url);
+        if (!response.ok) throw new Error("Trend fetch failed");
+        
+        const json = await response.json();
+        if (json.success && json.data && json.data.result) {
+            renderTrendChart(json.data.result.marketTrendTimeList);
+        } else {
+            throw new Error("Invalid trend data structure");
+        }
+    } catch (error) {
+        console.error("Trend Chart Error:", error);
+        container.innerHTML = '<div class="empty-state"><p class="error-text">Failed to load trend data.</p></div>';
+    }
+}
+
+function renderTrendChart(dataList) {
+    const canvas = document.getElementById('trend-chart-canvas');
+    if (!canvas) return;
+
+    // 데이터가 최신순으로 오므로, 차트에 그리기 위해 시간순(오름차순)으로 반전
+    const sortedData = dataList.slice().reverse();
+
+    const labels = sortedData.map(d => {
+        const timeStr = d.time.toString();
+        return `${timeStr.substring(0,2)}:${timeStr.substring(2,4)}`;
+    });
+    
+    const individualData = sortedData.map(d => d.individual);
+    const foreignData = sortedData.map(d => d.foreign);
+    const institutionData = sortedData.map(d => d.institution);
+
+    if (trendChartInstance) {
+        trendChartInstance.destroy();
+    }
+
+    const ctx = canvas.getContext('2d');
+    
+    // 현재 테마에 따른 텍스트 및 그리드 컬러 설정
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const gridColor = isDark ? '#2b2b2b' : '#e2e6eb';
+    const textColor = isDark ? '#a0a4a8' : '#5f6368';
+
+    trendChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                { label: '개인', data: individualData, borderColor: '#eb0f29', borderWidth: 2, pointRadius: 0, tension: 0.2 },
+                { label: '외국인', data: foreignData, borderColor: '#00873c', borderWidth: 2, pointRadius: 0, tension: 0.2 },
+                { label: '기관', data: institutionData, borderColor: '#fbbc04', borderWidth: 2, pointRadius: 0, tension: 0.2 }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            plugins: {
+                legend: { labels: { color: textColor, font: { family: "'Inter', sans-serif", weight: 600 } } }
+            },
+            scales: {
+                x: { grid: { display: false }, ticks: { color: textColor, maxTicksLimit: 6 } },
+                y: { grid: { color: gridColor }, ticks: { color: textColor } }
+            }
+        }
+    });
+}
+
+// 외부에서 코스피/코스닥 탭 버튼 클릭 시 호출할 수 있도록 window 객체에 할당
+window.switchTrendMarket = function(tradeType) {
+    fetchMarketTrend(tradeType);
+};
 
 document.addEventListener('DOMContentLoaded', init);
