@@ -208,6 +208,14 @@ main { flex: 1; width: 100%; overflow-x: hidden; }
 .collapsed .section-body { display: none; }
 .collapsed .btn-add-symbol { display: none; }
 
+/* 접혔을 때 헤더 하단 모서리를 둥글게 처리하고, 연한 그레이 느낌의 포인트를 추가 */
+.collapsed .section-header {
+    border-radius: 12px; /* 하단 양쪽 모서리를 다시 둥글게 (12px 12px 12px 12px 적용) */
+    border-bottom: 4px solid var(--input-bg); /* 하단에 연한 그레이 색상으로 두께감을 주어 닫힌 느낌 강조 */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02); /* 살짝 떠 있는 듯한 입체감 (선택 사항) */
+}
+
+
 .section-container:not(.edit-mode) th.actions-col,
 .section-container:not(.edit-mode) td.actions-col { display: none; }
 .section-container.edit-mode th.actions-col,
@@ -229,7 +237,8 @@ main { flex: 1; width: 100%; overflow-x: hidden; }
     min-height: 71px;
     height: 71px; 
     box-sizing: border-box;
-    flex-shrink: 0;    
+    flex-shrink: 0;   
+    transition: border-radius 0.2s ease, border-bottom 0.2s ease;
 }
 .section-header-left { flex: 1; display: flex; align-items: center; cursor: pointer; }
 .section-header h2 { font-size: 0.90rem; font-weight: 800; }
