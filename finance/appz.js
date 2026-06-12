@@ -1167,9 +1167,9 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
     
     const badgeText = isLive ? 'LIVE' : 'CLOSED';
     badgeContainer.innerHTML = `
-        <span class="main-ext-label" style="margin: 0; font-size: 0.6rem; padding: 0.15rem 0.35rem; line-height: 1; transform: none; display: block;">${badgeText}</span>
+        <span class="main-ext-label" style="margin: 0; font-size: 0.4rem; padding: 0.15rem 0.35rem; line-height: 1; transform: none; display: block;">${badgeText}</span>
         
-        <span style="font-size: 0.70rem; font-weight: 500; color: var(--text-secondary); font-family: 'Inter', sans-serif; line-height: 1; display: block; transform: translateY(0.5px);">${dateStr}</span>
+        <span style="font-size: 0.65rem; font-weight: 500; color: var(--text-secondary); font-family: 'Inter', sans-serif; line-height: 1; display: block; transform: translateY(0.5px);">${dateStr}</span>
     `;
 
     const sortedData = dataList.slice().reverse();
