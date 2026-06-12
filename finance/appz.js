@@ -1090,9 +1090,15 @@ async function fetchMarketTrend(tradeType = currentTrendTradeType) {
     const container = document.getElementById('trend-chart-wrapper');
     if (!container) return;
 
+    // 한국 표준시(KST) 정확히 계산하여 장중 여부 판별
     const now = new Date();
-    const isWeekend = (now.getDay() === 0 || now.getDay() === 6);
+    const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+    const kstTime = new Date(utc + (9 * 3600000));
     
+    const isWeekend = (kstTime.getDay() === 0 || kstTime.getDay() === 6);
+    const timeNum = kstTime.getHours() * 100 + kstTime.getMinutes();
+    const isLive = !isWeekend && (timeNum >= 900 && timeNum < 1530);
+
     const cacheKey = `market_trend_last_known_${tradeType}`;
     let cached = null;
     try { 
@@ -1100,7 +1106,7 @@ async function fetchMarketTrend(tradeType = currentTrendTradeType) {
     } catch(e) { console.warn("Trend cache parse error"); }
 
     if (cached && cached.data) {
-        renderTrendChart(cached.data, cached.dateStr);
+        renderTrendChart(cached.data, cached.dateStr, isLive);
         if (isWeekend) return; 
     }
 
@@ -1116,9 +1122,9 @@ async function fetchMarketTrend(tradeType = currentTrendTradeType) {
             if (data.length === 0) return;
 
             const kstOptions = { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' };
-            const todayStr = new Intl.DateTimeFormat('ko-KR', kstOptions).format(now).replace(/\s/g, ''); 
+            const todayStr = new Intl.DateTimeFormat('ko-KR', kstOptions).format(kstTime).replace(/\s/g, ''); 
 
-            renderTrendChart(data, todayStr);
+            renderTrendChart(data, todayStr, isLive);
 
             const hasFinalData = data.some(d => d.time === "153000" || d.time === "1530");
             if (hasFinalData || !cached) {
@@ -1138,12 +1144,35 @@ async function fetchMarketTrend(tradeType = currentTrendTradeType) {
     }
 }
 
-function renderTrendChart(dataList, dateStr = "") {
+function renderTrendChart(dataList, dateStr = "", isLive = false) {
     const canvas = document.getElementById('trend-chart-canvas');
     if (!canvas) return;
 
-    const sortedData = dataList.slice().reverse();
+    // 💡 [신규 로직] 우측 하단 HTML 뱃지 오버레이 생성
+    let badgeContainer = document.getElementById('trend-date-badge');
+    if (!badgeContainer) {
+        badgeContainer = document.createElement('div');
+        badgeContainer.id = 'trend-date-badge';
+        badgeContainer.style.position = 'absolute';
+        badgeContainer.style.right = '0';
+        badgeContainer.style.bottom = '0'; // 컨테이너 우측 하단 고정
+        badgeContainer.style.display = 'flex';
+        badgeContainer.style.alignItems = 'center';
+        badgeContainer.style.gap = '4px';
+        badgeContainer.style.zIndex = '10';
+        
+        const wrapper = document.getElementById('trend-chart-wrapper');
+        if(wrapper) wrapper.appendChild(badgeContainer);
+    }
+    
+    // 기존 종목에 쓰이는 CSS 클래스를 재활용하여 완벽한 일체감 제공
+    const badgeText = isLive ? 'LIVE' : 'CLOSED';
+    badgeContainer.innerHTML = `
+        <span class="main-ext-label" style="margin: 0;">${badgeText}</span>
+        <span style="font-size: 11px; font-weight: 600; color: var(--text-secondary); font-family: 'Inter', sans-serif;">${dateStr}</span>
+    `;
 
+    const sortedData = dataList.slice().reverse();
     const labels = [];
     const individualData = [];
     const foreignData = [];
@@ -1210,22 +1239,7 @@ function renderTrendChart(dataList, dateStr = "") {
 
     trendChartInstance = new Chart(ctx, {
         type: 'line',
-        plugins: [{
-            id: 'trendDatePlugin',
-            afterDraw: (chart) => {
-                if (!dateStr) return;
-                const chartCtx = chart.ctx;
-                chartCtx.save();
-                chartCtx.font = "600 12px 'Inter', sans-serif";
-                chartCtx.fillStyle = textSecondary;
-                chartCtx.textAlign = 'left';
-                chartCtx.textBaseline = 'middle';
-                const y = chart.legend ? chart.legend.top + (chart.legend.height / 2) : 15;
-                
-                chartCtx.fillText(dateStr, 0, y);
-                chartCtx.restore();
-            }
-        }],
+        // 캔버스 날짜 그리기 플러그인은 HTML 뱃지로 교체되었으므로 제거했습니다.
         data: {
             labels: labels,
             datasets: [
@@ -1251,7 +1265,8 @@ function renderTrendChart(dataList, dateStr = "") {
             maintainAspectRatio: false,
             interaction: { mode: 'index', intersect: false },
             layout: {
-                padding: { left: 0, right: 0, top: 0, bottom: 0 }
+                // 💡 HTML 뱃지가 놓일 우측 하단의 충분한 여백 확보 (bottom: 22)
+                padding: { left: 0, right: 0, top: 0, bottom: 22 }
             },
             plugins: {
                 title: { display: false }, 
