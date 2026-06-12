@@ -1090,17 +1090,24 @@ async function fetchMarketTrend(tradeType = currentTrendTradeType) {
     const container = document.getElementById('trend-chart-wrapper');
     if (!container) return;
 
-    // 1. 먼저 로컬 스토리지를 확인 (이미 마감 처리된 데이터가 있는지)
-    const cacheKey = `market_trend_closed_${tradeType}_${new Date().toISOString().slice(0, 10)}`;
-    const cachedData = localStorage.getItem(cacheKey);
+    const now = new Date();
+    // 0: 일요일, 6: 토요일
+    const isWeekend = (now.getDay() === 0 || now.getDay() === 6);
     
-    // 2. 이미 마감 데이터가 있다면 API를 부르지 않고 즉시 렌더링
-    if (cachedData) {
-        renderTrendChart(JSON.parse(cachedData));
-        return;
+    // 1. 날짜에 종속되지 않는 영구 캐시 키 사용
+    const cacheKey = `market_trend_last_known_${tradeType}`;
+    let cached = null;
+    try { 
+        cached = JSON.parse(localStorage.getItem(cacheKey)); 
+    } catch(e) { console.warn("Trend cache parse error"); }
+
+    // 2. 주말이거나 무조건 화면을 빨리 그리기 위해 캐시가 있다면 즉시 렌더링
+    if (cached && cached.data) {
+        renderTrendChart(cached.data, cached.dateStr);
+        if (isWeekend) return; // 주말이면 API 호출 없이 여기서 종료
     }
 
-    // 3. 마감 데이터가 없다면 API 호출
+    // 3. 평일이라면 최신 데이터 패치
     try {
         const url = `${TREND_GAS_PROXY_URL}?tradeType=${tradeType}&marketType=ALL&t=${Date.now()}`;
         const response = await fetch(url);
@@ -1110,25 +1117,38 @@ async function fetchMarketTrend(tradeType = currentTrendTradeType) {
         if (json.success && json.data && Array.isArray(json.data.content)) {
             const data = json.data.content;
 
-            // [핵심] 데이터 중 15:30 데이터가 존재하는지 검증
-            const hasFinalData = data.some(d => d.time === "153000" || d.time === "1530");
+            // 데이터가 아예 없다면(휴일 등) 기존 캐시 유지하고 종료
+            if (data.length === 0) return;
 
-            // 4. 장 마감 데이터가 확인되면 로컬 스토리지에 저장
-            if (hasFinalData) {
-                localStorage.setItem(cacheKey, JSON.stringify(data));
+            // KST 기준 현재 날짜 문자열 생성 (예: "2026.06.12.")
+            const kstOptions = { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' };
+            const todayStr = new Intl.DateTimeFormat('ko-KR', kstOptions).format(now).replace(/\s/g, ''); 
+
+            // 새 데이터로 차트 렌더링
+            renderTrendChart(data, todayStr);
+
+            // [핵심] 15:30 데이터가 포함되어 있다면(장 마감) 영구 캐시에 저장
+            const hasFinalData = data.some(d => d.time === "153000" || d.time === "1530");
+            if (hasFinalData || !cached) {
+                localStorage.setItem(cacheKey, JSON.stringify({
+                    dateStr: todayStr,
+                    data: data
+                }));
             }
-            
-            renderTrendChart(data);
         } else {
             throw new Error("Invalid trend data structure");
         }
     } catch (error) {
         console.error("Trend Chart Error:", error);
-        container.innerHTML = '<div class="empty-state"><p class="error-text">Failed to load trend data.</p></div>';
+        // 에러 시 캐시조차 없었다면 에러 문구 표시 (캐시가 있으면 이전 차트 유지)
+        if (!cached) {
+            container.innerHTML = '<div class="empty-state"><p class="error-text">Failed to load trend data.</p></div>';
+        }
     }
 }
 
-function renderTrendChart(dataList) {
+// 매개변수에 dateStr 추가
+function renderTrendChart(dataList, dateStr = "") {
     const canvas = document.getElementById('trend-chart-canvas');
     if (!canvas) return;
 
@@ -1179,23 +1199,18 @@ function renderTrendChart(dataList) {
     }
 
     const ctx = canvas.getContext('2d');
-    
-    // 현재 테마 인식 (Light / Dark)
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     
-    // 테마별 모던 색상 세팅
     const textPrimary = isDark ? '#e3e3e3' : '#18191a';
     const textSecondary = isDark ? '#a0a4a8' : '#5f6368';
     const gridColor = isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)';
     const tooltipBg = isDark ? 'rgba(30, 30, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)';
     const tooltipBorder = isDark ? '#2b2b2b' : '#e2e6eb';
 
-    // 1UP 포인트 컬러
     const redColor = '#eb0f29';
     const greenColor = '#00873c';
-    const instColor = '#f5a623'; // 쨍한 노란색 대신 고급스러운 앰버-오렌지 톤으로 변경
+    const instColor = '#f5a623';
 
-    // 라인 아래로 은은하게 깔리는 그라데이션 생성 함수
     const createGradient = (colorHex, r, g, b) => {
         const gradient = ctx.createLinearGradient(0, 0, 0, 300);
         gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, 0.25)`);
@@ -1209,37 +1224,19 @@ function renderTrendChart(dataList) {
             labels: labels,
             datasets: [
                 { 
-                    label: '개인', 
-                    data: individualData, 
-                    borderColor: redColor, 
+                    label: '개인', data: individualData, borderColor: redColor, 
                     backgroundColor: createGradient(redColor, 235, 15, 41),
-                    borderWidth: 2.5, 
-                    pointRadius: 0, 
-                    pointHoverRadius: 5,
-                    fill: true,
-                    tension: 0.4 // 곡선을 부드럽게 (모던함의 핵심)
+                    borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 5, fill: true, tension: 0.4 
                 },
                 { 
-                    label: '외국인', 
-                    data: foreignData, 
-                    borderColor: greenColor, 
+                    label: '외국인', data: foreignData, borderColor: greenColor, 
                     backgroundColor: createGradient(greenColor, 0, 135, 60),
-                    borderWidth: 2.5, 
-                    pointRadius: 0, 
-                    pointHoverRadius: 5,
-                    fill: true,
-                    tension: 0.4 
+                    borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 5, fill: true, tension: 0.4 
                 },
                 { 
-                    label: '기관', 
-                    data: institutionData, 
-                    borderColor: instColor, 
+                    label: '기관', data: institutionData, borderColor: instColor, 
                     backgroundColor: createGradient(instColor, 245, 166, 35),
-                    borderWidth: 2.5, 
-                    pointRadius: 0, 
-                    pointHoverRadius: 5,
-                    fill: true,
-                    tension: 0.4 
+                    borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 5, fill: true, tension: 0.4 
                 }
             ]
         },
@@ -1248,27 +1245,26 @@ function renderTrendChart(dataList) {
             maintainAspectRatio: false,
             interaction: { mode: 'index', intersect: false },
             plugins: {
+                // [신규 추가] 좌측 상단에 날짜 표시 플러그인
+                title: {
+                    display: !!dateStr,
+                    text: dateStr,
+                    align: 'start',
+                    color: textSecondary,
+                    font: { family: "'Inter', sans-serif", size: 12, weight: 600 },
+                    padding: { bottom: 10 }
+                },
                 legend: { 
                     position: 'top',
-                    align: 'end', // 우측 상단으로 깔끔하게 밀어버림
+                    align: 'end', 
                     labels: { 
-                        color: textSecondary, 
-                        font: { family: "'Inter', sans-serif", size: 12, weight: 600 },
-                        usePointStyle: false, // 투박한 네모 대신 둥근 점 사용
-                        boxWidth: 8,
-                        boxHeight: 1,
-                        padding: 20
+                        color: textSecondary, font: { family: "'Inter', sans-serif", size: 12, weight: 600 },
+                        usePointStyle: false, boxWidth: 8, boxHeight: 1, padding: 20
                     } 
                 },
                 tooltip: {
-                    backgroundColor: tooltipBg,
-                    titleColor: textPrimary,
-                    bodyColor: textPrimary,
-                    borderColor: tooltipBorder,
-                    borderWidth: 1,
-                    padding: 12,
-                    boxPadding: 6,
-                    usePointStyle: true,
+                    backgroundColor: tooltipBg, titleColor: textPrimary, bodyColor: textPrimary,
+                    borderColor: tooltipBorder, borderWidth: 1, padding: 12, boxPadding: 6, usePointStyle: true,
                     titleFont: { family: "'Inter', sans-serif", size: 13, weight: 700 },
                     bodyFont: { family: "'Inter', sans-serif", size: 12, weight: 500 },
                     callbacks: {
@@ -1286,24 +1282,11 @@ function renderTrendChart(dataList) {
             scales: {
                 x: { 
                     grid: { display: false }, 
-                    ticks: { 
-                        color: textSecondary, 
-                        font: { family: "'Inter', sans-serif", size: 11 }, 
-                        maxTicksLimit: 7, 
-                        maxRotation: 0 
-                    } 
+                    ticks: { color: textSecondary, font: { family: "'Inter', sans-serif", size: 11 }, maxTicksLimit: 7, maxRotation: 0 } 
                 },
                 y: { 
-                    grid: { 
-                        color: gridColor, 
-                        drawBorder: false, 
-                        borderDash: [4, 4] // 희미한 점선으로 처리하여 데이터에 집중
-                    }, 
-                    ticks: { 
-                        color: textSecondary, 
-                        font: { family: "'Inter', sans-serif", size: 11 }, 
-                        padding: 10 
-                    } 
+                    grid: { color: gridColor, drawBorder: false, borderDash: [4, 4] }, 
+                    ticks: { color: textSecondary, font: { family: "'Inter', sans-serif", size: 11 }, padding: 10 } 
                 }
             }
         }
