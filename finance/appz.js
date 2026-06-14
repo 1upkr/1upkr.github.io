@@ -1179,8 +1179,8 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
     const institutionData = [];
 
     const instCodes = ['1000', '2000', '3000', '3100', '4000', '5000', '6000'];
-    let lastAddedLabel = "";
 
+    // [수정된 로직]: 10분 구간 최신화 및 장 마감 이후 데이터 반영
     sortedData.forEach(d => {
         const t = d.time;
         if (!t || t.length < 4) return;
@@ -1189,26 +1189,41 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
         const mm = parseInt(t.substring(2, 4), 10);
         const timeVal = hh * 100 + mm;
 
-        if (timeVal >= 900 && timeVal <= 1530) {
-            const bucketMm = Math.floor(mm / 10) * 10;
-            const label = `${String(hh).padStart(2, '0')}:${String(bucketMm).padStart(2, '0')}`;
+        // 09:00 이후 데이터만 수집
+        if (timeVal >= 900) {
+            let label;
             
-            if (label !== lastAddedLabel) {
-                labels.push(label);
-                lastAddedLabel = label;
+            // 15:30 이후에 들어오는 정산 데이터는 모두 "15:30" 라벨에 덮어씌움
+            if (timeVal >= 1530) {
+                label = "15:30";
+            } else {
+                const bucketMm = Math.floor(mm / 10) * 10;
+                label = `${String(hh).padStart(2, '0')}:${String(bucketMm).padStart(2, '0')}`;
+            }
 
-                let ind = 0, forgn = 0, inst = 0;
-                if (Array.isArray(d.netAmounts)) {
-                    d.netAmounts.forEach(item => {
-                        const val = (parseFloat(item.diffValue) || 0) / 100000000;
-                        if (item.investorGubun === '8000') ind = val;
-                        else if (item.investorGubun === '9000') forgn = val;
-                        else if (instCodes.includes(item.investorGubun)) inst += val;
-                    });
-                }
+            // 투자자별 순매수 대금 계산
+            let ind = 0, forgn = 0, inst = 0;
+            if (Array.isArray(d.netAmounts)) {
+                d.netAmounts.forEach(item => {
+                    const val = (parseFloat(item.diffValue) || 0) / 100000000;
+                    if (item.investorGubun === '8000') ind = val;
+                    else if (item.investorGubun === '9000') forgn = val;
+                    else if (instCodes.includes(item.investorGubun)) inst += val;
+                });
+            }
+
+            // 배열이 비어있거나 새로운 라벨(시간대)인 경우 배열에 새로 추가
+            if (labels.length === 0 || labels[labels.length - 1] !== label) {
+                labels.push(label);
                 individualData.push(ind);
                 foreignData.push(forgn);
                 institutionData.push(inst);
+            } else {
+                // 같은 시간대 라벨인 경우 마지막 데이터를 최신 값으로 덮어쓰기 (Overwrite)
+                const lastIdx = labels.length - 1;
+                individualData[lastIdx] = ind;
+                foreignData[lastIdx] = forgn;
+                institutionData[lastIdx] = inst;
             }
         }
     });
@@ -1216,7 +1231,6 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
     if (trendChartInstance) {
         trendChartInstance.destroy();
     }
-
     const ctx = canvas.getContext('2d');
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     
