@@ -1099,13 +1099,10 @@ async function fetchMarketTrend(tradeType = currentTrendTradeType) {
     const todayStr = new Intl.DateTimeFormat('ko-KR', kstOptions).format(kstTime).replace(/\s/g, ''); 
 
     if (cached && cached.data) {
-        // 1. 캐시 데이터가 있다면 화면에 먼저 렌더링합니다. (날짜는 저장된 당시의 날짜 표출)
+        // 1. 캐시 데이터가 있다면 화면에 먼저 렌더링합니다. (날짜는 저장된 당시의 실제 날짜 표출)
         renderTrendChart(cached.data, cached.dateStr || todayStr, isLive);
         
-        // 2. 아래의 조건 중 하나라도 만족하면 API를 호출하지 않고 캐시된 화면을 그대로 유지합니다.
-        // - 주말이거나
-        // - 당일 장마감 후(16시 이후)이면서 이미 오늘자 최종 데이터를 캐시했거나
-        // - 다음날 장 시작 전(오전 9시 전)인 경우
+        // 2. 주말이거나, 16시 이후이면서 캐시 날짜가 오늘과 같거나, 오전 9시 전이면 API 호출 중단
         if (isWeekend || (timeNum >= 1600 && cached.dateStr === todayStr) || timeNum < 900) {
             return; 
         }
@@ -1122,12 +1119,31 @@ async function fetchMarketTrend(tradeType = currentTrendTradeType) {
 
             if (data.length === 0) return;
 
-            renderTrendChart(data, todayStr, isLive);
+            // 💡 [수정 핵심]: 기기 시간이 아닌 API의 실제 영업일(기준 날짜)을 추출
+            let actualDateStr = todayStr; // 기본값은 오늘 날짜
+            const apiDate = json.data.bizdate || json.data.bizDate || json.data.businessDate || json.data.date;
+            
+            // API에서 "20240520" 같은 형식의 날짜를 보내준 경우 "2024.05.20."으로 포맷팅
+            if (apiDate && typeof apiDate === 'string' && apiDate.length >= 8) {
+                const y = apiDate.substring(0, 4);
+                const m = apiDate.substring(4, 6);
+                const d = apiDate.substring(6, 8);
+                actualDateStr = `${y}.${m}.${d}.`;
+            } else if (data[0] && data[0].date) {
+                // 혹시 배열의 첫 번째 객체에 날짜가 있는 경우를 대비한 폴백(Fallback)
+                const dStr = String(data[0].date);
+                if (dStr.length >= 8) {
+                    actualDateStr = `${dStr.substring(0,4)}.${dStr.substring(4,6)}.${dStr.substring(6,8)}.`;
+                }
+            }
+
+            // 차트 렌더링 시 추출한 '실제 데이터 기준 날짜'를 넘겨줌
+            renderTrendChart(data, actualDateStr, isLive);
 
             const hasFinalData = data.some(d => d.time === "153000" || d.time === "1530");
             if (hasFinalData || !cached) {
                 localStorage.setItem(cacheKey, JSON.stringify({
-                    dateStr: todayStr,
+                    dateStr: actualDateStr, // 캐시에도 '실제 데이터 날짜'로 저장
                     data: data
                 }));
             }
