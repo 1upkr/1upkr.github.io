@@ -64,7 +64,6 @@ let state = {
 const rowNodes = new Map(); let sortables = []; 
 function getSafeId(ticker) { return 'id_' + ticker.replace(/[^a-zA-Z0-9]/g, '_'); }
 
-// --- [최적화] 로컬 스토리지 I/O 병목 제거를 위한 메모리 캐시 변수 설정 ---
 let memoryPriceCache = {};
 try {
     memoryPriceCache = JSON.parse(localStorage.getItem('marketdash_price_cache')) || {};
@@ -72,7 +71,6 @@ try {
     memoryPriceCache = {};
 }
 
-// --- [최적화] Debounce를 적용한 스토리지 저장 함수 (디스크 쓰기 최소화) ---
 const saveCacheToStorage = debounce(() => {
     try {
         localStorage.setItem('marketdash_price_cache', JSON.stringify(memoryPriceCache));
@@ -83,27 +81,21 @@ const saveCacheToStorage = debounce(() => {
 
 // --- INITIALIZATION ---
 async function init() {
-    // 1. [UI 깜빡임 방지] 데이터 로딩 전 UI 상태(테마) 최우선 적용
     applyTheme(); 
     if (!state.sectionOrder || state.sectionOrder.length === 0) state.sectionOrder = Object.keys(state.watchlists);
 
-    // 2. [최적화] Page Visibility API: 백그라운드 전환 시 불필요한 리소스 방지 및 타이머 보정
     document.addEventListener('visibilitychange', () => {
         if (document.hidden) {
-            // 백그라운드 진입 시 타이머 일시 정지
             if (state.intervalId) clearInterval(state.intervalId);
         } else {
             const now = Date.now();
             const lastFetch = parseInt(localStorage.getItem('marketdash_last_fetch_time') || '0');
             
-            // 마지막 갱신 후 경과된 시간(초) 계산
             const elapsedSeconds = Math.floor((now - lastFetch) / 1000);
 
             if (lastFetch === 0 || elapsedSeconds >= 60) {
-                // 60초 이상 지났다면 즉시 갱신
                 forceRefresh();
             } else {
-                // 60초 미만이라면 흐른 시간만큼 카운터 차감 후 타이머 재개
                 state.countdown = 60 - elapsedSeconds;
                 updateTimerUI(state.countdown);
                 startTimer();
@@ -115,7 +107,6 @@ async function init() {
 
     renderLayout(); startTimer(); 
     
-    // 3. [최적화] 메모리에 올려둔 캐시 데이터를 사용하여 즉시 렌더링
     if (Object.keys(memoryPriceCache).length > 0) {
         updateDOMWithData(Object.values(memoryPriceCache));
     }
@@ -124,7 +115,6 @@ async function init() {
     const now = Date.now();
     const savedTab = localStorage.getItem('marketdash_active_tab');
     
-    // 4. [UX 유지] 이전에 News 탭을 보고 있었다면 News 데이터 로드, 아니면 Watchlist 데이터 로드
     if (savedTab === 'news') {
         const container = document.getElementById('news-container');
         const isStale = (now - state.lastNewsFetch) > 60000;
@@ -132,7 +122,6 @@ async function init() {
         
         if (isStale || isEmpty) fetchNews(); 
         
-        // Watchlist 갱신 타이머는 백그라운드에서 돌아가도록 설정
         if (now - lastFetchTime < 60000) {
             state.countdown = Math.ceil(60 - ((now - lastFetchTime) / 1000));
             updateTimerUI(state.countdown);
@@ -149,7 +138,6 @@ async function init() {
         }
     }
 
-    // 초기화 시 마켓 트렌드 차트 데이터 패치 추가
     fetchMarketTrend();
 
     initSwipeToDelete(); 
@@ -1097,7 +1085,9 @@ async function fetchMarketTrend(tradeType = currentTrendTradeType) {
     
     const isWeekend = (kstTime.getDay() === 0 || kstTime.getDay() === 6);
     const timeNum = kstTime.getHours() * 100 + kstTime.getMinutes();
-    const isLive = !isWeekend && (timeNum >= 900 && timeNum < 1530);
+    
+    // LIVE 상태를 16:00까지 연장하여 최종 정산 시간을 포함시킴
+    const isLive = !isWeekend && (timeNum >= 900 && timeNum < 1600);
 
     const cacheKey = `market_trend_last_known_${tradeType}`;
     let cached = null;
@@ -1105,9 +1095,20 @@ async function fetchMarketTrend(tradeType = currentTrendTradeType) {
         cached = JSON.parse(localStorage.getItem(cacheKey)); 
     } catch(e) { console.warn("Trend cache parse error"); }
 
+    const kstOptions = { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' };
+    const todayStr = new Intl.DateTimeFormat('ko-KR', kstOptions).format(kstTime).replace(/\s/g, ''); 
+
     if (cached && cached.data) {
-        renderTrendChart(cached.data, cached.dateStr, isLive);
-        if (isWeekend) return; 
+        // 1. 캐시 데이터가 있다면 화면에 먼저 렌더링합니다. (날짜는 저장된 당시의 날짜 표출)
+        renderTrendChart(cached.data, cached.dateStr || todayStr, isLive);
+        
+        // 2. 아래의 조건 중 하나라도 만족하면 API를 호출하지 않고 캐시된 화면을 그대로 유지합니다.
+        // - 주말이거나
+        // - 당일 장마감 후(16시 이후)이면서 이미 오늘자 최종 데이터를 캐시했거나
+        // - 다음날 장 시작 전(오전 9시 전)인 경우
+        if (isWeekend || (timeNum >= 1600 && cached.dateStr === todayStr) || timeNum < 900) {
+            return; 
+        }
     }
 
     try {
@@ -1120,9 +1121,6 @@ async function fetchMarketTrend(tradeType = currentTrendTradeType) {
             const data = json.data.content;
 
             if (data.length === 0) return;
-
-            const kstOptions = { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' };
-            const todayStr = new Intl.DateTimeFormat('ko-KR', kstOptions).format(kstTime).replace(/\s/g, ''); 
 
             renderTrendChart(data, todayStr, isLive);
 
@@ -1180,7 +1178,6 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
 
     const instCodes = ['1000', '2000', '3000', '3100', '4000', '5000', '6000'];
 
-    // [수정된 로직]: 10분 구간 최신화 및 장 마감 이후 데이터 반영
     sortedData.forEach(d => {
         const t = d.time;
         if (!t || t.length < 4) return;
@@ -1189,11 +1186,11 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
         const mm = parseInt(t.substring(2, 4), 10);
         const timeVal = hh * 100 + mm;
 
-        // 09:00 이후 데이터만 수집
-        if (timeVal >= 900) {
+        // 09:00 ~ 16:00 사이의 데이터만 취급 (16:00 이후 데이터는 버림)
+        if (timeVal >= 900 && timeVal <= 1600) {
             let label;
             
-            // 15:30 이후에 들어오는 정산 데이터는 모두 "15:30" 라벨에 덮어씌움
+            // 15:30 ~ 16:00 사이에 들어오는 정산 데이터는 모두 "15:30" 라벨에 덮어씌움
             if (timeVal >= 1530) {
                 label = "15:30";
             } else {
@@ -1231,6 +1228,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
     if (trendChartInstance) {
         trendChartInstance.destroy();
     }
+
     const ctx = canvas.getContext('2d');
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     
@@ -1285,11 +1283,9 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                 legend: { 
                     position: 'top',
                     align: 'end', 
-                    // 💡 [수정됨] 차트 본문과의 간격을 여기서 확보
                     padding: 15, 
                     labels: { 
                         color: textSecondary, font: { family: "'Inter', sans-serif", size: 12, weight: 600 },
-                        // 💡 [수정됨] 범례 텍스트 상하좌우 여백을 20 -> 8로 줄여 윗부분 불필요한 공간 제거
                         usePointStyle: false, boxWidth: 8, boxHeight: 2, padding: 8
                     } 
                 },
@@ -1381,10 +1377,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                     grid: { color: gridColor, drawBorder: false, borderDash: [4, 4] }, 
                     ticks: { 
                         color: textSecondary, font: { family: "'Inter', sans-serif", size: 11 }, padding: 10,
-                        
-                        // 💡 [추가] Y축 텍스트 가로 중앙 정렬
                         crossAlign: 'center', 
-                        
                         callback: function(value) {
                             return new Intl.NumberFormat('ko-KR').format(value / 1000);
                         }
@@ -1394,6 +1387,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
         }
     });
 }
+
 // 외부에서 코스피/코스닥 탭 버튼 클릭 시 호출할 수 있도록 window 객체에 할당
 window.switchTrendMarket = function(tradeType) {
     fetchMarketTrend(tradeType);
