@@ -50,7 +50,6 @@ const EMPTY_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
 let localTickerDB = [];
 let trendChartInstance = null;
 
-// 로컬스토리지에서 마지막 탭 상태 기억 (기본값 ALL)
 let currentTrendMarketType = localStorage.getItem('marketdash_trend_tab') || 'ALL'; 
 
 let state = {
@@ -140,7 +139,6 @@ async function init() {
         }
     }
 
-    // 💡 차트 초기화 시 현재 기억된 탭의 버튼에 UI active 적용
     const tabs = document.querySelectorAll('.trend-tab-btn');
     if (tabs.length > 0) {
         tabs.forEach(btn => btn.classList.remove('active'));
@@ -772,10 +770,38 @@ function startTimer() {
 
 function updateDOMWithData(quotes) {
     requestAnimationFrame(() => {
+        const now = new Date();
+        const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+        const kstTime = new Date(utc + (9 * 3600000));
+        const timeNum = kstTime.getHours() * 100 + kstTime.getMinutes();
+
         quotes.forEach(quote => {
             const ticker = quote.symbol; 
             const nodes = rowNodes.get(ticker);
             if (!nodes || !nodes.row) return;
+
+            const dbMatch = localTickerDB.find(q => q.s.toUpperCase() === ticker.toUpperCase());
+            const isKR = dbMatch ? (dbMatch.e === 'NAVER') : /^\d/.test(ticker);
+
+            // 💡 [핵심 추가] 장 시작 전 0으로 강제 초기화되는 현상 방어 (어제 종가 기준 캐시 복원)
+            let shouldRestoreCache = false;
+            if (isKR) {
+                // KST 기준 자정(00:00)부터 아침 장 시작 전(09:00)까지
+                if (timeNum >= 0 && timeNum < 900) shouldRestoreCache = true;
+            } else {
+                // 미국 주식: 정규장(REGULAR) 상태가 아닐 때 (PRE, POST, CLOSED 등)
+                const mState = (quote.marketState || '').toUpperCase();
+                if (mState !== 'REGULAR' && mState !== '') shouldRestoreCache = true;
+            }
+
+            const cachedQuote = memoryPriceCache[ticker];
+            const currentVol = quote.regularMarketVolume || 0;
+            
+            // 거래량이 없고(오늘 거래 전), API 변동률이 0이거나 없을 때 캐시를 덮어씌움
+            if (shouldRestoreCache && cachedQuote && currentVol === 0 && (!quote.regularMarketChange)) {
+                quote.regularMarketChange = cachedQuote.regularMarketChange || 0;
+                quote.regularMarketChangePercent = cachedQuote.regularMarketChangePercent || 0;
+            }
 
             const regPrice = quote.regularMarketPrice || 0; 
             const regChange = quote.regularMarketChange || 0;
@@ -823,9 +849,6 @@ function updateDOMWithData(quotes) {
                 }
             }
 
-            const dbMatch = localTickerDB.find(q => q.s.toUpperCase() === ticker.toUpperCase());
-            const isKR = dbMatch ? (dbMatch.e === 'NAVER') : /^\d/.test(ticker);
-
             if (targetState === 'PRE') {
                 if (isKR) {
                     if (!preData || preData.volume === 0) targetState = 'CLOSED_H';
@@ -845,13 +868,7 @@ function updateDOMWithData(quotes) {
             let isExtLive = false;
             
             if (isKR) {
-                const now = new Date();
-                const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
-                const kstTime = new Date(utc + (9 * 3600000));
-                const day = kstTime.getDay();
-                const timeNum = kstTime.getHours() * 100 + kstTime.getMinutes();
-                
-                if (day !== 0 && day !== 6) { 
+                if (kstTime.getDay() !== 0 && kstTime.getDay() !== 6) { 
                     if (targetState === 'PRE' && timeNum >= 800 && timeNum < 900) {
                         isExtLive = true;
                     } else if (targetState === 'POST' && timeNum >= 1530 && timeNum <= 2000) {
@@ -956,6 +973,7 @@ function updateDOMWithData(quotes) {
         });
     });
 
+    // 변경된(또는 복원된) 데이터를 다시 캐시에 덮어씌워 다음 갱신 전까지 유지시킵니다.
     quotes.forEach(q => { memoryPriceCache[q.symbol] = q; });
     saveCacheToStorage();
 }
@@ -1093,7 +1111,6 @@ function renderNews(newsList) {
     container.innerHTML = html;
 }
 
-// 💡 탭 상태 저장 및 캐시 잔상(깜빡임), 꼬임, 최종 데이터 미갱신 완벽 방지
 async function fetchMarketTrend(marketType = currentTrendMarketType) {
     if (currentTrendMarketType !== marketType && trendChartInstance) {
         trendChartInstance.destroy();
@@ -1131,15 +1148,11 @@ async function fetchMarketTrend(marketType = currentTrendMarketType) {
             
             renderTrendChart(cached.data, cached.dateStr || todayStr, isLiveCache);
 
-            // 💡 [핵심 수정] 16시 이후 무조건 차단하던 로직 제거. 
-            // 현재 캐시에 '15:30 최종 데이터'가 담겨 있을 때만 API 통신을 차단(return)합니다.
-            // 만약 16시가 넘었어도 15:30 데이터가 없다면 무시하고 아래로 내려가 데이터를 새로 받아옵니다.
             if (hasFinalDataCache) {
                 return;
             }
         }
         
-        // 💡 주말이거나 아침 9시 이전 장 시작 전일 때만 통신 원천 차단
         if (isWeekend || timeNum < 900) {
             return; 
         }
@@ -1357,27 +1370,20 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                     labels: { 
                         color: textSecondary, 
                         font: { family: "'Inter', sans-serif", size: 12, weight: 600 },
-                        
-                        // 💡 [수정 포인트] 툴팁과 완벽하게 동일한 규격 적용
-                        boxWidth: 12,
-                        boxHeight: 4,
-                        useBorderRadius: true,
-                        borderRadius: 2,
-                        padding: 15,
-                        
-                        // 💡 [디자인 통일의 핵심] 빈 캡슐 현상을 없애고 속을 꽉 채웁니다.
+                        usePointStyle: false, boxWidth: 12, boxHeight: 4,
+                        useBorderRadius: true, borderRadius: 2, padding: 15,
                         generateLabels: function(chart) {
                             const datasets = chart.data.datasets;
                             return datasets.map((dataset, i) => ({
                                 text: dataset.label,
-                                fillStyle: dataset.borderColor,     // 그라데이션 무시, 선 색상으로 100% 채움
-                                strokeStyle: 'transparent',         // 불필요한 겉 테두리 투명 처리
+                                fillStyle: dataset.borderColor,
+                                strokeStyle: 'transparent',
                                 lineWidth: 0,
                                 hidden: !chart.isDatasetVisible(i),
                                 index: i,
                                 datasetIndex: i,
-                                borderRadius: 2,                     // 둥글기 2px 강제 적용
-                                fontColor: textSecondary
+                                borderRadius: 2,
+                                fontColor: textSecondary 
                             }));
                         }
                     } 
