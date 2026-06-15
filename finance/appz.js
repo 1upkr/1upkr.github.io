@@ -1093,9 +1093,8 @@ function renderNews(newsList) {
     container.innerHTML = html;
 }
 
-// 💡 탭 상태 저장 및 캐시 잔상(깜빡임), 꼬임 완벽 방지
+// 💡 탭 상태 저장 및 캐시 잔상(깜빡임), 꼬임, 최종 데이터 미갱신 완벽 방지
 async function fetchMarketTrend(marketType = currentTrendMarketType) {
-    // 💡 탭이 바뀌었을 때만 이전 차트를 즉시 완전히 부숴버립니다. (잔상 방지)
     if (currentTrendMarketType !== marketType && trendChartInstance) {
         trendChartInstance.destroy();
         trendChartInstance = null;
@@ -1131,9 +1130,17 @@ async function fetchMarketTrend(marketType = currentTrendMarketType) {
             const isLiveCache = (cached.dateStr === todayStr) && !hasFinalDataCache;
             
             renderTrendChart(cached.data, cached.dateStr || todayStr, isLiveCache);
+
+            // 💡 [핵심 수정] 16시 이후 무조건 차단하던 로직 제거. 
+            // 현재 캐시에 '15:30 최종 데이터'가 담겨 있을 때만 API 통신을 차단(return)합니다.
+            // 만약 16시가 넘었어도 15:30 데이터가 없다면 무시하고 아래로 내려가 데이터를 새로 받아옵니다.
+            if (hasFinalDataCache) {
+                return;
+            }
         }
         
-        if (isWeekend || (timeNum >= 1600 && cached.dateStr === todayStr) || timeNum < 900) {
+        // 💡 주말이거나 아침 9시 이전 장 시작 전일 때만 통신 원천 차단
+        if (isWeekend || timeNum < 900) {
             return; 
         }
     }
@@ -1145,7 +1152,6 @@ async function fetchMarketTrend(marketType = currentTrendMarketType) {
         
         const json = await response.json();
         
-        // 💡 [레이스 컨디션 방지] 통신 중에 사용자가 탭을 바꿨다면, 예전 탭의 응답은 무시하고 버립니다.
         if (currentTrendMarketType !== marketType) return;
         
         if (json.success && json.data && Array.isArray(json.data.content)) {
