@@ -49,7 +49,7 @@ const EMPTY_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
 
 let localTickerDB = [];
 let trendChartInstance = null;
-let currentTrendTradeType = 'KOSPI'; // 💡 안전하게 KOSPI로 기본값 명시
+let currentTrendMarketType = 'KOSPI'; // 💡 KOSPI로 기본값 명확화
 
 let state = {
     watchlists: JSON.parse(localStorage.getItem('marketdash_watchlists')) || JSON.parse(JSON.stringify(DEFAULT_WATCHLISTS)),
@@ -1100,14 +1100,18 @@ function renderNews(newsList) {
 }
 
 // --- TREND FETCHING LOGIC ---
-async function fetchMarketTrend(reqTradeType = currentTrendTradeType) {
-    // 💡 HTML 버튼에서 혹시 'KRX'가 넘어오면 'KOSPI'로 치환합니다.
-    let actualTradeType = reqTradeType;
-    if (reqTradeType === 'KRX') {
-        actualTradeType = 'KOSPI';
+async function fetchMarketTrend(reqMarketType = currentTrendMarketType) {
+    // 💡 HTML 버튼에서 'KRX' 등 잘못된 값이 넘어오면 네이버 규격(KOSPI)으로 안전하게 변환
+    let actualMarketType = reqMarketType;
+    if (reqMarketType === 'KRX' || reqMarketType === 'KOSPI') {
+        actualMarketType = 'KOSPI';
+    } else if (reqMarketType === 'KOSDAQ') {
+        actualMarketType = 'KOSDAQ';
+    } else {
+        actualMarketType = 'KOSPI'; // 예외 상황 시 KOSPI로 폴백
     }
 
-    currentTrendTradeType = actualTradeType;
+    currentTrendMarketType = actualMarketType;
     const container = document.getElementById('trend-chart-wrapper');
     if (!container) return;
 
@@ -1118,7 +1122,7 @@ async function fetchMarketTrend(reqTradeType = currentTrendTradeType) {
     const isWeekend = (kstTime.getDay() === 0 || kstTime.getDay() === 6);
     const timeNum = kstTime.getHours() * 100 + kstTime.getMinutes();
     
-    const cacheKey = `market_trend_last_known_${actualTradeType}`;
+    const cacheKey = `market_trend_last_known_${actualMarketType}`;
     let cached = null;
     try { 
         cached = JSON.parse(localStorage.getItem(cacheKey)); 
@@ -1127,14 +1131,18 @@ async function fetchMarketTrend(reqTradeType = currentTrendTradeType) {
     const kstOptions = { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' };
     const todayStr = new Intl.DateTimeFormat('ko-KR', kstOptions).format(kstTime).replace(/\s/g, ''); 
 
-    // 💡 이전의 오류로 인해 생성된 '배열이 아닌 비정상 캐시(쓰레기 값)'를 필터링합니다.
+    // 💡 에러로 인해 저장된 '비정상 캐시(객체 구조 파괴 등)'를 필터링
     if (cached && cached.data && Array.isArray(cached.data)) {
         const isCacheFromPast = !isWeekend && (timeNum >= 900) && (cached.dateStr !== todayStr);
         
         if (!isCacheFromPast) {
-            const hasFinalDataCache = cached.data.some(d => d.time && d.time.startsWith("1530"));
+            const hasFinalDataCache = cached.data.some(d => d.time && String(d.time).startsWith("1530"));
             const isLiveCache = (cached.dateStr === todayStr) && !hasFinalDataCache;
             
+            // 이전 오류로 캔버스가 날아갔다면 복구
+            if (!document.getElementById('trend-chart-canvas')) {
+                container.innerHTML = '<canvas id="trend-chart-canvas"></canvas>';
+            }
             renderTrendChart(cached.data, cached.dateStr || todayStr, isLiveCache);
         }
         
@@ -1146,14 +1154,16 @@ async function fetchMarketTrend(reqTradeType = currentTrendTradeType) {
     }
 
     try {
-        // 💡 [핵심 해결 포인트]: API 호출 파라미터를 정상적으로 원상복구 했습니다.
-        // tradeType에는 KOSPI 또는 KOSDAQ이, marketType에는 ALL이 들어가야 합니다.
-        const url = `${TREND_GAS_PROXY_URL}?tradeType=${actualTradeType}&marketType=ALL&t=${Date.now()}`;
+        // 💡 [가장 치명적이었던 오류 완벽 해결 포인트]
+        // tradeType = AMOUNT (거래대금 조회)
+        // marketType = KOSPI (코스피 시장)
+        const url = `${TREND_GAS_PROXY_URL}?tradeType=AMOUNT&marketType=${actualMarketType}&t=${Date.now()}`;
         
         const response = await fetch(url);
-        if (!response.ok) throw new Error("Trend fetch failed");
+        if (!response.ok) throw new Error("Trend fetch failed HTTP error");
         
         const json = await response.json();
+        
         if (json.success && json.data && Array.isArray(json.data.content)) {
             const data = json.data.content;
 
@@ -1163,10 +1173,7 @@ async function fetchMarketTrend(reqTradeType = currentTrendTradeType) {
             const apiDate = json.data.bizdate || json.data.bizDate || json.data.businessDate || json.data.date;
             
             if (apiDate && typeof apiDate === 'string' && apiDate.length >= 8) {
-                const y = apiDate.substring(0, 4);
-                const m = apiDate.substring(4, 6);
-                const d = apiDate.substring(6, 8);
-                actualDateStr = `${y}.${m}.${d}.`;
+                actualDateStr = `${apiDate.substring(0, 4)}.${apiDate.substring(4, 6)}.${apiDate.substring(6, 8)}.`;
             } else if (data[0] && data[0].date) {
                 const dStr = String(data[0].date);
                 if (dStr.length >= 8) {
@@ -1174,8 +1181,13 @@ async function fetchMarketTrend(reqTradeType = currentTrendTradeType) {
                 }
             }
 
-            const hasFinalData = data.some(d => d.time && d.time.startsWith("1530"));
+            const hasFinalData = data.some(d => d.time && String(d.time).startsWith("1530"));
             const isLiveAPI = (actualDateStr === todayStr) && !hasFinalData;
+
+            // 💡 [캔버스 좀비 복구 로직] 오류로 캔버스가 지워져도 데이터를 받아오면 즉시 부활시킴
+            if (!document.getElementById('trend-chart-canvas')) {
+                container.innerHTML = '<canvas id="trend-chart-canvas"></canvas>';
+            }
 
             renderTrendChart(data, actualDateStr, isLiveAPI);
 
@@ -1189,7 +1201,7 @@ async function fetchMarketTrend(reqTradeType = currentTrendTradeType) {
         }
     } catch (error) {
         console.error("Trend Chart Error:", error);
-        // 에러가 났을 때 보여줄 캐시조차 없다면 빈 화면 처리
+        // 에러가 났을 때 보여줄 캐시조차 없다면 빈 화면 에러 문구 표시
         if (!cached || !cached.data || !Array.isArray(cached.data)) {
             container.innerHTML = '<div class="empty-state"><p class="error-text">Failed to load trend data.</p></div>';
         }
@@ -1466,9 +1478,9 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
     });
 }
 
-// 혹시 버튼이나 외부에서 다른 값이 넘어와도 알아서 처리
-window.switchTrendMarket = function(tradeType) {
-    fetchMarketTrend(tradeType);
+// 💡 탭 버튼 클릭 시 'KRX'가 들어와도 내부에서 'KOSPI'로 치환되어 정상 작동합니다.
+window.switchTrendMarket = function(marketType) {
+    fetchMarketTrend(marketType);
 };
 
 document.addEventListener('DOMContentLoaded', init);
