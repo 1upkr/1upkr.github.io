@@ -1099,10 +1099,15 @@ async function fetchMarketTrend(tradeType = currentTrendTradeType) {
     const todayStr = new Intl.DateTimeFormat('ko-KR', kstOptions).format(kstTime).replace(/\s/g, ''); 
 
     if (cached && cached.data) {
-        // 1. 캐시 데이터가 있다면 화면에 먼저 렌더링합니다. (날짜는 저장된 당시의 실제 날짜 표출)
-        renderTrendChart(cached.data, cached.dateStr || todayStr, isLive);
+        // 🔥 [수정됨] 장이 시작된 시간(09:00 이후)인데 캐시된 날짜가 오늘 날짜와 다르다면, 
+        // 이전 영업일의 캐시이므로 화면에 먼저 그리지 않고 API 응답을 기다립니다.
+        const isCacheFromPast = !isWeekend && (timeNum >= 900) && (cached.dateStr !== todayStr);
         
-        // 2. 주말이거나, 16시 이후이면서 캐시 날짜가 오늘과 같거나, 오전 9시 전이면 API 호출 중단
+        if (!isCacheFromPast) {
+            renderTrendChart(cached.data, cached.dateStr || todayStr, isLive);
+        }
+        
+        // 주말이거나, 16시 이후이면서 캐시 날짜가 오늘과 같거나, 오전 9시 전이면 API 호출 중단
         if (isWeekend || (timeNum >= 1600 && cached.dateStr === todayStr) || timeNum < 900) {
             return; 
         }
@@ -1119,34 +1124,32 @@ async function fetchMarketTrend(tradeType = currentTrendTradeType) {
 
             if (data.length === 0) return;
 
-            // 💡 [수정 핵심]: 기기 시간이 아닌 API의 실제 영업일(기준 날짜)을 추출
-            let actualDateStr = todayStr; // 기본값은 오늘 날짜
+            // 백엔드에서 넘겨주는 실제 영업일 추출 (없으면 오늘 날짜 사용)
+            let actualDateStr = todayStr; 
             const apiDate = json.data.bizdate || json.data.bizDate || json.data.businessDate || json.data.date;
             
-            // API에서 "20240520" 같은 형식의 날짜를 보내준 경우 "2024.05.20."으로 포맷팅
             if (apiDate && typeof apiDate === 'string' && apiDate.length >= 8) {
                 const y = apiDate.substring(0, 4);
                 const m = apiDate.substring(4, 6);
                 const d = apiDate.substring(6, 8);
                 actualDateStr = `${y}.${m}.${d}.`;
             } else if (data[0] && data[0].date) {
-                // 혹시 배열의 첫 번째 객체에 날짜가 있는 경우를 대비한 폴백(Fallback)
                 const dStr = String(data[0].date);
                 if (dStr.length >= 8) {
                     actualDateStr = `${dStr.substring(0,4)}.${dStr.substring(4,6)}.${dStr.substring(6,8)}.`;
                 }
             }
 
-            // 차트 렌더링 시 추출한 '실제 데이터 기준 날짜'를 넘겨줌
+            // 차트 렌더링
             renderTrendChart(data, actualDateStr, isLive);
 
-            const hasFinalData = data.some(d => d.time === "153000" || d.time === "1530");
-            if (hasFinalData || !cached) {
-                localStorage.setItem(cacheKey, JSON.stringify({
-                    dateStr: actualDateStr, // 캐시에도 '실제 데이터 날짜'로 저장
-                    data: data
-                }));
-            }
+            // 🔥 [수정됨] 15:30 데이터 유무와 상관없이, 새로 받아온 최신 데이터는 항상 캐시에 덮어씁니다.
+            // 그래야 장중(09:00~15:30)에 새로고침을 해도 즉각적으로 방금 전 데이터를 띄울 수 있습니다.
+            localStorage.setItem(cacheKey, JSON.stringify({
+                dateStr: actualDateStr,
+                data: data
+            }));
+
         } else {
             throw new Error("Invalid trend data structure");
         }
