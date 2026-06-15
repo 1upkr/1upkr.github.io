@@ -50,8 +50,8 @@ const EMPTY_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
 let localTickerDB = [];
 let trendChartInstance = null;
 
-// 💡 탭 구분을 위해 기본값을 'ALL'로 설정
-let currentTrendMarketType = 'ALL'; 
+// 💡 [수정] 로컬스토리지에서 마지막으로 본 탭을 기억합니다. (처음 방문 시 ALL)
+let currentTrendMarketType = localStorage.getItem('marketdash_trend_tab') || 'ALL';
 
 let state = {
     watchlists: JSON.parse(localStorage.getItem('marketdash_watchlists')) || JSON.parse(JSON.stringify(DEFAULT_WATCHLISTS)),
@@ -1085,9 +1085,21 @@ function renderNews(newsList) {
     container.innerHTML = html;
 }
 
-// 💡 탭 구분에 따라 marketType(ALL, KOSPI, KOSDAQ)을 받아 처리합니다.
+// 💡 [수정] 탭 구분에 따라 marketType(ALL, KOSPI, KOSDAQ)을 받아 처리합니다.
 async function fetchMarketTrend(marketType = currentTrendMarketType) {
     currentTrendMarketType = marketType;
+    
+    // 💡 1. 탭 상태 저장 (새로고침 해도 유지되도록)
+    localStorage.setItem('marketdash_trend_tab', currentTrendMarketType);
+
+    // 💡 2. UI 탭 활성화 상태 즉시 업데이트
+    const tabs = document.querySelectorAll('.trend-tab-btn');
+    if (tabs.length > 0) {
+        tabs.forEach(btn => btn.classList.remove('active'));
+        const activeTab = Array.from(tabs).find(btn => btn.getAttribute('onclick').includes(marketType));
+        if (activeTab) activeTab.classList.add('active');
+    }
+
     const container = document.getElementById('trend-chart-wrapper');
     if (!container) return;
 
@@ -1098,7 +1110,7 @@ async function fetchMarketTrend(marketType = currentTrendMarketType) {
     const isWeekend = (kstTime.getDay() === 0 || kstTime.getDay() === 6);
     const timeNum = kstTime.getHours() * 100 + kstTime.getMinutes();
     
-    // 캐시 키도 탭별로 별도 관리
+    // 💡 3. 캐시 키를 marketType별로 독립적으로 관리합니다. (ALL, KOSPI, KOSDAQ 각각 저장)
     const cacheKey = `market_trend_last_known_${marketType}`;
     let cached = null;
     try { 
@@ -1108,6 +1120,7 @@ async function fetchMarketTrend(marketType = currentTrendMarketType) {
     const kstOptions = { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' };
     const todayStr = new Intl.DateTimeFormat('ko-KR', kstOptions).format(kstTime).replace(/\s/g, ''); 
 
+    // 캐시가 있으면 로딩 대기 없이 즉각적으로 화면에 뿌려줍니다.
     if (cached && cached.data) {
         const isCacheFromPast = !isWeekend && (timeNum >= 900) && (cached.dateStr !== todayStr);
         
@@ -1124,7 +1137,7 @@ async function fetchMarketTrend(marketType = currentTrendMarketType) {
     }
 
     try {
-        // 💡 알아내신 구조대로 tradeType=KRX 고정, marketType=ALL/KOSPI/KOSDAQ 전달
+        // 백엔드로 선택된 marketType에 맞춰 데이터 요청
         const url = `${TREND_GAS_PROXY_URL}?tradeType=KRX&marketType=${marketType}&t=${Date.now()}`;
         const response = await fetch(url);
         if (!response.ok) throw new Error("Trend fetch failed");
@@ -1137,7 +1150,6 @@ async function fetchMarketTrend(marketType = currentTrendMarketType) {
             if (data.length === 0) return;
 
             let actualDateStr = todayStr; 
-            // 💡 GAS에서 추가해준 bizdate 사용
             const apiDate = json.data.bizdate || json.data.bizDate || json.data.businessDate || json.data.date;
             
             if (apiDate && typeof apiDate === 'string' && apiDate.length >= 8) {
@@ -1157,6 +1169,7 @@ async function fetchMarketTrend(marketType = currentTrendMarketType) {
 
             renderTrendChart(data, actualDateStr, isLiveAPI);
 
+            // 💡 받아온 새로운 데이터를 해당 시장 탭의 전용 캐시에 저장
             localStorage.setItem(cacheKey, JSON.stringify({
                 dateStr: actualDateStr,
                 data: data
@@ -1414,14 +1427,8 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
     });
 }
 
-// 💡 탭 버튼 클릭 시 활성화 상태 업데이트 및 새로운 시장 차트 호출
+// 버튼 클릭 시 호출
 window.switchTrendMarket = function(marketType) {
-    const tabs = document.querySelectorAll('.trend-tab-btn');
-    if (tabs.length > 0) {
-        tabs.forEach(btn => btn.classList.remove('active'));
-        const activeTab = Array.from(tabs).find(btn => btn.getAttribute('onclick').includes(marketType));
-        if (activeTab) activeTab.classList.add('active');
-    }
     fetchMarketTrend(marketType);
 };
 
