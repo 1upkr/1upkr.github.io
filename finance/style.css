@@ -679,6 +679,44 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
 }
 
 
+/* =========================================================
+   TREND TABS (Segmented Control UI)
+   ========================================================= */
+.trend-tabs {
+    display: flex;
+    background-color: var(--input-bg); /* 입력창과 같은 배경색으로 오목한 느낌 */
+    border-radius: 8px;
+    padding: 0.25rem;
+    gap: 0.25rem;
+    align-items: center;
+}
+
+.trend-tab-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.4rem 0.75rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    white-space: nowrap;
+}
+
+.trend-tab-btn:hover {
+    color: var(--text-primary);
+}
+
+/* 활성화된 탭은 버튼이 튀어나온 것처럼 입체감 부여 */
+.trend-tab-btn.active {
+    background-color: var(--card-bg);
+    color: var(--text-primary);
+    box-shadow: var(--shadow-sm); 
+}
+
+
+
 /* 2단계: 실제 가로 폭이 좁은 스마트폰 세로 환경 (650px 이하) */
 /* 여기서만 부가 정보(Volume, Cap, 52W Range)를 완전히 숨기고 핵심 정보만 노출합니다. */
 @media (max-width: 650px) {
