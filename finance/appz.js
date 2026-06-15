@@ -842,6 +842,33 @@ function updateDOMWithData(quotes) {
                 targetState = 'CLOSED_H';
             }
 
+            // 💡 프리장/애프터장이 현재 '진행 중(LIVE)'인지 판별하는 핵심 로직 (NXT 연동)
+            let isExtLive = false;
+            
+            if (isKR) {
+                // 한국(Naver NXT 연동): 평일 08:00~09:00, 15:30~20:00
+                const now = new Date();
+                const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+                const kstTime = new Date(utc + (9 * 3600000));
+                const day = kstTime.getDay();
+                const timeNum = kstTime.getHours() * 100 + kstTime.getMinutes();
+                
+                if (day !== 0 && day !== 6) { 
+                    if (targetState === 'PRE' && timeNum >= 800 && timeNum < 900) {
+                        isExtLive = true;
+                    } else if (targetState === 'POST' && timeNum >= 1530 && timeNum <= 2000) {
+                        isExtLive = true;
+                    }
+                }
+            } else {
+                // 미국(Yahoo): API가 주는 marketState 기반 판별
+                if (targetState === 'PRE' && mState === 'PRE') {
+                    isExtLive = true;
+                } else if (targetState === 'POST' && mState === 'POST') {
+                    isExtLive = true;
+                }
+            }
+
             // 5. 출력용 변수 초기화
             let mainPrice = regPrice;
             let mainChange = regChange;
@@ -849,12 +876,15 @@ function updateDOMWithData(quotes) {
             let mainIcon = ''; 
             let subHtml = '';
 
+            // 💡 LIVE 상태일 때 적용할 빨간색 텍스트 스타일
+            const liveExtStyle = isExtLive ? 'color: var(--red); font-weight: 700;' : '';
+
             // 6. 상태별 UI 바인딩
             if (targetState === 'PRE') {
                 mainPrice = preData.price;
                 mainChange = preData.change;
                 mainPct = preData.pct;
-                mainIcon = `<span class="main-ext-label">${preData.label}</span>`; 
+                mainIcon = `<span class="main-ext-label" style="${liveExtStyle}">${preData.label}</span>`; 
                 
                 const regIsUp = regChange >= 0;
                 const regColor = regIsUp ? 'up' : 'down';
@@ -865,7 +895,7 @@ function updateDOMWithData(quotes) {
                 mainPrice = postData.price;
                 mainChange = postData.change;
                 mainPct = postData.pct;
-                mainIcon = `<span class="main-ext-label">${postData.label}</span>`; 
+                mainIcon = `<span class="main-ext-label" style="${liveExtStyle}">${postData.label}</span>`; 
                 
                 const regIsUp = regChange >= 0;
                 const regColor = regIsUp ? 'up' : 'down';
@@ -1177,8 +1207,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
     }
     
     const badgeText = isLive ? 'LIVE' : 'CLOSED';
-    
-    // 💡 [수정됨] LIVE 상태일 때만 글씨 색상을 빨간색(var(--red))으로 지정합니다.
+    // LIVE 상태일 때 빨간색 색상 지정
     const liveStyle = isLive ? 'color: var(--red);' : '';
 
     badgeContainer.innerHTML = `
@@ -1189,7 +1218,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
 
     const sortedData = dataList.slice().reverse();
     
-    // 💡 [수정 핵심]: X축 고정 라벨 생성 (09:00 ~ 15:30) - 40개의 고정 슬롯
+    // X축 고정 라벨 생성 (09:00 ~ 15:30) - 40개의 고정 슬롯
     const fixedLabels = [];
     for (let h = 9; h <= 15; h++) {
         for (let m = 0; m < 60; m += 10) {
@@ -1203,7 +1232,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
     const institutionData = new Array(fixedLabels.length).fill(null);
 
     const instCodes = ['1000', '2000', '3000', '3100', '4000', '5000', '6000'];
-    let maxDataIndex = -1; // 데이터가 들어간 가장 마지막 슬롯의 인덱스 추적
+    let maxDataIndex = -1; 
 
     // 데이터 매핑: 각 데이터를 고정된 X축 라벨 인덱스에 맞춰 삽입
     sortedData.forEach(d => {
@@ -1245,11 +1274,11 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
         }
     });
 
-    // 💡 [수정 핵심]: 선 끊김 방지를 위해 마지막 데이터 인덱스까지 빈 슬롯(null)을 이전 값으로 채움
+    // 선 끊김 방지를 위해 마지막 데이터 인덱스까지 빈 슬롯(null)을 이전 값으로 채움
     let lastInd = 0, lastForgn = 0, lastInst = 0;
     for (let i = 0; i <= maxDataIndex; i++) {
         if (individualData[i] === null) {
-            // 값이 비어있다면 직전 값을 당겨서 채움 (선 이어지게)
+            // 값이 비어있다면 직전 값을 당겨서 채움
             individualData[i] = lastInd;
             foreignData[i] = lastForgn;
             institutionData[i] = lastInst;
@@ -1260,7 +1289,6 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
             lastInst = institutionData[i];
         }
     }
-    // maxDataIndex 이후의 배열은 모두 null 상태로 유지됨 -> 차트가 더 이상 선을 그리지 않고 멈춤
 
     if (trendChartInstance) {
         trendChartInstance.destroy();
@@ -1356,7 +1384,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                             return;
                         }
 
-                        // 💡 빈 구간(미래)에 마우스를 올렸을 때 툴팁이 깨지는 현상 방지
+                        // 빈 구간(미래)에 마우스를 올렸을 때 툴팁이 깨지는 현상 방지
                         if (!tooltipModel.body || tooltipModel.dataPoints[0].parsed.y === null) {
                             tooltipEl.style.opacity = 0;
                             return;
@@ -1374,7 +1402,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
 
                             tooltipModel.dataPoints.forEach(function(dp) {
                                 const val = dp.parsed.y;
-                                if (val === null) return; // 값이 없으면 렌더링 무시
+                                if (val === null) return; 
                                 const sign = val > 0 ? '+' : '';
                                 const valColor = val > 0 ? greenColor : (val < 0 ? redColor : textPrimary);
                                 const formattedVal = sign + new Intl.NumberFormat('ko-KR').format(Math.round(val)) + '억';
@@ -1383,7 +1411,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                                 innerHtml += `
                                     <div style="display:flex; align-items:center; font-size:12px; font-weight:600; justify-content:space-between; gap: 30px;">
                                         <div style="display:flex; align-items:center;">
-                                            <span style="display:inline-block; width:8px; height:4px; background:${borderColor}; margin-right:8px; border-radius:1px;"></span>
+                                            <span style="display:inline-block; width:12px; height:4px; background:${borderColor}; margin-right:8px; border-radius:2px;"></span>
                                             <span style="color:${textSecondary};">${dp.dataset.label}</span>
                                         </div>
                                         <span style="color:${valColor}; text-align:right;">${formattedVal}</span>
