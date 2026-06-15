@@ -303,7 +303,7 @@ main { flex: 1; width: 100%; overflow-x: hidden; }
     width: 140px; /* 기존보다 살짝 더 키움 */
     height: 140px;
     position: absolute;
-    top: 15%; /* news 영역 상단에서 약간 내려온 위치 */
+    top: 5%; /* news 영역 상단에서 약간 내려온 위치 */
     left: calc(50% - 70px); /* 완벽한 가로 중앙 정렬 (width의 절반을 빼줌) */
     color: var(--text-primary);
     animation: float-vader 4.5s ease-in-out infinite; /* 애니메이션 시간을 약간 늘려 부드럽고 웅장하게 */
@@ -313,7 +313,7 @@ main { flex: 1; width: 100%; overflow-x: hidden; }
 
 .vader-text {
     position: absolute;
-    top: calc(15% + 160px); /* 아이콘 위치(15%) + 아이콘 높이 + 적당한 여백 */
+    top: calc(5% + 160px); /* 아이콘 위치(15%) + 아이콘 높이 + 적당한 여백 */
     width: 100%; /* text-align 정렬을 위해 100% 할당 */
     text-align: center;
     font-size: 0.875rem;
