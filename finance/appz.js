@@ -1219,7 +1219,6 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
 
     const sortedData = dataList.slice().reverse();
     
-    // 💡 [적용됨] 15:30까지 빈 X축 고정 라벨 생성
     const fixedLabels = [];
     for (let h = 9; h <= 15; h++) {
         for (let m = 0; m < 60; m += 10) {
@@ -1273,7 +1272,6 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
         }
     });
 
-    // 데이터가 없는 빈 구간(슬롯)은 선이 끊기지 않도록 이전 데이터로 계속 채워줍니다.
     let lastInd = 0, lastForgn = 0, lastInst = 0;
     for (let i = 0; i <= maxDataIndex; i++) {
         if (individualData[i] === null) {
@@ -1287,12 +1285,11 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
         }
     }
 
-    // 💡 [깜빡임 완벽 해결] 차트가 이미 있다면 완전히 부수지 않고 알맹이 데이터만 교체(update)합니다.
     if (trendChartInstance) {
         trendChartInstance.data.datasets[0].data = individualData;
         trendChartInstance.data.datasets[1].data = foreignData;
         trendChartInstance.data.datasets[2].data = institutionData;
-        trendChartInstance.update('none'); // 애니메이션 없이 부드럽게 덮어쓰기
+        trendChartInstance.update('none'); 
         return;
     }
 
@@ -1354,13 +1351,28 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                     labels: { 
                         color: textSecondary, 
                         font: { family: "'Inter', sans-serif", size: 12, weight: 600 },
-                        usePointStyle: false, 
-                        boxWidth: 12,          // 선의 가로 길이
-                        boxHeight: 4,          // 선의 두께
-                        useBorderRadius: true, // 모서리 둥글기 속성 활성화
-                        borderRadius: 2,       // 모서리 둥글기 값
                         
-                        padding: 15
+                        // 💡 [수정 포인트] 툴팁과 완벽하게 동일한 규격 적용
+                        boxWidth: 12,
+                        boxHeight: 4,
+                        useBorderRadius: true,
+                        borderRadius: 2,
+                        padding: 15,
+                        
+                        // 💡 [디자인 통일의 핵심] 빈 캡슐 현상을 없애고 속을 꽉 채웁니다.
+                        generateLabels: function(chart) {
+                            const datasets = chart.data.datasets;
+                            return datasets.map((dataset, i) => ({
+                                text: dataset.label,
+                                fillStyle: dataset.borderColor,     // 그라데이션 무시, 선 색상으로 100% 채움
+                                strokeStyle: 'transparent',         // 불필요한 겉 테두리 투명 처리
+                                lineWidth: 0,
+                                hidden: !chart.isDatasetVisible(i),
+                                index: i,
+                                datasetIndex: i,
+                                borderRadius: 2                     // 둥글기 2px 강제 적용
+                            }));
+                        }
                     } 
                 },
                 tooltip: {
@@ -1393,7 +1405,6 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                             return;
                         }
 
-                        // 💡 툴팁 에러 방지 (빈 구간 마우스 오버 시 무시)
                         if (!tooltipModel.body || tooltipModel.dataPoints[0].parsed.y === null) {
                             tooltipEl.style.opacity = 0;
                             return;
