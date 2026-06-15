@@ -1370,7 +1370,8 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                                 hidden: !chart.isDatasetVisible(i),
                                 index: i,
                                 datasetIndex: i,
-                                borderRadius: 2                     // 둥글기 2px 강제 적용
+                                borderRadius: 2,                     // 둥글기 2px 강제 적용
+                                fontColor: textSecondary
                             }));
                         }
                     } 
