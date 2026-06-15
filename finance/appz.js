@@ -49,7 +49,7 @@ const EMPTY_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
 
 let localTickerDB = [];
 let trendChartInstance = null;
-let currentTrendMarketType = 'KOSPI';
+let currentTrendTradeType = 'KOSPI';
 
 let state = {
     watchlists: JSON.parse(localStorage.getItem('marketdash_watchlists')) || JSON.parse(JSON.stringify(DEFAULT_WATCHLISTS)),
@@ -1103,8 +1103,13 @@ function renderNews(newsList) {
 }
 
 // --- TREND FETCHING LOGIC ---
-async function fetchMarketTrend(marketType = currentTrendMarketType) {
-    currentTrendMarketType = marketType; // 전달받은 시장(KOSPI/KOSDAQ)으로 업데이트
+async function fetchMarketTrend(tradeType = currentTrendTradeType) {
+    // 혹시 HTML 탭 버튼에 onclick="switchTrendMarket('KRX')" 처럼 되어있더라도 
+    // 에러가 나지 않고 네이버가 알아듣는 'KOSPI'로 자동 변환합니다.
+    let naverTradeType = tradeType;
+    if (tradeType === 'KRX') naverTradeType = 'KOSPI';
+
+    currentTrendTradeType = naverTradeType;
     const container = document.getElementById('trend-chart-wrapper');
     if (!container) return;
 
@@ -1115,8 +1120,8 @@ async function fetchMarketTrend(marketType = currentTrendMarketType) {
     const isWeekend = (kstTime.getDay() === 0 || kstTime.getDay() === 6);
     const timeNum = kstTime.getHours() * 100 + kstTime.getMinutes();
     
-    // 캐시 키도 marketType 기준으로 저장
-    const cacheKey = `market_trend_last_known_${marketType}`;
+    // 캐시 키도 naverTradeType(KOSPI/KOSDAQ) 기준으로 분리
+    const cacheKey = `market_trend_last_known_${naverTradeType}`;
     let cached = null;
     try { 
         cached = JSON.parse(localStorage.getItem(cacheKey)); 
@@ -1129,7 +1134,8 @@ async function fetchMarketTrend(marketType = currentTrendMarketType) {
         const isCacheFromPast = !isWeekend && (timeNum >= 900) && (cached.dateStr !== todayStr);
         
         if (!isCacheFromPast) {
-            const hasFinalDataCache = cached.data.some(d => d.time === "153000" || d.time === "1530");
+            // 더 안전한 15:30 데이터 판별 (문자열 시작 기준)
+            const hasFinalDataCache = cached.data.some(d => d.time && d.time.startsWith("1530"));
             const isLiveCache = (cached.dateStr === todayStr) && !hasFinalDataCache;
             
             renderTrendChart(cached.data, cached.dateStr || todayStr, isLiveCache);
@@ -1141,8 +1147,9 @@ async function fetchMarketTrend(marketType = currentTrendMarketType) {
     }
 
     try {
-        // 💡 [완벽 해결 포인트]: tradeType에는 'AMOUNT(대금)'를, marketType에는 'KOSPI/KOSDAQ'을 매칭!
-        const url = `${TREND_GAS_PROXY_URL}?tradeType=AMOUNT&marketType=${marketType}&t=${Date.now()}`;
+        // 💡 [완벽 해결 포인트]: tradeType에는 'KOSPI'를, marketType에는 'ALL'을 넣어야
+        // 네이버가 정상적으로 '코스피 시장'의 '모든 투자자 금액' 데이터를 내려줍니다.
+        const url = `${TREND_GAS_PROXY_URL}?tradeType=${naverTradeType}&marketType=ALL&t=${Date.now()}`;
         const response = await fetch(url);
         if (!response.ok) throw new Error("Trend fetch failed");
         
@@ -1167,7 +1174,7 @@ async function fetchMarketTrend(marketType = currentTrendMarketType) {
                 }
             }
 
-            const hasFinalData = data.some(d => d.time === "153000" || d.time === "1530");
+            const hasFinalData = data.some(d => d.time && d.time.startsWith("1530"));
             const isLiveAPI = (actualDateStr === todayStr) && !hasFinalData;
 
             renderTrendChart(data, actualDateStr, isLiveAPI);
