@@ -1383,7 +1383,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                                 innerHtml += `
                                     <div style="display:flex; align-items:center; font-size:12px; font-weight:600; justify-content:space-between; gap: 30px;">
                                         <div style="display:flex; align-items:center;">
-                                            <span style="display:inline-block; width:8px; height:2px; background:${borderColor}; margin-right:8px; border-radius:1px;"></span>
+                                            <span style="display:inline-block; width:8px; height:4px; background:${borderColor}; margin-right:8px; border-radius:1px;"></span>
                                             <span style="color:${textSecondary};">${dp.dataset.label}</span>
                                         </div>
                                         <span style="color:${valColor}; text-align:right;">${formattedVal}</span>
