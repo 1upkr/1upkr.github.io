@@ -8,9 +8,9 @@ const DEFAULT_WATCHLISTS = {
 };
 
 const GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbxc8Q5iI7WxZurtV-1FDjTWKPUx_i049HSBAap2AyKYSvs8QMRHD3ZTa3xqfu0tJ1Za/exec";
-const NAVER_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbyO5MsA8aSNU29MwTv0Ka1GKgX0NB__6spSyIG38bhJllUKPcF_vIp06T8q3IkKM9cUGA/exec"; 
+const NAVER_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbymIKO0njjKUqFvgcjY39To9E2rkJMCqbwL0uWUjyyvVQREn6foLLdI44rVnoehvi6Ztg/exec"; 
 const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbwSD8MOLPrYjwTBVQX_Tq6pu-gTHlOeR7p0hUY2pHGACNc2NA6f4zICduC05ypO_EN6/exec"; 
-const TREND_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbyuOilNL21wr6ZGMgfPEe_2cez3sZH9u8pDwHFxVRKqE8ng90f7MeMg-0gSqfrKzyjqGQ/exec";
+const TREND_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbztb7AejLm2dkEA4JbXT3MZV59SnuFNsYuE-JEy6M8ocdb28TT_6s4880FuJGzDbNuoUg/exec";
 
 const CHO_HANGUL = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
 function getChosung(str) {
@@ -49,7 +49,9 @@ const EMPTY_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
 
 let localTickerDB = [];
 let trendChartInstance = null;
-let currentTrendTradeType = 'KRX'; 
+
+// 💡 탭 구분을 위해 기본값을 'ALL'로 설정
+let currentTrendMarketType = 'ALL'; 
 
 let state = {
     watchlists: JSON.parse(localStorage.getItem('marketdash_watchlists')) || JSON.parse(JSON.stringify(DEFAULT_WATCHLISTS)),
@@ -832,7 +834,6 @@ function updateDOMWithData(quotes) {
                 targetState = 'CLOSED_H';
             }
 
-            // 💡 [적용됨] 프리/포스트장 진행 중 여부 판별 (NXT 08:00~20:00)
             let isExtLive = false;
             
             if (isKR) {
@@ -863,7 +864,6 @@ function updateDOMWithData(quotes) {
             let mainIcon = ''; 
             let subHtml = '';
 
-            // 💡 [적용됨] LIVE 상태일 때 텍스트 스타일 (빨간색 및 볼드)
             const liveExtStyle = isExtLive ? 'color: var(--red); font-weight: 700;' : '';
 
             if (targetState === 'PRE') {
@@ -1085,9 +1085,9 @@ function renderNews(newsList) {
     container.innerHTML = html;
 }
 
-// 💡 [적용됨] 파라미터는 손대지 않고 기존 방식 그대로 유지
-async function fetchMarketTrend(tradeType = currentTrendTradeType) {
-    currentTrendTradeType = tradeType;
+// 💡 탭 구분에 따라 marketType(ALL, KOSPI, KOSDAQ)을 받아 처리합니다.
+async function fetchMarketTrend(marketType = currentTrendMarketType) {
+    currentTrendMarketType = marketType;
     const container = document.getElementById('trend-chart-wrapper');
     if (!container) return;
 
@@ -1098,7 +1098,8 @@ async function fetchMarketTrend(tradeType = currentTrendTradeType) {
     const isWeekend = (kstTime.getDay() === 0 || kstTime.getDay() === 6);
     const timeNum = kstTime.getHours() * 100 + kstTime.getMinutes();
     
-    const cacheKey = `market_trend_last_known_${tradeType}`;
+    // 캐시 키도 탭별로 별도 관리
+    const cacheKey = `market_trend_last_known_${marketType}`;
     let cached = null;
     try { 
         cached = JSON.parse(localStorage.getItem(cacheKey)); 
@@ -1111,7 +1112,6 @@ async function fetchMarketTrend(tradeType = currentTrendTradeType) {
         const isCacheFromPast = !isWeekend && (timeNum >= 900) && (cached.dateStr !== todayStr);
         
         if (!isCacheFromPast) {
-            // 💡 [적용됨] 15:30 데이터 유무로 뱃지 상태 판단
             const hasFinalDataCache = cached.data.some(d => d.time === "153000" || d.time === "1530");
             const isLiveCache = (cached.dateStr === todayStr) && !hasFinalDataCache;
             
@@ -1124,18 +1124,20 @@ async function fetchMarketTrend(tradeType = currentTrendTradeType) {
     }
 
     try {
-        // 💡 [제외됨] 문제가 되었던 파라미터 강제 변환 코드를 제거하고 원본 그대로 호출합니다.
-        const url = `${TREND_GAS_PROXY_URL}?tradeType=${tradeType}&marketType=ALL&t=${Date.now()}`;
+        // 💡 알아내신 구조대로 tradeType=KRX 고정, marketType=ALL/KOSPI/KOSDAQ 전달
+        const url = `${TREND_GAS_PROXY_URL}?tradeType=KRX&marketType=${marketType}&t=${Date.now()}`;
         const response = await fetch(url);
         if (!response.ok) throw new Error("Trend fetch failed");
         
         const json = await response.json();
+        
         if (json.success && json.data && Array.isArray(json.data.content)) {
             const data = json.data.content;
 
             if (data.length === 0) return;
 
             let actualDateStr = todayStr; 
+            // 💡 GAS에서 추가해준 bizdate 사용
             const apiDate = json.data.bizdate || json.data.bizDate || json.data.businessDate || json.data.date;
             
             if (apiDate && typeof apiDate === 'string' && apiDate.length >= 8) {
@@ -1150,7 +1152,6 @@ async function fetchMarketTrend(tradeType = currentTrendTradeType) {
                 }
             }
 
-            // 💡 [적용됨] API 데이터로 뱃지 상태 판단
             const hasFinalData = data.some(d => d.time === "153000" || d.time === "1530");
             const isLiveAPI = (actualDateStr === todayStr) && !hasFinalData;
 
@@ -1193,7 +1194,6 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
     }
     
     const badgeText = isLive ? 'LIVE' : 'CLOSED';
-    // 💡 [적용됨] LIVE 상태일 때 뱃지 텍스트 빨간색 적용
     const liveStyle = isLive ? 'color: var(--red);' : '';
 
     badgeContainer.innerHTML = `
@@ -1203,24 +1203,13 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
     `;
 
     const sortedData = dataList.slice().reverse();
-    
-    // 💡 [적용됨] X축 고정 라벨 생성 (09:00 ~ 15:30)
-    const fixedLabels = [];
-    for (let h = 9; h <= 15; h++) {
-        for (let m = 0; m < 60; m += 10) {
-            if (h === 15 && m > 30) continue;
-            fixedLabels.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
-        }
-    }
-
-    const individualData = new Array(fixedLabels.length).fill(null);
-    const foreignData = new Array(fixedLabels.length).fill(null);
-    const institutionData = new Array(fixedLabels.length).fill(null);
+    const labels = [];
+    const individualData = [];
+    const foreignData = [];
+    const institutionData = [];
 
     const instCodes = ['1000', '2000', '3000', '3100', '4000', '5000', '6000'];
-    let maxDataIndex = -1; 
 
-    // 데이터 매핑: 각 데이터를 고정된 X축 라벨 인덱스에 맞춰 삽입
     sortedData.forEach(d => {
         const t = d.time;
         if (!t || t.length < 4) return;
@@ -1238,40 +1227,29 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                 label = `${String(hh).padStart(2, '0')}:${String(bucketMm).padStart(2, '0')}`;
             }
 
-            const labelIdx = fixedLabels.indexOf(label);
-            if (labelIdx !== -1) {
-                let ind = 0, forgn = 0, inst = 0;
-                if (Array.isArray(d.netAmounts)) {
-                    d.netAmounts.forEach(item => {
-                        const val = (parseFloat(item.diffValue) || 0) / 100000000;
-                        if (item.investorGubun === '8000') ind = val;
-                        else if (item.investorGubun === '9000') forgn = val;
-                        else if (instCodes.includes(item.investorGubun)) inst += val;
-                    });
-                }
-                
-                individualData[labelIdx] = ind;
-                foreignData[labelIdx] = forgn;
-                institutionData[labelIdx] = inst;
-                
-                if (labelIdx > maxDataIndex) maxDataIndex = labelIdx;
+            let ind = 0, forgn = 0, inst = 0;
+            if (Array.isArray(d.netAmounts)) {
+                d.netAmounts.forEach(item => {
+                    const val = (parseFloat(item.diffValue) || 0) / 100000000;
+                    if (item.investorGubun === '8000') ind = val;
+                    else if (item.investorGubun === '9000') forgn = val;
+                    else if (instCodes.includes(item.investorGubun)) inst += val;
+                });
+            }
+
+            if (labels.length === 0 || labels[labels.length - 1] !== label) {
+                labels.push(label);
+                individualData.push(ind);
+                foreignData.push(forgn);
+                institutionData.push(inst);
+            } else {
+                const lastIdx = labels.length - 1;
+                individualData[lastIdx] = ind;
+                foreignData[lastIdx] = forgn;
+                institutionData[lastIdx] = inst;
             }
         }
     });
-
-    // 💡 [적용됨] 선 끊김 방지를 위해 마지막 데이터 인덱스까지 빈 슬롯(null)을 이전 값으로 채움
-    let lastInd = 0, lastForgn = 0, lastInst = 0;
-    for (let i = 0; i <= maxDataIndex; i++) {
-        if (individualData[i] === null) {
-            individualData[i] = lastInd;
-            foreignData[i] = lastForgn;
-            institutionData[i] = lastInst;
-        } else {
-            lastInd = individualData[i];
-            lastForgn = foreignData[i];
-            lastInst = institutionData[i];
-        }
-    }
 
     if (trendChartInstance) {
         trendChartInstance.destroy();
@@ -1300,7 +1278,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
     trendChartInstance = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: fixedLabels,
+            labels: labels,
             datasets: [
                 { 
                     label: '개인', data: individualData, borderColor: redColor, 
@@ -1367,11 +1345,6 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                             return;
                         }
 
-                        if (!tooltipModel.body || tooltipModel.dataPoints[0].parsed.y === null) {
-                            tooltipEl.style.opacity = 0;
-                            return;
-                        }
-
                         if (tooltipModel.body) {
                             const titleLines = tooltipModel.title || [];
                             let innerHtml = `<div style="font-family:'Inter', sans-serif;">`;
@@ -1384,7 +1357,6 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
 
                             tooltipModel.dataPoints.forEach(function(dp) {
                                 const val = dp.parsed.y;
-                                if (val === null) return; 
                                 const sign = val > 0 ? '+' : '';
                                 const valColor = val > 0 ? greenColor : (val < 0 ? redColor : textPrimary);
                                 const formattedVal = sign + new Intl.NumberFormat('ko-KR').format(Math.round(val)) + '억';
@@ -1442,8 +1414,15 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
     });
 }
 
-window.switchTrendMarket = function(tradeType) {
-    fetchMarketTrend(tradeType);
+// 💡 탭 버튼 클릭 시 활성화 상태 업데이트 및 새로운 시장 차트 호출
+window.switchTrendMarket = function(marketType) {
+    const tabs = document.querySelectorAll('.trend-tab-btn');
+    if (tabs.length > 0) {
+        tabs.forEach(btn => btn.classList.remove('active'));
+        const activeTab = Array.from(tabs).find(btn => btn.getAttribute('onclick').includes(marketType));
+        if (activeTab) activeTab.classList.add('active');
+    }
+    fetchMarketTrend(marketType);
 };
 
 document.addEventListener('DOMContentLoaded', init);
