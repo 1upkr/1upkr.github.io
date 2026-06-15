@@ -49,7 +49,7 @@ const EMPTY_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
 
 let localTickerDB = [];
 let trendChartInstance = null;
-let currentTrendTradeType = 'KOSPI';
+let currentTrendMarketType = 'KOSPI'; // 💡 KRX가 아닌 KOSPI로 기본값 명확화
 
 let state = {
     watchlists: JSON.parse(localStorage.getItem('marketdash_watchlists')) || JSON.parse(JSON.stringify(DEFAULT_WATCHLISTS)),
@@ -842,11 +842,10 @@ function updateDOMWithData(quotes) {
                 targetState = 'CLOSED_H';
             }
 
-            // 💡 프리장/애프터장이 현재 '진행 중(LIVE)'인지 판별하는 핵심 로직 (NXT 연동)
+            // 프리장/애프터장이 현재 '진행 중(LIVE)'인지 판별 (NXT 08:00~20:00 반영)
             let isExtLive = false;
             
             if (isKR) {
-                // 한국(Naver NXT 연동): 평일 08:00~09:00, 15:30~20:00
                 const now = new Date();
                 const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
                 const kstTime = new Date(utc + (9 * 3600000));
@@ -861,7 +860,6 @@ function updateDOMWithData(quotes) {
                     }
                 }
             } else {
-                // 미국(Yahoo): API가 주는 marketState 기반 판별
                 if (targetState === 'PRE' && mState === 'PRE') {
                     isExtLive = true;
                 } else if (targetState === 'POST' && mState === 'POST') {
@@ -876,7 +874,6 @@ function updateDOMWithData(quotes) {
             let mainIcon = ''; 
             let subHtml = '';
 
-            // 💡 LIVE 상태일 때 적용할 빨간색 텍스트 스타일
             const liveExtStyle = isExtLive ? 'color: var(--red); font-weight: 700;' : '';
 
             // 6. 상태별 UI 바인딩
@@ -1103,13 +1100,14 @@ function renderNews(newsList) {
 }
 
 // --- TREND FETCHING LOGIC ---
-async function fetchMarketTrend(tradeType = currentTrendTradeType) {
-    // 혹시 HTML 탭 버튼에 onclick="switchTrendMarket('KRX')" 처럼 되어있더라도 
-    // 에러가 나지 않고 네이버가 알아듣는 'KOSPI'로 자동 변환합니다.
-    let naverTradeType = tradeType;
-    if (tradeType === 'KRX') naverTradeType = 'KOSPI';
+async function fetchMarketTrend(reqMarketType = currentTrendMarketType) {
+    // 💡 HTML 버튼에서 혹시 'KRX'가 넘어온다면 네이버가 이해할 수 있는 'KOSPI'로 치환합니다.
+    let actualMarketType = reqMarketType;
+    if (reqMarketType === 'KRX') {
+        actualMarketType = 'KOSPI';
+    }
 
-    currentTrendTradeType = naverTradeType;
+    currentTrendMarketType = actualMarketType;
     const container = document.getElementById('trend-chart-wrapper');
     if (!container) return;
 
@@ -1120,8 +1118,7 @@ async function fetchMarketTrend(tradeType = currentTrendTradeType) {
     const isWeekend = (kstTime.getDay() === 0 || kstTime.getDay() === 6);
     const timeNum = kstTime.getHours() * 100 + kstTime.getMinutes();
     
-    // 캐시 키도 naverTradeType(KOSPI/KOSDAQ) 기준으로 분리
-    const cacheKey = `market_trend_last_known_${naverTradeType}`;
+    const cacheKey = `market_trend_last_known_${actualMarketType}`;
     let cached = null;
     try { 
         cached = JSON.parse(localStorage.getItem(cacheKey)); 
@@ -1130,11 +1127,11 @@ async function fetchMarketTrend(tradeType = currentTrendTradeType) {
     const kstOptions = { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' };
     const todayStr = new Intl.DateTimeFormat('ko-KR', kstOptions).format(kstTime).replace(/\s/g, ''); 
 
-    if (cached && cached.data) {
+    // 💡 과거에 저장된 잘못된 형태의 에러 캐시(빈 객체 등)로 인해 차트가 뻗는 것을 방지
+    if (cached && cached.data && Array.isArray(cached.data)) {
         const isCacheFromPast = !isWeekend && (timeNum >= 900) && (cached.dateStr !== todayStr);
         
         if (!isCacheFromPast) {
-            // 더 안전한 15:30 데이터 판별 (문자열 시작 기준)
             const hasFinalDataCache = cached.data.some(d => d.time && d.time.startsWith("1530"));
             const isLiveCache = (cached.dateStr === todayStr) && !hasFinalDataCache;
             
@@ -1144,16 +1141,19 @@ async function fetchMarketTrend(tradeType = currentTrendTradeType) {
         if (isWeekend || (timeNum >= 1600 && cached.dateStr === todayStr) || timeNum < 900) {
             return; 
         }
+    } else {
+        localStorage.removeItem(cacheKey); // 쓰레기 데이터 폐기
     }
 
     try {
-        // 💡 [완벽 해결 포인트]: tradeType에는 'KOSPI'를, marketType에는 'ALL'을 넣어야
-        // 네이버가 정상적으로 '코스피 시장'의 '모든 투자자 금액' 데이터를 내려줍니다.
-        const url = `${TREND_GAS_PROXY_URL}?tradeType=${naverTradeType}&marketType=ALL&t=${Date.now()}`;
+        // 💡 [핵심 해결 포인트]: 금액(AMOUNT) 요청은 'tradeType'에, 코스피(KOSPI) 요청은 'marketType'에 들어갑니다.
+        const url = `${TREND_GAS_PROXY_URL}?tradeType=AMOUNT&marketType=${actualMarketType}&t=${Date.now()}`;
+        
         const response = await fetch(url);
         if (!response.ok) throw new Error("Trend fetch failed");
         
         const json = await response.json();
+        
         if (json.success && json.data && Array.isArray(json.data.content)) {
             const data = json.data.content;
 
@@ -1189,7 +1189,8 @@ async function fetchMarketTrend(tradeType = currentTrendTradeType) {
         }
     } catch (error) {
         console.error("Trend Chart Error:", error);
-        if (!cached) {
+        // 에러가 났을 때 캐시마저 없으면 빈 화면 표시
+        if (!cached || !cached.data || !Array.isArray(cached.data)) {
             container.innerHTML = '<div class="empty-state"><p class="error-text">Failed to load trend data.</p></div>';
         }
     }
@@ -1216,7 +1217,6 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
     }
     
     const badgeText = isLive ? 'LIVE' : 'CLOSED';
-    // LIVE 상태일 때 빨간색 색상 지정
     const liveStyle = isLive ? 'color: var(--red);' : '';
 
     badgeContainer.innerHTML = `
@@ -1287,12 +1287,10 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
     let lastInd = 0, lastForgn = 0, lastInst = 0;
     for (let i = 0; i <= maxDataIndex; i++) {
         if (individualData[i] === null) {
-            // 값이 비어있다면 직전 값을 당겨서 채움
             individualData[i] = lastInd;
             foreignData[i] = lastForgn;
             institutionData[i] = lastInst;
         } else {
-            // 값이 있으면 마지막 값 갱신
             lastInd = individualData[i];
             lastForgn = foreignData[i];
             lastInst = institutionData[i];
@@ -1393,7 +1391,6 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                             return;
                         }
 
-                        // 빈 구간(미래)에 마우스를 올렸을 때 툴팁이 깨지는 현상 방지
                         if (!tooltipModel.body || tooltipModel.dataPoints[0].parsed.y === null) {
                             tooltipEl.style.opacity = 0;
                             return;
@@ -1469,7 +1466,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
     });
 }
 
-// 외부에서 코스피/코스닥 탭 버튼 클릭 시 호출할 수 있도록 window 객체에 할당
+// 💡 탭 버튼 클릭 시 'KRX'가 들어와도 내부에서 'KOSPI'로 치환되어 정상 작동합니다.
 window.switchTrendMarket = function(marketType) {
     fetchMarketTrend(marketType);
 };
