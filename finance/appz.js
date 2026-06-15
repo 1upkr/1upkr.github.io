@@ -10,7 +10,7 @@ const DEFAULT_WATCHLISTS = {
 const GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbxc8Q5iI7WxZurtV-1FDjTWKPUx_i049HSBAap2AyKYSvs8QMRHD3ZTa3xqfu0tJ1Za/exec";
 const NAVER_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbymIKO0njjKUqFvgcjY39To9E2rkJMCqbwL0uWUjyyvVQREn6foLLdI44rVnoehvi6Ztg/exec"; 
 const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbwSD8MOLPrYjwTBVQX_Tq6pu-gTHlOeR7p0hUY2pHGACNc2NA6f4zICduC05ypO_EN6/exec"; 
-const TREND_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbweuE_ty_22Nr8rwCR6ZmOawW-q_240KOv2d8eGfDNPrGWKP8oh5jaqr8e9FEYeSFfE_w/exec";
+const TREND_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbyV8COzKSWjJjeKTNZs-cixUJquW3TucUWpAWjTWqt4cIcsy_jFFyxDHQ-9J3nsMVlXIA/exec";
 
 const CHO_HANGUL = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
 function getChosung(str) {
@@ -1078,7 +1078,6 @@ async function fetchMarketTrend(tradeType = currentTrendTradeType) {
     const container = document.getElementById('trend-chart-wrapper');
     if (!container) return;
 
-    // 한국 표준시(KST) 정확히 계산하여 장중 여부 판별
     const now = new Date();
     const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
     const kstTime = new Date(utc + (9 * 3600000));
@@ -1086,9 +1085,6 @@ async function fetchMarketTrend(tradeType = currentTrendTradeType) {
     const isWeekend = (kstTime.getDay() === 0 || kstTime.getDay() === 6);
     const timeNum = kstTime.getHours() * 100 + kstTime.getMinutes();
     
-    // LIVE 상태를 16:00까지 연장하여 최종 정산 시간을 포함시킴
-    const isLive = !isWeekend && (timeNum >= 900 && timeNum < 1600);
-
     const cacheKey = `market_trend_last_known_${tradeType}`;
     let cached = null;
     try { 
@@ -1099,15 +1095,15 @@ async function fetchMarketTrend(tradeType = currentTrendTradeType) {
     const todayStr = new Intl.DateTimeFormat('ko-KR', kstOptions).format(kstTime).replace(/\s/g, ''); 
 
     if (cached && cached.data) {
-        // 🔥 [수정됨] 장이 시작된 시간(09:00 이후)인데 캐시된 날짜가 오늘 날짜와 다르다면, 
-        // 이전 영업일의 캐시이므로 화면에 먼저 그리지 않고 API 응답을 기다립니다.
         const isCacheFromPast = !isWeekend && (timeNum >= 900) && (cached.dateStr !== todayStr);
         
         if (!isCacheFromPast) {
-            renderTrendChart(cached.data, cached.dateStr || todayStr, isLive);
+            const hasFinalDataCache = cached.data.some(d => d.time === "153000" || d.time === "1530");
+            const isLiveCache = (cached.dateStr === todayStr) && !hasFinalDataCache;
+            
+            renderTrendChart(cached.data, cached.dateStr || todayStr, isLiveCache);
         }
         
-        // 주말이거나, 16시 이후이면서 캐시 날짜가 오늘과 같거나, 오전 9시 전이면 API 호출 중단
         if (isWeekend || (timeNum >= 1600 && cached.dateStr === todayStr) || timeNum < 900) {
             return; 
         }
@@ -1124,7 +1120,6 @@ async function fetchMarketTrend(tradeType = currentTrendTradeType) {
 
             if (data.length === 0) return;
 
-            // 백엔드에서 넘겨주는 실제 영업일 추출 (없으면 오늘 날짜 사용)
             let actualDateStr = todayStr; 
             const apiDate = json.data.bizdate || json.data.bizDate || json.data.businessDate || json.data.date;
             
@@ -1140,11 +1135,11 @@ async function fetchMarketTrend(tradeType = currentTrendTradeType) {
                 }
             }
 
-            // 차트 렌더링
-            renderTrendChart(data, actualDateStr, isLive);
+            const hasFinalData = data.some(d => d.time === "153000" || d.time === "1530");
+            const isLiveAPI = (actualDateStr === todayStr) && !hasFinalData;
 
-            // 🔥 [수정됨] 15:30 데이터 유무와 상관없이, 새로 받아온 최신 데이터는 항상 캐시에 덮어씁니다.
-            // 그래야 장중(09:00~15:30)에 새로고침을 해도 즉각적으로 방금 전 데이터를 띄울 수 있습니다.
+            renderTrendChart(data, actualDateStr, isLiveAPI);
+
             localStorage.setItem(cacheKey, JSON.stringify({
                 dateStr: actualDateStr,
                 data: data
@@ -1165,7 +1160,6 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
     const canvas = document.getElementById('trend-chart-canvas');
     if (!canvas) return;
 
-    // 우측 하단 HTML 뱃지 오버레이 (LIVE / CLOSED 및 날짜)
     let badgeContainer = document.getElementById('trend-date-badge');
     if (!badgeContainer) {
         badgeContainer = document.createElement('div');
@@ -1174,7 +1168,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
         badgeContainer.style.right = '0';
         badgeContainer.style.bottom = '0'; 
         badgeContainer.style.display = 'flex';
-        badgeContainer.style.alignItems = 'center'; // 1차: 컨테이너 기준 수직 중앙 정렬
+        badgeContainer.style.alignItems = 'center';
         badgeContainer.style.gap = '4px';
         badgeContainer.style.zIndex = '10';
         
@@ -1190,13 +1184,24 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
     `;
 
     const sortedData = dataList.slice().reverse();
-    const labels = [];
-    const individualData = [];
-    const foreignData = [];
-    const institutionData = [];
+    
+    // 💡 [수정 핵심]: X축 고정 라벨 생성 (09:00 ~ 15:30) - 40개의 고정 슬롯
+    const fixedLabels = [];
+    for (let h = 9; h <= 15; h++) {
+        for (let m = 0; m < 60; m += 10) {
+            if (h === 15 && m > 30) continue;
+            fixedLabels.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
+        }
+    }
+
+    const individualData = new Array(fixedLabels.length).fill(null);
+    const foreignData = new Array(fixedLabels.length).fill(null);
+    const institutionData = new Array(fixedLabels.length).fill(null);
 
     const instCodes = ['1000', '2000', '3000', '3100', '4000', '5000', '6000'];
+    let maxDataIndex = -1; // 데이터가 들어간 가장 마지막 슬롯의 인덱스 추적
 
+    // 데이터 매핑: 각 데이터를 고정된 X축 라벨 인덱스에 맞춰 삽입
     sortedData.forEach(d => {
         const t = d.time;
         if (!t || t.length < 4) return;
@@ -1205,11 +1210,8 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
         const mm = parseInt(t.substring(2, 4), 10);
         const timeVal = hh * 100 + mm;
 
-        // 09:00 ~ 16:00 사이의 데이터만 취급 (16:00 이후 데이터는 버림)
         if (timeVal >= 900 && timeVal <= 1600) {
             let label;
-            
-            // 15:30 ~ 16:00 사이에 들어오는 정산 데이터는 모두 "15:30" 라벨에 덮어씌움
             if (timeVal >= 1530) {
                 label = "15:30";
             } else {
@@ -1217,32 +1219,44 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                 label = `${String(hh).padStart(2, '0')}:${String(bucketMm).padStart(2, '0')}`;
             }
 
-            // 투자자별 순매수 대금 계산
-            let ind = 0, forgn = 0, inst = 0;
-            if (Array.isArray(d.netAmounts)) {
-                d.netAmounts.forEach(item => {
-                    const val = (parseFloat(item.diffValue) || 0) / 100000000;
-                    if (item.investorGubun === '8000') ind = val;
-                    else if (item.investorGubun === '9000') forgn = val;
-                    else if (instCodes.includes(item.investorGubun)) inst += val;
-                });
-            }
-
-            // 배열이 비어있거나 새로운 라벨(시간대)인 경우 배열에 새로 추가
-            if (labels.length === 0 || labels[labels.length - 1] !== label) {
-                labels.push(label);
-                individualData.push(ind);
-                foreignData.push(forgn);
-                institutionData.push(inst);
-            } else {
-                // 같은 시간대 라벨인 경우 마지막 데이터를 최신 값으로 덮어쓰기 (Overwrite)
-                const lastIdx = labels.length - 1;
-                individualData[lastIdx] = ind;
-                foreignData[lastIdx] = forgn;
-                institutionData[lastIdx] = inst;
+            const labelIdx = fixedLabels.indexOf(label);
+            if (labelIdx !== -1) {
+                let ind = 0, forgn = 0, inst = 0;
+                if (Array.isArray(d.netAmounts)) {
+                    d.netAmounts.forEach(item => {
+                        const val = (parseFloat(item.diffValue) || 0) / 100000000;
+                        if (item.investorGubun === '8000') ind = val;
+                        else if (item.investorGubun === '9000') forgn = val;
+                        else if (instCodes.includes(item.investorGubun)) inst += val;
+                    });
+                }
+                
+                // 동일 슬롯일 경우 마지막 데이터로 계속 덮어씀
+                individualData[labelIdx] = ind;
+                foreignData[labelIdx] = forgn;
+                institutionData[labelIdx] = inst;
+                
+                if (labelIdx > maxDataIndex) maxDataIndex = labelIdx;
             }
         }
     });
+
+    // 💡 [수정 핵심]: 선 끊김 방지를 위해 마지막 데이터 인덱스까지 빈 슬롯(null)을 이전 값으로 채움
+    let lastInd = 0, lastForgn = 0, lastInst = 0;
+    for (let i = 0; i <= maxDataIndex; i++) {
+        if (individualData[i] === null) {
+            // 값이 비어있다면 직전 값을 당겨서 채움 (선 이어지게)
+            individualData[i] = lastInd;
+            foreignData[i] = lastForgn;
+            institutionData[i] = lastInst;
+        } else {
+            // 값이 있으면 마지막 값 갱신
+            lastInd = individualData[i];
+            lastForgn = foreignData[i];
+            lastInst = institutionData[i];
+        }
+    }
+    // maxDataIndex 이후의 배열은 모두 null 상태로 유지됨 -> 차트가 더 이상 선을 그리지 않고 멈춤
 
     if (trendChartInstance) {
         trendChartInstance.destroy();
@@ -1271,7 +1285,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
     trendChartInstance = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: labels,
+            labels: fixedLabels,
             datasets: [
                 { 
                     label: '개인', data: individualData, borderColor: redColor, 
@@ -1338,6 +1352,12 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                             return;
                         }
 
+                        // 💡 빈 구간(미래)에 마우스를 올렸을 때 툴팁이 깨지는 현상 방지
+                        if (!tooltipModel.body || tooltipModel.dataPoints[0].parsed.y === null) {
+                            tooltipEl.style.opacity = 0;
+                            return;
+                        }
+
                         if (tooltipModel.body) {
                             const titleLines = tooltipModel.title || [];
                             let innerHtml = `<div style="font-family:'Inter', sans-serif;">`;
@@ -1350,6 +1370,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
 
                             tooltipModel.dataPoints.forEach(function(dp) {
                                 const val = dp.parsed.y;
+                                if (val === null) return; // 값이 없으면 렌더링 무시
                                 const sign = val > 0 ? '+' : '';
                                 const valColor = val > 0 ? greenColor : (val < 0 ? redColor : textPrimary);
                                 const formattedVal = sign + new Intl.NumberFormat('ko-KR').format(Math.round(val)) + '억';
