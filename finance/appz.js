@@ -49,7 +49,7 @@ const EMPTY_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
 
 let localTickerDB = [];
 let trendChartInstance = null;
-let currentTrendTradeType = 'KOSPI';
+let currentTrendMarketType = 'KOSPI';
 
 let state = {
     watchlists: JSON.parse(localStorage.getItem('marketdash_watchlists')) || JSON.parse(JSON.stringify(DEFAULT_WATCHLISTS)),
@@ -1103,8 +1103,8 @@ function renderNews(newsList) {
 }
 
 // --- TREND FETCHING LOGIC ---
-async function fetchMarketTrend(tradeType = currentTrendTradeType) {
-    currentTrendTradeType = tradeType;
+async function fetchMarketTrend(marketType = currentTrendMarketType) {
+    currentTrendMarketType = marketType; // 전달받은 시장(KOSPI/KOSDAQ)으로 업데이트
     const container = document.getElementById('trend-chart-wrapper');
     if (!container) return;
 
@@ -1115,7 +1115,8 @@ async function fetchMarketTrend(tradeType = currentTrendTradeType) {
     const isWeekend = (kstTime.getDay() === 0 || kstTime.getDay() === 6);
     const timeNum = kstTime.getHours() * 100 + kstTime.getMinutes();
     
-    const cacheKey = `market_trend_last_known_${tradeType}`;
+    // 캐시 키도 marketType 기준으로 저장
+    const cacheKey = `market_trend_last_known_${marketType}`;
     let cached = null;
     try { 
         cached = JSON.parse(localStorage.getItem(cacheKey)); 
@@ -1140,7 +1141,8 @@ async function fetchMarketTrend(tradeType = currentTrendTradeType) {
     }
 
     try {
-        const url = `${TREND_GAS_PROXY_URL}?tradeType=${tradeType}&marketType=AMOUNT&t=${Date.now()}`;
+        // 💡 [완벽 해결 포인트]: tradeType에는 'AMOUNT(대금)'를, marketType에는 'KOSPI/KOSDAQ'을 매칭!
+        const url = `${TREND_GAS_PROXY_URL}?tradeType=AMOUNT&marketType=${marketType}&t=${Date.now()}`;
         const response = await fetch(url);
         if (!response.ok) throw new Error("Trend fetch failed");
         
@@ -1461,8 +1463,8 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
 }
 
 // 외부에서 코스피/코스닥 탭 버튼 클릭 시 호출할 수 있도록 window 객체에 할당
-window.switchTrendMarket = function(tradeType) {
-    fetchMarketTrend(tradeType);
+window.switchTrendMarket = function(marketType) {
+    fetchMarketTrend(marketType);
 };
 
 document.addEventListener('DOMContentLoaded', init);
