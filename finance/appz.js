@@ -49,7 +49,7 @@ const EMPTY_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
 
 let localTickerDB = [];
 let trendChartInstance = null;
-let currentTrendTradeType = 'KRX';
+let currentTrendTradeType = 'KOSPI';
 
 let state = {
     watchlists: JSON.parse(localStorage.getItem('marketdash_watchlists')) || JSON.parse(JSON.stringify(DEFAULT_WATCHLISTS)),
@@ -1140,7 +1140,7 @@ async function fetchMarketTrend(tradeType = currentTrendTradeType) {
     }
 
     try {
-        const url = `${TREND_GAS_PROXY_URL}?tradeType=${tradeType}&marketType=ALL&t=${Date.now()}`;
+        const url = `${TREND_GAS_PROXY_URL}?tradeType=${tradeType}&marketType=AMOUNT&t=${Date.now()}`;
         const response = await fetch(url);
         if (!response.ok) throw new Error("Trend fetch failed");
         
