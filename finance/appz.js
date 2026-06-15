@@ -49,7 +49,7 @@ const EMPTY_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
 
 let localTickerDB = [];
 let trendChartInstance = null;
-let currentTrendTradeType = 'KRX';
+let currentTrendTradeType = 'KRX'; 
 
 let state = {
     watchlists: JSON.parse(localStorage.getItem('marketdash_watchlists')) || JSON.parse(JSON.stringify(DEFAULT_WATCHLISTS)),
@@ -64,7 +64,6 @@ let state = {
 const rowNodes = new Map(); let sortables = []; 
 function getSafeId(ticker) { return 'id_' + ticker.replace(/[^a-zA-Z0-9]/g, '_'); }
 
-// --- [최적화] 로컬 스토리지 I/O 병목 제거를 위한 메모리 캐시 변수 설정 ---
 let memoryPriceCache = {};
 try {
     memoryPriceCache = JSON.parse(localStorage.getItem('marketdash_price_cache')) || {};
@@ -72,7 +71,6 @@ try {
     memoryPriceCache = {};
 }
 
-// --- [최적화] Debounce를 적용한 스토리지 저장 함수 (디스크 쓰기 최소화) ---
 const saveCacheToStorage = debounce(() => {
     try {
         localStorage.setItem('marketdash_price_cache', JSON.stringify(memoryPriceCache));
@@ -83,27 +81,21 @@ const saveCacheToStorage = debounce(() => {
 
 // --- INITIALIZATION ---
 async function init() {
-    // 1. [UI 깜빡임 방지] 데이터 로딩 전 UI 상태(테마) 최우선 적용
     applyTheme(); 
     if (!state.sectionOrder || state.sectionOrder.length === 0) state.sectionOrder = Object.keys(state.watchlists);
 
-    // 2. [최적화] Page Visibility API: 백그라운드 전환 시 불필요한 리소스 방지 및 타이머 보정
     document.addEventListener('visibilitychange', () => {
         if (document.hidden) {
-            // 백그라운드 진입 시 타이머 일시 정지
             if (state.intervalId) clearInterval(state.intervalId);
         } else {
             const now = Date.now();
             const lastFetch = parseInt(localStorage.getItem('marketdash_last_fetch_time') || '0');
             
-            // 마지막 갱신 후 경과된 시간(초) 계산
             const elapsedSeconds = Math.floor((now - lastFetch) / 1000);
 
             if (lastFetch === 0 || elapsedSeconds >= 60) {
-                // 60초 이상 지났다면 즉시 갱신
                 forceRefresh();
             } else {
-                // 60초 미만이라면 흐른 시간만큼 카운터 차감 후 타이머 재개
                 state.countdown = 60 - elapsedSeconds;
                 updateTimerUI(state.countdown);
                 startTimer();
@@ -115,7 +107,6 @@ async function init() {
 
     renderLayout(); startTimer(); 
     
-    // 3. [최적화] 메모리에 올려둔 캐시 데이터를 사용하여 즉시 렌더링
     if (Object.keys(memoryPriceCache).length > 0) {
         updateDOMWithData(Object.values(memoryPriceCache));
     }
@@ -124,7 +115,6 @@ async function init() {
     const now = Date.now();
     const savedTab = localStorage.getItem('marketdash_active_tab');
     
-    // 4. [UX 유지] 이전에 News 탭을 보고 있었다면 News 데이터 로드, 아니면 Watchlist 데이터 로드
     if (savedTab === 'news') {
         const container = document.getElementById('news-container');
         const isStale = (now - state.lastNewsFetch) > 60000;
@@ -132,7 +122,6 @@ async function init() {
         
         if (isStale || isEmpty) fetchNews(); 
         
-        // Watchlist 갱신 타이머는 백그라운드에서 돌아가도록 설정
         if (now - lastFetchTime < 60000) {
             state.countdown = Math.ceil(60 - ((now - lastFetchTime) / 1000));
             updateTimerUI(state.countdown);
@@ -149,7 +138,6 @@ async function init() {
         }
     }
 
-    // 초기화 시 마켓 트렌드 차트 데이터 패치 추가
     fetchMarketTrend();
 
     initSwipeToDelete(); 
@@ -190,7 +178,6 @@ async function initTickerDB() {
     }
 }
 
-// --- SWIPE TO DELETE GESTURE LOGIC ---
 function initSwipeToDelete() {
     let touchStartX = 0;
     let touchStartY = 0;
@@ -262,7 +249,6 @@ function initSwipeToDelete() {
     });
 }
 
-// --- MOBILE TAB LOGIC ---
 window.switchMobileTab = function(tabName) {
     localStorage.setItem('marketdash_active_tab', tabName);
 
@@ -288,7 +274,6 @@ window.switchMobileTab = function(tabName) {
     }
 }
 
-// --- RENDERING & UI ---
 function renderLayout() {
     const dashboard = document.getElementById('dashboard');
     if (!dashboard) return;
@@ -474,7 +459,6 @@ function checkEmptyState(sectionId) {
     }
 }
 
-// --- DATA FETCHING & LOGIC ---
 async function fetchWithRetry(url, maxRetries = 3, baseDelayMs = 1000) {
     for (let attempt = 0; attempt < maxRetries; attempt++) {
         try {
@@ -681,7 +665,7 @@ function toggleThemeDropdown() {
     localStorage.setItem('marketdash_theme', state.theme); 
     applyTheme(); 
     toggleSettingsMenu(); 
-    if (trendChartInstance) fetchMarketTrend(); // 테마 변경 시 차트 다시 그리기
+    if (trendChartInstance) fetchMarketTrend(); 
 }
 function exportSettings() {
     const data = { watchlists: state.watchlists, sectionOrder: state.sectionOrder, expanded: state.expanded, theme: state.theme };
@@ -718,7 +702,6 @@ function openAboutModal() { toggleSettingsMenu(); const el = document.getElement
 function closeAboutModal() { const el = document.getElementById('about-modal'); if (el) el.classList.remove('active'); }
 function saveWatchlists() { localStorage.setItem('marketdash_watchlists', JSON.stringify(state.watchlists)); }
 
-// FetchData 
 async function fetchData() {
     localStorage.setItem('marketdash_last_fetch_time', Date.now().toString());
     const fetchPromises = []; 
@@ -764,7 +747,7 @@ function forceRefresh() {
     localStorage.setItem('marketdash_last_fetch_time', '0'); 
     state.lastNewsFetch = 0; 
     fetchData(); 
-    fetchMarketTrend(); // 강제 갱신 시 트렌드 차트도 새로고침
+    fetchMarketTrend();
     startTimer(); 
 }
 
@@ -777,7 +760,6 @@ function startTimer() {
     }, 1000);
 }
 
-// Update DOM 
 function updateDOMWithData(quotes) {
     requestAnimationFrame(() => {
         quotes.forEach(quote => {
@@ -785,12 +767,10 @@ function updateDOMWithData(quotes) {
             const nodes = rowNodes.get(ticker);
             if (!nodes || !nodes.row) return;
 
-            // 1. 기본 정규장 데이터 세팅
             const regPrice = quote.regularMarketPrice || 0; 
             const regChange = quote.regularMarketChange || 0;
             const regPct = quote.regularMarketChangePercent || 0; 
 
-            // 2. 장전(Pre) 데이터 준비 (volume 추가)
             let preData = null;
             if (quote.preMarketPrice !== undefined && quote.preMarketPrice !== null) {
                 const change = quote.preMarketPrice - regPrice;
@@ -799,7 +779,6 @@ function updateDOMWithData(quotes) {
                 preData = { price: quote.preMarketPrice, change: change, pct: pct, label: 'pre', time: quote.preMarketTime || 0, volume: vol };
             }
 
-            // 3. 장후(Post) 데이터 준비 (volume 추가)
             let postData = null;
             if (quote.postMarketPrice !== undefined && quote.postMarketPrice !== null) {
                 const change = quote.postMarketPrice - regPrice;
@@ -808,7 +787,6 @@ function updateDOMWithData(quotes) {
                 postData = { price: quote.postMarketPrice, change: change, pct: pct, label: 'post', time: quote.postMarketTime || 0, volume: vol };
             }
 
-            // 4. 절대 시간(Timestamp) 기반 상태 판별 로직
             const regTime = quote.regularMarketTime || 0;
             const preTime = preData ? preData.time : 0;
             const postTime = postData ? postData.time : 0;
@@ -854,19 +832,45 @@ function updateDOMWithData(quotes) {
                 targetState = 'CLOSED_H';
             }
 
-            // 5. 출력용 변수 초기화
+            // 💡 [적용됨] 프리/포스트장 진행 중 여부 판별 (NXT 08:00~20:00)
+            let isExtLive = false;
+            
+            if (isKR) {
+                const now = new Date();
+                const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+                const kstTime = new Date(utc + (9 * 3600000));
+                const day = kstTime.getDay();
+                const timeNum = kstTime.getHours() * 100 + kstTime.getMinutes();
+                
+                if (day !== 0 && day !== 6) { 
+                    if (targetState === 'PRE' && timeNum >= 800 && timeNum < 900) {
+                        isExtLive = true;
+                    } else if (targetState === 'POST' && timeNum >= 1530 && timeNum <= 2000) {
+                        isExtLive = true;
+                    }
+                }
+            } else {
+                if (targetState === 'PRE' && mState === 'PRE') {
+                    isExtLive = true;
+                } else if (targetState === 'POST' && mState === 'POST') {
+                    isExtLive = true;
+                }
+            }
+
             let mainPrice = regPrice;
             let mainChange = regChange;
             let mainPct = regPct;
             let mainIcon = ''; 
             let subHtml = '';
 
-            // 6. 상태별 UI 바인딩
+            // 💡 [적용됨] LIVE 상태일 때 텍스트 스타일 (빨간색 및 볼드)
+            const liveExtStyle = isExtLive ? 'color: var(--red); font-weight: 700;' : '';
+
             if (targetState === 'PRE') {
                 mainPrice = preData.price;
                 mainChange = preData.change;
                 mainPct = preData.pct;
-                mainIcon = `<span class="main-ext-label">${preData.label}</span>`; 
+                mainIcon = `<span class="main-ext-label" style="${liveExtStyle}">${preData.label}</span>`; 
                 
                 const regIsUp = regChange >= 0;
                 const regColor = regIsUp ? 'up' : 'down';
@@ -877,7 +881,7 @@ function updateDOMWithData(quotes) {
                 mainPrice = postData.price;
                 mainChange = postData.change;
                 mainPct = postData.pct;
-                mainIcon = `<span class="main-ext-label">${postData.label}</span>`; 
+                mainIcon = `<span class="main-ext-label" style="${liveExtStyle}">${postData.label}</span>`; 
                 
                 const regIsUp = regChange >= 0;
                 const regColor = regIsUp ? 'up' : 'down';
@@ -904,7 +908,6 @@ function updateDOMWithData(quotes) {
                 }
             }
 
-            // 7. 색상 및 애니메이션 처리
             const isUp = mainChange >= 0;
             const colorClass = isUp ? 'up' : 'down'; 
             const sign = isUp ? '+' : '-'; 
@@ -921,7 +924,6 @@ function updateDOMWithData(quotes) {
                 }, 10);
             }
             
-            // 8. DOM 업데이트
             nodes.price.setAttribute('data-price', mainPrice);
             
             const dbInfo = localTickerDB.find(q => q.s.toUpperCase() === ticker.toUpperCase());
@@ -1001,7 +1003,6 @@ function formatCompact(num) {
     return new Intl.NumberFormat('en-US', { notation: 'compact', compactDisplay: 'short', maximumFractionDigits: 2 }).format(num);
 }
 
-// --- NEWS FETCHING & RENDERING LOGIC ---
 async function fetchNews() {
     const spinner = document.getElementById('news-spinner');
     const container = document.getElementById('news-container');
@@ -1084,33 +1085,46 @@ function renderNews(newsList) {
     container.innerHTML = html;
 }
 
-// --- TREND FETCHING LOGIC ---
+// 💡 [적용됨] 파라미터는 손대지 않고 기존 방식 그대로 유지
 async function fetchMarketTrend(tradeType = currentTrendTradeType) {
     currentTrendTradeType = tradeType;
     const container = document.getElementById('trend-chart-wrapper');
     if (!container) return;
 
-    // 한국 표준시(KST) 정확히 계산하여 장중 여부 판별
     const now = new Date();
     const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
     const kstTime = new Date(utc + (9 * 3600000));
     
     const isWeekend = (kstTime.getDay() === 0 || kstTime.getDay() === 6);
     const timeNum = kstTime.getHours() * 100 + kstTime.getMinutes();
-    const isLive = !isWeekend && (timeNum >= 900 && timeNum < 1530);
-
+    
     const cacheKey = `market_trend_last_known_${tradeType}`;
     let cached = null;
     try { 
         cached = JSON.parse(localStorage.getItem(cacheKey)); 
     } catch(e) { console.warn("Trend cache parse error"); }
 
+    const kstOptions = { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' };
+    const todayStr = new Intl.DateTimeFormat('ko-KR', kstOptions).format(kstTime).replace(/\s/g, ''); 
+
     if (cached && cached.data) {
-        renderTrendChart(cached.data, cached.dateStr, isLive);
-        if (isWeekend) return; 
+        const isCacheFromPast = !isWeekend && (timeNum >= 900) && (cached.dateStr !== todayStr);
+        
+        if (!isCacheFromPast) {
+            // 💡 [적용됨] 15:30 데이터 유무로 뱃지 상태 판단
+            const hasFinalDataCache = cached.data.some(d => d.time === "153000" || d.time === "1530");
+            const isLiveCache = (cached.dateStr === todayStr) && !hasFinalDataCache;
+            
+            renderTrendChart(cached.data, cached.dateStr || todayStr, isLiveCache);
+        }
+        
+        if (isWeekend || (timeNum >= 1600 && cached.dateStr === todayStr) || timeNum < 900) {
+            return; 
+        }
     }
 
     try {
+        // 💡 [제외됨] 문제가 되었던 파라미터 강제 변환 코드를 제거하고 원본 그대로 호출합니다.
         const url = `${TREND_GAS_PROXY_URL}?tradeType=${tradeType}&marketType=ALL&t=${Date.now()}`;
         const response = await fetch(url);
         if (!response.ok) throw new Error("Trend fetch failed");
@@ -1121,18 +1135,32 @@ async function fetchMarketTrend(tradeType = currentTrendTradeType) {
 
             if (data.length === 0) return;
 
-            const kstOptions = { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' };
-            const todayStr = new Intl.DateTimeFormat('ko-KR', kstOptions).format(kstTime).replace(/\s/g, ''); 
-
-            renderTrendChart(data, todayStr, isLive);
-
-            const hasFinalData = data.some(d => d.time === "153000" || d.time === "1530");
-            if (hasFinalData || !cached) {
-                localStorage.setItem(cacheKey, JSON.stringify({
-                    dateStr: todayStr,
-                    data: data
-                }));
+            let actualDateStr = todayStr; 
+            const apiDate = json.data.bizdate || json.data.bizDate || json.data.businessDate || json.data.date;
+            
+            if (apiDate && typeof apiDate === 'string' && apiDate.length >= 8) {
+                const y = apiDate.substring(0, 4);
+                const m = apiDate.substring(4, 6);
+                const d = apiDate.substring(6, 8);
+                actualDateStr = `${y}.${m}.${d}.`;
+            } else if (data[0] && data[0].date) {
+                const dStr = String(data[0].date);
+                if (dStr.length >= 8) {
+                    actualDateStr = `${dStr.substring(0,4)}.${dStr.substring(4,6)}.${dStr.substring(6,8)}.`;
+                }
             }
+
+            // 💡 [적용됨] API 데이터로 뱃지 상태 판단
+            const hasFinalData = data.some(d => d.time === "153000" || d.time === "1530");
+            const isLiveAPI = (actualDateStr === todayStr) && !hasFinalData;
+
+            renderTrendChart(data, actualDateStr, isLiveAPI);
+
+            localStorage.setItem(cacheKey, JSON.stringify({
+                dateStr: actualDateStr,
+                data: data
+            }));
+
         } else {
             throw new Error("Invalid trend data structure");
         }
@@ -1148,7 +1176,6 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
     const canvas = document.getElementById('trend-chart-canvas');
     if (!canvas) return;
 
-    // 우측 하단 HTML 뱃지 오버레이 (LIVE / CLOSED 및 날짜)
     let badgeContainer = document.getElementById('trend-date-badge');
     if (!badgeContainer) {
         badgeContainer = document.createElement('div');
@@ -1157,7 +1184,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
         badgeContainer.style.right = '0';
         badgeContainer.style.bottom = '0'; 
         badgeContainer.style.display = 'flex';
-        badgeContainer.style.alignItems = 'center'; // 1차: 컨테이너 기준 수직 중앙 정렬
+        badgeContainer.style.alignItems = 'center';
         badgeContainer.style.gap = '4px';
         badgeContainer.style.zIndex = '10';
         
@@ -1166,21 +1193,34 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
     }
     
     const badgeText = isLive ? 'LIVE' : 'CLOSED';
+    // 💡 [적용됨] LIVE 상태일 때 뱃지 텍스트 빨간색 적용
+    const liveStyle = isLive ? 'color: var(--red);' : '';
+
     badgeContainer.innerHTML = `
-        <span class="main-ext-label" style="margin: 0; font-size: 0.4rem; padding: 0.15rem 0.35rem; line-height: 1; transform: none; display: block;">${badgeText}</span>
+        <span class="main-ext-label" style="margin: 0; font-size: 0.4rem; padding: 0.15rem 0.35rem; line-height: 1; transform: none; display: block; ${liveStyle}">${badgeText}</span>
         
         <span style="font-size: 0.65rem; font-weight: 500; color: var(--text-secondary); font-family: 'Inter', sans-serif; line-height: 1; display: block; transform: translateY(0.5px);">${dateStr}</span>
     `;
 
     const sortedData = dataList.slice().reverse();
-    const labels = [];
-    const individualData = [];
-    const foreignData = [];
-    const institutionData = [];
+    
+    // 💡 [적용됨] X축 고정 라벨 생성 (09:00 ~ 15:30)
+    const fixedLabels = [];
+    for (let h = 9; h <= 15; h++) {
+        for (let m = 0; m < 60; m += 10) {
+            if (h === 15 && m > 30) continue;
+            fixedLabels.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
+        }
+    }
+
+    const individualData = new Array(fixedLabels.length).fill(null);
+    const foreignData = new Array(fixedLabels.length).fill(null);
+    const institutionData = new Array(fixedLabels.length).fill(null);
 
     const instCodes = ['1000', '2000', '3000', '3100', '4000', '5000', '6000'];
-    let lastAddedLabel = "";
+    let maxDataIndex = -1; 
 
+    // 데이터 매핑: 각 데이터를 고정된 X축 라벨 인덱스에 맞춰 삽입
     sortedData.forEach(d => {
         const t = d.time;
         if (!t || t.length < 4) return;
@@ -1189,14 +1229,17 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
         const mm = parseInt(t.substring(2, 4), 10);
         const timeVal = hh * 100 + mm;
 
-        if (timeVal >= 900 && timeVal <= 1530) {
-            const bucketMm = Math.floor(mm / 10) * 10;
-            const label = `${String(hh).padStart(2, '0')}:${String(bucketMm).padStart(2, '0')}`;
-            
-            if (label !== lastAddedLabel) {
-                labels.push(label);
-                lastAddedLabel = label;
+        if (timeVal >= 900 && timeVal <= 1600) {
+            let label;
+            if (timeVal >= 1530) {
+                label = "15:30";
+            } else {
+                const bucketMm = Math.floor(mm / 10) * 10;
+                label = `${String(hh).padStart(2, '0')}:${String(bucketMm).padStart(2, '0')}`;
+            }
 
+            const labelIdx = fixedLabels.indexOf(label);
+            if (labelIdx !== -1) {
                 let ind = 0, forgn = 0, inst = 0;
                 if (Array.isArray(d.netAmounts)) {
                     d.netAmounts.forEach(item => {
@@ -1206,12 +1249,29 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                         else if (instCodes.includes(item.investorGubun)) inst += val;
                     });
                 }
-                individualData.push(ind);
-                foreignData.push(forgn);
-                institutionData.push(inst);
+                
+                individualData[labelIdx] = ind;
+                foreignData[labelIdx] = forgn;
+                institutionData[labelIdx] = inst;
+                
+                if (labelIdx > maxDataIndex) maxDataIndex = labelIdx;
             }
         }
     });
+
+    // 💡 [적용됨] 선 끊김 방지를 위해 마지막 데이터 인덱스까지 빈 슬롯(null)을 이전 값으로 채움
+    let lastInd = 0, lastForgn = 0, lastInst = 0;
+    for (let i = 0; i <= maxDataIndex; i++) {
+        if (individualData[i] === null) {
+            individualData[i] = lastInd;
+            foreignData[i] = lastForgn;
+            institutionData[i] = lastInst;
+        } else {
+            lastInd = individualData[i];
+            lastForgn = foreignData[i];
+            lastInst = institutionData[i];
+        }
+    }
 
     if (trendChartInstance) {
         trendChartInstance.destroy();
@@ -1240,7 +1300,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
     trendChartInstance = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: labels,
+            labels: fixedLabels,
             datasets: [
                 { 
                     label: '개인', data: individualData, borderColor: redColor, 
@@ -1271,11 +1331,9 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                 legend: { 
                     position: 'top',
                     align: 'end', 
-                    // 💡 [수정됨] 차트 본문과의 간격을 여기서 확보
                     padding: 15, 
                     labels: { 
                         color: textSecondary, font: { family: "'Inter', sans-serif", size: 12, weight: 600 },
-                        // 💡 [수정됨] 범례 텍스트 상하좌우 여백을 20 -> 8로 줄여 윗부분 불필요한 공간 제거
                         usePointStyle: false, boxWidth: 8, boxHeight: 2, padding: 8
                     } 
                 },
@@ -1309,6 +1367,11 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                             return;
                         }
 
+                        if (!tooltipModel.body || tooltipModel.dataPoints[0].parsed.y === null) {
+                            tooltipEl.style.opacity = 0;
+                            return;
+                        }
+
                         if (tooltipModel.body) {
                             const titleLines = tooltipModel.title || [];
                             let innerHtml = `<div style="font-family:'Inter', sans-serif;">`;
@@ -1321,6 +1384,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
 
                             tooltipModel.dataPoints.forEach(function(dp) {
                                 const val = dp.parsed.y;
+                                if (val === null) return; 
                                 const sign = val > 0 ? '+' : '';
                                 const valColor = val > 0 ? greenColor : (val < 0 ? redColor : textPrimary);
                                 const formattedVal = sign + new Intl.NumberFormat('ko-KR').format(Math.round(val)) + '억';
@@ -1329,7 +1393,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                                 innerHtml += `
                                     <div style="display:flex; align-items:center; font-size:12px; font-weight:600; justify-content:space-between; gap: 30px;">
                                         <div style="display:flex; align-items:center;">
-                                            <span style="display:inline-block; width:8px; height:2px; background:${borderColor}; margin-right:8px; border-radius:1px;"></span>
+                                            <span style="display:inline-block; width:12px; height:4px; background:${borderColor}; margin-right:8px; border-radius:2px;"></span>
                                             <span style="color:${textSecondary};">${dp.dataset.label}</span>
                                         </div>
                                         <span style="color:${valColor}; text-align:right;">${formattedVal}</span>
@@ -1367,10 +1431,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                     grid: { color: gridColor, drawBorder: false, borderDash: [4, 4] }, 
                     ticks: { 
                         color: textSecondary, font: { family: "'Inter', sans-serif", size: 11 }, padding: 10,
-                        
-                        // 💡 [추가] Y축 텍스트 가로 중앙 정렬
                         crossAlign: 'center', 
-                        
                         callback: function(value) {
                             return new Intl.NumberFormat('ko-KR').format(value / 1000);
                         }
@@ -1380,7 +1441,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
         }
     });
 }
-// 외부에서 코스피/코스닥 탭 버튼 클릭 시 호출할 수 있도록 window 객체에 할당
+
 window.switchTrendMarket = function(tradeType) {
     fetchMarketTrend(tradeType);
 };
