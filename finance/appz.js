@@ -1352,8 +1352,15 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                     align: 'end', 
                     padding: 15, 
                     labels: { 
-                        color: textSecondary, font: { family: "'Inter', sans-serif", size: 12, weight: 600 },
-                        usePointStyle: false, boxWidth: 8, boxHeight: 2, padding: 8
+                        color: textSecondary, 
+                        font: { family: "'Inter', sans-serif", size: 12, weight: 600 },
+                        usePointStyle: false, 
+                        boxWidth: 12,          // 선의 가로 길이
+                        boxHeight: 4,          // 선의 두께
+                        useBorderRadius: true, // 모서리 둥글기 속성 활성화
+                        borderRadius: 2,       // 모서리 둥글기 값
+                        
+                        padding: 15
                     } 
                 },
                 tooltip: {
