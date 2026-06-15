@@ -1177,8 +1177,12 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
     }
     
     const badgeText = isLive ? 'LIVE' : 'CLOSED';
+    
+    // 💡 [수정됨] LIVE 상태일 때만 글씨 색상을 빨간색(var(--red))으로 지정합니다.
+    const liveStyle = isLive ? 'color: var(--red);' : '';
+
     badgeContainer.innerHTML = `
-        <span class="main-ext-label" style="margin: 0; font-size: 0.4rem; padding: 0.15rem 0.35rem; line-height: 1; transform: none; display: block;">${badgeText}</span>
+        <span class="main-ext-label" style="margin: 0; font-size: 0.4rem; padding: 0.15rem 0.35rem; line-height: 1; transform: none; display: block; ${liveStyle}">${badgeText}</span>
         
         <span style="font-size: 0.65rem; font-weight: 500; color: var(--text-secondary); font-family: 'Inter', sans-serif; line-height: 1; display: block; transform: translateY(0.5px);">${dateStr}</span>
     `;
