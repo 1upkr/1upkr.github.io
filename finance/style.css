@@ -695,8 +695,8 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
     background: transparent;
     border: none;
     color: var(--text-secondary);
-    font-size: 0.75rem;
-    font-weight: 600;
+    font-size: 0.65rem;
+    font-weight: 700;
     padding: 0.4rem 0.75rem;
     border-radius: 6px;
     cursor: pointer;
