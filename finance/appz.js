@@ -10,7 +10,7 @@ const DEFAULT_WATCHLISTS = {
 const GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbxc8Q5iI7WxZurtV-1FDjTWKPUx_i049HSBAap2AyKYSvs8QMRHD3ZTa3xqfu0tJ1Za/exec";
 const NAVER_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbymIKO0njjKUqFvgcjY39To9E2rkJMCqbwL0uWUjyyvVQREn6foLLdI44rVnoehvi6Ztg/exec"; 
 const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbwSD8MOLPrYjwTBVQX_Tq6pu-gTHlOeR7p0hUY2pHGACNc2NA6f4zICduC05ypO_EN6/exec"; 
-const TREND_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbztb7AejLm2dkEA4JbXT3MZV59SnuFNsYuE-JEy6M8ocdb28TT_6s4880FuJGzDbNuoUg/exec";
+const TREND_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbyV8COzKSWjJjeKTNZs-cixUJquW3TucUWpAWjTWqt4cIcsy_jFFyxDHQ-9J3nsMVlXIA/exec";
 
 const CHO_HANGUL = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
 function getChosung(str) {
@@ -50,8 +50,8 @@ const EMPTY_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
 let localTickerDB = [];
 let trendChartInstance = null;
 
-// 💡 [수정] 로컬스토리지에서 마지막으로 본 탭을 기억합니다. (처음 방문 시 ALL)
-let currentTrendMarketType = localStorage.getItem('marketdash_trend_tab') || 'ALL';
+// 로컬스토리지에서 탭 상태를 기억하여 불러오기 (기본값 ALL)
+let currentTrendMarketType = localStorage.getItem('marketdash_trend_tab') || 'ALL'; 
 
 let state = {
     watchlists: JSON.parse(localStorage.getItem('marketdash_watchlists')) || JSON.parse(JSON.stringify(DEFAULT_WATCHLISTS)),
@@ -140,7 +140,15 @@ async function init() {
         }
     }
 
-    fetchMarketTrend();
+    // 💡 차트 초기화 시 현재 기억된 탭의 버튼에 UI active 적용
+    const tabs = document.querySelectorAll('.trend-tab-btn');
+    if (tabs.length > 0) {
+        tabs.forEach(btn => btn.classList.remove('active'));
+        const activeTab = Array.from(tabs).find(btn => btn.getAttribute('onclick').includes(currentTrendMarketType));
+        if (activeTab) activeTab.classList.add('active');
+    }
+
+    fetchMarketTrend(currentTrendMarketType);
 
     initSwipeToDelete(); 
     
@@ -296,7 +304,7 @@ function renderLayout() {
         sectionContainer.dataset.id = sectionId;
 
         const guideText = sectionId === 'kr' 
-            ? "Please choose a ticker from the search results only." 
+            ? "Please choose a ticker from the search list only." 
             : "Please enter only the ticker symbol from Yahoo Finance.";
 
         sectionContainer.innerHTML = `
@@ -834,43 +842,17 @@ function updateDOMWithData(quotes) {
                 targetState = 'CLOSED_H';
             }
 
-            let isExtLive = false;
-            
-            if (isKR) {
-                const now = new Date();
-                const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
-                const kstTime = new Date(utc + (9 * 3600000));
-                const day = kstTime.getDay();
-                const timeNum = kstTime.getHours() * 100 + kstTime.getMinutes();
-                
-                if (day !== 0 && day !== 6) { 
-                    if (targetState === 'PRE' && timeNum >= 800 && timeNum < 900) {
-                        isExtLive = true;
-                    } else if (targetState === 'POST' && timeNum >= 1530 && timeNum <= 2000) {
-                        isExtLive = true;
-                    }
-                }
-            } else {
-                if (targetState === 'PRE' && mState === 'PRE') {
-                    isExtLive = true;
-                } else if (targetState === 'POST' && mState === 'POST') {
-                    isExtLive = true;
-                }
-            }
-
             let mainPrice = regPrice;
             let mainChange = regChange;
             let mainPct = regPct;
             let mainIcon = ''; 
             let subHtml = '';
 
-            const liveExtStyle = isExtLive ? 'color: var(--red); font-weight: 700;' : '';
-
             if (targetState === 'PRE') {
                 mainPrice = preData.price;
                 mainChange = preData.change;
                 mainPct = preData.pct;
-                mainIcon = `<span class="main-ext-label" style="${liveExtStyle}">${preData.label}</span>`; 
+                mainIcon = `<span class="main-ext-label">${preData.label}</span>`; 
                 
                 const regIsUp = regChange >= 0;
                 const regColor = regIsUp ? 'up' : 'down';
@@ -881,7 +863,7 @@ function updateDOMWithData(quotes) {
                 mainPrice = postData.price;
                 mainChange = postData.change;
                 mainPct = postData.pct;
-                mainIcon = `<span class="main-ext-label" style="${liveExtStyle}">${postData.label}</span>`; 
+                mainIcon = `<span class="main-ext-label">${postData.label}</span>`; 
                 
                 const regIsUp = regChange >= 0;
                 const regColor = regIsUp ? 'up' : 'down';
@@ -1085,20 +1067,16 @@ function renderNews(newsList) {
     container.innerHTML = html;
 }
 
-// 💡 [수정] 탭 구분에 따라 marketType(ALL, KOSPI, KOSDAQ)을 받아 처리합니다.
+// 💡 탭 상태 저장 및 캐시 잔상(깜빡임) 방지 로직 적용
 async function fetchMarketTrend(marketType = currentTrendMarketType) {
-    currentTrendMarketType = marketType;
-    
-    // 💡 1. 탭 상태 저장 (새로고침 해도 유지되도록)
-    localStorage.setItem('marketdash_trend_tab', currentTrendMarketType);
-
-    // 💡 2. UI 탭 활성화 상태 즉시 업데이트
-    const tabs = document.querySelectorAll('.trend-tab-btn');
-    if (tabs.length > 0) {
-        tabs.forEach(btn => btn.classList.remove('active'));
-        const activeTab = Array.from(tabs).find(btn => btn.getAttribute('onclick').includes(marketType));
-        if (activeTab) activeTab.classList.add('active');
+    // 이전 탭의 차트가 남아있어 잔상이 생기는 문제 해결 (탭이 바뀌면 기존 차트 즉시 삭제)
+    if (currentTrendMarketType !== marketType && trendChartInstance) {
+        trendChartInstance.destroy();
+        trendChartInstance = null;
     }
+
+    currentTrendMarketType = marketType;
+    localStorage.setItem('marketdash_trend_tab', currentTrendMarketType); // 마지막 탭 기억
 
     const container = document.getElementById('trend-chart-wrapper');
     if (!container) return;
@@ -1110,7 +1088,6 @@ async function fetchMarketTrend(marketType = currentTrendMarketType) {
     const isWeekend = (kstTime.getDay() === 0 || kstTime.getDay() === 6);
     const timeNum = kstTime.getHours() * 100 + kstTime.getMinutes();
     
-    // 💡 3. 캐시 키를 marketType별로 독립적으로 관리합니다. (ALL, KOSPI, KOSDAQ 각각 저장)
     const cacheKey = `market_trend_last_known_${marketType}`;
     let cached = null;
     try { 
@@ -1120,7 +1097,6 @@ async function fetchMarketTrend(marketType = currentTrendMarketType) {
     const kstOptions = { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' };
     const todayStr = new Intl.DateTimeFormat('ko-KR', kstOptions).format(kstTime).replace(/\s/g, ''); 
 
-    // 캐시가 있으면 로딩 대기 없이 즉각적으로 화면에 뿌려줍니다.
     if (cached && cached.data) {
         const isCacheFromPast = !isWeekend && (timeNum >= 900) && (cached.dateStr !== todayStr);
         
@@ -1137,7 +1113,6 @@ async function fetchMarketTrend(marketType = currentTrendMarketType) {
     }
 
     try {
-        // 백엔드로 선택된 marketType에 맞춰 데이터 요청
         const url = `${TREND_GAS_PROXY_URL}?tradeType=KRX&marketType=${marketType}&t=${Date.now()}`;
         const response = await fetch(url);
         if (!response.ok) throw new Error("Trend fetch failed");
@@ -1169,7 +1144,6 @@ async function fetchMarketTrend(marketType = currentTrendMarketType) {
 
             renderTrendChart(data, actualDateStr, isLiveAPI);
 
-            // 💡 받아온 새로운 데이터를 해당 시장 탭의 전용 캐시에 저장
             localStorage.setItem(cacheKey, JSON.stringify({
                 dateStr: actualDateStr,
                 data: data
@@ -1198,7 +1172,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
         badgeContainer.style.right = '0';
         badgeContainer.style.bottom = '0'; 
         badgeContainer.style.display = 'flex';
-        badgeContainer.style.alignItems = 'center';
+        badgeContainer.style.alignItems = 'center'; 
         badgeContainer.style.gap = '4px';
         badgeContainer.style.zIndex = '10';
         
@@ -1208,20 +1182,29 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
     
     const badgeText = isLive ? 'LIVE' : 'CLOSED';
     const liveStyle = isLive ? 'color: var(--red);' : '';
-
+    
     badgeContainer.innerHTML = `
         <span class="main-ext-label" style="margin: 0; font-size: 0.4rem; padding: 0.15rem 0.35rem; line-height: 1; transform: none; display: block; ${liveStyle}">${badgeText}</span>
-        
         <span style="font-size: 0.65rem; font-weight: 500; color: var(--text-secondary); font-family: 'Inter', sans-serif; line-height: 1; display: block; transform: translateY(0.5px);">${dateStr}</span>
     `;
 
     const sortedData = dataList.slice().reverse();
-    const labels = [];
-    const individualData = [];
-    const foreignData = [];
-    const institutionData = [];
+    
+    // 💡 [적용됨] 15:30분까지 차트 배경 뼈대(X축) 미리 생성 (고정 슬롯 방식)
+    const fixedLabels = [];
+    for (let h = 9; h <= 15; h++) {
+        for (let m = 0; m < 60; m += 10) {
+            if (h === 15 && m > 30) continue;
+            fixedLabels.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
+        }
+    }
+
+    const individualData = new Array(fixedLabels.length).fill(null);
+    const foreignData = new Array(fixedLabels.length).fill(null);
+    const institutionData = new Array(fixedLabels.length).fill(null);
 
     const instCodes = ['1000', '2000', '3000', '3100', '4000', '5000', '6000'];
+    let maxDataIndex = -1;
 
     sortedData.forEach(d => {
         const t = d.time;
@@ -1240,29 +1223,40 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                 label = `${String(hh).padStart(2, '0')}:${String(bucketMm).padStart(2, '0')}`;
             }
 
-            let ind = 0, forgn = 0, inst = 0;
-            if (Array.isArray(d.netAmounts)) {
-                d.netAmounts.forEach(item => {
-                    const val = (parseFloat(item.diffValue) || 0) / 100000000;
-                    if (item.investorGubun === '8000') ind = val;
-                    else if (item.investorGubun === '9000') forgn = val;
-                    else if (instCodes.includes(item.investorGubun)) inst += val;
-                });
-            }
+            const labelIdx = fixedLabels.indexOf(label);
+            if (labelIdx !== -1) {
+                let ind = 0, forgn = 0, inst = 0;
+                if (Array.isArray(d.netAmounts)) {
+                    d.netAmounts.forEach(item => {
+                        const val = (parseFloat(item.diffValue) || 0) / 100000000;
+                        if (item.investorGubun === '8000') ind = val;
+                        else if (item.investorGubun === '9000') forgn = val;
+                        else if (instCodes.includes(item.investorGubun)) inst += val;
+                    });
+                }
 
-            if (labels.length === 0 || labels[labels.length - 1] !== label) {
-                labels.push(label);
-                individualData.push(ind);
-                foreignData.push(forgn);
-                institutionData.push(inst);
-            } else {
-                const lastIdx = labels.length - 1;
-                individualData[lastIdx] = ind;
-                foreignData[lastIdx] = forgn;
-                institutionData[lastIdx] = inst;
+                individualData[labelIdx] = ind;
+                foreignData[labelIdx] = forgn;
+                institutionData[labelIdx] = inst;
+
+                if (labelIdx > maxDataIndex) maxDataIndex = labelIdx;
             }
         }
     });
+
+    // 💡 [적용됨] 데이터가 빈 슬롯은 이전 데이터로 채워 선이 끊기지 않게 함
+    let lastInd = 0, lastForgn = 0, lastInst = 0;
+    for (let i = 0; i <= maxDataIndex; i++) {
+        if (individualData[i] === null) {
+            individualData[i] = lastInd;
+            foreignData[i] = lastForgn;
+            institutionData[i] = lastInst;
+        } else {
+            lastInd = individualData[i];
+            lastForgn = foreignData[i];
+            lastInst = institutionData[i];
+        }
+    }
 
     if (trendChartInstance) {
         trendChartInstance.destroy();
@@ -1291,7 +1285,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
     trendChartInstance = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: labels,
+            labels: fixedLabels,
             datasets: [
                 { 
                     label: '개인', data: individualData, borderColor: redColor, 
@@ -1358,6 +1352,12 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                             return;
                         }
 
+                        // 💡 [적용됨] 15:30 미래 빈 데이터 슬롯에 마우스를 올렸을 때의 툴팁 에러 방지
+                        if (!tooltipModel.body || tooltipModel.dataPoints[0].parsed.y === null) {
+                            tooltipEl.style.opacity = 0;
+                            return;
+                        }
+
                         if (tooltipModel.body) {
                             const titleLines = tooltipModel.title || [];
                             let innerHtml = `<div style="font-family:'Inter', sans-serif;">`;
@@ -1370,6 +1370,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
 
                             tooltipModel.dataPoints.forEach(function(dp) {
                                 const val = dp.parsed.y;
+                                if (val === null) return;
                                 const sign = val > 0 ? '+' : '';
                                 const valColor = val > 0 ? greenColor : (val < 0 ? redColor : textPrimary);
                                 const formattedVal = sign + new Intl.NumberFormat('ko-KR').format(Math.round(val)) + '억';
@@ -1427,8 +1428,13 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
     });
 }
 
-// 버튼 클릭 시 호출
 window.switchTrendMarket = function(marketType) {
+    const tabs = document.querySelectorAll('.trend-tab-btn');
+    if (tabs.length > 0) {
+        tabs.forEach(btn => btn.classList.remove('active'));
+        const activeTab = Array.from(tabs).find(btn => btn.getAttribute('onclick').includes(marketType));
+        if (activeTab) activeTab.classList.add('active');
+    }
     fetchMarketTrend(marketType);
 };
 
