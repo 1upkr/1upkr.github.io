@@ -50,7 +50,7 @@ const EMPTY_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
 let localTickerDB = [];
 let trendChartInstance = null;
 
-// 로컬스토리지에서 탭 상태를 기억하여 불러오기 (기본값 ALL)
+// 로컬스토리지에서 마지막 탭 상태 기억 (기본값 ALL)
 let currentTrendMarketType = localStorage.getItem('marketdash_trend_tab') || 'ALL'; 
 
 let state = {
@@ -842,17 +842,43 @@ function updateDOMWithData(quotes) {
                 targetState = 'CLOSED_H';
             }
 
+            let isExtLive = false;
+            
+            if (isKR) {
+                const now = new Date();
+                const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+                const kstTime = new Date(utc + (9 * 3600000));
+                const day = kstTime.getDay();
+                const timeNum = kstTime.getHours() * 100 + kstTime.getMinutes();
+                
+                if (day !== 0 && day !== 6) { 
+                    if (targetState === 'PRE' && timeNum >= 800 && timeNum < 900) {
+                        isExtLive = true;
+                    } else if (targetState === 'POST' && timeNum >= 1530 && timeNum <= 2000) {
+                        isExtLive = true;
+                    }
+                }
+            } else {
+                if (targetState === 'PRE' && mState === 'PRE') {
+                    isExtLive = true;
+                } else if (targetState === 'POST' && mState === 'POST') {
+                    isExtLive = true;
+                }
+            }
+
             let mainPrice = regPrice;
             let mainChange = regChange;
             let mainPct = regPct;
             let mainIcon = ''; 
             let subHtml = '';
 
+            const liveExtStyle = isExtLive ? 'color: var(--red); font-weight: 700;' : '';
+
             if (targetState === 'PRE') {
                 mainPrice = preData.price;
                 mainChange = preData.change;
                 mainPct = preData.pct;
-                mainIcon = `<span class="main-ext-label">${preData.label}</span>`; 
+                mainIcon = `<span class="main-ext-label" style="${liveExtStyle}">${preData.label}</span>`; 
                 
                 const regIsUp = regChange >= 0;
                 const regColor = regIsUp ? 'up' : 'down';
@@ -863,7 +889,7 @@ function updateDOMWithData(quotes) {
                 mainPrice = postData.price;
                 mainChange = postData.change;
                 mainPct = postData.pct;
-                mainIcon = `<span class="main-ext-label">${postData.label}</span>`; 
+                mainIcon = `<span class="main-ext-label" style="${liveExtStyle}">${postData.label}</span>`; 
                 
                 const regIsUp = regChange >= 0;
                 const regColor = regIsUp ? 'up' : 'down';
@@ -1067,16 +1093,16 @@ function renderNews(newsList) {
     container.innerHTML = html;
 }
 
-// 💡 탭 상태 저장 및 캐시 잔상(깜빡임) 방지 로직 적용
+// 💡 탭 상태 저장 및 캐시 잔상(깜빡임), 꼬임 완벽 방지
 async function fetchMarketTrend(marketType = currentTrendMarketType) {
-    // 이전 탭의 차트가 남아있어 잔상이 생기는 문제 해결 (탭이 바뀌면 기존 차트 즉시 삭제)
+    // 💡 탭이 바뀌었을 때만 이전 차트를 즉시 완전히 부숴버립니다. (잔상 방지)
     if (currentTrendMarketType !== marketType && trendChartInstance) {
         trendChartInstance.destroy();
         trendChartInstance = null;
     }
 
     currentTrendMarketType = marketType;
-    localStorage.setItem('marketdash_trend_tab', currentTrendMarketType); // 마지막 탭 기억
+    localStorage.setItem('marketdash_trend_tab', currentTrendMarketType); 
 
     const container = document.getElementById('trend-chart-wrapper');
     if (!container) return;
@@ -1118,6 +1144,9 @@ async function fetchMarketTrend(marketType = currentTrendMarketType) {
         if (!response.ok) throw new Error("Trend fetch failed");
         
         const json = await response.json();
+        
+        // 💡 [레이스 컨디션 방지] 통신 중에 사용자가 탭을 바꿨다면, 예전 탭의 응답은 무시하고 버립니다.
+        if (currentTrendMarketType !== marketType) return;
         
         if (json.success && json.data && Array.isArray(json.data.content)) {
             const data = json.data.content;
@@ -1190,7 +1219,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
 
     const sortedData = dataList.slice().reverse();
     
-    // 💡 [적용됨] 15:30분까지 차트 배경 뼈대(X축) 미리 생성 (고정 슬롯 방식)
+    // 💡 [적용됨] 15:30까지 빈 X축 고정 라벨 생성
     const fixedLabels = [];
     for (let h = 9; h <= 15; h++) {
         for (let m = 0; m < 60; m += 10) {
@@ -1244,7 +1273,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
         }
     });
 
-    // 💡 [적용됨] 데이터가 빈 슬롯은 이전 데이터로 채워 선이 끊기지 않게 함
+    // 데이터가 없는 빈 구간(슬롯)은 선이 끊기지 않도록 이전 데이터로 계속 채워줍니다.
     let lastInd = 0, lastForgn = 0, lastInst = 0;
     for (let i = 0; i <= maxDataIndex; i++) {
         if (individualData[i] === null) {
@@ -1258,8 +1287,13 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
         }
     }
 
+    // 💡 [깜빡임 완벽 해결] 차트가 이미 있다면 완전히 부수지 않고 알맹이 데이터만 교체(update)합니다.
     if (trendChartInstance) {
-        trendChartInstance.destroy();
+        trendChartInstance.data.datasets[0].data = individualData;
+        trendChartInstance.data.datasets[1].data = foreignData;
+        trendChartInstance.data.datasets[2].data = institutionData;
+        trendChartInstance.update('none'); // 애니메이션 없이 부드럽게 덮어쓰기
+        return;
     }
 
     const ctx = canvas.getContext('2d');
@@ -1352,7 +1386,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                             return;
                         }
 
-                        // 💡 [적용됨] 15:30 미래 빈 데이터 슬롯에 마우스를 올렸을 때의 툴팁 에러 방지
+                        // 💡 툴팁 에러 방지 (빈 구간 마우스 오버 시 무시)
                         if (!tooltipModel.body || tooltipModel.dataPoints[0].parsed.y === null) {
                             tooltipEl.style.opacity = 0;
                             return;
