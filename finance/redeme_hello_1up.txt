@@ -5,6 +5,8 @@
 -티커뱃지 LIVE 처리
 -인터페이스 개선
 -네이버, 챠트 GAS 개선
+-투자자 정보 차트 개선 중
+-https://stock.naver.com/market/stock/kr/trend/trader
 
 
 
