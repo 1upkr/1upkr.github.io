@@ -316,8 +316,8 @@ main { flex: 1; width: 100%; overflow-x: hidden; }
     top: calc(5% + 160px); /* 아이콘 위치(15%) + 아이콘 높이 + 적당한 여백 */
     width: 100%; /* text-align 정렬을 위해 100% 할당 */
     text-align: center;
-    font-size: 0.875rem;
-    font-weight: 600;
+    font-size: 0.8rem;
+    font-weight: 800;
     color: var(--text-secondary);
     letter-spacing: 1px;
     animation: pulse-text 2s ease-in-out infinite;
