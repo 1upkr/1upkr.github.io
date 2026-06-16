@@ -1532,7 +1532,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                     grid: { color: gridColor, drawBorder: false, borderDash: [4, 4] }, 
                     ticks: { 
                         color: textSecondary, font: { family: "'Inter', sans-serif", size: 11 }, padding: 10,
-                        crossAlign: 'far', 
+                        crossAlign: 'near', 
                         callback: function(value) {
                             return new Intl.NumberFormat('ko-KR').format(value / 1000);
                         }
