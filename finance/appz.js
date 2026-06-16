@@ -797,10 +797,15 @@ function updateDOMWithData(quotes) {
             const cachedQuote = memoryPriceCache[ticker];
             const currentVol = quote.regularMarketVolume || 0;
             
-            // 거래량이 없고(오늘 거래 전), API 변동률이 0이거나 없을 때 캐시를 덮어씌움
-            if (shouldRestoreCache && cachedQuote && currentVol === 0 && (!quote.regularMarketChange)) {
+            // 거래량이 없는 아침 장 시작 전이라면, 네이버가 0을 던지더라도 무조건 어제 캐시로 덮어씌움
+            if (shouldRestoreCache && cachedQuote && currentVol === 0) {
                 quote.regularMarketChange = cachedQuote.regularMarketChange || 0;
                 quote.regularMarketChangePercent = cachedQuote.regularMarketChangePercent || 0;
+                
+                // ETF 등 장전 거래(PRE)가 아예 없어서 가격마저 0이나 빈값으로 오는 종목을 위한 추가 방어
+                if (!quote.preMarketPrice && cachedQuote.regularMarketPrice) {
+                    quote.regularMarketPrice = cachedQuote.regularMarketPrice;
+                }
             }
 
             const regPrice = quote.regularMarketPrice || 0; 
