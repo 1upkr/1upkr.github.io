@@ -1157,8 +1157,8 @@ async function fetchMarketTrend(marketType = currentTrendMarketType) {
     const kstOptions = { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' };
     const todayStr = new Intl.DateTimeFormat('ko-KR', kstOptions).format(kstTime).replace(/\s/g, ''); 
 
-    // 💡 차트가 캐시로 즉시 그려졌는지 확인하는 상태 변수
-    let isChartDrawnFromCache = false;
+    // 💡 로더를 띄울지 결정하는 플래그 (기본값 true)
+    let shouldShowLoader = true; 
 
     if (cached && cached.data) {
         const isCacheFromPast = !isWeekend && (timeNum >= 900) && (cached.dateStr !== todayStr);
@@ -1167,10 +1167,24 @@ async function fetchMarketTrend(marketType = currentTrendMarketType) {
             const hasFinalDataCache = cached.data.some(d => d.time === "153000" || d.time === "1530");
             const isLiveCache = (cached.dateStr === todayStr) && (!hasFinalDataCache || timeNum < 1530);
             
-            // 1. 캐시로 차트를 먼저 렌더링합니다.
+            // 1. 캐시로 차트를 즉시 렌더링 (비어있는 화면 방지)
             renderTrendChart(cached.data, cached.dateStr || todayStr, isLiveCache);
-            isChartDrawnFromCache = true; // 차트가 화면에 표시되었음을 체크!
 
+            // 💡 2. 캐시 연령(Age) 계산 및 로더 표시 여부 결정
+            const isMarketOpen = !isWeekend && (timeNum >= 900 && timeNum < 1530);
+            const cacheAgeMs = Date.now() - (cached.lastFetchTime || 0);
+            
+            if (isMarketOpen) {
+                // 장중일 때: 캐시가 10분(600000ms) 이내라면 신선하므로 조용히 백그라운드 업데이트!
+                if (cacheAgeMs < 600000) {
+                    shouldShowLoader = false;
+                }
+            } else {
+                // 장이 닫혀있다면 더 이상 갱신될 데이터가 없으므로 로더 생략!
+                shouldShowLoader = false;
+            }
+
+            // 최종 마감 데이터라면 통신조차 하지 않고 함수 완전 종료
             if (hasFinalDataCache && timeNum >= 1530) {
                 if (chartLoader) chartLoader.style.display = 'none';
                 return;
@@ -1183,9 +1197,8 @@ async function fetchMarketTrend(marketType = currentTrendMarketType) {
         }
     }
 
-    // 💡 핵심 포인트: 캐시가 없어서 차트를 그리지 못했을 때(최초 로딩)만 로딩창을 띄웁니다.
-    // 캐시가 이미 그려졌다면, 로딩창 없이 뒤에서 조용히 API만 호출합니다.
-    if (!isChartDrawnFromCache && chartLoader) {
+    // 💡 3. 캐시가 없거나, 너무 오래된(10분 이상) 상태라면 통신 전 로더를 띄움
+    if (shouldShowLoader && chartLoader) {
         chartLoader.style.display = 'flex';
     }
 
@@ -1221,12 +1234,14 @@ async function fetchMarketTrend(marketType = currentTrendMarketType) {
             const hasFinalData = data.some(d => d.time === "153000" || d.time === "1530");
             const isLiveAPI = (actualDateStr === todayStr) && (!hasFinalData || timeNum < 1530);
 
-            // 2. 백그라운드 통신이 끝나면 최신 데이터로 기존 차트를 부드럽게 업데이트!
+            // 4. 최신 데이터로 기존 차트 부드럽게 업데이트
             renderTrendChart(data, actualDateStr, isLiveAPI);
 
+            // 💡 5. 캐시 저장 시 현재 시간(lastFetchTime)을 함께 기록!
             localStorage.setItem(cacheKey, JSON.stringify({
                 dateStr: actualDateStr,
-                data: data
+                data: data,
+                lastFetchTime: Date.now() 
             }));
 
         } else {
@@ -1238,7 +1253,7 @@ async function fetchMarketTrend(marketType = currentTrendMarketType) {
             container.innerHTML = '<div class="empty-state"><p class="error-text">Failed to load trend data.</p></div>';
         }
     } finally {
-        // 모든 통신이 끝나면 무조건 로더를 숨김 처리합니다.
+        // 통신이 끝나면 무조건 로더 숨김 처리
         if (chartLoader) chartLoader.style.display = 'none';
     }
 }
