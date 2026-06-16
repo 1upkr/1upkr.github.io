@@ -50,6 +50,8 @@ const EMPTY_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
 let localTickerDB = [];
 let trendChartInstance = null;
 
+let tabScrollCache = { dashboard: 0, news: 0 };
+
 let currentTrendMarketType = localStorage.getItem('marketdash_trend_tab') || 'ALL'; 
 
 let state = {
@@ -258,6 +260,10 @@ function initSwipeToDelete() {
 }
 
 window.switchMobileTab = function(tabName) {
+    // 1. 화면이 바뀌기 직전, 현재 활성화되어 있는 탭의 스크롤 위치를 저장합니다.
+    const currentTab = document.body.classList.contains('show-news') ? 'news' : 'dashboard';
+    tabScrollCache[currentTab] = window.scrollY;
+
     localStorage.setItem('marketdash_active_tab', tabName);
 
     const tabs = document.querySelectorAll('.tab-btn');
@@ -280,6 +286,11 @@ window.switchMobileTab = function(tabName) {
         const tabDashBtn = document.getElementById('tab-btn-dashboard');
         if (tabDashBtn) tabDashBtn.classList.add('active');
     }
+
+    // 2. DOM 클래스가 변경되어 화면이 그려진 직후(setTimeout), 이동할 탭의 스크롤 위치로 복원합니다.
+    setTimeout(() => {
+        window.scrollTo(0, tabScrollCache[tabName] || 0);
+    }, 10);
 }
 
 function renderLayout() {
