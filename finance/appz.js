@@ -1507,19 +1507,46 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
 
                         tooltipEl.style.opacity = 1;
                         
+                        // 1. 툴팁의 실제 렌더링된 크기 가져오기
+                        const ttWidth = tooltipEl.offsetWidth || 150; 
+                        const ttHeight = tooltipEl.offsetHeight || 130;
+                        
+                        // 2. 캔버스 전체 크기
+                        const chartWidth = context.chart.width;
+                        const chartHeight = context.chart.height;
+                        
+                        // 3. X축 정렬 (좌/우 경계 침범 방어)
                         let transformX = '-50%';
-                        if (tooltipModel.caretX < 80) {
-                            transformX = '0%';
-                        } else if (tooltipModel.caretX > context.chart.width - 100) {
-                            transformX = '-100%';
+                        let leftPos = tooltipModel.caretX;
+                        
+                        if (leftPos - (ttWidth / 2) < 10) {
+                            transformX = '0%'; // 왼쪽 벽에 붙으면 오른쪽으로 밀어내기
+                            leftPos = Math.max(10, tooltipModel.caretX);
+                        } else if (leftPos + (ttWidth / 2) > chartWidth - 10) {
+                            transformX = '-100%'; // 오른쪽 벽에 붙으면 왼쪽으로 밀어내기
+                            leftPos = Math.min(chartWidth - 10, tooltipModel.caretX);
                         }
                         
+                        // 4. Y축 정렬 (상/하 경계 침범 방어)
                         const chartArea = context.chart.chartArea;
-                        const centerY = chartArea.top + (chartArea.bottom - chartArea.top) / 2;
-
-                        tooltipEl.style.transform = `translate(${transformX}, -50%)`;
-                        tooltipEl.style.left = tooltipModel.caretX + 'px';
-                        tooltipEl.style.top = centerY + 'px';
+                        let topPos = chartArea.top + (chartArea.bottom - chartArea.top) / 2; // 기본: 차트 중앙
+                        let transformY = '-50%';
+                        
+                        // 툴팁이 차트 상단을 뚫고 나가는 경우
+                        if (topPos - (ttHeight / 2) < 10) {
+                            transformY = '0%';
+                            topPos = 10; // 상단 10px 여백 강제 고정
+                        } 
+                        // 툴팁이 차트 하단을 뚫고 나가는 경우
+                        else if (topPos + (ttHeight / 2) > chartHeight - 10) {
+                            transformY = '-100%';
+                            topPos = chartHeight - 10;
+                        }
+                        
+                        // 5. 최종 위치 적용
+                        tooltipEl.style.transform = `translate(${transformX}, ${transformY})`;
+                        tooltipEl.style.left = leftPos + 'px';
+                        tooltipEl.style.top = topPos + 'px';
                     }
                 }
             },
