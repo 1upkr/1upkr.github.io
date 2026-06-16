@@ -1116,6 +1116,7 @@ function renderNews(newsList) {
     container.innerHTML = html;
 }
 
+// 💡 탭 상태 저장 및 캐시 잔상(깜빡임), 아침 유령데이터 꼬임 완벽 방지
 async function fetchMarketTrend(marketType = currentTrendMarketType) {
     if (currentTrendMarketType !== marketType && trendChartInstance) {
         trendChartInstance.destroy();
@@ -1149,11 +1150,15 @@ async function fetchMarketTrend(marketType = currentTrendMarketType) {
         
         if (!isCacheFromPast) {
             const hasFinalDataCache = cached.data.some(d => d.time === "153000" || d.time === "1530");
-            const isLiveCache = (cached.dateStr === todayStr) && !hasFinalDataCache;
+            
+            // 💡 [수정 1] 실제 시간이 15:30 이전이라면 무조건 LIVE로 간주합니다.
+            const isLiveCache = (cached.dateStr === todayStr) && (!hasFinalDataCache || timeNum < 1530);
             
             renderTrendChart(cached.data, cached.dateStr || todayStr, isLiveCache);
 
-            if (hasFinalDataCache) {
+            // 💡 [수정 2 - 핵심] 15:30분 이전(장중)에는 네이버가 어제 마감 데이터를 잘못 줬더라도,
+            // 앱이 갱신(업데이트)을 영구적으로 멈추는 현상을 철저히 방어합니다.
+            if (hasFinalDataCache && timeNum >= 1530) {
                 return;
             }
         }
@@ -1193,7 +1198,9 @@ async function fetchMarketTrend(marketType = currentTrendMarketType) {
             }
 
             const hasFinalData = data.some(d => d.time === "153000" || d.time === "1530");
-            const isLiveAPI = (actualDateStr === todayStr) && !hasFinalData;
+            
+            // 💡 [수정 3] API가 주는 데이터 역시 15:30분 이전이면 무조건 LIVE 처리합니다.
+            const isLiveAPI = (actualDateStr === todayStr) && (!hasFinalData || timeNum < 1530);
 
             renderTrendChart(data, actualDateStr, isLiveAPI);
 
