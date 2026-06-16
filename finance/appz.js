@@ -1409,7 +1409,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
             maintainAspectRatio: false,
             interaction: { mode: 'index', intersect: false },
             layout: {
-                padding: { left: 5, right: 5, top: 0, bottom: 22 }
+                padding: { left: 0, right: 10 , top: 0, bottom: 22 }
             },
             plugins: {
                 title: { display: false }, 
