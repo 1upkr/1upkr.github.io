@@ -678,6 +678,26 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
     }
 }
 
+/* =========================================================
+   Chart Loading Overlay
+   ========================================================= */
+.chart-loader-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    /* 테마 배경색에 맞춰 반투명하게 덮기 (글래스모피즘 효과) */
+    background-color: var(--card-bg);
+    opacity: 0.85;
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 20; /* 캔버스나 날짜 뱃지보다 위로 올라오게 설정 */
+    border-radius: 8px;
+    transition: opacity 0.2s ease;
+}
+
+
 
 /* =========================================================
    TREND TABS (Segmented Control UI)
