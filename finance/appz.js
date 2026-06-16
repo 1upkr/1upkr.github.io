@@ -1127,7 +1127,6 @@ function renderNews(newsList) {
     container.innerHTML = html;
 }
 
-// 💡 탭 상태 저장 및 캐시 잔상(깜빡임), 아침 유령데이터 꼬임 완벽 방지
 async function fetchMarketTrend(marketType = currentTrendMarketType) {
     if (currentTrendMarketType !== marketType && trendChartInstance) {
         trendChartInstance.destroy();
@@ -1139,6 +1138,10 @@ async function fetchMarketTrend(marketType = currentTrendMarketType) {
 
     const container = document.getElementById('trend-chart-wrapper');
     if (!container) return;
+
+    // 💡 1. 로딩 오버레이 표시 시작
+    const chartLoader = document.getElementById('chart-loading-overlay');
+    if (chartLoader) chartLoader.style.display = 'flex';
 
     const now = new Date();
     const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
@@ -1162,19 +1165,20 @@ async function fetchMarketTrend(marketType = currentTrendMarketType) {
         if (!isCacheFromPast) {
             const hasFinalDataCache = cached.data.some(d => d.time === "153000" || d.time === "1530");
             
-            // 💡 [수정 1] 실제 시간이 15:30 이전이라면 무조건 LIVE로 간주합니다.
+            // 실제 시간이 15:30 이전이라면 무조건 LIVE로 간주합니다.
             const isLiveCache = (cached.dateStr === todayStr) && (!hasFinalDataCache || timeNum < 1530);
             
             renderTrendChart(cached.data, cached.dateStr || todayStr, isLiveCache);
 
-            // 💡 [수정 2 - 핵심] 15:30분 이전(장중)에는 네이버가 어제 마감 데이터를 잘못 줬더라도,
-            // 앱이 갱신(업데이트)을 영구적으로 멈추는 현상을 철저히 방어합니다.
+            // 15:30분 이후에는 네이버가 어제 마감 데이터를 잘못 줬더라도 캐시 렌더링으로 조기 종료
             if (hasFinalDataCache && timeNum >= 1530) {
+                if (chartLoader) chartLoader.style.display = 'none'; // 💡 2. 로더 끄기
                 return;
             }
         }
         
         if (isWeekend || timeNum < 900) {
+            if (chartLoader) chartLoader.style.display = 'none'; // 💡 3. 로더 끄기
             return; 
         }
     }
@@ -1210,7 +1214,7 @@ async function fetchMarketTrend(marketType = currentTrendMarketType) {
 
             const hasFinalData = data.some(d => d.time === "153000" || d.time === "1530");
             
-            // 💡 [수정 3] API가 주는 데이터 역시 15:30분 이전이면 무조건 LIVE 처리합니다.
+            // API가 주는 데이터 역시 15:30분 이전이면 무조건 LIVE 처리
             const isLiveAPI = (actualDateStr === todayStr) && (!hasFinalData || timeNum < 1530);
 
             renderTrendChart(data, actualDateStr, isLiveAPI);
@@ -1228,6 +1232,9 @@ async function fetchMarketTrend(marketType = currentTrendMarketType) {
         if (!cached) {
             container.innerHTML = '<div class="empty-state"><p class="error-text">Failed to load trend data.</p></div>';
         }
+    } finally {
+        // 💡 4. 통신 성공/실패 여부에 상관없이 모든 작업이 끝나면 로더 숨김
+        if (chartLoader) chartLoader.style.display = 'none';
     }
 }
 
