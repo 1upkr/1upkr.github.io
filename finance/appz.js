@@ -164,6 +164,22 @@ async function init() {
         if (settingsDropdown && !e.target.closest('.settings-wrapper')) {
             settingsDropdown.classList.remove('active');
         }
+        
+        // 💡 [추가] 차트 캔버스 외부를 터치(클릭)하면 커스텀 툴팁 숨김
+        const chartCanvas = document.getElementById('trend-chart-canvas');
+        const tooltipEl = document.getElementById('chartjs-custom-tooltip');
+        
+        // 툴팁이 존재하고 표시 중일 때, 클릭한 곳이 차트 캔버스가 아니라면 숨김
+        if (tooltipEl && tooltipEl.style.opacity === '1') {
+            if (chartCanvas && !chartCanvas.contains(e.target)) {
+                tooltipEl.style.opacity = 0;
+                // Chart.js 내부 상태도 동기화하여 초기화
+                if (trendChartInstance) {
+                    trendChartInstance.setActiveElements([]);
+                    trendChartInstance.update('none'); 
+                }
+            }
+        }
     });
 }
 
