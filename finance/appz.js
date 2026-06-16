@@ -1544,6 +1544,16 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
 }
 
 window.switchTrendMarket = function(marketType) {
+    // 💡 [추가] 탭 전환 시 떠 있는 툴팁 즉시 강제 숨김 처리
+    const tooltipEl = document.getElementById('chartjs-custom-tooltip');
+    if (tooltipEl) {
+        tooltipEl.style.opacity = 0;
+    }
+    // 💡 [추가] Chart.js 내부의 툴팁 활성 상태(ActiveElements) 초기화
+    if (trendChartInstance) {
+        trendChartInstance.setActiveElements([]);
+    }
+
     const tabs = document.querySelectorAll('.trend-tab-btn');
     if (tabs.length > 0) {
         tabs.forEach(btn => btn.classList.remove('active'));
