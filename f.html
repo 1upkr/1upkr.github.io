@@ -22,7 +22,7 @@ layout: null
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-    <link rel="stylesheet" href="https://1up.kr/finance/style.css?ver=3.6.013">
+    <link rel="stylesheet" href="https://1up.kr/finance/style.css?ver=3.6.20">
 </head>
 <body>
     <script>
@@ -97,9 +97,19 @@ layout: null
                 </div>
                 <div class="section-body" style="padding: 0.5rem; display: flex; justify-content: center; align-items: center; min-height: 300px;">
                     <div id="trend-chart-wrapper" style="position: relative; width: 100%; height: 100%; min-height: 300px;">
+                        
+                        <div id="chart-loading-overlay" class="chart-loader-overlay" style="display: none;">
+                            <div class="dot-loader">
+                                <div class="dot"></div>
+                                <div class="dot"></div>
+                                <div class="dot"></div>                        
+                                <div class="dot"></div>
+                            </div>
+                        </div>
+                
                         <canvas id="trend-chart-canvas"></canvas>
                     </div>
-                </div>
+                </div>                
             </div>
           
             <div class="section-container news-section-container">
@@ -170,6 +180,6 @@ layout: null
         </div>
     </div>
 
-    <script src="https://1up.kr/finance/appz.js?ver=3.6.019"></script>
+    <script src="https://1up.kr/finance/appz.js?ver=3.6.020"></script>
 </body>
 </html>
