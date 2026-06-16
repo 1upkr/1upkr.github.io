@@ -1157,7 +1157,9 @@ async function fetchMarketTrend(marketType = currentTrendMarketType) {
     const kstOptions = { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' };
     const todayStr = new Intl.DateTimeFormat('ko-KR', kstOptions).format(kstTime).replace(/\s/g, ''); 
 
-    // 1. 먼저 캐시 데이터가 있다면 즉시 화면에 그립니다. (빈 화면 방지)
+    // 💡 차트가 캐시로 즉시 그려졌는지 확인하는 상태 변수
+    let isChartDrawnFromCache = false;
+
     if (cached && cached.data) {
         const isCacheFromPast = !isWeekend && (timeNum >= 900) && (cached.dateStr !== todayStr);
         
@@ -1165,25 +1167,25 @@ async function fetchMarketTrend(marketType = currentTrendMarketType) {
             const hasFinalDataCache = cached.data.some(d => d.time === "153000" || d.time === "1530");
             const isLiveCache = (cached.dateStr === todayStr) && (!hasFinalDataCache || timeNum < 1530);
             
+            // 1. 캐시로 차트를 먼저 렌더링합니다.
             renderTrendChart(cached.data, cached.dateStr || todayStr, isLiveCache);
+            isChartDrawnFromCache = true; // 차트가 화면에 표시되었음을 체크!
 
-            // 장이 끝났고 최종 마감 데이터라면 통신할 필요가 없으므로 여기서 함수 종료 (로딩 창 안 뜸)
             if (hasFinalDataCache && timeNum >= 1530) {
                 if (chartLoader) chartLoader.style.display = 'none';
                 return;
             }
         }
         
-        // 주말이거나 아침 장 시작 전이라면 통신할 필요 없으므로 함수 종료
         if (isWeekend || timeNum < 900) {
             if (chartLoader) chartLoader.style.display = 'none';
             return; 
         }
     }
 
-    // 💡 2. 여기 아래로 넘어왔다는 것은 "새로운 데이터를 서버에서 가져와야 함(업데이트)"을 의미합니다.
-    // 이때 사용자가 갱신 중임을 알 수 있도록 로딩 오버레이를 띄웁니다!
-    if (chartLoader) {
+    // 💡 핵심 포인트: 캐시가 없어서 차트를 그리지 못했을 때(최초 로딩)만 로딩창을 띄웁니다.
+    // 캐시가 이미 그려졌다면, 로딩창 없이 뒤에서 조용히 API만 호출합니다.
+    if (!isChartDrawnFromCache && chartLoader) {
         chartLoader.style.display = 'flex';
     }
 
@@ -1219,7 +1221,7 @@ async function fetchMarketTrend(marketType = currentTrendMarketType) {
             const hasFinalData = data.some(d => d.time === "153000" || d.time === "1530");
             const isLiveAPI = (actualDateStr === todayStr) && (!hasFinalData || timeNum < 1530);
 
-            // 3. 최신 데이터를 가져왔으므로 기존 차트 위에 부드럽게 덮어씌웁니다.
+            // 2. 백그라운드 통신이 끝나면 최신 데이터로 기존 차트를 부드럽게 업데이트!
             renderTrendChart(data, actualDateStr, isLiveAPI);
 
             localStorage.setItem(cacheKey, JSON.stringify({
@@ -1236,7 +1238,7 @@ async function fetchMarketTrend(marketType = currentTrendMarketType) {
             container.innerHTML = '<div class="empty-state"><p class="error-text">Failed to load trend data.</p></div>';
         }
     } finally {
-        // 💡 4. 통신 성공/실패 여부에 상관없이 데이터 업데이트가 끝나면 로더를 바로 숨깁니다.
+        // 모든 통신이 끝나면 무조건 로더를 숨김 처리합니다.
         if (chartLoader) chartLoader.style.display = 'none';
     }
 }
