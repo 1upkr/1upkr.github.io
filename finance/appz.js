@@ -156,27 +156,27 @@ async function init() {
     if (btnRefresh) btnRefresh.addEventListener('click', forceRefresh);
 
     document.addEventListener('click', (e) => {
-        if (!e.target.closest('.search-wrapper')) {
-            document.querySelectorAll('.autocomplete-list').forEach(el => el.style.display = 'none');
-            document.querySelectorAll('.input-guide').forEach(el => el.style.display = 'none');
-        }
-        const settingsDropdown = document.getElementById('settings-dropdown');
-        if (settingsDropdown && !e.target.closest('.settings-wrapper')) {
-            settingsDropdown.classList.remove('active');
-        }
+        // ... 기존 코드 (검색창, 설정 메뉴 숨김 등) ...
         
-        // 💡 [추가] 차트 캔버스 외부를 터치(클릭)하면 커스텀 툴팁 숨김
+        // 💡 [수정됨] 차트 캔버스 외부를 터치(클릭)하면 커스텀 툴팁 및 호버 포인트 숨김
         const chartCanvas = document.getElementById('trend-chart-canvas');
         const tooltipEl = document.getElementById('chartjs-custom-tooltip');
         
-        // 툴팁이 존재하고 표시 중일 때, 클릭한 곳이 차트 캔버스가 아니라면 숨김
-        if (tooltipEl && tooltipEl.style.opacity === '1') {
+        if (tooltipEl && parseInt(tooltipEl.style.opacity) === 1) {
             if (chartCanvas && !chartCanvas.contains(e.target)) {
-                tooltipEl.style.opacity = 0;
-                // Chart.js 내부 상태도 동기화하여 초기화
                 if (trendChartInstance) {
+                    // 1. 차트 호버 상태(선 위에 생기는 동그라미 포인트) 초기화
                     trendChartInstance.setActiveElements([]);
-                    trendChartInstance.update('none'); 
+                    
+                    // 2. Chart.js 내부 툴팁 상태 초기화 
+                    // (이렇게 하면 appz.js에 작성된 external 함수가 이를 감지하고 스스로 opacity를 0으로 만듭니다)
+                    if (trendChartInstance.tooltip) {
+                        trendChartInstance.tooltip.setActiveElements([], {x: 0, y: 0});
+                    }
+                    
+                    // 3. 'none' 파라미터 제거
+                    // 내부 애니메이션 큐(requestAnimationFrame)를 타게 만들어 브라우저 렌더링 충돌 방지
+                    trendChartInstance.update(); 
                 }
             }
         }
@@ -1560,14 +1560,12 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
 }
 
 window.switchTrendMarket = function(marketType) {
-    // 💡 [추가] 탭 전환 시 떠 있는 툴팁 즉시 강제 숨김 처리
-    const tooltipEl = document.getElementById('chartjs-custom-tooltip');
-    if (tooltipEl) {
-        tooltipEl.style.opacity = 0;
-    }
-    // 💡 [추가] Chart.js 내부의 툴팁 활성 상태(ActiveElements) 초기화
+    // 💡 탭 전환 시에도 안전하게 내부 상태만 초기화
     if (trendChartInstance) {
         trendChartInstance.setActiveElements([]);
+        if (trendChartInstance.tooltip) {
+            trendChartInstance.tooltip.setActiveElements([], {x: 0, y: 0});
+        }
     }
 
     const tabs = document.querySelectorAll('.trend-tab-btn');
