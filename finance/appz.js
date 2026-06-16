@@ -156,29 +156,13 @@ async function init() {
     if (btnRefresh) btnRefresh.addEventListener('click', forceRefresh);
 
     document.addEventListener('click', (e) => {
-        // ... 기존 코드 (검색창, 설정 메뉴 숨김 등) ...
-        
-        // 💡 [수정됨] 차트 캔버스 외부를 터치(클릭)하면 커스텀 툴팁 및 호버 포인트 숨김
-        const chartCanvas = document.getElementById('trend-chart-canvas');
-        const tooltipEl = document.getElementById('chartjs-custom-tooltip');
-        
-        if (tooltipEl && parseInt(tooltipEl.style.opacity) === 1) {
-            if (chartCanvas && !chartCanvas.contains(e.target)) {
-                if (trendChartInstance) {
-                    // 1. 차트 호버 상태(선 위에 생기는 동그라미 포인트) 초기화
-                    trendChartInstance.setActiveElements([]);
-                    
-                    // 2. Chart.js 내부 툴팁 상태 초기화 
-                    // (이렇게 하면 appz.js에 작성된 external 함수가 이를 감지하고 스스로 opacity를 0으로 만듭니다)
-                    if (trendChartInstance.tooltip) {
-                        trendChartInstance.tooltip.setActiveElements([], {x: 0, y: 0});
-                    }
-                    
-                    // 3. 'none' 파라미터 제거
-                    // 내부 애니메이션 큐(requestAnimationFrame)를 타게 만들어 브라우저 렌더링 충돌 방지
-                    trendChartInstance.update(); 
-                }
-            }
+        if (!e.target.closest('.search-wrapper')) {
+            document.querySelectorAll('.autocomplete-list').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.input-guide').forEach(el => el.style.display = 'none');
+        }
+        const settingsDropdown = document.getElementById('settings-dropdown');
+        if (settingsDropdown && !e.target.closest('.settings-wrapper')) {
+            settingsDropdown.classList.remove('active');
         }
     });
 }
@@ -1560,14 +1544,6 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
 }
 
 window.switchTrendMarket = function(marketType) {
-    // 💡 탭 전환 시에도 안전하게 내부 상태만 초기화
-    if (trendChartInstance) {
-        trendChartInstance.setActiveElements([]);
-        if (trendChartInstance.tooltip) {
-            trendChartInstance.tooltip.setActiveElements([], {x: 0, y: 0});
-        }
-    }
-
     const tabs = document.querySelectorAll('.trend-tab-btn');
     if (tabs.length > 0) {
         tabs.forEach(btn => btn.classList.remove('active'));
