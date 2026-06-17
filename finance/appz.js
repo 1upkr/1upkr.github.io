@@ -536,7 +536,13 @@ async function fetchAndProcessKnight() {
     const timeNum = kstTime.getHours() * 100 + kstTime.getMinutes();
     
     // 야간장 시간 판별: 18:00(1800) ~ 익일 05:00(500)
-    const isNightSession = (timeNum >= 1800 || timeNum <= 500);
+    const day = kstTime.getDay(); // 0:일, 1:월, 2:화, 3:수, 4:목, 5:금, 6:토
+    // 평일(월~금) 저녁 18:00 이후
+    const isEveningOpen = (day >= 1 && day <= 5) && (timeNum >= 1800);
+    // 평일 다음날(화~토) 새벽 05:00 이전 (금요일 밤에 시작된 장이 토요일 새벽 5시에 끝남)
+    const isMorningOpen = (day >= 2 && day <= 6) && (timeNum <= 500);
+    
+    const isNightSession = isEveningOpen || isMorningOpen;
     
     const currentMs = Date.now();
     const elapsedMins = (currentMs - lastKnightFetchTime) / 60000;
@@ -630,7 +636,10 @@ async function handleAddTicker(e, sectionId) {
                 const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
                 const kstTime = new Date(utc + (9 * 3600000));
                 const timeNum = kstTime.getHours() * 100 + kstTime.getMinutes();
-                const isNightSession = (timeNum >= 1800 || timeNum <= 500);
+                const day = kstTime.getDay();
+                const isEveningOpen = (day >= 1 && day <= 5) && (timeNum >= 1800);
+                const isMorningOpen = (day >= 2 && day <= 6) && (timeNum <= 500);
+                const isNightSession = isEveningOpen || isMorningOpen;
                 
                 // 추가 즉시 시간대에 맞춰 뱃지 표시 여부 결정
                 data[0].marketState = isNightSession ? "REGULAR" : "CLOSED";
