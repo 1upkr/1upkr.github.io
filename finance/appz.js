@@ -542,15 +542,18 @@ async function fetchAndProcessKnight() {
     const currentMs = Date.now();
     const elapsedMins = (currentMs - lastKnightFetchTime) / 60000;
     
-    // 캐시된 데이터가 있는지 확인
+    // 캐시된 데이터 확인
     let cachedData = memoryPriceCache['KNIGHT'];
 
-    // 갱신 조건: 야간장이면서 (가져온지 20분이 지났거나, 앱을 처음 켜서 lastKnightFetchTime이 0일 때)
-    const needsUpdate = isNightSession && (elapsedMins >= 20 || lastKnightFetchTime === 0);
+    // 갱신 조건:
+    // 1. 데이터가 아예 없을 때 (주간에 앱을 처음 켜서 뼈대만 있을 때 1회 로딩용)
+    // 2. 야간장 진행 중이면서 마지막 갱신 후 20분이 지났을 때
+    const needsUpdate = !cachedData || (isNightSession && elapsedMins >= 20);
 
     if (!needsUpdate) {
-        // 갱신할 필요가 없다면, 기존 캐시 데이터를 그대로 렌더링 유지
-        if (cachedData) updateDOMWithData([cachedData]);
+        // 🌟 핵심: 갱신 안 하고 캐시를 쓸 때도, 주간이면 'CLOSED' 뱃지를 강제로 달아줌
+        cachedData.marketState = isNightSession ? "REGULAR" : "CLOSED";
+        updateDOMWithData([cachedData]);
         return;
     }
     
@@ -563,16 +566,18 @@ async function fetchAndProcessKnight() {
         if (data && data.quoteResponse && data.quoteResponse.result && data.quoteResponse.result.length > 0) {
             const resultData = data.quoteResponse.result[0];
             
-            // 야간장에는 UI에서 활성화(REGULAR)된 것처럼 보이게 처리, 주간에는 닫힌 것(CLOSED)처럼 처리
+            // 야간장에는 UI에서 활성화(REGULAR), 주간에는 닫힌 것(CLOSED)처럼 처리
             resultData.marketState = isNightSession ? "REGULAR" : "CLOSED";
             
-            lastKnightFetchTime = currentMs; // 갱신 시간 기록
-            updateDOMWithData([resultData]); // 화면 업데이트 및 캐시 갱신
+            lastKnightFetchTime = currentMs; 
+            updateDOMWithData([resultData]); 
         }
     } catch(e) {
         console.error("KNIGHT 야간선물 크롤링 에러:", e);
-        // 에러가 나도 기존 값이 화면에서 사라지지 않도록 캐시 유지
-        if (cachedData) updateDOMWithData([cachedData]); 
+        if (cachedData) {
+            cachedData.marketState = isNightSession ? "REGULAR" : "CLOSED";
+            updateDOMWithData([cachedData]); 
+        }
     }
 }
 
@@ -625,6 +630,15 @@ async function handleAddTicker(e, sectionId) {
             const knightData = await res.json();
             if (knightData && knightData.quoteResponse && knightData.quoteResponse.result) {
                 data = knightData.quoteResponse.result;
+                
+                // 🌟 종목을 추가하는 즉시 현재 시간에 맞춰 뱃지 상태(REGULAR/CLOSED) 판별 후 주입
+                const now = new Date();
+                const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+                const kstTime = new Date(utc + (9 * 3600000));
+                const timeNum = kstTime.getHours() * 100 + kstTime.getMinutes();
+                const isNightSession = (timeNum >= 1800 || timeNum <= 500);
+                
+                data[0].marketState = isNightSession ? "REGULAR" : "CLOSED";
             }
         } else {
             data = await fetchFunc([ticker]);
