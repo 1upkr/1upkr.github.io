@@ -549,5 +549,6 @@
   { "s": "466920", "n": "KODEX CD금리액티브(합성) (파킹통장 ETF)", "e": "NAVER" },
   { "s": "459580", "n": "KODEX KOFR금리액티브(합성) (무위험지표금리)", "e": "NAVER" },
   { "s": "496080", "n": "TIGER 코리아밸류업", "e": "NAVER" },
-  { "s": "0072R0", "n": "TIGER KRX금현물", "e": "NAVER" }
+  { "s": "0072R0", "n": "TIGER KRX금현물", "e": "NAVER" },
+  { "s": "KNIGHT", "n": "KOSPI 200 야간선물", "e": "NAVER" }
 ]
