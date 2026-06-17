@@ -1455,7 +1455,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                             tooltipEl.style.transition = 'all .08s ease'; 
                             tooltipEl.style.padding = '12px';
                             tooltipEl.style.boxShadow = '0 4px 6px -1px rgba(0,0,0,0.05)';
-                            tooltipEl.style.zIndex = 100;
+                            tooltipEl.style.zIndex = 90;
                             tooltipEl.style.whiteSpace = 'nowrap';
                             
                             context.chart.canvas.parentNode.appendChild(tooltipEl);
@@ -1576,5 +1576,19 @@ window.switchTrendMarket = function(marketType) {
     }
     fetchMarketTrend(marketType);
 };
+
+// 스크롤 발생 시 툴팁 즉시 숨김 처리
+window.addEventListener('scroll', () => {
+    const tooltipEl = document.getElementById('chartjs-custom-tooltip');
+    if (tooltipEl && tooltipEl.style.opacity === '1') {
+        tooltipEl.style.opacity = 0;
+        
+        // 차트 내부의 터치 포커스 해제
+        if (trendChartInstance) {
+            trendChartInstance.tooltip.setActiveElements([], {x: 0, y: 0});
+            trendChartInstance.update('none');
+        }
+    }
+}, { passive: true });
 
 document.addEventListener('DOMContentLoaded', init);
