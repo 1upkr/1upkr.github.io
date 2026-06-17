@@ -806,15 +806,20 @@ function updateDOMWithData(quotes) {
             }
 
             const cachedQuote = memoryPriceCache[ticker];
-            const currentVol = quote.regularMarketVolume || 0;
             
-            // 거래량이 없는 아침 장 시작 전이라면, 네이버가 0을 던지더라도 무조건 어제 캐시로 덮어씌움
-            if (shouldRestoreCache && cachedQuote && currentVol === 0) {
-                quote.regularMarketChange = cachedQuote.regularMarketChange || 0;
-                quote.regularMarketChangePercent = cachedQuote.regularMarketChangePercent || 0;
+            // 아침 장 시작 전이라면, 거래량에 속지 말고 캐시 복원 로직을 더 공격적으로 적용
+            if (shouldRestoreCache && cachedQuote) {
+                // API가 당일 변동률을 0으로 리셋해서 보냈을 때 방어
+                if (!quote.regularMarketChange || quote.regularMarketChange === 0) {
+                    // 단, 캐시에도 유효한 변동률(0이 아닌 값)이 살아있을 때만 덮어씌워 캐시 오염 방지
+                    if (cachedQuote.regularMarketChange && cachedQuote.regularMarketChange !== 0) {
+                        quote.regularMarketChange = cachedQuote.regularMarketChange;
+                        quote.regularMarketChangePercent = cachedQuote.regularMarketChangePercent;
+                    }
+                }
                 
-                // ETF 등 장전 거래(PRE)가 아예 없어서 가격마저 0이나 빈값으로 오는 종목을 위한 추가 방어
-                if (!quote.preMarketPrice && cachedQuote.regularMarketPrice) {
+                // ETF 등 장전 거래(PRE)가 아예 없어서 가격마저 누락되는 종목을 위한 추가 방어
+                if (!quote.regularMarketPrice && cachedQuote.regularMarketPrice) {
                     quote.regularMarketPrice = cachedQuote.regularMarketPrice;
                 }
             }
