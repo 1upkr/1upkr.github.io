@@ -12,6 +12,9 @@ const NAVER_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbymIKO0njjK
 const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbwSD8MOLPrYjwTBVQX_Tq6pu-gTHlOeR7p0hUY2pHGACNc2NA6f4zICduC05ypO_EN6/exec"; 
 const TREND_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbyV8COzKSWjJjeKTNZs-cixUJquW3TucUWpAWjTWqt4cIcsy_jFFyxDHQ-9J3nsMVlXIA/exec";
 
+// 🌟 추가: 야간선물 전용 GAS 프록시 URL
+const KNIGHT_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbxbH2suhPydJE8Eq07uzK4nkdREtdBl41pBBoyRkcGu1y4Nlom-gnRMdzPCdolR6DdB/exec";
+
 const CHO_HANGUL = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
 function getChosung(str) {
     let result = '';
@@ -260,7 +263,6 @@ function initSwipeToDelete() {
 }
 
 window.switchMobileTab = function(tabName) {
-    // 1. 화면이 바뀌기 직전, 현재 활성화되어 있는 탭의 스크롤 위치를 저장합니다.
     const currentTab = document.body.classList.contains('show-news') ? 'news' : 'dashboard';
     tabScrollCache[currentTab] = window.scrollY;
 
@@ -287,7 +289,6 @@ window.switchMobileTab = function(tabName) {
         if (tabDashBtn) tabDashBtn.classList.add('active');
     }
 
-    // 2. DOM 클래스가 변경되어 화면이 그려진 직후(setTimeout), 이동할 탭의 스크롤 위치로 복원합니다.
     setTimeout(() => {
         window.scrollTo(0, tabScrollCache[tabName] || 0);
     }, 10);
@@ -525,6 +526,56 @@ async function fetchNaverFinance(symbols) {
     } catch (e) { console.error("Failed to fetch Naver data:", e); throw e; }
 }
 
+// 🌟 추가: 야간선물 전용 데이터 요청 및 처리 로직 (20분 주기)
+let lastKnightFetchTime = 0; 
+
+async function fetchAndProcessKnight() {
+    const now = new Date();
+    const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+    const kstTime = new Date(utc + (9 * 3600000));
+    const timeNum = kstTime.getHours() * 100 + kstTime.getMinutes();
+    
+    // 야간장 시간 판별: 18:00(1800) ~ 익일 05:00(500)
+    const isNightSession = (timeNum >= 1800 || timeNum <= 500);
+    
+    const currentMs = Date.now();
+    const elapsedMins = (currentMs - lastKnightFetchTime) / 60000;
+    
+    // 캐시된 데이터가 있는지 확인
+    let cachedData = memoryPriceCache['KNIGHT'];
+
+    // 갱신 조건: 야간장이면서 (가져온지 20분이 지났거나, 앱을 처음 켜서 lastKnightFetchTime이 0일 때)
+    const needsUpdate = isNightSession && (elapsedMins >= 20 || lastKnightFetchTime === 0);
+
+    if (!needsUpdate) {
+        // 갱신할 필요가 없다면, 기존 캐시 데이터를 그대로 렌더링 유지
+        if (cachedData) updateDOMWithData([cachedData]);
+        return;
+    }
+    
+    // 조건이 맞으면 새 데이터 Fetch
+    try {
+        const url = `${KNIGHT_GAS_PROXY_URL}?t=${currentMs}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        
+        if (data && data.quoteResponse && data.quoteResponse.result && data.quoteResponse.result.length > 0) {
+            const resultData = data.quoteResponse.result[0];
+            
+            // 야간장에는 UI에서 활성화(REGULAR)된 것처럼 보이게 처리, 주간에는 닫힌 것(CLOSED)처럼 처리
+            resultData.marketState = isNightSession ? "REGULAR" : "CLOSED";
+            
+            lastKnightFetchTime = currentMs; // 갱신 시간 기록
+            updateDOMWithData([resultData]); // 화면 업데이트 및 캐시 갱신
+        }
+    } catch(e) {
+        console.error("KNIGHT 야간선물 크롤링 에러:", e);
+        // 에러가 나도 기존 값이 화면에서 사라지지 않도록 캐시 유지
+        if (cachedData) updateDOMWithData([cachedData]); 
+    }
+}
+
+
 async function handleAddTicker(e, sectionId) {
     e.preventDefault();
     const inputEl = document.getElementById(`input-${sectionId}`);
@@ -559,11 +610,29 @@ async function handleAddTicker(e, sectionId) {
     if (guideEl) guideEl.style.display = 'none';
 
     try {
-        const fetchFunc = sectionId === 'kr' ? fetchNaverFinance : fetchYahooFinance;
-        const data = await fetchFunc([ticker]);
+        let fetchFunc = fetchYahooFinance;
+        if (sectionId === 'kr') {
+            fetchFunc = fetchNaverFinance;
+        }
+
+        let data = [];
+
+        // 🌟 방금 검색해서 추가하는 종목이 KNIGHT일 경우의 예외 처리
+        if (ticker === 'KNIGHT') {
+            const url = `${KNIGHT_GAS_PROXY_URL}?t=${Date.now()}`;
+            const res = await fetch(url);
+            const knightData = await res.json();
+            if (knightData && knightData.quoteResponse && knightData.quoteResponse.result) {
+                data = knightData.quoteResponse.result;
+            }
+        } else {
+            data = await fetchFunc([ticker]);
+        }
+        
         if (!data || data.length === 0 || data[0].regularMarketPrice === undefined) {
             alert(`${ticker} not found.`); return;
         }
+        
         state.watchlists[sectionId].tickers.push(ticker); saveWatchlists();
         const tbody = document.getElementById(`tbody-${sectionId}`);
         if (tbody) tbody.insertAdjacentHTML('beforeend', generateRowHTML(ticker));
@@ -727,7 +796,16 @@ async function fetchData() {
 
     for (const sectionId of state.sectionOrder) {
         if (!state.expanded[sectionId]) continue;
-        const symbols = state.watchlists[sectionId].tickers;
+        let symbols = state.watchlists[sectionId].tickers;
+        if (symbols.length === 0) continue;
+
+        // 🌟 추가: 네이버/야후 API로 넘어가기 전에 KNIGHT를 가로채서 분기 처리
+        if (symbols.includes('KNIGHT')) {
+            fetchAndProcessKnight(); // 자체적인 20분 주기 함수 실행
+            symbols = symbols.filter(sym => sym !== 'KNIGHT'); // 기존 통신 배열에서는 제외하여 에러 방지
+        }
+
+        // 만약 해당 섹션에 KNIGHT 밖에 없었다면 빈 배열이 되므로 건너뜀
         if (symbols.length === 0) continue;
 
         const chunkSize = 100; 
@@ -794,31 +872,24 @@ function updateDOMWithData(quotes) {
             const dbMatch = localTickerDB.find(q => q.s.toUpperCase() === ticker.toUpperCase());
             const isKR = dbMatch ? (dbMatch.e === 'NAVER') : /^\d/.test(ticker);
 
-            // 💡 [핵심 추가] 장 시작 전 0으로 강제 초기화되는 현상 방어 (어제 종가 기준 캐시 복원)
             let shouldRestoreCache = false;
             if (isKR) {
-                // KST 기준 자정(00:00)부터 아침 장 시작 전(09:00)까지
                 if (timeNum >= 0 && timeNum < 900) shouldRestoreCache = true;
             } else {
-                // 미국 주식: 정규장(REGULAR) 상태가 아닐 때 (PRE, POST, CLOSED 등)
                 const mState = (quote.marketState || '').toUpperCase();
                 if (mState !== 'REGULAR' && mState !== '') shouldRestoreCache = true;
             }
 
             const cachedQuote = memoryPriceCache[ticker];
             
-            // 아침 장 시작 전이라면, 거래량에 속지 말고 캐시 복원 로직을 더 공격적으로 적용
             if (shouldRestoreCache && cachedQuote) {
-                // API가 당일 변동률을 0으로 리셋해서 보냈을 때 방어
                 if (!quote.regularMarketChange || quote.regularMarketChange === 0) {
-                    // 단, 캐시에도 유효한 변동률(0이 아닌 값)이 살아있을 때만 덮어씌워 캐시 오염 방지
                     if (cachedQuote.regularMarketChange && cachedQuote.regularMarketChange !== 0) {
                         quote.regularMarketChange = cachedQuote.regularMarketChange;
                         quote.regularMarketChangePercent = cachedQuote.regularMarketChangePercent;
                     }
                 }
                 
-                // ETF 등 장전 거래(PRE)가 아예 없어서 가격마저 누락되는 종목을 위한 추가 방어
                 if (!quote.regularMarketPrice && cachedQuote.regularMarketPrice) {
                     quote.regularMarketPrice = cachedQuote.regularMarketPrice;
                 }
@@ -981,7 +1052,8 @@ function updateDOMWithData(quotes) {
             nodes.change.innerHTML = `<span class="${colorClass}">${sign}${formatChangeNum(mainChange)}</span>`;
             nodes.pct.innerHTML = `<span class="badge ${colorClass}"><span class="arrow">${arrow}</span>${formatPct(Math.abs(mainPct))}%</span>`;
             
-            nodes.vol.textContent = formatCompact(quote.regularMarketVolume); 
+            // KNIGHT 야간선물 거래량은 0으로 가져오기 때문에 빈칸('-') 유지되도록 처리
+            nodes.vol.textContent = (quote.regularMarketVolume && quote.regularMarketVolume > 0) ? formatCompact(quote.regularMarketVolume) : '-'; 
             nodes.cap.textContent = formatCompact(quote.marketCap);
             
             if (quote.regularMarketDayLow && quote.regularMarketDayHigh) {
@@ -994,7 +1066,6 @@ function updateDOMWithData(quotes) {
         });
     });
 
-    // 변경된(또는 복원된) 데이터를 다시 캐시에 덮어씌워 다음 갱신 전까지 유지시킵니다.
     quotes.forEach(q => { memoryPriceCache[q.symbol] = q; });
     saveCacheToStorage();
 }
@@ -1162,7 +1233,6 @@ async function fetchMarketTrend(marketType = currentTrendMarketType) {
     const kstOptions = { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' };
     const todayStr = new Intl.DateTimeFormat('ko-KR', kstOptions).format(kstTime).replace(/\s/g, ''); 
 
-    // 💡 로더를 띄울지 결정하는 플래그 (기본값 true)
     let shouldShowLoader = true; 
 
     if (cached && cached.data) {
@@ -1172,24 +1242,19 @@ async function fetchMarketTrend(marketType = currentTrendMarketType) {
             const hasFinalDataCache = cached.data.some(d => d.time === "153000" || d.time === "1530");
             const isLiveCache = (cached.dateStr === todayStr) && (!hasFinalDataCache || timeNum < 1530);
             
-            // 1. 캐시로 차트를 즉시 렌더링 (비어있는 화면 방지)
             renderTrendChart(cached.data, cached.dateStr || todayStr, isLiveCache);
 
-            // 💡 2. 캐시 연령(Age) 계산 및 로더 표시 여부 결정
             const isMarketOpen = !isWeekend && (timeNum >= 900 && timeNum < 1530);
             const cacheAgeMs = Date.now() - (cached.lastFetchTime || 0);
             
             if (isMarketOpen) {
-                // 장중일 때: 캐시가 10분(600000ms) 이내라면 신선하므로 조용히 백그라운드 업데이트!
                 if (cacheAgeMs < 600000) {
                     shouldShowLoader = false;
                 }
             } else {
-                // 장이 닫혀있다면 더 이상 갱신될 데이터가 없으므로 로더 생략!
                 shouldShowLoader = false;
             }
 
-            // 최종 마감 데이터라면 통신조차 하지 않고 함수 완전 종료
             if (hasFinalDataCache && timeNum >= 1530) {
                 if (chartLoader) chartLoader.style.display = 'none';
                 return;
@@ -1202,7 +1267,6 @@ async function fetchMarketTrend(marketType = currentTrendMarketType) {
         }
     }
 
-    // 💡 3. 캐시가 없거나, 너무 오래된(10분 이상) 상태라면 통신 전 로더를 띄움
     if (shouldShowLoader && chartLoader) {
         chartLoader.style.display = 'flex';
     }
@@ -1239,10 +1303,8 @@ async function fetchMarketTrend(marketType = currentTrendMarketType) {
             const hasFinalData = data.some(d => d.time === "153000" || d.time === "1530");
             const isLiveAPI = (actualDateStr === todayStr) && (!hasFinalData || timeNum < 1530);
 
-            // 4. 최신 데이터로 기존 차트 부드럽게 업데이트
             renderTrendChart(data, actualDateStr, isLiveAPI);
 
-            // 💡 5. 캐시 저장 시 현재 시간(lastFetchTime)을 함께 기록!
             localStorage.setItem(cacheKey, JSON.stringify({
                 dateStr: actualDateStr,
                 data: data,
@@ -1258,7 +1320,6 @@ async function fetchMarketTrend(marketType = currentTrendMarketType) {
             container.innerHTML = '<div class="empty-state"><p class="error-text">Failed to load trend data.</p></div>';
         }
     } finally {
-        // 통신이 끝나면 무조건 로더 숨김 처리
         if (chartLoader) chartLoader.style.display = 'none';
     }
 }
@@ -1512,41 +1573,30 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
 
                         tooltipEl.style.opacity = 1;
                         
-                        // CSS transform에 의존하던 기존 방식을 버리고 명확한 절대 픽셀 좌표계 적용
                         tooltipEl.style.transform = 'none';
                         
-                        // 1. 툴팁의 실제 렌더링 사이즈와 차트 영역 크기 가져오기
                         const ttWidth = tooltipEl.offsetWidth || 150;
                         const ttHeight = tooltipEl.offsetHeight || 130;
                         
                         const chartWidth = context.chart.width;
                         const chartHeight = context.chart.height;
                         
-                        // 2. 터치 위치(caretX, caretY) 기준으로 기본 툴팁 위치 설정
-                        // 기본적으로 터치 포인트 살짝 위쪽 중앙에 배치
                         let targetLeft = tooltipModel.caretX - (ttWidth / 2);
                         let targetTop = tooltipModel.caretY - ttHeight - 15; 
                         
-                        // 3. Y축 (위아래) 경계선 방어
                         if (targetTop < 10) {
-                            // 위로 뚫고 나가려고 하면, 포인터 아래 방향으로 툴팁을 뒤집기
                             targetTop = tooltipModel.caretY + 15;
                         }
                         if (targetTop + ttHeight > chartHeight - 10) {
-                            // 아래마저 뚫고 나가면, 차트 영역 맨 밑바닥으로 강제 고정
                             targetTop = chartHeight - ttHeight - 10;
                         }
                         
-                        // 4. X축 (좌우) 경계선 방어
                         if (targetLeft < 10) {
-                            // 왼쪽 화면 밖으로 나가면 왼쪽 벽에 10px 여백 두고 딱 붙이기
                             targetLeft = 10;
                         } else if (targetLeft + ttWidth > chartWidth - 10) {
-                            // 오른쪽 화면 밖으로 나가면 오른쪽 벽에 10px 여백 두고 딱 붙이기
                             targetLeft = chartWidth - ttWidth - 10;
                         }
                         
-                        // 5. 최종 위치를 픽셀 단위로 적용
                         tooltipEl.style.left = targetLeft + 'px';
                         tooltipEl.style.top = targetTop + 'px';
                     }
@@ -1582,13 +1632,11 @@ window.switchTrendMarket = function(marketType) {
     fetchMarketTrend(marketType);
 };
 
-// 스크롤 발생 시 툴팁 즉시 숨김 처리
 window.addEventListener('scroll', () => {
     const tooltipEl = document.getElementById('chartjs-custom-tooltip');
     if (tooltipEl && tooltipEl.style.opacity === '1') {
         tooltipEl.style.opacity = 0;
         
-        // 차트 내부의 터치 포커스 해제
         if (trendChartInstance) {
             trendChartInstance.tooltip.setActiveElements([], {x: 0, y: 0});
             trendChartInstance.update('none');
