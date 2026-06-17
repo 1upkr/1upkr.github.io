@@ -535,13 +535,10 @@ async function fetchAndProcessKnight() {
     const kstTime = new Date(utc + (9 * 3600000));
     const timeNum = kstTime.getHours() * 100 + kstTime.getMinutes();
     
-    // 야간장 시간 판별: 18:00(1800) ~ 익일 05:00(500)
-    const day = kstTime.getDay(); // 0:일, 1:월, 2:화, 3:수, 4:목, 5:금, 6:토
-    // 평일(월~금) 저녁 18:00 이후
+    // 1. 야간장 시간 판별: 18:00 ~ 익일 05:30 (최종 정산 데이터 확보를 위해 30분 연장)
+    const day = kstTime.getDay();
     const isEveningOpen = (day >= 1 && day <= 5) && (timeNum >= 1800);
-    // 평일 다음날(화~토) 새벽 05:00 이전 (금요일 밤에 시작된 장이 토요일 새벽 5시에 끝남)
-    const isMorningOpen = (day >= 2 && day <= 6) && (timeNum <= 500);
-    
+    const isMorningOpen = (day >= 2 && day <= 6) && (timeNum <= 530);
     const isNightSession = isEveningOpen || isMorningOpen;
     
     const currentMs = Date.now();
@@ -549,11 +546,18 @@ async function fetchAndProcessKnight() {
     
     let cachedData = memoryPriceCache['KNIGHT'];
 
-    // 1. 초기 1회 로딩이거나, 2. 야간장이면서 20분이 지났을 때만 업데이트
-    const needsUpdate = !cachedData || (isNightSession && elapsedMins >= 20);
+    // 2. 캐시 데이터 노후화 체크 (6시간 기준)
+    // 데이터 객체에 저장해둔 타임스탬프(_knightFetchMs)를 확인하여 계산
+    const cacheAgeMs = (cachedData && cachedData._knightFetchMs) ? (currentMs - cachedData._knightFetchMs) : Infinity;
+    const cacheAgeHours = cacheAgeMs / (1000 * 60 * 60);
+
+    // 🌟 갱신 조건 통합:
+    // A. 캐시가 아예 없을 때 (최초 접속)
+    // B. 야간장 진행 중이며 20분이 지났을 때
+    // C. 장이 닫혀있더라도 캐시가 6시간 이상 낡았을 때 (누락된 최종 종가 1회 확보용)
+    const needsUpdate = !cachedData || (isNightSession && elapsedMins >= 20) || (cacheAgeHours >= 6);
 
     if (!needsUpdate) {
-        // 🌟 캐시를 보여줄 때: 야간장이면 뱃지 숨김("REGULAR"), 주간이면 뱃지 표시("CLOSED")
         cachedData.marketState = isNightSession ? "REGULAR" : "CLOSED";
         updateDOMWithData([cachedData]);
         return;
@@ -567,8 +571,10 @@ async function fetchAndProcessKnight() {
         if (data && data.quoteResponse && data.quoteResponse.result && data.quoteResponse.result.length > 0) {
             const resultData = data.quoteResponse.result[0];
             
-            // 🌟 새 데이터를 가져올 때: 야간장이면 뱃지 숨김("REGULAR"), 주간이면 뱃지 표시("CLOSED")
             resultData.marketState = isNightSession ? "REGULAR" : "CLOSED";
+            
+            // 🌟 노후화 체크를 위한 타임스탬프 도장 찍기
+            resultData._knightFetchMs = currentMs; 
             
             lastKnightFetchTime = currentMs; 
             updateDOMWithData([resultData]); 
@@ -624,7 +630,7 @@ async function handleAddTicker(e, sectionId) {
 
         let data = [];
 
-        // 🌟 검색해서 추가할 때 KNIGHT 예외 처리
+        // 🌟 방금 검색해서 추가하는 종목이 KNIGHT일 경우의 예외 처리
         if (ticker === 'KNIGHT') {
             const url = `${KNIGHT_GAS_PROXY_URL}?t=${Date.now()}`;
             const res = await fetch(url);
@@ -636,13 +642,15 @@ async function handleAddTicker(e, sectionId) {
                 const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
                 const kstTime = new Date(utc + (9 * 3600000));
                 const timeNum = kstTime.getHours() * 100 + kstTime.getMinutes();
+                
+                // 여기도 05:30으로 연장 반영
                 const day = kstTime.getDay();
                 const isEveningOpen = (day >= 1 && day <= 5) && (timeNum >= 1800);
-                const isMorningOpen = (day >= 2 && day <= 6) && (timeNum <= 500);
+                const isMorningOpen = (day >= 2 && day <= 6) && (timeNum <= 530);
                 const isNightSession = isEveningOpen || isMorningOpen;
                 
-                // 추가 즉시 시간대에 맞춰 뱃지 표시 여부 결정
                 data[0].marketState = isNightSession ? "REGULAR" : "CLOSED";
+                data[0]._knightFetchMs = Date.now(); // 초기 타임스탬프 부여
             }
         } else {
             data = await fetchFunc([ticker]);
