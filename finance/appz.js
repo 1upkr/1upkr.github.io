@@ -1507,46 +1507,43 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
 
                         tooltipEl.style.opacity = 1;
                         
-                        // 1. 툴팁의 실제 렌더링된 크기 가져오기
-                        const ttWidth = tooltipEl.offsetWidth || 150; 
+                        // CSS transform에 의존하던 기존 방식을 버리고 명확한 절대 픽셀 좌표계 적용
+                        tooltipEl.style.transform = 'none';
+                        
+                        // 1. 툴팁의 실제 렌더링 사이즈와 차트 영역 크기 가져오기
+                        const ttWidth = tooltipEl.offsetWidth || 150;
                         const ttHeight = tooltipEl.offsetHeight || 130;
                         
-                        // 2. 캔버스 전체 크기
                         const chartWidth = context.chart.width;
                         const chartHeight = context.chart.height;
                         
-                        // 3. X축 정렬 (좌/우 경계 침범 방어)
-                        let transformX = '-50%';
-                        let leftPos = tooltipModel.caretX;
+                        // 2. 터치 위치(caretX, caretY) 기준으로 기본 툴팁 위치 설정
+                        // 기본적으로 터치 포인트 살짝 위쪽 중앙에 배치
+                        let targetLeft = tooltipModel.caretX - (ttWidth / 2);
+                        let targetTop = tooltipModel.caretY - ttHeight - 15; 
                         
-                        if (leftPos - (ttWidth / 2) < 10) {
-                            transformX = '0%'; // 왼쪽 벽에 붙으면 오른쪽으로 밀어내기
-                            leftPos = Math.max(10, tooltipModel.caretX);
-                        } else if (leftPos + (ttWidth / 2) > chartWidth - 10) {
-                            transformX = '-100%'; // 오른쪽 벽에 붙으면 왼쪽으로 밀어내기
-                            leftPos = Math.min(chartWidth - 10, tooltipModel.caretX);
+                        // 3. Y축 (위아래) 경계선 방어
+                        if (targetTop < 10) {
+                            // 위로 뚫고 나가려고 하면, 포인터 아래 방향으로 툴팁을 뒤집기
+                            targetTop = tooltipModel.caretY + 15;
+                        }
+                        if (targetTop + ttHeight > chartHeight - 10) {
+                            // 아래마저 뚫고 나가면, 차트 영역 맨 밑바닥으로 강제 고정
+                            targetTop = chartHeight - ttHeight - 10;
                         }
                         
-                        // 4. Y축 정렬 (상/하 경계 침범 방어)
-                        const chartArea = context.chart.chartArea;
-                        let topPos = chartArea.top + (chartArea.bottom - chartArea.top) / 2; // 기본: 차트 중앙
-                        let transformY = '-50%';
-                        
-                        // 툴팁이 차트 상단을 뚫고 나가는 경우
-                        if (topPos - (ttHeight / 2) < 10) {
-                            transformY = '0%';
-                            topPos = 10; // 상단 10px 여백 강제 고정
-                        } 
-                        // 툴팁이 차트 하단을 뚫고 나가는 경우
-                        else if (topPos + (ttHeight / 2) > chartHeight - 10) {
-                            transformY = '-100%';
-                            topPos = chartHeight - 10;
+                        // 4. X축 (좌우) 경계선 방어
+                        if (targetLeft < 10) {
+                            // 왼쪽 화면 밖으로 나가면 왼쪽 벽에 10px 여백 두고 딱 붙이기
+                            targetLeft = 10;
+                        } else if (targetLeft + ttWidth > chartWidth - 10) {
+                            // 오른쪽 화면 밖으로 나가면 오른쪽 벽에 10px 여백 두고 딱 붙이기
+                            targetLeft = chartWidth - ttWidth - 10;
                         }
                         
-                        // 5. 최종 위치 적용
-                        tooltipEl.style.transform = `translate(${transformX}, ${transformY})`;
-                        tooltipEl.style.left = leftPos + 'px';
-                        tooltipEl.style.top = topPos + 'px';
+                        // 5. 최종 위치를 픽셀 단위로 적용
+                        tooltipEl.style.left = targetLeft + 'px';
+                        tooltipEl.style.top = targetTop + 'px';
                     }
                 }
             },
