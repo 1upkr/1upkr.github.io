@@ -8,12 +8,13 @@ const DEFAULT_WATCHLISTS = {
 };
 
 const GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbxc8Q5iI7WxZurtV-1FDjTWKPUx_i049HSBAap2AyKYSvs8QMRHD3ZTa3xqfu0tJ1Za/exec";
+
 const NAVER_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbymIKO0njjKUqFvgcjY39To9E2rkJMCqbwL0uWUjyyvVQREn6foLLdI44rVnoehvi6Ztg/exec"; 
-const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbwSD8MOLPrYjwTBVQX_Tq6pu-gTHlOeR7p0hUY2pHGACNc2NA6f4zICduC05ypO_EN6/exec"; 
 const TREND_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbyV8COzKSWjJjeKTNZs-cixUJquW3TucUWpAWjTWqt4cIcsy_jFFyxDHQ-9J3nsMVlXIA/exec";
 
-// 🌟 추가: 야간선물 전용 GAS 프록시 URL
-const KNIGHT_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbxbH2suhPydJE8Eq07uzK4nkdREtdBl41pBBoyRkcGu1y4Nlom-gnRMdzPCdolR6DdB/exec";
+const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbwSD8MOLPrYjwTBVQX_Tq6pu-gTHlOeR7p0hUY2pHGACNc2NA6f4zICduC05ypO_EN6/exec"; 
+
+const KNIGHT_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbypDWYRNAdkLzZ9iAw_CbMUaPGc-1gBGyO-56eGjsI1gYnOgZ4TLPeOPJ5HfQaPZBmK/exec";
 
 const CHO_HANGUL = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
 function getChosung(str) {
