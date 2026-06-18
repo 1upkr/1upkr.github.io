@@ -476,8 +476,8 @@ async function fetchAndProcessKnight() {
         const isMorningOpen = (day >= 2 && day <= 6) && (timeNum <= 530);
         const isNightSession = isEveningOpen || isMorningOpen;
 
-        // 💡 1. 갱신 주기 설정 (장중: 15분, 장외: 30분)
-        const intervalMs = isNightSession ? (15 * 60 * 1000) : (30 * 60 * 1000);
+        // 💡 1. 갱신 주기 설정 (장중: 15분, 장외: 120분)
+        const intervalMs = isNightSession ? (15 * 60 * 1000) : (120 * 60 * 1000);
 
         // 💡 2. 브라우저 로컬 스토리지에서 마지막 호출 시간과 캐시 데이터 확인
         const lastFetchTime = parseInt(localStorage.getItem('knight_last_fetch_time') || '0', 10);
