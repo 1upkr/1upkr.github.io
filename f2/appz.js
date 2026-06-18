@@ -1518,12 +1518,6 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
 }
 
 window.switchTrendMarket = function(marketType) {
-    const tabs = document.querySelectorAll('.trend-tab-btn');
-    if (tabs.length > 0) {
-        tabs.forEach(btn => btn.classList.remove('active'));
-        const activeTab = Array.from(tabs).find(btn => btn.getAttribute('onclick').includes(marketType));
-        if (activeTab) activeTab.classList.add('active');
-    }
     fetchMarketTrend(marketType);
 };
 
