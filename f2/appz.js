@@ -1100,13 +1100,22 @@ function renderNews(newsList) {
 }
 
 async function fetchMarketTrend(marketType = currentTrendMarketType) {
+    // 👇 새로 추가할 부분: 탭 UI 활성화 상태 동기화
+    const tabs = document.querySelectorAll('.trend-tab-btn');
+    if (tabs.length > 0) {
+        tabs.forEach(btn => btn.classList.remove('active'));
+        const activeTab = Array.from(tabs).find(btn => btn.getAttribute('onclick').includes(marketType));
+        if (activeTab) activeTab.classList.add('active');
+    }
+    // 👆 여기까지
+
     if (currentTrendMarketType !== marketType && trendChartInstance) {
         trendChartInstance.destroy();
         trendChartInstance = null;
     }
 
     currentTrendMarketType = marketType;
-    localStorage.setItem('marketdash_trend_tab', currentTrendMarketType); 
+    localStorage.setItem('marketdash_trend_tab', currentTrendMarketType);
 
     const container = document.getElementById('trend-chart-wrapper');
     if (!container) return;
