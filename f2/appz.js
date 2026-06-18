@@ -473,7 +473,7 @@ async function fetchYahooFinance(symbols) {
     if (!navigator.onLine) throw new Error("No network connection.");
 
     const symbolsStr = symbols.join(',');
-    const targetUrl = `${GAS_PROXY_URL}?symbols=${encodeURIComponent(symbolsStr)}&t=${Date.now()}`;
+    const targetUrl = `${YAHOO_FINANCE_PROXY_URL}?symbols=${encodeURIComponent(symbolsStr)}&t=${Date.now()}`;
 
     try {
         const text = await fetchWithRetry(targetUrl);
@@ -490,7 +490,7 @@ async function fetchNaverFinance(symbols) {
     if (!navigator.onLine) throw new Error("No network connection.");
 
     const symbolsStr = symbols.join(',');
-    const targetUrl = `${NAVER_GAS_PROXY_URL}?symbols=${encodeURIComponent(symbolsStr)}&t=${Date.now()}`;
+    const targetUrl = `${NAVER_FINANCE_PROXY_URL}?symbols=${encodeURIComponent(symbolsStr)}&t=${Date.now()}`;
 
     try {
         const text = await fetchWithRetry(targetUrl);
@@ -1208,7 +1208,7 @@ async function fetchMarketTrend(marketType = currentTrendMarketType) {
     }
 
     try {
-        const url = `${TREND_GAS_PROXY_URL}?tradeType=KRX&marketType=${marketType}&t=${Date.now()}`;
+        const url = `${TREND_CHART_GAS_PROXY_URL}?tradeType=KRX&marketType=${marketType}&t=${Date.now()}`;
         const response = await fetch(url);
         if (!response.ok) throw new Error("Trend fetch failed");
         
