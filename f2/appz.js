@@ -7,11 +7,11 @@ const DEFAULT_WATCHLISTS = {
     us: { title: '🇺🇸 US', tickers: ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'TSLA', 'META'] }
 };
 
-const YAHOO_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbwviad0bhC5TCdCjV5eRRaz0PXZXxkFyRIY1Z4XwDcGJZZ0oY9reEVheL09_p0NPtcP5Q/exec";
-const NAVER_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbyMd_MuUCilCOBZbXy2kgepWCheD6SRpde6THpvwmE5jAbWW0pCAKbplIr2DZxv77jQ4A/exec"; 
-const TREND_CHART_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbxYn927XzVQQ05aOyKQEO2w0CTxxHLboV0k1hfnlJ3hclJwive8WpDlQm59kSmLLd3D/exec";
+const YAHOO_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbwn9BWJj5PRqX8_p4MVoMI3q7OLy4-jF0jmf-5nVb-hdPGCSH-x7U0j839d34_CEsD-yA/exec";
+const NAVER_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbyox0kqqKqfy9oMGno1co03gb-Ode4lp0HHCs3R5podhVibcfChPeiapQXBa-D9Z5bH1w/exec"; 
+const TREND_CHART_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbydDprKH6aMDgozAs-YPUMI43CuB9-phn2YQSr_2TcDy9C6SP-O2Q8rs_oKmZXIEKtM/exec";
 const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbwMythtWEujVqeRH992u_XFFnluWkxJKOC6HvHyu52UYCVpxffqxOIxaiMqsR94Pe86/exec"; 
-const KNIGHT_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbwBXyhFNiNacWcV96VdzkSspAfzUg8k8xiZlvhOWCN-bE6y8Nfv63NQNiIEy6vQbBKT9g/exec";
+const KNIGHT_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbz5QFnhkxdIepIXTVvg4w0MWhXN6dM5EDg0A370uZNfS8Fh5pXCqfUDExINth02xGEl9A/exec";
 
 const CHO_HANGUL = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
 function getChosung(str) {
@@ -72,23 +72,39 @@ async function init() {
     applyTheme(); 
     if (!state.sectionOrder || state.sectionOrder.length === 0) state.sectionOrder = Object.keys(state.watchlists);
 
+    // 💡 탭 이동/숨김 해제 시 무조건 새로고침 (서버 단에서 초고속 캐시 처리하므로 부담 없음)
     document.addEventListener('visibilitychange', () => {
-        if (document.hidden) {
-            if (state.intervalId) clearInterval(state.intervalId);
-        } else {
-            const now = Date.now();
-            const lastFetch = parseInt(localStorage.getItem('marketdash_last_fetch_time') || '0');
-            const elapsedSeconds = Math.floor((now - lastFetch) / 1000);
+        if (!document.hidden) forceRefresh();
+    });
+    
+    await initTickerDB(); 
+    renderLayout(); 
 
-            if (lastFetch === 0 || elapsedSeconds >= 60) {
-                forceRefresh();
-            } else {
-                state.countdown = 60 - elapsedSeconds;
-                updateTimerUI(state.countdown);
-                startTimer();
-            }
+    // 💡 페이지 로드 시 복잡한 계산 없이 즉시 데이터 요청
+    const savedTab = localStorage.getItem('marketdash_active_tab');
+    if (savedTab === 'news') {
+        document.body.classList.add('show-news');
+        const tabNewsBtn = document.getElementById('tab-btn-news');
+        if (tabNewsBtn) tabNewsBtn.classList.add('active');
+    }
+
+    forceRefresh(); // 타이머 60초 시작 및 전체 데이터 로드
+    initSwipeToDelete(); 
+    
+    const btnRefresh = document.getElementById('btn-refresh');
+    if (btnRefresh) btnRefresh.addEventListener('click', forceRefresh);
+
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.search-wrapper')) {
+            document.querySelectorAll('.autocomplete-list').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.input-guide').forEach(el => el.style.display = 'none');
+        }
+        const settingsDropdown = document.getElementById('settings-dropdown');
+        if (settingsDropdown && !e.target.closest('.settings-wrapper')) {
+            settingsDropdown.classList.remove('active');
         }
     });
+}
     
     await initTickerDB(); 
     renderLayout(); 
