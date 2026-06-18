@@ -72,63 +72,23 @@ async function init() {
     applyTheme(); 
     if (!state.sectionOrder || state.sectionOrder.length === 0) state.sectionOrder = Object.keys(state.watchlists);
 
+    // 💡 탭 이동/숨김 해제 시 무조건 새로고침 (서버 단에서 초고속 캐시 처리하므로 부담 없음)
     document.addEventListener('visibilitychange', () => {
-        if (document.hidden) {
-            if (state.intervalId) clearInterval(state.intervalId);
-        } else {
-            const now = Date.now();
-            const lastFetch = parseInt(localStorage.getItem('marketdash_last_fetch_time') || '0');
-            const elapsedSeconds = Math.floor((now - lastFetch) / 1000);
-
-            if (lastFetch === 0 || elapsedSeconds >= 60) {
-                forceRefresh();
-            } else {
-                state.countdown = 60 - elapsedSeconds;
-                updateTimerUI(state.countdown);
-                startTimer();
-            }
-        }
+        if (!document.hidden) forceRefresh();
     });
     
     await initTickerDB(); 
     renderLayout(); 
-    startTimer(); 
-    
-    const lastFetchTime = parseInt(localStorage.getItem('marketdash_last_fetch_time') || '0');
-    const now = Date.now();
+
+    // 💡 페이지 로드 시 복잡한 계산 없이 즉시 데이터 요청
     const savedTab = localStorage.getItem('marketdash_active_tab');
-    
     if (savedTab === 'news') {
-        const container = document.getElementById('news-container');
-        const isStale = (now - state.lastNewsFetch) > 60000;
-        const isEmpty = !container || container.children.length === 0 || container.querySelector('.empty-state');
-        
-        if (isStale || isEmpty) fetchNews(); 
-        
-        if (now - lastFetchTime < 60000) {
-            state.countdown = Math.ceil(60 - ((now - lastFetchTime) / 1000));
-            updateTimerUI(state.countdown);
-        } else {
-            fetchData();
-        }
-    } else {
-        if (now - lastFetchTime < 60000) {
-            state.countdown = Math.ceil(60 - ((now - lastFetchTime) / 1000));
-            updateTimerUI(state.countdown);
-            fetchNews(); 
-        } else {
-            fetchData(); 
-        }
+        document.body.classList.add('show-news');
+        const tabNewsBtn = document.getElementById('tab-btn-news');
+        if (tabNewsBtn) tabNewsBtn.classList.add('active');
     }
 
-    const tabs = document.querySelectorAll('.trend-tab-btn');
-    if (tabs.length > 0) {
-        tabs.forEach(btn => btn.classList.remove('active'));
-        const activeTab = Array.from(tabs).find(btn => btn.getAttribute('onclick').includes(currentTrendMarketType));
-        if (activeTab) activeTab.classList.add('active');
-    }
-
-    fetchMarketTrend(currentTrendMarketType);
+    forceRefresh(); // 타이머 60초 시작 및 전체 데이터 로드
     initSwipeToDelete(); 
     
     const btnRefresh = document.getElementById('btn-refresh');
