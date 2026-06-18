@@ -72,39 +72,23 @@ async function init() {
     applyTheme(); 
     if (!state.sectionOrder || state.sectionOrder.length === 0) state.sectionOrder = Object.keys(state.watchlists);
 
-    // 💡 탭 이동/숨김 해제 시 무조건 새로고침 (서버 단에서 초고속 캐시 처리하므로 부담 없음)
     document.addEventListener('visibilitychange', () => {
-        if (!document.hidden) forceRefresh();
-    });
-    
-    await initTickerDB(); 
-    renderLayout(); 
+        if (document.hidden) {
+            if (state.intervalId) clearInterval(state.intervalId);
+        } else {
+            const now = Date.now();
+            const lastFetch = parseInt(localStorage.getItem('marketdash_last_fetch_time') || '0');
+            const elapsedSeconds = Math.floor((now - lastFetch) / 1000);
 
-    // 💡 페이지 로드 시 복잡한 계산 없이 즉시 데이터 요청
-    const savedTab = localStorage.getItem('marketdash_active_tab');
-    if (savedTab === 'news') {
-        document.body.classList.add('show-news');
-        const tabNewsBtn = document.getElementById('tab-btn-news');
-        if (tabNewsBtn) tabNewsBtn.classList.add('active');
-    }
-
-    forceRefresh(); // 타이머 60초 시작 및 전체 데이터 로드
-    initSwipeToDelete(); 
-    
-    const btnRefresh = document.getElementById('btn-refresh');
-    if (btnRefresh) btnRefresh.addEventListener('click', forceRefresh);
-
-    document.addEventListener('click', (e) => {
-        if (!e.target.closest('.search-wrapper')) {
-            document.querySelectorAll('.autocomplete-list').forEach(el => el.style.display = 'none');
-            document.querySelectorAll('.input-guide').forEach(el => el.style.display = 'none');
-        }
-        const settingsDropdown = document.getElementById('settings-dropdown');
-        if (settingsDropdown && !e.target.closest('.settings-wrapper')) {
-            settingsDropdown.classList.remove('active');
+            if (lastFetch === 0 || elapsedSeconds >= 60) {
+                forceRefresh();
+            } else {
+                state.countdown = 60 - elapsedSeconds;
+                updateTimerUI(state.countdown);
+                startTimer();
+            }
         }
     });
-}
     
     await initTickerDB(); 
     renderLayout(); 
@@ -170,7 +154,7 @@ function processTickerDB(data) {
 
 async function initTickerDB() {
     try {
-        const response = await fetch(`./f2/tickers_n.json?v=${new Date().getTime()}`);
+        const response = await fetch(`./finance/tickers_n.json?v=${new Date().getTime()}`);
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const rawData = await response.json();
         localTickerDB = processTickerDB(rawData);
@@ -489,7 +473,7 @@ async function fetchYahooFinance(symbols) {
     if (!navigator.onLine) throw new Error("No network connection.");
 
     const symbolsStr = symbols.join(',');
-    const targetUrl = `${YAHOO_FINANCE_PROXY_URL}?symbols=${encodeURIComponent(symbolsStr)}&t=${Date.now()}`;
+    const targetUrl = `${GAS_PROXY_URL}?symbols=${encodeURIComponent(symbolsStr)}&t=${Date.now()}`;
 
     try {
         const text = await fetchWithRetry(targetUrl);
@@ -506,7 +490,7 @@ async function fetchNaverFinance(symbols) {
     if (!navigator.onLine) throw new Error("No network connection.");
 
     const symbolsStr = symbols.join(',');
-    const targetUrl = `${NAVER_FINANCE_PROXY_URL}?symbols=${encodeURIComponent(symbolsStr)}&t=${Date.now()}`;
+    const targetUrl = `${NAVER_GAS_PROXY_URL}?symbols=${encodeURIComponent(symbolsStr)}&t=${Date.now()}`;
 
     try {
         const text = await fetchWithRetry(targetUrl);
@@ -1224,7 +1208,7 @@ async function fetchMarketTrend(marketType = currentTrendMarketType) {
     }
 
     try {
-        const url = `${TREND_CHART_GAS_PROXY_URL}?tradeType=KRX&marketType=${marketType}&t=${Date.now()}`;
+        const url = `${TREND_GAS_PROXY_URL}?tradeType=KRX&marketType=${marketType}&t=${Date.now()}`;
         const response = await fetch(url);
         if (!response.ok) throw new Error("Trend fetch failed");
         
