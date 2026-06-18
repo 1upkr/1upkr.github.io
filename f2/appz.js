@@ -11,7 +11,7 @@ const YAHOO_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbwn9BWJ
 const NAVER_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbyox0kqqKqfy9oMGno1co03gb-Ode4lp0HHCs3R5podhVibcfChPeiapQXBa-D9Z5bH1w/exec"; 
 const TREND_CHART_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbydDprKH6aMDgozAs-YPUMI43CuB9-phn2YQSr_2TcDy9C6SP-O2Q8rs_oKmZXIEKtM/exec";
 const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbwMythtWEujVqeRH992u_XFFnluWkxJKOC6HvHyu52UYCVpxffqxOIxaiMqsR94Pe86/exec"; 
-const KNIGHT_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbz5QFnhkxdIepIXTVvg4w0MWhXN6dM5EDg0A370uZNfS8Fh5pXCqfUDExINth02xGEl9A/exec";
+const KNIGHT_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbzTskZR4RYUOzgPGt9wSPEqnebKziJkfdmXFYlTI0HaOTtP9-iyqh65FyYFv_yBPYAY6Q/exec";
 
 const CHO_HANGUL = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
 function getChosung(str) {
@@ -466,28 +466,56 @@ async function fetchNaverFinance(symbols) {
 // GAS 서버(PropertiesService)가 무결성 데이터를 반환한다고 신뢰.
 async function fetchAndProcessKnight() {
     try {
+        const now = new Date();
+        const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+        const kstTime = new Date(utc + (9 * 3600000));
+        const timeNum = kstTime.getHours() * 100 + kstTime.getMinutes();
+        
+        const day = kstTime.getDay();
+        const isEveningOpen = (day >= 1 && day <= 5) && (timeNum >= 1800);
+        const isMorningOpen = (day >= 2 && day <= 6) && (timeNum <= 530);
+        const isNightSession = isEveningOpen || isMorningOpen;
+
+        // 💡 1. 갱신 주기 설정 (장중: 15분, 장외: 30분)
+        const intervalMs = isNightSession ? (15 * 60 * 1000) : (30 * 60 * 1000);
+
+        // 💡 2. 브라우저 로컬 스토리지에서 마지막 호출 시간과 캐시 데이터 확인
+        const lastFetchTime = parseInt(localStorage.getItem('knight_last_fetch_time') || '0', 10);
+        const cachedDataStr = localStorage.getItem('knight_cached_data');
+
+        // 💡 3. 주기가 지나지 않았고 캐시가 있다면 API 호출 생략 (서버 차단 방지)
+        if (Date.now() - lastFetchTime < intervalMs && cachedDataStr) {
+            const cachedData = JSON.parse(cachedDataStr);
+            cachedData.marketState = isNightSession ? "REGULAR" : "CLOSED";
+            updateDOMWithData([cachedData]); 
+            return; // 실제 fetch 없이 함수 조기 종료
+        }
+
+        // 💡 4. 주기가 지났거나 최초 로딩 시에만 실제 서버로 데이터 요청
         const url = `${KNIGHT_GAS_PROXY_URL}?t=${Date.now()}`;
         const res = await fetch(url);
         const data = await res.json();
         
         if (data && data.quoteResponse && data.quoteResponse.result && data.quoteResponse.result.length > 0) {
             const resultData = data.quoteResponse.result[0];
-            
-            const now = new Date();
-            const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
-            const kstTime = new Date(utc + (9 * 3600000));
-            const timeNum = kstTime.getHours() * 100 + kstTime.getMinutes();
-            
-            const day = kstTime.getDay();
-            const isEveningOpen = (day >= 1 && day <= 5) && (timeNum >= 1800);
-            const isMorningOpen = (day >= 2 && day <= 6) && (timeNum <= 530);
-            const isNightSession = isEveningOpen || isMorningOpen;
-
             resultData.marketState = isNightSession ? "REGULAR" : "CLOSED";
+            
+            // 💡 5. 성공 시 다음을 위해 캐시 데이터 덮어쓰기
+            localStorage.setItem('knight_cached_data', JSON.stringify(resultData));
+            localStorage.setItem('knight_last_fetch_time', Date.now().toString());
+
             updateDOMWithData([resultData]); 
         }
     } catch(e) {
         console.error("KNIGHT 야간선물 크롤링 에러:", e);
+        
+        // 💡 통신 에러 시, 화면이 비거나 망가지는 것을 막기 위해 기존 로컬 캐시 재활용
+        const fallbackDataStr = localStorage.getItem('knight_cached_data');
+        if (fallbackDataStr) {
+            const fallbackData = JSON.parse(fallbackDataStr);
+            fallbackData.marketState = "CLOSED_H"; // 에러 상태임을 암시하기 위해 홀드 처리
+            updateDOMWithData([fallbackData]);
+        }
     }
 }
 
