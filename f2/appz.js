@@ -869,6 +869,7 @@ function updateDOMWithData(quotes) {
                 }
             }
 
+            // 👇 수정된 부분: else 블록을 사용하여 PRE/POST 검증을 통과하면 하위 조건으로 떨어지지 않게 고정
             if (targetState === 'PRE') {
                 if (isKR) {
                     if (!preData || preData.volume === 0) targetState = 'CLOSED_H';
@@ -881,9 +882,12 @@ function updateDOMWithData(quotes) {
                 } else {
                     if (!postData || Math.abs(postData.price - regPrice) === 0) targetState = 'CLOSED_H';
                 }
-            } else if (mState === 'CLOSED' || mState.includes('POST') || mState.includes('PRE')) {
-                targetState = 'CLOSED_H';
+            } else {
+                if (mState === 'CLOSED' || mState.includes('POST') || mState.includes('PRE')) {
+                    targetState = 'CLOSED_H';
+                }
             }
+            // 👆 여기까지
 
             let isExtLive = false;
             
