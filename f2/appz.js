@@ -1133,14 +1133,13 @@ function renderNews(newsList) {
 }
 
 async function fetchMarketTrend(marketType = currentTrendMarketType) {
-    // 👇 새로 추가할 부분: 탭 UI 활성화 상태 동기화
+    // 👇 탭 UI 활성화 상태 동기화
     const tabs = document.querySelectorAll('.trend-tab-btn');
     if (tabs.length > 0) {
         tabs.forEach(btn => btn.classList.remove('active'));
         const activeTab = Array.from(tabs).find(btn => btn.getAttribute('onclick').includes(marketType));
         if (activeTab) activeTab.classList.add('active');
     }
-    // 👆 여기까지
 
     if (currentTrendMarketType !== marketType && trendChartInstance) {
         trendChartInstance.destroy();
@@ -1161,6 +1160,7 @@ async function fetchMarketTrend(marketType = currentTrendMarketType) {
     
     const isWeekend = (kstTime.getDay() === 0 || kstTime.getDay() === 6);
     const timeNum = kstTime.getHours() * 100 + kstTime.getMinutes();
+    const isMarketOpen = !isWeekend && (timeNum >= 900 && timeNum < 1530);
     
     const cacheKey = `market_trend_last_known_${marketType}`;
     let cached = null;
@@ -1171,43 +1171,41 @@ async function fetchMarketTrend(marketType = currentTrendMarketType) {
     const kstOptions = { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' };
     const todayStr = new Intl.DateTimeFormat('ko-KR', kstOptions).format(kstTime).replace(/\s/g, ''); 
 
-    let shouldShowLoader = true; 
+    let needsFetch = true;
 
+    // --- 💡 [수정됨] 1. 캐시 평가 및 서버 통신 판단 로직 ---
     if (cached && cached.data) {
-        const isCacheFromPast = !isWeekend && (timeNum >= 900) && (cached.dateStr !== todayStr);
-        
-        if (!isCacheFromPast) {
-            const hasFinalDataCache = cached.data.some(d => d.time === "153000" || d.time === "1530");
-            const isLiveCache = (cached.dateStr === todayStr) && (!hasFinalDataCache || timeNum < 1530);
-            
-            renderTrendChart(cached.data, cached.dateStr || todayStr, isLiveCache);
+        const hasFinalDataCache = cached.data.some(d => d.time === "153000" || d.time === "1530");
+        const isCacheToday = (cached.dateStr === todayStr);
+        const cacheAgeMs = Date.now() - (cached.lastFetchTime || 0);
 
-            const isMarketOpen = !isWeekend && (timeNum >= 900 && timeNum < 1530);
-            const cacheAgeMs = Date.now() - (cached.lastFetchTime || 0);
-            
-            if (isMarketOpen) {
-                if (cacheAgeMs < 600000) {
-                    shouldShowLoader = false;
+        // 캐시 데이터를 화면에 먼저 표시 (최초 빈 화면 방지)
+        const isLiveCache = isCacheToday && isMarketOpen && !hasFinalDataCache;
+        renderTrendChart(cached.data, cached.dateStr || todayStr, isLiveCache);
+
+        if (isMarketOpen) {
+            // 장중이면 60초 제한을 두어 불필요한 서버 호출 제어
+            if (cacheAgeMs < 60000) needsFetch = false;
+        } else {
+            // 장외 시간 (주말, 09시 이전, 15시 30분 이후)
+            if (hasFinalDataCache) {
+                // 이미 15:30 최종 마감 데이터까지 캐시에 있다면 추가 호출 불필요
+                if (isCacheToday || timeNum < 900 || isWeekend) {
+                    needsFetch = false;
                 }
             } else {
-                shouldShowLoader = false;
+                // 🔥 (문제 2 해결) 장외 시간인데 캐시가 미완성 상태라면 무조건 서버를 호출해 최종 데이터를 채움
+                needsFetch = true;
             }
-
-            if (hasFinalDataCache && timeNum >= 1530) {
-                if (chartLoader) chartLoader.style.display = 'none';
-                return;
-            }
-        }
-        
-        if (isWeekend || timeNum < 900) {
-            if (chartLoader) chartLoader.style.display = 'none';
-            return; 
         }
     }
 
-    if (shouldShowLoader && chartLoader) {
-        chartLoader.style.display = 'flex';
+    if (!needsFetch) {
+        if (chartLoader) chartLoader.style.display = 'none';
+        return;
     }
+
+    if (chartLoader) chartLoader.style.display = 'flex';
 
     try {
         const url = `${TREND_CHART_GAS_PROXY_URL}?tradeType=KRX&marketType=${marketType}&t=${Date.now()}`;
@@ -1224,8 +1222,9 @@ async function fetchMarketTrend(marketType = currentTrendMarketType) {
             if (data.length === 0) return;
 
             let actualDateStr = todayStr; 
-            const apiDate = json.data.bizdate || json.data.bizDate || json.data.businessDate || json.data.date;
+            const apiDate = json.data.bizdate || json.data.bizDate || json.data.businessDate;
             
+            // --- 💡 [수정됨] 2. 데이터 날짜 기준 최우선 처리 (문제 1 해결) ---
             if (apiDate && typeof apiDate === 'string' && apiDate.length >= 8) {
                 const y = apiDate.substring(0, 4);
                 const m = apiDate.substring(4, 6);
@@ -1239,7 +1238,10 @@ async function fetchMarketTrend(marketType = currentTrendMarketType) {
             }
 
             const hasFinalData = data.some(d => d.time === "153000" || d.time === "1530");
-            const isLiveAPI = (actualDateStr === todayStr) && (!hasFinalData || timeNum < 1530);
+            
+            // --- 💡 [수정됨] 3. 엄격한 LIVE 뱃지 조건 (문제 3 해결) ---
+            // (데이터가 오늘 것 + 시간이 장중 + 최종 데이터가 아직 없을 때만 LIVE)
+            const isLiveAPI = (actualDateStr === todayStr) && isMarketOpen && !hasFinalData;
 
             renderTrendChart(data, actualDateStr, isLiveAPI);
 
