@@ -8,8 +8,9 @@ const DEFAULT_WATCHLISTS = {
 };
 
 const YAHOO_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbxzBxcv3llVtcWyWoldEHkpyNBgWSn0D2_j_SYLEf6r-a4zMZ4VpOE6cxtwPQw_wvKt6Q/exec";
-const NAVER_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbyox0kqqKqfy9oMGno1co03gb-Ode4lp0HHCs3R5podhVibcfChPeiapQXBa-D9Z5bH1w/exec"; 
-const TREND_CHART_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbydDprKH6aMDgozAs-YPUMI43CuB9-phn2YQSr_2TcDy9C6SP-O2Q8rs_oKmZXIEKtM/exec";
+const NAVER_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbyox0kqqKqfy9oMGno1co03gb-Ode4lp0HHCs3R5podhVibcfChPeiapQXBa-D9Z5bH1w/exec";
+
+const TREND_CHART_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycby4YZ1sOdQPfde-nrzAN0vUjhRP1Phn9C1ppFY2m8YHywGz-7GhNcHLU19PFCLeqm3u/exec";
 const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbwMythtWEujVqeRH992u_XFFnluWkxJKOC6HvHyu52UYCVpxffqxOIxaiMqsR94Pe86/exec"; 
 
 const KNIGHT_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbxNL4-6PqMSqylMQBP0CdqSKS0LYEK7Yn7tbFtiuIfbKlQGcAanznYX85r0CpxQ8J1f_Q/exec";
@@ -1175,7 +1176,9 @@ async function fetchMarketTrend(marketType = currentTrendMarketType) {
     
     const isWeekend = (kstTime.getDay() === 0 || kstTime.getDay() === 6);
     const timeNum = kstTime.getHours() * 100 + kstTime.getMinutes();
-    const isMarketOpen = !isWeekend && (timeNum >= 900 && timeNum < 1530);
+    
+    // 16:00 최종 데이터를 확실히 수집하기 위해 16:10까지 오픈 상태로 간주
+    const isMarketOpen = !isWeekend && (timeNum >= 900 && timeNum <= 1610);
     
     const cacheKey = `market_trend_last_known_${marketType}`;
     let cached = null;
@@ -1189,7 +1192,11 @@ async function fetchMarketTrend(marketType = currentTrendMarketType) {
     let needsFetch = true;
 
     if (cached && cached.data) {
-        const hasFinalDataCache = cached.data.some(d => d.time === "153000" || d.time === "1530");
+        // 데이터 time 값 첫 4자리가 1600 이상인지 확인
+        const hasFinalDataCache = cached.data.some(d => {
+            const t = parseInt(d.time.substring(0, 4), 10);
+            return t >= 1600;
+        });
         const isCacheToday = (cached.dateStr === todayStr);
         const cacheAgeMs = Date.now() - (cached.lastFetchTime || 0);
 
@@ -1247,7 +1254,11 @@ async function fetchMarketTrend(marketType = currentTrendMarketType) {
                 }
             }
 
-            const hasFinalData = data.some(d => d.time === "153000" || d.time === "1530");
+            // 데이터 time 값 첫 4자리가 1600 이상인지 확인
+            const hasFinalData = data.some(d => {
+                const t = parseInt(d.time.substring(0, 4), 10);
+                return t >= 1600;
+            });
             
             const isLiveAPI = (actualDateStr === todayStr) && isMarketOpen && !hasFinalData;
 
@@ -1303,9 +1314,10 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
     const sortedData = dataList.slice().reverse();
     
     const fixedLabels = [];
-    for (let h = 9; h <= 15; h++) {
+    // 16:00 까지 X축 라벨을 늘리도록 수정
+    for (let h = 9; h <= 16; h++) {
         for (let m = 0; m < 60; m += 5) {
-            if (h === 15 && m > 30) continue;
+            if (h === 16 && m > 0) continue;
             fixedLabels.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
         }
     }
@@ -1325,10 +1337,11 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
         const mm = parseInt(t.substring(2, 4), 10);
         const timeVal = hh * 100 + mm;
 
-        if (timeVal >= 900 && timeVal <= 1600) {
+        // 16:10 데이터까지 수용하여 16:00 구역에 맵핑되게 처리
+        if (timeVal >= 900 && timeVal <= 1610) {
             let label;
-            if (timeVal >= 1530) {
-                label = "15:30";
+            if (timeVal >= 1600) {
+                label = "16:00";
             } else {
                 const bucketMm = Math.floor(mm / 5) * 5;
                 label = `${String(hh).padStart(2, '0')}:${String(bucketMm).padStart(2, '0')}`;
