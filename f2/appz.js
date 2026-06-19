@@ -1205,7 +1205,9 @@ async function fetchMarketTrend(marketType = currentTrendMarketType) {
         return;
     }
 
-    if (chartLoader) chartLoader.style.display = 'flex';
+    if (chartLoader && !trendChartInstance) {
+        chartLoader.style.display = 'flex';
+    }
 
     try {
         const url = `${TREND_CHART_GAS_PROXY_URL}?tradeType=KRX&marketType=${marketType}&t=${Date.now()}`;
