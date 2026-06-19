@@ -7,7 +7,7 @@ const DEFAULT_WATCHLISTS = {
     us: { title: '🇺🇸 US', tickers: ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'TSLA', 'META'] }
 };
 
-const YAHOO_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbwn9BWJj5PRqX8_p4MVoMI3q7OLy4-jF0jmf-5nVb-hdPGCSH-x7U0j839d34_CEsD-yA/exec";
+const YAHOO_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbxzBxcv3llVtcWyWoldEHkpyNBgWSn0D2_j_SYLEf6r-a4zMZ4VpOE6cxtwPQw_wvKt6Q/exec";
 const NAVER_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbyox0kqqKqfy9oMGno1co03gb-Ode4lp0HHCs3R5podhVibcfChPeiapQXBa-D9Z5bH1w/exec"; 
 const TREND_CHART_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbydDprKH6aMDgozAs-YPUMI43CuB9-phn2YQSr_2TcDy9C6SP-O2Q8rs_oKmZXIEKtM/exec";
 const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbwMythtWEujVqeRH992u_XFFnluWkxJKOC6HvHyu52UYCVpxffqxOIxaiMqsR94Pe86/exec"; 
@@ -73,7 +73,6 @@ async function init() {
     applyTheme(); 
     if (!state.sectionOrder || state.sectionOrder.length === 0) state.sectionOrder = Object.keys(state.watchlists);
 
-    // 💡 탭 이동/숨김 해제 시 무조건 새로고침 (서버 단에서 초고속 캐시 처리하므로 부담 없음)
     document.addEventListener('visibilitychange', () => {
         if (!document.hidden) forceRefresh();
     });
@@ -81,7 +80,6 @@ async function init() {
     await initTickerDB(); 
     renderLayout(); 
 
-    // 💡 페이지 로드 시 복잡한 계산 없이 즉시 데이터 요청
     const savedTab = localStorage.getItem('marketdash_active_tab');
     if (savedTab === 'news') {
         document.body.classList.add('show-news');
@@ -89,7 +87,7 @@ async function init() {
         if (tabNewsBtn) tabNewsBtn.classList.add('active');
     }
 
-    forceRefresh(); // 타이머 60초 시작 및 전체 데이터 로드
+    forceRefresh(); 
     initSwipeToDelete(); 
     
     const btnRefresh = document.getElementById('btn-refresh');
@@ -463,8 +461,6 @@ async function fetchNaverFinance(symbols) {
     } catch (e) { console.error("Failed to fetch Naver data:", e); throw e; }
 }
 
-// 브라우저 로컬 캐시 노후화 체크 등 복잡한 로직을 전부 걷어냄. 
-// GAS 서버(PropertiesService)가 무결성 데이터를 반환한다고 신뢰.
 async function fetchAndProcessKnight() {
     try {
         const now = new Date();
@@ -477,22 +473,18 @@ async function fetchAndProcessKnight() {
         const isMorningOpen = (day >= 2 && day <= 6) && (timeNum <= 530);
         const isNightSession = isEveningOpen || isMorningOpen;
 
-        // 💡 1. 갱신 주기 설정 (장중: 15분, 장외: 120분)
         const intervalMs = isNightSession ? (15 * 60 * 1000) : (120 * 60 * 1000);
 
-        // 💡 2. 브라우저 로컬 스토리지에서 마지막 호출 시간과 캐시 데이터 확인
         const lastFetchTime = parseInt(localStorage.getItem('knight_last_fetch_time') || '0', 10);
         const cachedDataStr = localStorage.getItem('knight_cached_data');
 
-        // 💡 3. 주기가 지나지 않았고 캐시가 있다면 API 호출 생략 (서버 차단 방지)
         if (Date.now() - lastFetchTime < intervalMs && cachedDataStr) {
             const cachedData = JSON.parse(cachedDataStr);
             cachedData.marketState = isNightSession ? "REGULAR" : "CLOSED";
             updateDOMWithData([cachedData]); 
-            return; // 실제 fetch 없이 함수 조기 종료
+            return; 
         }
 
-        // 💡 4. 주기가 지났거나 최초 로딩 시에만 실제 서버로 데이터 요청
         const url = `${KNIGHT_GAS_PROXY_URL}?t=${Date.now()}`;
         const res = await fetch(url);
         const data = await res.json();
@@ -501,7 +493,6 @@ async function fetchAndProcessKnight() {
             const resultData = data.quoteResponse.result[0];
             resultData.marketState = isNightSession ? "REGULAR" : "CLOSED";
             
-            // 💡 5. 성공 시 다음을 위해 캐시 데이터 덮어쓰기
             localStorage.setItem('knight_cached_data', JSON.stringify(resultData));
             localStorage.setItem('knight_last_fetch_time', Date.now().toString());
 
@@ -510,11 +501,10 @@ async function fetchAndProcessKnight() {
     } catch(e) {
         console.error("KNIGHT 야간선물 크롤링 에러:", e);
         
-        // 💡 통신 에러 시, 화면이 비거나 망가지는 것을 막기 위해 기존 로컬 캐시 재활용
         const fallbackDataStr = localStorage.getItem('knight_cached_data');
         if (fallbackDataStr) {
             const fallbackData = JSON.parse(fallbackDataStr);
-            fallbackData.marketState = "CLOSED_H"; // 에러 상태임을 암시하기 위해 홀드 처리
+            fallbackData.marketState = "CLOSED_H"; 
             updateDOMWithData([fallbackData]);
         }
     }
@@ -808,7 +798,6 @@ function startTimer() {
     }, 1000);
 }
 
-// 브라우저의 로컬 스토리지에 의존하지 않으므로 병합 로직 (shouldRestoreCache 등) 전체 삭제됨
 function updateDOMWithData(quotes) {
     requestAnimationFrame(() => {
         const now = new Date();
@@ -870,7 +859,6 @@ function updateDOMWithData(quotes) {
                 }
             }
 
-            // 👇 수정된 부분: else 블록을 사용하여 PRE/POST 검증을 통과하면 하위 조건으로 떨어지지 않게 고정
             if (targetState === 'PRE') {
                 if (isKR) {
                     if (!preData || preData.volume === 0) targetState = 'CLOSED_H';
@@ -884,11 +872,23 @@ function updateDOMWithData(quotes) {
                     if (!postData || Math.abs(postData.price - regPrice) === 0) targetState = 'CLOSED_H';
                 }
             } else {
-                if (mState === 'CLOSED' || mState.includes('POST') || mState.includes('PRE')) {
-                    targetState = 'CLOSED_H';
+                const qType = (quote.quoteType || '').toUpperCase();
+                const isContinuousMarket = ['FUTURE', 'INDEX', 'CURRENCY', 'CRYPTOCURRENCY'].includes(qType) || 
+                                           ticker.startsWith('^') || 
+                                           ticker.endsWith('=X') || 
+                                           ticker.endsWith('=F') || 
+                                           ticker.includes('-');
+
+                if (isContinuousMarket) {
+                    if (mState === 'CLOSED') {
+                        targetState = 'CLOSED_H';
+                    }
+                } else {
+                    if (mState === 'CLOSED' || mState.includes('POST') || mState.includes('PRE')) {
+                        targetState = 'CLOSED_H';
+                    }
                 }
             }
-            // 👆 여기까지
 
             let isExtLive = false;
             
@@ -1133,7 +1133,6 @@ function renderNews(newsList) {
 }
 
 async function fetchMarketTrend(marketType = currentTrendMarketType) {
-    // 👇 탭 UI 활성화 상태 동기화
     const tabs = document.querySelectorAll('.trend-tab-btn');
     if (tabs.length > 0) {
         tabs.forEach(btn => btn.classList.remove('active'));
@@ -1173,28 +1172,22 @@ async function fetchMarketTrend(marketType = currentTrendMarketType) {
 
     let needsFetch = true;
 
-    // --- 💡 [수정됨] 1. 캐시 평가 및 서버 통신 판단 로직 ---
     if (cached && cached.data) {
         const hasFinalDataCache = cached.data.some(d => d.time === "153000" || d.time === "1530");
         const isCacheToday = (cached.dateStr === todayStr);
         const cacheAgeMs = Date.now() - (cached.lastFetchTime || 0);
 
-        // 캐시 데이터를 화면에 먼저 표시 (최초 빈 화면 방지)
         const isLiveCache = isCacheToday && isMarketOpen && !hasFinalDataCache;
         renderTrendChart(cached.data, cached.dateStr || todayStr, isLiveCache);
 
         if (isMarketOpen) {
-            // 장중이면 60초 제한을 두어 불필요한 서버 호출 제어
             if (cacheAgeMs < 60000) needsFetch = false;
         } else {
-            // 장외 시간 (주말, 09시 이전, 15시 30분 이후)
             if (hasFinalDataCache) {
-                // 이미 15:30 최종 마감 데이터까지 캐시에 있다면 추가 호출 불필요
                 if (isCacheToday || timeNum < 900 || isWeekend) {
                     needsFetch = false;
                 }
             } else {
-                // 🔥 (문제 2 해결) 장외 시간인데 캐시가 미완성 상태라면 무조건 서버를 호출해 최종 데이터를 채움
                 needsFetch = true;
             }
         }
@@ -1226,7 +1219,6 @@ async function fetchMarketTrend(marketType = currentTrendMarketType) {
             let actualDateStr = todayStr; 
             const apiDate = json.data.bizdate || json.data.bizDate || json.data.businessDate;
             
-            // --- 💡 [수정됨] 2. 데이터 날짜 기준 최우선 처리 (문제 1 해결) ---
             if (apiDate && typeof apiDate === 'string' && apiDate.length >= 8) {
                 const y = apiDate.substring(0, 4);
                 const m = apiDate.substring(4, 6);
@@ -1241,8 +1233,6 @@ async function fetchMarketTrend(marketType = currentTrendMarketType) {
 
             const hasFinalData = data.some(d => d.time === "153000" || d.time === "1530");
             
-            // --- 💡 [수정됨] 3. 엄격한 LIVE 뱃지 조건 (문제 3 해결) ---
-            // (데이터가 오늘 것 + 시간이 장중 + 최종 데이터가 아직 없을 때만 LIVE)
             const isLiveAPI = (actualDateStr === todayStr) && isMarketOpen && !hasFinalData;
 
             renderTrendChart(data, actualDateStr, isLiveAPI);
@@ -1297,7 +1287,6 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
     const sortedData = dataList.slice().reverse();
     
     const fixedLabels = [];
-    // 👇 1. X축 라벨을 5분 단위로 생성 (9:00, 9:05, 9:10 ...)
     for (let h = 9; h <= 15; h++) {
         for (let m = 0; m < 60; m += 5) {
             if (h === 15 && m > 30) continue;
@@ -1325,7 +1314,6 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
             if (timeVal >= 1530) {
                 label = "15:30";
             } else {
-                // 👇 2. 수집된 1분 단위 데이터를 5분 단위 버킷(Bucket)에 담기
                 const bucketMm = Math.floor(mm / 5) * 5;
                 label = `${String(hh).padStart(2, '0')}:${String(bucketMm).padStart(2, '0')}`;
             }
@@ -1539,7 +1527,6 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
             scales: {
                 x: { 
                     grid: { display: false }, 
-                    // maxTicksLimit: 7 이 유지되어 있어 라벨이 겹치지 않고 깔끔하게 출력됩니다.
                     ticks: { color: textSecondary, font: { family: "'Inter', sans-serif", size: 11 }, maxTicksLimit: 7, maxRotation: 0 } 
                 },
                 y: { 
