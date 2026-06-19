@@ -8,7 +8,7 @@ const DEFAULT_WATCHLISTS = {
 };
 
 const YAHOO_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbxzBxcv3llVtcWyWoldEHkpyNBgWSn0D2_j_SYLEf6r-a4zMZ4VpOE6cxtwPQw_wvKt6Q/exec";
-const NAVER_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbyox0kqqKqfy9oMGno1co03gb-Ode4lp0HHCs3R5podhVibcfChPeiapQXBa-D9Z5bH1w/exec";
+const NAVER_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbyox0kqqKqfy9oMGno1co03gb-Ode4lp0HHCs3R5podhVibcfChPeiapQXBa-D9Z5bH1w/exec"; 
 
 const TREND_CHART_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycby4YZ1sOdQPfde-nrzAN0vUjhRP1Phn9C1ppFY2m8YHywGz-7GhNcHLU19PFCLeqm3u/exec";
 const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbwMythtWEujVqeRH992u_XFFnluWkxJKOC6HvHyu52UYCVpxffqxOIxaiMqsR94Pe86/exec"; 
@@ -103,7 +103,18 @@ async function init() {
         if (settingsDropdown && !e.target.closest('.settings-wrapper')) {
             settingsDropdown.classList.remove('active');
         }
+        // 차트 외부 클릭/터치 시 툴팁 제거
+        if (!e.target.closest('#trend-chart-wrapper')) {
+            if (typeof window.hideChartTooltip === 'function') window.hideChartTooltip();
+        }
     });
+
+    // 스와이프가 아닌 터치만 일어났을 때도 툴팁 제거
+    document.addEventListener('touchstart', (e) => {
+        if (!e.target.closest('#trend-chart-wrapper')) {
+            if (typeof window.hideChartTooltip === 'function') window.hideChartTooltip();
+        }
+    }, { passive: true });
 }
 
 function processTickerDB(data) {
@@ -781,6 +792,7 @@ function updateTimerUI(seconds) {
 }
 
 function forceRefresh() { 
+    if (typeof window.hideChartTooltip === 'function') window.hideChartTooltip(); // 새로고침 시 툴팁 초기화
     state.countdown = 60; 
     updateTimerUI(state.countdown); 
     localStorage.setItem('marketdash_last_fetch_time', '0'); 
@@ -1574,19 +1586,27 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
 }
 
 window.switchTrendMarket = function(marketType) {
+    if (typeof window.hideChartTooltip === 'function') window.hideChartTooltip(); // 탭 이동 시 즉시 툴팁 숨기기
     fetchMarketTrend(marketType);
 };
 
-window.addEventListener('scroll', () => {
+// 모든 툴팁 숨김 처리를 담당하는 공통 함수
+window.hideChartTooltip = function() {
     const tooltipEl = document.getElementById('chartjs-custom-tooltip');
     if (tooltipEl && tooltipEl.style.opacity === '1') {
-        tooltipEl.style.opacity = 0;
+        tooltipEl.style.opacity = '0';
         
         if (trendChartInstance) {
-            trendChartInstance.tooltip.setActiveElements([], {x: 0, y: 0});
-            trendChartInstance.update('none');
+            try {
+                // 차트 내부의 호버(크로스헤어 등) 상태 해제
+                trendChartInstance.tooltip.setActiveElements([], {x: 0, y: 0});
+                trendChartInstance.update('none');
+            } catch(e) {}
         }
     }
-}, { passive: true });
+};
+
+window.addEventListener('scroll', window.hideChartTooltip, { passive: true });
+window.addEventListener('resize', window.hideChartTooltip, { passive: true });
 
 document.addEventListener('DOMContentLoaded', init);
