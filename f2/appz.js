@@ -1295,8 +1295,9 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
     const sortedData = dataList.slice().reverse();
     
     const fixedLabels = [];
+    // 👇 1. X축 라벨을 5분 단위로 생성 (9:00, 9:05, 9:10 ...)
     for (let h = 9; h <= 15; h++) {
-        for (let m = 0; m < 60; m += 10) {
+        for (let m = 0; m < 60; m += 5) {
             if (h === 15 && m > 30) continue;
             fixedLabels.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
         }
@@ -1322,7 +1323,8 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
             if (timeVal >= 1530) {
                 label = "15:30";
             } else {
-                const bucketMm = Math.floor(mm / 10) * 10;
+                // 👇 2. 수집된 1분 단위 데이터를 5분 단위 버킷(Bucket)에 담기
+                const bucketMm = Math.floor(mm / 5) * 5;
                 label = `${String(hh).padStart(2, '0')}:${String(bucketMm).padStart(2, '0')}`;
             }
 
@@ -1535,6 +1537,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
             scales: {
                 x: { 
                     grid: { display: false }, 
+                    // maxTicksLimit: 7 이 유지되어 있어 라벨이 겹치지 않고 깔끔하게 출력됩니다.
                     ticks: { color: textSecondary, font: { family: "'Inter', sans-serif", size: 11 }, maxTicksLimit: 7, maxRotation: 0 } 
                 },
                 y: { 
