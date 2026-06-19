@@ -859,6 +859,7 @@ function updateDOMWithData(quotes) {
                 }
             }
 
+
             if (targetState === 'PRE') {
                 if (isKR) {
                     if (!preData || preData.volume === 0) targetState = 'CLOSED_H';
@@ -881,35 +882,29 @@ function updateDOMWithData(quotes) {
                 if (isCrypto) {
                     // 1. 암호화폐: 365일 24시간 무조건 오픈
                     targetState = 'REGULAR';
-                } else if (isFXorFuture) {
-                    // 2. 통화/선물: 주말 휴장 (한국시간 토요일 오전 7시 ~ 월요일 오전 7시)
-                    const day = kstTime.getDay();
-                    if (day === 0 || (day === 6 && timeNum >= 700) || (day === 1 && timeNum < 700)) {
-                        targetState = 'CLOSED_H';
-                    } else {
-                        targetState = 'REGULAR';
-                    }
-                } else if (isIndex) {
-                    // 3. 지수: 야후가 CLOSED라고 주장하지만 실제 데이터가 흐르는지 타임스탬프로 '팩트 체크'
+                } else if (isFXorFuture || isIndex) {
+                    // 2. 선물, 환율, 지수 통합: 타임스탬프로 '팩트 체크'
+                    // 선물의 일일 휴장시간이나 야후의 일시적 CLOSED 표기 오류를 완벽하게 걸러냅니다.
                     if (mState === 'CLOSED') {
                         const nowSec = Math.floor(Date.now() / 1000);
-                        // 마지막 거래 업데이트가 15분(900초) 이내라면 야후 상태를 무시하고 강제로 장중(REGULAR) 처리
+                        // 마지막 거래 업데이트가 15분(900초) 이내라면 야후 상태를 무시하고 장중(REGULAR) 처리
                         if ((nowSec - regTime) < 900) {
                             targetState = 'REGULAR';
                         } else {
-                            targetState = 'CLOSED_H';
+                            // 15분 이상 업데이트가 없으면 진짜 일일 브레이크 타임 또는 주말 휴장임
+                            targetState = 'CLOSED_H'; 
                         }
                     } else {
-                        targetState = 'REGULAR'; // PRE나 POST 개념이 없으므로 무조건 REGULAR
+                        targetState = 'REGULAR'; 
                     }
                 } else {
-                    // 4. 일반 주식 (기존 방식 유지)
+                    // 3. 일반 주식 (기존 방식 유지)
                     if (mState === 'CLOSED' || mState.includes('POST') || mState.includes('PRE')) {
                         targetState = 'CLOSED_H';
                     }
                 }
             }
-            // 👆 여기까지 교체
+ 
 
             let isExtLive = false;
             
