@@ -872,23 +872,44 @@ function updateDOMWithData(quotes) {
                     if (!postData || Math.abs(postData.price - regPrice) === 0) targetState = 'CLOSED_H';
                 }
             } else {
+                // 타입별로 시장 오픈 여부를 더 정밀하게 확인합니다.
                 const qType = (quote.quoteType || '').toUpperCase();
-                const isContinuousMarket = ['FUTURE', 'INDEX', 'CURRENCY', 'CRYPTOCURRENCY'].includes(qType) || 
-                                           ticker.startsWith('^') || 
-                                           ticker.endsWith('=X') || 
-                                           ticker.endsWith('=F') || 
-                                           ticker.includes('-');
+                const isCrypto = qType === 'CRYPTOCURRENCY' || ticker.includes('-');
+                const isFXorFuture = qType === 'CURRENCY' || qType === 'FUTURE' || ticker.endsWith('=X') || ticker.endsWith('=F');
+                const isIndex = qType === 'INDEX' || ticker.startsWith('^');
 
-                if (isContinuousMarket) {
-                    if (mState === 'CLOSED') {
+                if (isCrypto) {
+                    // 1. 암호화폐: 365일 24시간 무조건 오픈
+                    targetState = 'REGULAR';
+                } else if (isFXorFuture) {
+                    // 2. 통화/선물: 주말 휴장 (한국시간 토요일 오전 7시 ~ 월요일 오전 7시)
+                    const day = kstTime.getDay();
+                    if (day === 0 || (day === 6 && timeNum >= 700) || (day === 1 && timeNum < 700)) {
                         targetState = 'CLOSED_H';
+                    } else {
+                        targetState = 'REGULAR';
+                    }
+                } else if (isIndex) {
+                    // 3. 지수: 야후가 CLOSED라고 주장하지만 실제 데이터가 흐르는지 타임스탬프로 '팩트 체크'
+                    if (mState === 'CLOSED') {
+                        const nowSec = Math.floor(Date.now() / 1000);
+                        // 마지막 거래 업데이트가 15분(900초) 이내라면 야후 상태를 무시하고 강제로 장중(REGULAR) 처리
+                        if ((nowSec - regTime) < 900) {
+                            targetState = 'REGULAR';
+                        } else {
+                            targetState = 'CLOSED_H';
+                        }
+                    } else {
+                        targetState = 'REGULAR'; // PRE나 POST 개념이 없으므로 무조건 REGULAR
                     }
                 } else {
+                    // 4. 일반 주식 (기존 방식 유지)
                     if (mState === 'CLOSED' || mState.includes('POST') || mState.includes('PRE')) {
                         targetState = 'CLOSED_H';
                     }
                 }
             }
+            // 👆 여기까지 교체
 
             let isExtLive = false;
             
