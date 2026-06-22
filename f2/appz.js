@@ -73,9 +73,21 @@ async function init() {
     if (!state.sectionOrder || state.sectionOrder.length === 0) state.sectionOrder = Object.keys(state.watchlists);
 
     document.addEventListener('visibilitychange', () => {
-        if (!document.hidden) forceRefresh();
-    });
-    
+        if (!document.hidden) {
+        const lastFetchStr = localStorage.getItem('marketdash_last_fetch_time');
+        const lastFetch = lastFetchStr ? parseInt(lastFetchStr, 10) : 0;
+        const diffSec = Math.floor((Date.now() - lastFetch) / 1000);
+
+        if (diffSec >= 60) {
+            // 1. 60초가 지났다면 정상적으로 새로고침
+            forceRefresh();
+        } else {
+            // 2. 60초 이내라면 백그라운드에서 흘러간 시간만큼 타이머만 교정 (데이터 호출 X)
+            state.countdown = 60 - diffSec;
+            updateTimerUI(state.countdown);
+        }
+    }
+});
     await initTickerDB(); 
     renderLayout(); 
 
