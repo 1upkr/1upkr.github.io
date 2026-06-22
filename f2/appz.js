@@ -1402,7 +1402,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
     const textPrimary = isDark ? '#e3e3e3' : '#18191a';
     const textSecondary = isDark ? '#a0a4a8' : '#5f6368';
     const gridColor = isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)';
-    const tooltipBg = isDark ? 'rgba(30, 30, 30, 0.85)' : 'rgba(255, 255, 255, 0.85)';
+    const tooltipBg = isDark ? 'rgba(30, 30, 30, 0.80)' : 'rgba(255, 255, 255, 0.80)';
     const tooltipBorder = isDark ? '#2b2b2b' : '#e2e6eb';
 
     const redColor = isDark ? '#ff453a' : '#eb0f29';
