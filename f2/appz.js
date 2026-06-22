@@ -1495,6 +1495,8 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                             tooltipEl.style.boxShadow = '0 4px 6px -1px rgba(0,0,0,0.05)';
                             tooltipEl.style.zIndex = 90;
                             tooltipEl.style.whiteSpace = 'nowrap';
+
+                            tooltipEl.style.willChange = 'transform, opacity, left, top';
                             
                             context.chart.canvas.parentNode.appendChild(tooltipEl);
                             context.chart.canvas.parentNode.style.position = 'relative';
@@ -1552,10 +1554,11 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                         const chartHeight = context.chart.height;
                         
                         let targetLeft = tooltipModel.caretX - (ttWidth / 2);
-                        let targetTop = tooltipModel.caretY - ttHeight - 15; 
                         
-                        if (targetTop < 10) targetTop = tooltipModel.caretY + 15;
-                        if (targetTop + ttHeight > chartHeight - 10) targetTop = chartHeight - ttHeight - 10;
+                        // Y축(높이)을 차트 높이의 절반으로 계산하여 세로 중앙(Middle)에 고정합니다.
+                        let targetTop = (chartHeight / 2) - (ttHeight / 2); 
+                        
+                        // 좌우(X축)로 화면 밖을 벗어나지 않도록 이탈 방지 처리만 남깁니다.
                         if (targetLeft < 10) targetLeft = 10;
                         else if (targetLeft + ttWidth > chartWidth - 10) targetLeft = chartWidth - ttWidth - 10;
                         
@@ -1597,14 +1600,20 @@ window.hideChartTooltip = function() {
         
         if (trendChartInstance) {
             try {
-                // 차트 내부의 호버(크로스헤어 등) 상태 해제
+                // 1. 차트 본체의 활성 요소(호버된 포인트) 명시적 해제
+                trendChartInstance.setActiveElements([]); 
+                
+                // 2. 툴팁 활성 상태 해제
                 trendChartInstance.tooltip.setActiveElements([], {x: 0, y: 0});
-                trendChartInstance.update('none');
+                
+                // 3. 강제 동기 업데이트(update('none')) 대신, 브라우저 렌더링 사이클에 맞춰 안전하게 업데이트
+                requestAnimationFrame(() => {
+                    trendChartInstance.update();
+                });
             } catch(e) {}
         }
     }
 };
-
 window.addEventListener('scroll', window.hideChartTooltip, { passive: true });
 window.addEventListener('resize', window.hideChartTooltip, { passive: true });
 
