@@ -903,17 +903,13 @@ function updateDOMWithData(quotes) {
                     // 1. 암호화폐: 365일 24시간 무조건 오픈
                     targetState = 'REGULAR';
                 } else if (isFXorFuture || isIndex) {
-                    // 2. 선물, 환율, 지수 통합: 타임스탬프로 '팩트 체크'
-                    // 선물의 일일 휴장시간이나 야후의 일시적 CLOSED 표기 오류를 완벽하게 걸러냅니다.
-                    if (mState === 'CLOSED') {
-                        const nowSec = Math.floor(Date.now() / 1000);
-                        // 마지막 거래 업데이트가 15분(900초) 이내라면 야후 상태를 무시하고 장중(REGULAR) 처리
-                        if ((nowSec - regTime) < 900) {
-                            targetState = 'REGULAR';
-                        } else {
-                            // 15분 이상 업데이트가 없으면 진짜 일일 브레이크 타임 또는 주말 휴장임
-                            targetState = 'CLOSED_H'; 
-                        }
+                    // 2. 선물, 환율, 지수 통합: 타임스탬프(팩트)를 최우선으로 신뢰
+                    const nowSec = Math.floor(Date.now() / 1000);
+                    
+                    // 야후의 엉터리 marketState 텍스트는 무시하고,
+                    // 마지막 데이터 업데이트 시점이 15분(900초)을 초과했다면 무조건 CLOSED 처리
+                    if ((nowSec - regTime) > 900) {
+                        targetState = 'CLOSED_H'; 
                     } else {
                         targetState = 'REGULAR'; 
                     }
