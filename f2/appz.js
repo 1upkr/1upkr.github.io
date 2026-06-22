@@ -11,7 +11,6 @@ const YAHOO_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbxzBxcv
 const NAVER_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbyox0kqqKqfy9oMGno1co03gb-Ode4lp0HHCs3R5podhVibcfChPeiapQXBa-D9Z5bH1w/exec"; 
 const TREND_CHART_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycby4YZ1sOdQPfde-nrzAN0vUjhRP1Phn9C1ppFY2m8YHywGz-7GhNcHLU19PFCLeqm3u/exec";
 const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbwMythtWEujVqeRH992u_XFFnluWkxJKOC6HvHyu52UYCVpxffqxOIxaiMqsR94Pe86/exec"; 
-
 const KNIGHT_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbxNL4-6PqMSqylMQBP0CdqSKS0LYEK7Yn7tbFtiuIfbKlQGcAanznYX85r0CpxQ8J1f_Q/exec";
 
 const CHO_HANGUL = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
@@ -87,7 +86,31 @@ async function init() {
         if (tabNewsBtn) tabNewsBtn.classList.add('active');
     }
 
-    forceRefresh(); 
+    // --- 60초 캐싱 로직 적용 ---
+    const lastFetchStr = localStorage.getItem('marketdash_last_fetch_time');
+    const lastFetch = lastFetchStr ? parseInt(lastFetchStr, 10) : 0;
+    const diffSec = Math.floor((Date.now() - lastFetch) / 1000);
+
+    if (diffSec >= 0 && diffSec < 60) {
+        try {
+            const cachedQuotes = JSON.parse(localStorage.getItem('marketdash_quotes_cache')) || {};
+            const quotesArray = Object.values(cachedQuotes);
+            if (quotesArray.length > 0) updateDOMWithData(quotesArray);
+        } catch(e) {}
+        
+        state.countdown = 60 - diffSec;
+        updateTimerUI(state.countdown);
+        startTimer();
+        
+        const allMarkets = ['ALL', 'KOSPI', 'KOSDAQ'];
+        allMarkets.forEach(m => fetchMarketTrend(m, m !== currentTrendMarketType));
+        
+        if ((Date.now() - state.lastNewsFetch) > 60000) fetchNews();
+        
+    } else {
+        forceRefresh(); 
+    }
+
     initSwipeToDelete(); 
     
     const btnRefresh = document.getElementById('btn-refresh');
@@ -102,13 +125,11 @@ async function init() {
         if (settingsDropdown && !e.target.closest('.settings-wrapper')) {
             settingsDropdown.classList.remove('active');
         }
-        // 차트 외부 클릭/터치 시 툴팁 제거
         if (!e.target.closest('#trend-chart-wrapper')) {
             if (typeof window.hideChartTooltip === 'function') window.hideChartTooltip();
         }
     });
 
-    // 스와이프가 아닌 터치만 일어났을 때도 툴팁 제거
     document.addEventListener('touchstart', (e) => {
         if (!e.target.closest('#trend-chart-wrapper')) {
             if (typeof window.hideChartTooltip === 'function') window.hideChartTooltip();
@@ -790,18 +811,18 @@ function updateTimerUI(seconds) {
     }
 }
 
+// --- 전체 데이터 새로고침 함수 ---
 function forceRefresh() { 
-    if (typeof window.hideChartTooltip === 'function') window.hideChartTooltip();
+    if (typeof window.hideChartTooltip === 'function') window.hideChartTooltip(); 
     state.countdown = 60; 
     updateTimerUI(state.countdown); 
     localStorage.setItem('marketdash_last_fetch_time', '0'); 
     state.lastNewsFetch = 0; 
     fetchData(); 
     
-    // 🔥 3개 시장(ALL, KOSPI, KOSDAQ) 모두 최신화 요청
+    // 백그라운드 포함 3개 탭 모두 동시 최신화
     const allMarkets = ['ALL', 'KOSPI', 'KOSDAQ'];
     allMarkets.forEach(market => {
-        // 현재 화면에 떠있는 탭이 아니면 isBackground = true 로 넘김
         const isBackground = (market !== currentTrendMarketType);
         fetchMarketTrend(market, isBackground);
     });
@@ -820,6 +841,12 @@ function startTimer() {
 
 function updateDOMWithData(quotes) {
     requestAnimationFrame(() => {
+        // --- 60초 캐싱을 위해 불러온 데이터 로컬 스토리지에 저장 ---
+        let cachedQuotes = {};
+        try { cachedQuotes = JSON.parse(localStorage.getItem('marketdash_quotes_cache')) || {}; } catch(e) {}
+        quotes.forEach(q => cachedQuotes[q.symbol] = q);
+        localStorage.setItem('marketdash_quotes_cache', JSON.stringify(cachedQuotes));
+
         const now = new Date();
         const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
         const kstTime = new Date(utc + (9 * 3600000));
@@ -879,7 +906,6 @@ function updateDOMWithData(quotes) {
                 }
             }
 
-
             if (targetState === 'PRE') {
                 if (isKR) {
                     if (!preData || preData.volume === 0) targetState = 'CLOSED_H';
@@ -893,35 +919,28 @@ function updateDOMWithData(quotes) {
                     if (!postData || Math.abs(postData.price - regPrice) === 0) targetState = 'CLOSED_H';
                 }
             } else {
-                // 타입별로 시장 오픈 여부를 더 정밀하게 확인합니다.
                 const qType = (quote.quoteType || '').toUpperCase();
                 const isCrypto = qType === 'CRYPTOCURRENCY' || ticker.includes('-');
                 const isFXorFuture = qType === 'CURRENCY' || qType === 'FUTURE' || ticker.endsWith('=X') || ticker.endsWith('=F');
                 const isIndex = qType === 'INDEX' || ticker.startsWith('^');
 
                 if (isCrypto) {
-                    // 1. 암호화폐: 365일 24시간 무조건 오픈
                     targetState = 'REGULAR';
                 } else if (isFXorFuture || isIndex) {
-                    // 2. 선물, 환율, 지수 통합: 타임스탬프(팩트)를 최우선으로 신뢰
+                    // --- 지수/환율/선물 타임스탬프 팩트체크 로직 적용 ---
                     const nowSec = Math.floor(Date.now() / 1000);
-                    
-                    // 야후의 엉터리 marketState 텍스트는 무시하고,
-                    // 마지막 데이터 업데이트 시점이 15분(900초)을 초과했다면 무조건 CLOSED 처리
                     if ((nowSec - regTime) > 900) {
                         targetState = 'CLOSED_H'; 
                     } else {
                         targetState = 'REGULAR'; 
                     }
                 } else {
-                    // 3. 일반 주식 (기존 방식 유지)
                     if (mState === 'CLOSED' || mState.includes('POST') || mState.includes('PRE')) {
                         targetState = 'CLOSED_H';
                     }
                 }
             }
  
-
             let isExtLive = false;
             
             if (isKR) {
@@ -1164,9 +1183,8 @@ function renderNews(newsList) {
     container.innerHTML = html;
 }
 
-// 두 번째 파라미터로 isBackground를 추가합니다. (기본값은 false)
+// --- 백그라운드 갱신 로직이 포함된 차트 렌더 함수 ---
 async function fetchMarketTrend(marketType = currentTrendMarketType, isBackground = false) {
-    // 1. 활성 탭 UI 변경 및 상태 업데이트 (백그라운드가 아닐 때만 실행)
     if (!isBackground) {
         const tabs = document.querySelectorAll('.trend-tab-btn');
         if (tabs.length > 0) {
@@ -1195,25 +1213,30 @@ async function fetchMarketTrend(marketType = currentTrendMarketType, isBackgroun
     
     const isWeekend = (kstTime.getDay() === 0 || kstTime.getDay() === 6);
     const timeNum = kstTime.getHours() * 100 + kstTime.getMinutes();
+    
     const isMarketOpen = !isWeekend && (timeNum >= 900 && timeNum <= 1610);
     
     const cacheKey = `market_trend_last_known_${marketType}`;
     let cached = null;
-    try { cached = JSON.parse(localStorage.getItem(cacheKey)); } catch(e) {}
+    try { 
+        cached = JSON.parse(localStorage.getItem(cacheKey)); 
+    } catch(e) { console.warn("Trend cache parse error"); }
 
     const kstOptions = { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' };
     const todayStr = new Intl.DateTimeFormat('ko-KR', kstOptions).format(kstTime).replace(/\s/g, ''); 
 
     let needsFetch = true;
 
-    // 2. 캐시 확인 및 렌더링 (현재 활성화된 탭일 경우에만 렌더링)
     if (cached && cached.data) {
-        const hasFinalDataCache = cached.data.some(d => parseInt(d.time.substring(0, 4), 10) >= 1600);
+        const hasFinalDataCache = cached.data.some(d => {
+            const t = parseInt(d.time.substring(0, 4), 10);
+            return t >= 1600;
+        });
         const isCacheToday = (cached.dateStr === todayStr);
         const cacheAgeMs = Date.now() - (cached.lastFetchTime || 0);
-        const isLiveCache = isCacheToday && isMarketOpen && !hasFinalDataCache;
 
-        // 🔥 현재 보이는 화면(활성 탭)일 때만 캔버스를 그립니다.
+        const isLiveCache = isCacheToday && isMarketOpen && !hasFinalDataCache;
+        
         if (currentTrendMarketType === marketType) {
             renderTrendChart(cached.data, cached.dateStr || todayStr, isLiveCache);
         }
@@ -1222,7 +1245,9 @@ async function fetchMarketTrend(marketType = currentTrendMarketType, isBackgroun
             if (cacheAgeMs < 60000) needsFetch = false;
         } else {
             if (hasFinalDataCache) {
-                if (isCacheToday || timeNum < 900 || isWeekend) needsFetch = false;
+                if (isCacheToday || timeNum < 900 || isWeekend) {
+                    needsFetch = false;
+                }
             } else {
                 needsFetch = true;
             }
@@ -1247,32 +1272,41 @@ async function fetchMarketTrend(marketType = currentTrendMarketType, isBackgroun
         
         if (json.success && json.data && Array.isArray(json.data.content)) {
             const data = json.data.content;
+
             if (data.length === 0) return;
 
             let actualDateStr = todayStr; 
             const apiDate = json.data.bizdate || json.data.bizDate || json.data.businessDate;
             
             if (apiDate && typeof apiDate === 'string' && apiDate.length >= 8) {
-                actualDateStr = `${apiDate.substring(0, 4)}.${apiDate.substring(4, 6)}.${apiDate.substring(6, 8)}.`;
+                const y = apiDate.substring(0, 4);
+                const m = apiDate.substring(4, 6);
+                const d = apiDate.substring(6, 8);
+                actualDateStr = `${y}.${m}.${d}.`;
             } else if (data[0] && data[0].date) {
                 const dStr = String(data[0].date);
-                if (dStr.length >= 8) actualDateStr = `${dStr.substring(0,4)}.${dStr.substring(4,6)}.${dStr.substring(6,8)}.`;
+                if (dStr.length >= 8) {
+                    actualDateStr = `${dStr.substring(0,4)}.${dStr.substring(4,6)}.${dStr.substring(6,8)}.`;
+                }
             }
 
-            const hasFinalData = data.some(d => parseInt(d.time.substring(0, 4), 10) >= 1600);
+            const hasFinalData = data.some(d => {
+                const t = parseInt(d.time.substring(0, 4), 10);
+                return t >= 1600;
+            });
+            
             const isLiveAPI = (actualDateStr === todayStr) && isMarketOpen && !hasFinalData;
 
-            // 🔥 중요: 데이터를 백그라운드 여부와 상관없이 먼저 로컬 스토리지에 저장합니다.
             localStorage.setItem(cacheKey, JSON.stringify({
                 dateStr: actualDateStr,
                 data: data,
                 lastFetchTime: Date.now() 
             }));
 
-            // 🔥 현재 활성화된 탭인 경우에만 화면에 렌더링합니다.
             if (currentTrendMarketType === marketType) {
                 renderTrendChart(data, actualDateStr, isLiveAPI);
             }
+
         } else {
             throw new Error("Invalid trend data structure");
         }
@@ -1317,7 +1351,6 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
     const sortedData = dataList.slice().reverse();
     
     const fixedLabels = [];
-    // 16:00 까지 X축 라벨을 늘리도록 수정
     for (let h = 9; h <= 16; h++) {
         for (let m = 0; m < 60; m += 5) {
             if (h === 16 && m > 0) continue;
@@ -1340,7 +1373,6 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
         const mm = parseInt(t.substring(2, 4), 10);
         const timeVal = hh * 100 + mm;
 
-        // 16:10 데이터까지 수용하여 16:00 구역에 맵핑되게 처리
         if (timeVal >= 900 && timeVal <= 1610) {
             let label;
             if (timeVal >= 1600) {
@@ -1398,7 +1430,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
     const textPrimary = isDark ? '#e3e3e3' : '#18191a';
     const textSecondary = isDark ? '#a0a4a8' : '#5f6368';
     const gridColor = isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)';
-    const tooltipBg = isDark ? 'rgba(30, 30, 30, 0.80)' : 'rgba(255, 255, 255, 0.80)';
+    const tooltipBg = isDark ? 'rgba(30, 30, 30, 0.8)' : 'rgba(255, 255, 255, 0.8)';
     const tooltipBorder = isDark ? '#2b2b2b' : '#e2e6eb';
 
     const redColor = isDark ? '#ff453a' : '#eb0f29';
@@ -1487,8 +1519,8 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                             tooltipEl.style.boxShadow = '0 4px 6px -1px rgba(0,0,0,0.05)';
                             tooltipEl.style.zIndex = 90;
                             tooltipEl.style.whiteSpace = 'nowrap';
-
-                            tooltipEl.style.willChange = 'transform, opacity, left, top';
+                            // --- 하드웨어 가속 스타일 추가 ---
+                            tooltipEl.style.willChange = 'transform, opacity, left, top'; 
                             
                             context.chart.canvas.parentNode.appendChild(tooltipEl);
                             context.chart.canvas.parentNode.style.position = 'relative';
@@ -1545,12 +1577,10 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                         const chartWidth = context.chart.width;
                         const chartHeight = context.chart.height;
                         
+                        // --- 툴팁 세로 중앙(Middle) 고정 로직 적용 ---
                         let targetLeft = tooltipModel.caretX - (ttWidth / 2);
-                        
-                        // Y축(높이)을 차트 높이의 절반으로 계산하여 세로 중앙(Middle)에 고정합니다.
                         let targetTop = (chartHeight / 2) - (ttHeight / 2); 
                         
-                        // 좌우(X축)로 화면 밖을 벗어나지 않도록 이탈 방지 처리만 남깁니다.
                         if (targetLeft < 10) targetLeft = 10;
                         else if (targetLeft + ttWidth > chartWidth - 10) targetLeft = chartWidth - ttWidth - 10;
                         
@@ -1580,11 +1610,11 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
 }
 
 window.switchTrendMarket = function(marketType) {
-    if (typeof window.hideChartTooltip === 'function') window.hideChartTooltip(); // 탭 이동 시 즉시 툴팁 숨기기
+    if (typeof window.hideChartTooltip === 'function') window.hideChartTooltip(); 
     fetchMarketTrend(marketType);
 };
 
-// 모든 툴팁 숨김 처리를 담당하는 공통 함수
+// --- 툴팁 및 호버 충돌 해결 로직 적용 ---
 window.hideChartTooltip = function() {
     const tooltipEl = document.getElementById('chartjs-custom-tooltip');
     if (tooltipEl && tooltipEl.style.opacity === '1') {
@@ -1592,13 +1622,8 @@ window.hideChartTooltip = function() {
         
         if (trendChartInstance) {
             try {
-                // 1. 차트 본체의 활성 요소(호버된 포인트) 명시적 해제
                 trendChartInstance.setActiveElements([]); 
-                
-                // 2. 툴팁 활성 상태 해제
                 trendChartInstance.tooltip.setActiveElements([], {x: 0, y: 0});
-                
-                // 3. 강제 동기 업데이트(update('none')) 대신, 브라우저 렌더링 사이클에 맞춰 안전하게 업데이트
                 requestAnimationFrame(() => {
                     trendChartInstance.update();
                 });
@@ -1606,6 +1631,7 @@ window.hideChartTooltip = function() {
         }
     }
 };
+
 window.addEventListener('scroll', window.hideChartTooltip, { passive: true });
 window.addEventListener('resize', window.hideChartTooltip, { passive: true });
 
