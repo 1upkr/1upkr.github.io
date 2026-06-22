@@ -845,6 +845,10 @@ function forceRefresh() {
 function startTimer() {
     if (state.intervalId) clearInterval(state.intervalId);
     state.intervalId = setInterval(() => {
+        
+        // 👉 화면을 안 보고 있을 때는 타이머를 완전히 일시 정지시킵니다.
+        if (document.hidden) return; 
+
         state.countdown--;
         if (state.countdown <= 0) forceRefresh(); 
         else updateTimerUI(state.countdown); 
