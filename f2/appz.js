@@ -791,13 +791,21 @@ function updateTimerUI(seconds) {
 }
 
 function forceRefresh() { 
-    if (typeof window.hideChartTooltip === 'function') window.hideChartTooltip(); // 새로고침 시 툴팁 초기화
+    if (typeof window.hideChartTooltip === 'function') window.hideChartTooltip();
     state.countdown = 60; 
     updateTimerUI(state.countdown); 
     localStorage.setItem('marketdash_last_fetch_time', '0'); 
     state.lastNewsFetch = 0; 
     fetchData(); 
-    fetchMarketTrend();
+    
+    // 🔥 3개 시장(ALL, KOSPI, KOSDAQ) 모두 최신화 요청
+    const allMarkets = ['ALL', 'KOSPI', 'KOSDAQ'];
+    allMarkets.forEach(market => {
+        // 현재 화면에 떠있는 탭이 아니면 isBackground = true 로 넘김
+        const isBackground = (market !== currentTrendMarketType);
+        fetchMarketTrend(market, isBackground);
+    });
+
     startTimer(); 
 }
 
@@ -1160,21 +1168,25 @@ function renderNews(newsList) {
     container.innerHTML = html;
 }
 
-async function fetchMarketTrend(marketType = currentTrendMarketType) {
-    const tabs = document.querySelectorAll('.trend-tab-btn');
-    if (tabs.length > 0) {
-        tabs.forEach(btn => btn.classList.remove('active'));
-        const activeTab = Array.from(tabs).find(btn => btn.getAttribute('onclick').includes(marketType));
-        if (activeTab) activeTab.classList.add('active');
-    }
+// 두 번째 파라미터로 isBackground를 추가합니다. (기본값은 false)
+async function fetchMarketTrend(marketType = currentTrendMarketType, isBackground = false) {
+    // 1. 활성 탭 UI 변경 및 상태 업데이트 (백그라운드가 아닐 때만 실행)
+    if (!isBackground) {
+        const tabs = document.querySelectorAll('.trend-tab-btn');
+        if (tabs.length > 0) {
+            tabs.forEach(btn => btn.classList.remove('active'));
+            const activeTab = Array.from(tabs).find(btn => btn.getAttribute('onclick').includes(marketType));
+            if (activeTab) activeTab.classList.add('active');
+        }
 
-    if (currentTrendMarketType !== marketType && trendChartInstance) {
-        trendChartInstance.destroy();
-        trendChartInstance = null;
-    }
+        if (currentTrendMarketType !== marketType && trendChartInstance) {
+            trendChartInstance.destroy();
+            trendChartInstance = null;
+        }
 
-    currentTrendMarketType = marketType;
-    localStorage.setItem('marketdash_trend_tab', currentTrendMarketType);
+        currentTrendMarketType = marketType;
+        localStorage.setItem('marketdash_trend_tab', currentTrendMarketType);
+    }
 
     const container = document.getElementById('trend-chart-wrapper');
     if (!container) return;
@@ -1187,40 +1199,34 @@ async function fetchMarketTrend(marketType = currentTrendMarketType) {
     
     const isWeekend = (kstTime.getDay() === 0 || kstTime.getDay() === 6);
     const timeNum = kstTime.getHours() * 100 + kstTime.getMinutes();
-    
-    // 16:00 최종 데이터를 확실히 수집하기 위해 16:10까지 오픈 상태로 간주
     const isMarketOpen = !isWeekend && (timeNum >= 900 && timeNum <= 1610);
     
     const cacheKey = `market_trend_last_known_${marketType}`;
     let cached = null;
-    try { 
-        cached = JSON.parse(localStorage.getItem(cacheKey)); 
-    } catch(e) { console.warn("Trend cache parse error"); }
+    try { cached = JSON.parse(localStorage.getItem(cacheKey)); } catch(e) {}
 
     const kstOptions = { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' };
     const todayStr = new Intl.DateTimeFormat('ko-KR', kstOptions).format(kstTime).replace(/\s/g, ''); 
 
     let needsFetch = true;
 
+    // 2. 캐시 확인 및 렌더링 (현재 활성화된 탭일 경우에만 렌더링)
     if (cached && cached.data) {
-        // 데이터 time 값 첫 4자리가 1600 이상인지 확인
-        const hasFinalDataCache = cached.data.some(d => {
-            const t = parseInt(d.time.substring(0, 4), 10);
-            return t >= 1600;
-        });
+        const hasFinalDataCache = cached.data.some(d => parseInt(d.time.substring(0, 4), 10) >= 1600);
         const isCacheToday = (cached.dateStr === todayStr);
         const cacheAgeMs = Date.now() - (cached.lastFetchTime || 0);
-
         const isLiveCache = isCacheToday && isMarketOpen && !hasFinalDataCache;
-        renderTrendChart(cached.data, cached.dateStr || todayStr, isLiveCache);
+
+        // 🔥 현재 보이는 화면(활성 탭)일 때만 캔버스를 그립니다.
+        if (currentTrendMarketType === marketType) {
+            renderTrendChart(cached.data, cached.dateStr || todayStr, isLiveCache);
+        }
 
         if (isMarketOpen) {
             if (cacheAgeMs < 60000) needsFetch = false;
         } else {
             if (hasFinalDataCache) {
-                if (isCacheToday || timeNum < 900 || isWeekend) {
-                    needsFetch = false;
-                }
+                if (isCacheToday || timeNum < 900 || isWeekend) needsFetch = false;
             } else {
                 needsFetch = true;
             }
@@ -1228,11 +1234,11 @@ async function fetchMarketTrend(marketType = currentTrendMarketType) {
     }
 
     if (!needsFetch) {
-        if (chartLoader) chartLoader.style.display = 'none';
+        if (!isBackground && chartLoader) chartLoader.style.display = 'none';
         return;
     }
 
-    if (chartLoader && !trendChartInstance) {
+    if (!isBackground && chartLoader && !trendChartInstance) {
         chartLoader.style.display = 'flex';
     }
 
@@ -1243,54 +1249,44 @@ async function fetchMarketTrend(marketType = currentTrendMarketType) {
         
         const json = await response.json();
         
-        if (currentTrendMarketType !== marketType) return;
-        
         if (json.success && json.data && Array.isArray(json.data.content)) {
             const data = json.data.content;
-
             if (data.length === 0) return;
 
             let actualDateStr = todayStr; 
             const apiDate = json.data.bizdate || json.data.bizDate || json.data.businessDate;
             
             if (apiDate && typeof apiDate === 'string' && apiDate.length >= 8) {
-                const y = apiDate.substring(0, 4);
-                const m = apiDate.substring(4, 6);
-                const d = apiDate.substring(6, 8);
-                actualDateStr = `${y}.${m}.${d}.`;
+                actualDateStr = `${apiDate.substring(0, 4)}.${apiDate.substring(4, 6)}.${apiDate.substring(6, 8)}.`;
             } else if (data[0] && data[0].date) {
                 const dStr = String(data[0].date);
-                if (dStr.length >= 8) {
-                    actualDateStr = `${dStr.substring(0,4)}.${dStr.substring(4,6)}.${dStr.substring(6,8)}.`;
-                }
+                if (dStr.length >= 8) actualDateStr = `${dStr.substring(0,4)}.${dStr.substring(4,6)}.${dStr.substring(6,8)}.`;
             }
 
-            // 데이터 time 값 첫 4자리가 1600 이상인지 확인
-            const hasFinalData = data.some(d => {
-                const t = parseInt(d.time.substring(0, 4), 10);
-                return t >= 1600;
-            });
-            
+            const hasFinalData = data.some(d => parseInt(d.time.substring(0, 4), 10) >= 1600);
             const isLiveAPI = (actualDateStr === todayStr) && isMarketOpen && !hasFinalData;
 
-            renderTrendChart(data, actualDateStr, isLiveAPI);
-
+            // 🔥 중요: 데이터를 백그라운드 여부와 상관없이 먼저 로컬 스토리지에 저장합니다.
             localStorage.setItem(cacheKey, JSON.stringify({
                 dateStr: actualDateStr,
                 data: data,
                 lastFetchTime: Date.now() 
             }));
 
+            // 🔥 현재 활성화된 탭인 경우에만 화면에 렌더링합니다.
+            if (currentTrendMarketType === marketType) {
+                renderTrendChart(data, actualDateStr, isLiveAPI);
+            }
         } else {
             throw new Error("Invalid trend data structure");
         }
     } catch (error) {
-        console.error("Trend Chart Error:", error);
-        if (!cached) {
+        console.error(`Trend Chart Error (${marketType}):`, error);
+        if (!cached && currentTrendMarketType === marketType) {
             container.innerHTML = '<div class="empty-state"><p class="error-text">Failed to load trend data.</p></div>';
         }
     } finally {
-        if (chartLoader) chartLoader.style.display = 'none';
+        if (!isBackground && chartLoader) chartLoader.style.display = 'none';
     }
 }
 
