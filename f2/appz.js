@@ -87,7 +87,37 @@ async function init() {
         if (tabNewsBtn) tabNewsBtn.classList.add('active');
     }
 
-    forceRefresh(); 
+    // --- 👇 여기서부터 수정: 60초 캐시 검증 로직 👇 ---
+    const lastFetchStr = localStorage.getItem('marketdash_last_fetch_time');
+    const lastFetch = lastFetchStr ? parseInt(lastFetchStr, 10) : 0;
+    const diffSec = Math.floor((Date.now() - lastFetch) / 1000);
+
+    if (diffSec >= 0 && diffSec < 60) {
+        // 1. 60초 이내 재접속 시: API 호출 없이 캐시된 데이터 즉시 렌더링
+        try {
+            const cachedQuotes = JSON.parse(localStorage.getItem('marketdash_quotes_cache')) || {};
+            const quotesArray = Object.values(cachedQuotes);
+            if (quotesArray.length > 0) updateDOMWithData(quotesArray);
+        } catch(e) {}
+        
+        // 2. 남은 시간으로 타이머 이어서 세팅
+        state.countdown = 60 - diffSec;
+        updateTimerUI(state.countdown);
+        startTimer();
+        
+        // 3. 트렌드 차트는 자체 캐시 로직이 있으므로 바로 호출 (백그라운드 처리 포함)
+        const allMarkets = ['ALL', 'KOSPI', 'KOSDAQ'];
+        allMarkets.forEach(m => fetchMarketTrend(m, m !== currentTrendMarketType));
+        
+        // 4. 뉴스는 기존 fetchNews 내부의 시간 체크에 맡김
+        if ((Date.now() - state.lastNewsFetch) > 60000) fetchNews();
+        
+    } else {
+        // 60초가 지났거나 최초 접속 시: 정상적으로 전체 데이터 갱신
+        forceRefresh(); 
+    }
+    // --- 👆 수정 끝 👆 ---
+    
     initSwipeToDelete(); 
     
     const btnRefresh = document.getElementById('btn-refresh');
@@ -820,6 +850,12 @@ function startTimer() {
 
 function updateDOMWithData(quotes) {
     requestAnimationFrame(() => {
+
+        let cachedQuotes = {};
+        try { cachedQuotes = JSON.parse(localStorage.getItem('marketdash_quotes_cache')) || {}; } catch(e) {}
+        quotes.forEach(q => cachedQuotes[q.symbol] = q);
+        localStorage.setItem('marketdash_quotes_cache', JSON.stringify(cachedQuotes));
+        
         const now = new Date();
         const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
         const kstTime = new Date(utc + (9 * 3600000));
