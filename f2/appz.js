@@ -857,10 +857,34 @@ function startTimer() {
 
 function updateDOMWithData(quotes) {
     requestAnimationFrame(() => {
-        // --- 60초 캐싱을 위해 불러온 데이터 로컬 스토리지에 저장 ---
+        // 1. 기존 캐시 데이터 불러오기
         let cachedQuotes = {};
         try { cachedQuotes = JSON.parse(localStorage.getItem('marketdash_quotes_cache')) || {}; } catch(e) {}
-        quotes.forEach(q => cachedQuotes[q.symbol] = q);
+
+        // 2. KR 종목 전일 장마감 데이터 보존 처리
+        quotes.forEach(quote => {
+            const ticker = quote.symbol;
+            const dbMatch = localTickerDB.find(q => q.s.toUpperCase() === ticker.toUpperCase());
+            const isKR = dbMatch ? (dbMatch.e === 'NAVER') : /^\d/.test(ticker);
+
+            if (isKR) {
+                const cached = cachedQuotes[ticker];
+                
+                // 아직 당일 거래량이 발생하지 않은 상태(0 또는 undefined)일 때
+                if (cached && (!quote.regularMarketVolume || quote.regularMarketVolume === 0)) {
+                    // 네이버 API가 변동값을 0으로 리셋해서 보냈다면, 캐시된 전일 최종 데이터를 그대로 사용
+                    if (quote.regularMarketChange === 0) {
+                        quote.regularMarketChange = cached.regularMarketChange || 0;
+                        quote.regularMarketChangePercent = cached.regularMarketChangePercent || 0;
+                    }
+                }
+            }
+            
+            // 보정된 데이터로 캐시 객체 업데이트
+            cachedQuotes[ticker] = quote;
+        });
+
+        // 3. 보정된 최신 상태를 로컬 스토리지에 저장
         localStorage.setItem('marketdash_quotes_cache', JSON.stringify(cachedQuotes));
 
         const now = new Date();
