@@ -781,11 +781,22 @@ async function fetchData() {
     localStorage.setItem('marketdash_last_fetch_time', Date.now().toString());
     const fetchPromises = []; 
 
+    // 🕒 1. 현재 한국 시간(KST) 및 주말 여부 계산
+    const now = new Date();
+    const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+    const kstTime = new Date(utc + (9 * 3600000));
+    const day = kstTime.getDay();
+    const timeNum = kstTime.getHours() * 100 + kstTime.getMinutes();
+    
+    // 토요일(6), 일요일(0)이거나 평일 오후 8시(2000) 이후 ~ 다음날 오전 8시(800) 이전인 경우
+    const isKrMarketClosedCompletely = (day === 0 || day === 6) || (timeNum > 2000 || timeNum < 800);
+
     for (const sectionId of state.sectionOrder) {
         if (!state.expanded[sectionId]) continue;
         let symbols = state.watchlists[sectionId].tickers;
         if (symbols.length === 0) continue;
 
+        // 2. 야간 선물(KNIGHT)은 밤에 작동해야 하므로 먼저 처리 후 symbols에서 제외
         if (symbols.includes('KNIGHT')) {
             fetchAndProcessKnight(); 
             symbols = symbols.filter(sym => sym !== 'KNIGHT'); 
@@ -793,6 +804,21 @@ async function fetchData() {
 
         if (symbols.length === 0) continue;
 
+        // 🚀 3. KR 섹션 일반 종목 최적화 필터
+        // 주식 시장이 아예 닫힌 시간대이고, 이미 로컬 스토리지에 캐시 데이터가 존재한다면 통신 패스!
+        if (sectionId === 'kr' && isKrMarketClosedCompletely) {
+            try {
+                const cachedQuotes = JSON.parse(localStorage.getItem('marketdash_quotes_cache')) || {};
+                const hasAllCache = symbols.every(sym => cachedQuotes[sym]);
+                
+                if (hasAllCache) {
+                    // 이미 전일 최종 데이터가 로컬에 있으므로 네트워크 요청을 생략하고 넘어갑니다.
+                    continue; 
+                }
+            } catch(e) {}
+        }
+
+        // 4. 나머지 활성화된 마켓 및 시간대 분기 처리 (기존 로직 동일)
         const chunkSize = 100; 
         const fetchFunc = sectionId === 'kr' ? fetchNaverFinance : fetchYahooFinance;
 
@@ -812,7 +838,6 @@ async function fetchData() {
     await Promise.all(fetchPromises);
     fetchNews();
 }
-
 function updateTimerUI(seconds) {
     const pie = document.getElementById('timer-pie');
     if (pie) {
