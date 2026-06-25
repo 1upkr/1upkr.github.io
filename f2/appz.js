@@ -74,20 +74,21 @@ async function init() {
 
     document.addEventListener('visibilitychange', () => {
         if (!document.hidden) {
-        const lastFetchStr = localStorage.getItem('marketdash_last_fetch_time');
-        const lastFetch = lastFetchStr ? parseInt(lastFetchStr, 10) : 0;
-        const diffSec = Math.floor((Date.now() - lastFetch) / 1000);
+            const lastFetchStr = localStorage.getItem('marketdash_last_fetch_time');
+            const lastFetch = lastFetchStr ? parseInt(lastFetchStr, 10) : 0;
+            const diffSec = Math.floor((Date.now() - lastFetch) / 1000);
 
-        if (diffSec >= 60) {
-            // 1. 60초가 지났다면 정상적으로 새로고침
-            forceRefresh();
-        } else {
-            // 2. 60초 이내라면 백그라운드에서 흘러간 시간만큼 타이머만 교정 (데이터 호출 X)
-            state.countdown = 60 - diffSec;
-            updateTimerUI(state.countdown);
+            if (diffSec >= 60) {
+                // 1. 60초가 지났다면 정상적으로 새로고침
+                forceRefresh();
+            } else {
+                // 2. 60초 이내라면 백그라운드에서 흘러간 시간만큼 타이머만 교정 (데이터 호출 X)
+                state.countdown = 60 - diffSec;
+                updateTimerUI(state.countdown);
+            }
         }
-    }
-});
+    });
+
     await initTickerDB(); 
     renderLayout(); 
 
@@ -157,7 +158,9 @@ function processTickerDB(data) {
 
 async function initTickerDB() {
     try {
-        const response = await fetch(`./f2/tickers_n.json?v=${new Date().getTime()}`);
+        // [업데이트] 무의미한 1밀리초 캐시 무효화 대신, 날짜(하루) 단위 캐시로 변경 (초기 로딩 속도 향상)
+        const todayStr = new Date().toISOString().slice(0, 10);
+        const response = await fetch(`./f2/tickers_n.json?v=${todayStr}`);
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const rawData = await response.json();
         localTickerDB = processTickerDB(rawData);
@@ -802,20 +805,18 @@ async function fetchData() {
         if (symbols.length === 0) continue;
 
         // 🚀 3. KR 섹션 일반 종목 최적화 필터
-        // 주식 시장이 아예 닫힌 시간대이고, 이미 로컬 스토리지에 캐시 데이터가 존재한다면 통신 패스!
         if (sectionId === 'kr' && isKrMarketClosedCompletely) {
             try {
                 const cachedQuotes = JSON.parse(localStorage.getItem('marketdash_quotes_cache')) || {};
                 const hasAllCache = symbols.every(sym => cachedQuotes[sym]);
                 
                 if (hasAllCache) {
-                    // 이미 전일 최종 데이터가 로컬에 있으므로 네트워크 요청을 생략하고 넘어갑니다.
                     continue; 
                 }
             } catch(e) {}
         }
 
-        // 4. 나머지 활성화된 마켓 및 시간대 분기 처리 (기존 로직 동일)
+        // 4. 나머지 활성화된 마켓 및 시간대 분기 처리
         const chunkSize = 100; 
         const fetchFunc = sectionId === 'kr' ? fetchNaverFinance : fetchYahooFinance;
 
@@ -833,8 +834,9 @@ async function fetchData() {
         }
     }
     await Promise.all(fetchPromises);
-    fetchNews();
+    fetchNews(); // 뉴스 호출 빈도는 유지
 }
+
 function updateTimerUI(seconds) {
     const pie = document.getElementById('timer-pie');
     if (pie) {
@@ -877,38 +879,34 @@ function startTimer() {
     }, 1000);
 }
 
+// [업데이트] 스토리지 파싱 로직을 rAF 외부로 분리
 function updateDOMWithData(quotes) {
-    requestAnimationFrame(() => {
-        // 1. 기존 캐시 데이터 불러오기
-        let cachedQuotes = {};
-        try { cachedQuotes = JSON.parse(localStorage.getItem('marketdash_quotes_cache')) || {}; } catch(e) {}
+    // 1. 무거운 스토리지 읽기/쓰기 작업은 화면 렌더링 큐(rAF) 외부에서 미리 처리
+    let cachedQuotes = {};
+    try { cachedQuotes = JSON.parse(localStorage.getItem('marketdash_quotes_cache')) || {}; } catch(e) {}
 
-        // 2. KR 종목 전일 장마감 데이터 보존 처리
-        quotes.forEach(quote => {
-            const ticker = quote.symbol;
-            const dbMatch = localTickerDB.find(q => q.s.toUpperCase() === ticker.toUpperCase());
-            const isKR = dbMatch ? (dbMatch.e === 'NAVER') : /^\d/.test(ticker);
+    quotes.forEach(quote => {
+        const ticker = quote.symbol;
+        const dbMatch = localTickerDB.find(q => q.s.toUpperCase() === ticker.toUpperCase());
+        const isKR = dbMatch ? (dbMatch.e === 'NAVER') : /^\d/.test(ticker);
 
-            if (isKR) {
-                const cached = cachedQuotes[ticker];
-                
-                // 아직 당일 거래량이 발생하지 않은 상태(0 또는 undefined)일 때
-                if (cached && (!quote.regularMarketVolume || quote.regularMarketVolume === 0)) {
-                    // 네이버 API가 변동값을 0으로 리셋해서 보냈다면, 캐시된 전일 최종 데이터를 그대로 사용
-                    if (quote.regularMarketChange === 0) {
-                        quote.regularMarketChange = cached.regularMarketChange || 0;
-                        quote.regularMarketChangePercent = cached.regularMarketChangePercent || 0;
-                    }
+        if (isKR) {
+            const cached = cachedQuotes[ticker];
+            
+            if (cached && (!quote.regularMarketVolume || quote.regularMarketVolume === 0)) {
+                if (quote.regularMarketChange === 0) {
+                    quote.regularMarketChange = cached.regularMarketChange || 0;
+                    quote.regularMarketChangePercent = cached.regularMarketChangePercent || 0;
                 }
             }
-            
-            // 보정된 데이터로 캐시 객체 업데이트
-            cachedQuotes[ticker] = quote;
-        });
+        }
+        cachedQuotes[ticker] = quote;
+    });
 
-        // 3. 보정된 최신 상태를 로컬 스토리지에 저장
-        localStorage.setItem('marketdash_quotes_cache', JSON.stringify(cachedQuotes));
+    localStorage.setItem('marketdash_quotes_cache', JSON.stringify(cachedQuotes));
 
+    // 2. 오직 화면(DOM) 업데이트 작업만 rAF 안에서 실행
+    requestAnimationFrame(() => {
         const now = new Date();
         const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
         const kstTime = new Date(utc + (9 * 3600000));
@@ -989,7 +987,6 @@ function updateDOMWithData(quotes) {
                 if (isCrypto) {
                     targetState = 'REGULAR';
                 } else if (isFXorFuture || isIndex) {
-                    // --- 지수/환율/선물 타임스탬프 팩트체크 로직 적용 ---
                     const nowSec = Math.floor(Date.now() / 1000);
                     if ((nowSec - regTime) > 900) {
                         targetState = 'CLOSED_H'; 
@@ -1581,8 +1578,8 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                             tooltipEl.style.boxShadow = '0 4px 6px -1px rgba(0,0,0,0.05)';
                             tooltipEl.style.zIndex = 90;
                             tooltipEl.style.whiteSpace = 'nowrap';
-                            // --- 하드웨어 가속 스타일 추가 ---
-                            tooltipEl.style.willChange = 'transform, opacity, left, top'; 
+                            // [업데이트] left, top을 제거하여 Reflow 렌더링 부하 완화
+                            tooltipEl.style.willChange = 'transform, opacity'; 
                             
                             context.chart.canvas.parentNode.appendChild(tooltipEl);
                             context.chart.canvas.parentNode.style.position = 'relative';
@@ -1632,22 +1629,22 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                         }
 
                         tooltipEl.style.opacity = 1;
-                        tooltipEl.style.transform = 'none';
                         
                         const ttWidth = tooltipEl.offsetWidth || 150;
                         const ttHeight = tooltipEl.offsetHeight || 130;
                         const chartWidth = context.chart.width;
                         const chartHeight = context.chart.height;
                         
-                        // --- 툴팁 세로 중앙(Middle) 고정 로직 적용 ---
                         let targetLeft = tooltipModel.caretX - (ttWidth / 2);
                         let targetTop = (chartHeight / 2) - (ttHeight / 2); 
                         
                         if (targetLeft < 10) targetLeft = 10;
                         else if (targetLeft + ttWidth > chartWidth - 10) targetLeft = chartWidth - ttWidth - 10;
                         
-                        tooltipEl.style.left = targetLeft + 'px';
-                        tooltipEl.style.top = targetTop + 'px';
+                        // [업데이트] transform: translate를 활용해 GPU 가속으로 부드러운 위치 이동
+                        tooltipEl.style.left = '0px';
+                        tooltipEl.style.top = '0px';
+                        tooltipEl.style.transform = `translate(${targetLeft}px, ${targetTop}px)`;
                     }
                 }
             },
@@ -1694,7 +1691,6 @@ window.hideChartTooltip = function() {
     }
 };
 
-
 // =========================================================
 // SCROLL RESPONSIVE HEADER HIDE (가로 모드 전용)
 // =========================================================
@@ -1733,8 +1729,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, { passive: true });
 });
-
-
 
 window.addEventListener('scroll', window.hideChartTooltip, { passive: true });
 window.addEventListener('resize', window.hideChartTooltip, { passive: true });
