@@ -889,9 +889,12 @@ function startTimer() {
 
 // [최적화] 스토리지 파싱 로직을 rAF 외부로 분리 및 DOM Reflow 방지
 function updateDOMWithData(quotes) {
-    // 1. 무거운 스토리지 읽기/쓰기 작업은 화면 렌더링 큐(rAF) 외부에서 미리 처리
     let cachedQuotes = {};
     try { cachedQuotes = JSON.parse(localStorage.getItem('marketdash_quotes_cache')) || {}; } catch(e) {}
+
+    // 👉 추가: 캐시 로직에서 사용할 현재 시간(KST) 미리 계산
+    const kstNow = new Date(Date.now() + (new Date().getTimezoneOffset() * 60000) + (9 * 3600000));
+    const currentTimeNum = kstNow.getHours() * 100 + kstNow.getMinutes();
 
     quotes.forEach(quote => {
         const ticker = quote.symbol;
@@ -901,7 +904,10 @@ function updateDOMWithData(quotes) {
         if (isKR) {
             const cached = cachedQuotes[ticker];
             
-            if (cached && (!quote.regularMarketVolume || quote.regularMarketVolume === 0)) {
+            // 👉 수정: 장 시작(09:00) 전이거나 거래량이 0일 때 어제 변동률 복원
+            const isBeforeOpen = currentTimeNum < 900;
+            
+            if (cached && (isBeforeOpen || !quote.regularMarketVolume || quote.regularMarketVolume === 0)) {
                 if (quote.regularMarketChange === 0) {
                     quote.regularMarketChange = cached.regularMarketChange || 0;
                     quote.regularMarketChangePercent = cached.regularMarketChangePercent || 0;
