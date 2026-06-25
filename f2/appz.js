@@ -158,7 +158,7 @@ function processTickerDB(data) {
 
 async function initTickerDB() {
     try {
-        // [업데이트] 무의미한 1밀리초 캐시 무효화 대신, 날짜(하루) 단위 캐시로 변경 (초기 로딩 속도 향상)
+        // [최적화] 매번 1ms 단위로 캐시 무효화하는 대신 날짜 단위 캐시로 다운로드 속도 향상
         const todayStr = new Date().toISOString().slice(0, 10);
         const response = await fetch(`./f2/tickers_n.json?v=${todayStr}`);
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -193,6 +193,9 @@ function initSwipeToDelete() {
         isSwiping = false;
         isScrolling = false; 
         row.style.transition = 'none'; 
+        
+        // [최적화] 터치 시작 시 GPU 가속 활성화로 스와이프 부드럽게
+        row.style.willChange = 'transform, opacity';
     }, { passive: true });
 
     dashboard.addEventListener('touchmove', e => {
@@ -230,6 +233,9 @@ function initSwipeToDelete() {
         const diffX = touchCurrentX - touchStartX;
 
         swipingRow.style.transition = 'all 0.3s ease';
+        
+        // [최적화] 터치 종료 시 GPU 메모리 해제
+        swipingRow.style.willChange = 'auto';
         
         if (isSwiping && diffX < -80) {
             const ticker = swipingRow.dataset.ticker;
@@ -834,7 +840,7 @@ async function fetchData() {
         }
     }
     await Promise.all(fetchPromises);
-    fetchNews(); // 뉴스 호출 빈도는 유지
+    fetchNews(); 
 }
 
 function updateTimerUI(seconds) {
@@ -879,7 +885,7 @@ function startTimer() {
     }, 1000);
 }
 
-// [업데이트] 스토리지 파싱 로직을 rAF 외부로 분리
+// [최적화] 스토리지 파싱 로직을 rAF 외부로 분리 및 DOM Reflow 방지
 function updateDOMWithData(quotes) {
     // 1. 무거운 스토리지 읽기/쓰기 작업은 화면 렌더링 큐(rAF) 외부에서 미리 처리
     let cachedQuotes = {};
@@ -1089,22 +1095,30 @@ function updateDOMWithData(quotes) {
             const dbInfo = localTickerDB.find(q => q.s.toUpperCase() === ticker.toUpperCase());
             nodes.name.textContent = (dbInfo ? dbInfo.n : null) || quote.shortName || quote.longName || ticker;
             
-            nodes.price.innerHTML = mainIcon + formatNum(mainPrice);
-            nodes.extPrice.innerHTML = subHtml;
+            // [최적화] DOM Reflow 완화 - 텍스트 변경사항이 있을 때만 덮어쓰기
+            const newPriceHtml = mainIcon + formatNum(mainPrice);
+            const newExtHtml = subHtml;
+            const newChangeHtml = `<span class="${colorClass}">${sign}${formatChangeNum(mainChange)}</span>`;
+            const newPctHtml = `<span class="badge ${colorClass}"><span class="arrow">${arrow}</span>${formatPct(Math.abs(mainPct))}%</span>`;
+
+            if (nodes.price.innerHTML !== newPriceHtml) nodes.price.innerHTML = newPriceHtml;
+            if (nodes.extPrice.innerHTML !== newExtHtml) nodes.extPrice.innerHTML = newExtHtml;
+            if (nodes.change.innerHTML !== newChangeHtml) nodes.change.innerHTML = newChangeHtml;
+            if (nodes.pct.innerHTML !== newPctHtml) nodes.pct.innerHTML = newPctHtml;
             
-            nodes.change.innerHTML = `<span class="${colorClass}">${sign}${formatChangeNum(mainChange)}</span>`;
-            nodes.pct.innerHTML = `<span class="badge ${colorClass}"><span class="arrow">${arrow}</span>${formatPct(Math.abs(mainPct))}%</span>`;
+            const volText = (quote.regularMarketVolume && quote.regularMarketVolume > 0) ? formatCompact(quote.regularMarketVolume) : '-';
+            if (nodes.vol.textContent !== volText) nodes.vol.textContent = volText;
+
+            const capText = formatCompact(quote.marketCap);
+            if (nodes.cap.textContent !== capText) nodes.cap.textContent = capText;
             
-            nodes.vol.textContent = (quote.regularMarketVolume && quote.regularMarketVolume > 0) ? formatCompact(quote.regularMarketVolume) : '-'; 
-            nodes.cap.textContent = formatCompact(quote.marketCap);
-            
+            let rangeHtml = '-';
             if (quote.regularMarketDayLow && quote.regularMarketDayHigh) {
                 const low = formatNum(quote.regularMarketDayLow);
                 const high = formatNum(quote.regularMarketDayHigh);
-                nodes.range.innerHTML = `${low} <span style="opacity: 0.5; margin: 0 2px;">-</span> ${high}`;
-            } else {
-                nodes.range.innerHTML = '-';
+                rangeHtml = `${low} <span style="opacity: 0.5; margin: 0 2px;">-</span> ${high}`;
             }
+            if (nodes.range.innerHTML !== rangeHtml) nodes.range.innerHTML = rangeHtml;
         });
     });
 }
@@ -1578,7 +1592,6 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                             tooltipEl.style.boxShadow = '0 4px 6px -1px rgba(0,0,0,0.05)';
                             tooltipEl.style.zIndex = 90;
                             tooltipEl.style.whiteSpace = 'nowrap';
-                            // [업데이트] left, top을 제거하여 Reflow 렌더링 부하 완화
                             tooltipEl.style.willChange = 'transform, opacity'; 
                             
                             context.chart.canvas.parentNode.appendChild(tooltipEl);
@@ -1641,7 +1654,6 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                         if (targetLeft < 10) targetLeft = 10;
                         else if (targetLeft + ttWidth > chartWidth - 10) targetLeft = chartWidth - ttWidth - 10;
                         
-                        // [업데이트] transform: translate를 활용해 GPU 가속으로 부드러운 위치 이동
                         tooltipEl.style.left = '0px';
                         tooltipEl.style.top = '0px';
                         tooltipEl.style.transform = `translate(${targetLeft}px, ${targetTop}px)`;
@@ -1673,11 +1685,15 @@ window.switchTrendMarket = function(marketType) {
     fetchMarketTrend(marketType);
 };
 
-// --- 툴팁 및 호버 충돌 해결 로직 적용 ---
+// --- [최적화] 툴팁 캐싱 적용 ---
+let chartTooltipCache = null;
 window.hideChartTooltip = function() {
-    const tooltipEl = document.getElementById('chartjs-custom-tooltip');
-    if (tooltipEl && tooltipEl.style.opacity === '1') {
-        tooltipEl.style.opacity = '0';
+    if (!chartTooltipCache) {
+        chartTooltipCache = document.getElementById('chartjs-custom-tooltip');
+    }
+    
+    if (chartTooltipCache && chartTooltipCache.style.opacity === '1') {
+        chartTooltipCache.style.opacity = '0';
         
         if (trendChartInstance) {
             try {
@@ -1692,35 +1708,36 @@ window.hideChartTooltip = function() {
 };
 
 // =========================================================
-// SCROLL RESPONSIVE HEADER HIDE (가로 모드 전용)
+// SCROLL RESPONSIVE HEADER HIDE (가로 모드 전용) + [최적화] rAF 쓰로틀링
 // =========================================================
 document.addEventListener('DOMContentLoaded', () => {
     let lastScrollY = window.scrollY;
-    const scrollThreshold = 40; // 40px 이상 스크롤 시 작동
+    const scrollThreshold = 40; 
+    let ticking = false; // rAF 연산 중복 방지 플래그
 
     function handleScroll() {
-        const currentScrollY = window.scrollY;
-        // style.css의 모바일 분기점(992px)과 일치시킴
-        const isLandscape = window.matchMedia("(max-width: 992px) and (orientation: landscape)").matches;
-        
-        if (isLandscape) {
-            // 아래로 스크롤 중일 때 숨김 처리
-            if (currentScrollY > lastScrollY && currentScrollY > scrollThreshold) {
-                document.body.classList.add('scrolled-down');
-            } 
-            // 위로 스크롤 하거나 최상단일 때 다시 노출
-            else {
-                document.body.classList.remove('scrolled-down');
-            }
-        } else {
-            // 세로 모드일 경우 숨김 클래스 강제 제거 (버그 방지)
-            document.body.classList.remove('scrolled-down');
+        if (!ticking) {
+            requestAnimationFrame(() => {
+                const currentScrollY = window.scrollY;
+                const isLandscape = window.matchMedia("(max-width: 992px) and (orientation: landscape)").matches;
+                
+                if (isLandscape) {
+                    if (currentScrollY > lastScrollY && currentScrollY > scrollThreshold) {
+                        document.body.classList.add('scrolled-down');
+                    } else {
+                        document.body.classList.remove('scrolled-down');
+                    }
+                } else {
+                    document.body.classList.remove('scrolled-down');
+                }
+                
+                lastScrollY = currentScrollY;
+                ticking = false; 
+            });
+            ticking = true;
         }
-        
-        lastScrollY = currentScrollY;
     }
 
-    // 스크롤 및 화면 회전 이벤트 리스너 등록
     window.addEventListener('scroll', handleScroll, { passive: true });
     window.addEventListener('resize', () => {
         const isLandscape = window.matchMedia("(max-width: 992px) and (orientation: landscape)").matches;
