@@ -186,7 +186,10 @@ main { flex: 1; width: 100%; overflow-x: hidden; }
     display: flex;
     flex-direction: column;
     flex: 1; 
-    margin-bottom: 2rem; 
+    margin-bottom: 2rem;
+    /* 👉 새로 추가: 화면에 안 보일 때 자식 요소들의 렌더링과 애니메이션 계산을 완전히 멈춤 */
+    content-visibility: auto; 
+    contain-intrinsic-size: 500px; /* 대략적인 섹션 높이값을 주어 스크롤 튐 방지 */
 }
 
 .section-header { border-radius: 12px 12px 0 0; }
