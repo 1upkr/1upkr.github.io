@@ -698,7 +698,6 @@ function toggleSection(e, sectionId) {
     container.classList.toggle('collapsed');
     state.expanded[sectionId] = !container.classList.contains('collapsed');
     localStorage.setItem('marketdash_expanded', JSON.stringify(state.expanded));
-    if (state.expanded[sectionId]) forceRefresh();
 }
 
 function toggleAddForm(e, sectionId) {
@@ -710,7 +709,6 @@ function toggleAddForm(e, sectionId) {
         container.classList.remove('collapsed');
         state.expanded[sectionId] = true;
         localStorage.setItem('marketdash_expanded', JSON.stringify(state.expanded));
-        forceRefresh();
     }
     if (form) form.classList.toggle('active');
     container.classList.toggle('edit-mode');
@@ -792,7 +790,6 @@ async function fetchData() {
     const isKrMarketClosedCompletely = (day === 0 || day === 6) || (timeNum > 2000 || timeNum < 800);
 
     for (const sectionId of state.sectionOrder) {
-        if (!state.expanded[sectionId]) continue;
         let symbols = state.watchlists[sectionId].tickers;
         if (symbols.length === 0) continue;
 
