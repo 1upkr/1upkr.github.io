@@ -736,7 +736,6 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
 }
 
 
-
 /* 2단계: 실제 가로 폭이 좁은 스마트폰 세로 환경 (650px 이하) */
 /* 여기서만 부가 정보(Volume, Cap, 52W Range)를 완전히 숨기고 핵심 정보만 노출합니다. */
 @media (max-width: 650px) {
@@ -773,4 +772,23 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
     }
 
     .change-cell { font-size: 0.8rem; } .badge { padding: 0.15rem 0.25rem; font-size: 0.65rem; }
+}
+
+
+
+/* =========================================================
+   LANDSCAPE MODE SCROLL AUTO-HIDE (가로 모드 스크롤 시 상단 숨김)
+   ========================================================= */
+@media screen and (max-width: 992px) and (orientation: landscape) {
+    /* 부드러운 애니메이션 적용 */
+    header, .mobile-tabs {
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        will-change: transform;
+    }
+
+    /* 스크롤 다운 시 헤더와 탭을 위로 밀어서 숨김 */
+    body.scrolled-down header,
+    body.scrolled-down .mobile-tabs {
+        transform: translateY(-120px) !important; 
+    }
 }
