@@ -1697,6 +1697,48 @@ window.hideChartTooltip = function() {
     }
 };
 
+
+// --- 스크롤 반응형 상단 UI 숨김 (가로 모드 전용) ---
+document.addEventListener('DOMContentLoaded', () => {
+    let lastScrollY = window.scrollY;
+    const scrollThreshold = 50; // 이 픽셀 이상 스크롤해야 작동
+
+    function handleScroll() {
+        const currentScrollY = window.scrollY;
+        
+        // 현재 화면이 모바일 가로 모드인지 확인
+        const isLandscape = window.matchMedia("(max-width: 900px) and (orientation: landscape)").matches;
+        
+        if (isLandscape) {
+            // 아래로 스크롤 중이며, 최상단에서 어느 정도 내려왔을 때
+            if (currentScrollY > lastScrollY && currentScrollY > scrollThreshold) {
+                document.body.classList.add('scrolled-down');
+            } 
+            // 위로 스크롤 중이거나 최상단일 때
+            else {
+                document.body.classList.remove('scrolled-down');
+            }
+        } else {
+            // 세로 모드일 경우 숨겨진 상태가 고착되지 않도록 초기화
+            document.body.classList.remove('scrolled-down');
+        }
+        
+        lastScrollY = currentScrollY;
+    }
+
+    // 스크롤 이벤트 (성능 최적화를 위해 passive 옵션 적용)
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    // 화면이 가로/세로로 회전할 때 즉각 대응
+    window.addEventListener('resize', () => {
+        const isLandscape = window.matchMedia("(max-width: 900px) and (orientation: landscape)").matches;
+        if (!isLandscape) {
+            document.body.classList.remove('scrolled-down');
+        }
+    }, { passive: true });
+});
+
+
 window.addEventListener('scroll', window.hideChartTooltip, { passive: true });
 window.addEventListener('resize', window.hideChartTooltip, { passive: true });
 
