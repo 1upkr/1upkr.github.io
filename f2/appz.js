@@ -157,8 +157,7 @@ function processTickerDB(data) {
 
 async function initTickerDB() {
     try {
-        const todayStr = new Date().toISOString().slice(0, 10);
-        const response = await fetch(`./f2/tickers_n.json?v=${todayStr}`);
+        const response = await fetch(`./f2/tickers_n.json?v=${new Date().getTime()}`);
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const rawData = await response.json();
         localTickerDB = processTickerDB(rawData);
@@ -879,54 +878,40 @@ function startTimer() {
 }
 
 function updateDOMWithData(quotes) {
-    // 1. 무거운 스토리지 읽기 작업은 화면 렌더링 큐(rAF) 바깥에서 미리 처리
-    let cachedQuotes = {};
-    try { cachedQuotes = JSON.parse(localStorage.getItem('marketdash_quotes_cache')) || {}; } catch(e) {}
-
-    // 2. KR 종목 전일 장마감 데이터 보존 처리
-    quotes.forEach(quote => {
-        const ticker = quote.symbol;
-        const dbMatch = localTickerDB.find(q => q.s.toUpperCase() === ticker.toUpperCase());
-        const isKR = dbMatch ? (dbMatch.e === 'NAVER') : /^\d/.test(ticker);
-
-        if (isKR) {
-            const cached = cachedQuotes[ticker];
-            
-            // 아직 당일 거래량이 발생하지 않은 상태(0 또는 undefined)일 때
-            if (cached && (!quote.regularMarketVolume || quote.regularMarketVolume === 0)) {
-                // 네이버 API가 변동값을 0으로 리셋해서 보냈다면, 캐시된 전일 최종 데이터를 그대로 사용
-                if (quote.regularMarketChange === 0) {
-                    quote.regularMarketChange = cached.regularMarketChange || 0;
-                    quote.regularMarketChangePercent = cached.regularMarketChangePercent || 0;
-                }
-            }
-        }
-        
-        // 보정된 데이터로 캐시 객체 업데이트
-        cachedQuotes[ticker] = quote;
-    });
-
-    // 3. 보정된 최신 상태를 로컬 스토리지에 저장 (이 역시 rAF 바깥에서 완료)
-    localStorage.setItem('marketdash_quotes_cache', JSON.stringify(cachedQuotes));
-
-    // 4. 오직 화면(DOM)을 업데이트하는 작업만 애니메이션 프레임 안에서 실행
     requestAnimationFrame(() => {
-        const now = new Date();
-        const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
-        const kstTime = new Date(utc + (9 * 3600000));
-        const timeNum = kstTime.getHours() * 100 + kstTime.getMinutes();
+        // 1. 기존 캐시 데이터 불러오기
+        let cachedQuotes = {};
+        try { cachedQuotes = JSON.parse(localStorage.getItem('marketdash_quotes_cache')) || {}; } catch(e) {}
 
+        // 2. KR 종목 전일 장마감 데이터 보존 처리
         quotes.forEach(quote => {
-            const ticker = quote.symbol; 
-            const nodes = rowNodes.get(ticker);
-            if (!nodes || !nodes.row) return;
-
+            const ticker = quote.symbol;
             const dbMatch = localTickerDB.find(q => q.s.toUpperCase() === ticker.toUpperCase());
             const isKR = dbMatch ? (dbMatch.e === 'NAVER') : /^\d/.test(ticker);
 
-            const regPrice = quote.regularMarketPrice || 0; 
+            if (isKR) {
+                const cached = cachedQuotes[ticker];
+                
+                // 아직 당일 거래량이 발생하지 않은 상태(0 또는 undefined)일 때
+                if (cached && (!quote.regularMarketVolume || quote.regularMarketVolume === 0)) {
+                    // 네이버 API가 변동값을 0으로 리셋해서 보냈다면, 캐시된 전일 최종 데이터를 그대로 사용
+                    if (quote.regularMarketChange === 0) {
+                        quote.regularMarketChange = cached.regularMarketChange || 0;
+                        quote.regularMarketChangePercent = cached.regularMarketChangePercent || 0;
+                    }
+                }
+            }
+            
+            // 보정된 데이터로 캐시 객체 업데이트
+            cachedQuotes[ticker] = quote;
+        });
 
-            const kstTime = new Date(utc + (9 * 3600000));
+        // 3. 보정된 최신 상태를 로컬 스토리지에 저장
+        localStorage.setItem('marketdash_quotes_cache', JSON.stringify(cachedQuotes));
+
+        const now = new Date();
+        const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+        const kstTime = new Date(utc + (9 * 3600000));
         const timeNum = kstTime.getHours() * 100 + kstTime.getMinutes();
 
         quotes.forEach(quote => {
@@ -1597,7 +1582,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                             tooltipEl.style.zIndex = 90;
                             tooltipEl.style.whiteSpace = 'nowrap';
                             // --- 하드웨어 가속 스타일 추가 ---
-                            tooltipEl.style.willChange = 'transform, opacity';
+                            tooltipEl.style.willChange = 'transform, opacity, left, top'; 
                             
                             context.chart.canvas.parentNode.appendChild(tooltipEl);
                             context.chart.canvas.parentNode.style.position = 'relative';
@@ -1661,10 +1646,8 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                         if (targetLeft < 10) targetLeft = 10;
                         else if (targetLeft + ttWidth > chartWidth - 10) targetLeft = chartWidth - ttWidth - 10;
                         
-                        tooltipEl.style.left = '0px';
-                        tooltipEl.style.top = '0px';
-                        // GPU를 활용해 위치 이동
-                        tooltipEl.style.transform = `translate(${targetLeft}px, ${targetTop}px)`;
+                        tooltipEl.style.left = targetLeft + 'px';
+                        tooltipEl.style.top = targetTop + 'px';
                     }
                 }
             },
