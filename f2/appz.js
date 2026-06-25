@@ -817,7 +817,9 @@ async function fetchData() {
                 const hasAllCache = symbols.every(sym => cachedQuotes[sym]);
                 
                 if (hasAllCache) {
-                    continue; 
+                    const cachedDataToRender = symbols.map(sym => cachedQuotes[sym]);
+                    updateDOMWithData(cachedDataToRender);
+                    continue;
                 }
             } catch(e) {}
         }
