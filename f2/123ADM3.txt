@@ -1,3 +1,8 @@
+4.2.xxx
+-모바일 환경 데이 레인지 업데이트
+-네이버 데이터 캐싱 오류 수정
+
+
 4.2.0
 -스크롤 이벤트의 Layout Thrashing 방지 (rAF 쓰로틀링)
 -스와이프 삭제(Swipe-to-Delete) GPU 가속 부여
