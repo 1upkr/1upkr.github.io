@@ -24,6 +24,7 @@
 
   { "s": "DX-Y.NYB", "n": "달러 인덱스 (DXY)", "e": "Currency" },
   { "s": "KRW=X", "n": "원/달러 환율 (USD/KRW)", "e": "Currency" },
+  { "s": "JPYKRW=X", "n": "원/엔 환율 (JPY/KRW)", "e": "Currency" },
   { "s": "EURUSD=X", "n": "유로/달러 환율 (EUR/USD)", "e": "Currency" },
   { "s": "JPY=X", "n": "엔/달러 환율 (USD/JPY)", "e": "Currency" },
   { "s": "CNY=X", "n": "위안/달러 환율 (USD/CNY)", "e": "Currency" },
