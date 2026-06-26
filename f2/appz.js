@@ -1121,16 +1121,52 @@ function updateDOMWithData(quotes) {
             if (nodes.cap.textContent !== capText) nodes.cap.textContent = capText;
             
             let rangeHtml = '-';
-            if (quote.regularMarketDayLow && quote.regularMarketDayHigh) {
-                const low = formatNum(quote.regularMarketDayLow);
-                const high = formatNum(quote.regularMarketDayHigh);
-                rangeHtml = `${low} <span style="opacity: 0.5; margin: 0 2px;">-</span> ${high}`;
+            
+            const lowVal = quote.regularMarketDayLow;
+            const highVal = quote.regularMarketDayHigh;
+
+            if (lowVal && highVal && highVal > lowVal) {
+                // 위치 퍼센트 계산 (0% ~ 100% 사이로 제한하여 마커가 밖으로 튀어나가지 않게 방어)
+                let percent = ((mainPrice - lowVal) / (highVal - lowVal)) * 100;
+                percent = Math.max(0, Math.min(100, percent));
+                
+                const lowStr = formatNum(lowVal);
+                const highStr = formatNum(highVal);
+                
+                // 오늘 종목이 오르고 있는지 내리고 있는지에 따라 마커 색상 클래스 부여
+                const markerColorClass = mainChange >= 0 ? 'up' : 'down';
+
+                rangeHtml = `
+                    <div class="range-gauge-container">
+                        <div class="range-labels">
+                            <span>${lowStr}</span>
+                            <span>${highStr}</span>
+                        </div>
+                        <div class="range-track">
+                            <div class="range-marker ${markerColorClass}" style="left: ${percent}%;"></div>
+                        </div>
+                    </div>
+                `;
+            } else if (lowVal && highVal && lowVal === highVal) {
+                // 점한가/상한가 등으로 고가와 저가가 같은 경우 중앙(50%)에 마커 배치
+                const valStr = formatNum(lowVal);
+                rangeHtml = `
+                    <div class="range-gauge-container">
+                        <div class="range-labels">
+                            <span>${valStr}</span>
+                            <span>${valStr}</span>
+                        </div>
+                        <div class="range-track">
+                            <div class="range-marker ${mainChange >= 0 ? 'up' : 'down'}" style="left: 50%;"></div>
+                        </div>
+                    </div>
+                `;
             }
+
             if (nodes.range.innerHTML !== rangeHtml) nodes.range.innerHTML = rangeHtml;
         });
     });
 }
-
 function markMissingData(requestedSymbols, results) {
     const returnedSymbols = new Set(results.map(r => r.symbol));
     requestedSymbols.forEach(sym => { if (!returnedSymbols.has(sym)) setErrorState(sym, 'No Data'); });
