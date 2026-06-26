@@ -187,9 +187,8 @@ main { flex: 1; width: 100%; overflow-x: hidden; }
     flex-direction: column;
     flex: 1; 
     margin-bottom: 2rem;
-    /* 👉 새로 추가: 화면에 안 보일 때 자식 요소들의 렌더링과 애니메이션 계산을 완전히 멈춤 */
     content-visibility: auto; 
-    contain-intrinsic-size: 500px; /* 대략적인 섹션 높이값을 주어 스크롤 튐 방지 */
+    contain-intrinsic-size: 500px;
 }
 
 .section-header { border-radius: 12px 12px 0 0; }
@@ -210,21 +209,16 @@ main { flex: 1; width: 100%; overflow-x: hidden; }
 .collapsed .action-icon-btn.toggle-btn svg { transform: rotate(-180deg); }
 .collapsed .section-body { display: none; }
 .collapsed .btn-add-symbol { 
-    /* display: none 대신 공간을 유지하면서 시각적으로만 숨깁니다 (좌우 움찔 방지) */
     opacity: 0; 
     visibility: hidden; 
     pointer-events: none; 
 }
 
-/* 접혔을 때 헤더 하단 모서리를 둥글게 처리하고, 연한 그레이 느낌의 포인트를 추가 */
 .collapsed .section-header {
     border-radius: 12px; 
-    /* 테두리 두께를 1px로 고정하여 상하 움찔거림 방지 */
     border-bottom: 1px solid var(--input-bg); 
-    /* 대신 안쪽 그림자(inset shadow)를 이용해 4px 테두리처럼 보이게 두께감 구현 */
     box-shadow: inset 0 -3px 0 var(--input-bg), 0 2px 4px rgba(0,0,0,0.02); 
 }
-
 
 .section-container:not(.edit-mode) th.actions-col,
 .section-container:not(.edit-mode) td.actions-col { display: none; }
@@ -248,7 +242,6 @@ main { flex: 1; width: 100%; overflow-x: hidden; }
     height: 71px; 
     box-sizing: border-box;
     flex-shrink: 0;   
-    /* 애니메이션 자연스럽게 연결하기 위해 box-shadow 추가 */
     transition: border-radius 0.2s ease, border-bottom 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -290,8 +283,6 @@ main { flex: 1; width: 100%; overflow-x: hidden; }
 .empty-state svg { width: 48px; height: 48px; opacity: 0.3; margin-bottom: 0.5rem; }
 .empty-state p { font-size: 0.875rem; font-weight: 500; line-height: 1.5; }
 
-/* --- Darth Vader Floating News Loader --- */
-
 .vader-loader {
     position: relative;
     width: 100%;
@@ -299,34 +290,33 @@ main { flex: 1; width: 100%; overflow-x: hidden; }
     min-height: 250px;
     background-color: transparent;
     color: var(--text-primary);
-    overflow: hidden; /* 별들이 영역 밖으로 삐져나가지 않게 마스킹 */
+    overflow: hidden;
 }
 
 .vader-scene {
     position: absolute;
     top: 0;
     left: 0;
-    width: 100%;  /* 부모 영역 100% 사용 */
-    height: 100%; /* 부모 영역 100% 사용 */
+    width: 100%;
+    height: 100%;
 }
 
-/* 다스베이더 유영 애니메이션 */
 .vader-icon {
-    width: 140px; /* 기존보다 살짝 더 키움 */
+    width: 140px;
     height: 140px;
     position: absolute;
-    top: 5%; /* news 영역 상단에서 약간 내려온 위치 */
-    left: calc(50% - 70px); /* 완벽한 가로 중앙 정렬 (width의 절반을 빼줌) */
+    top: 5%; 
+    left: calc(50% - 70px); 
     color: var(--text-primary);
-    animation: float-vader 4.5s ease-in-out infinite; /* 애니메이션 시간을 약간 늘려 부드럽고 웅장하게 */
+    animation: float-vader 4.5s ease-in-out infinite; 
     stroke: none;
-    z-index: 2; /* 배경 별들 위로 올라오게 설정 */
+    z-index: 2;
 }
 
 .vader-text {
     position: absolute;
-    top: calc(5% + 160px); /* 아이콘 위치(15%) + 아이콘 높이 + 적당한 여백 */
-    width: 100%; /* text-align 정렬을 위해 100% 할당 */
+    top: calc(5% + 160px); 
+    width: 100%; 
     text-align: center;
     font-size: 0.8rem;
     font-weight: 800;
@@ -336,7 +326,6 @@ main { flex: 1; width: 100%; overflow-x: hidden; }
     z-index: 2;
 }
 
-/* 무중력 우주 느낌을 살려주는 배경의 작은 별들 */
 .vader-scene .star {
     position: absolute;
     background-color: var(--text-primary);
@@ -351,17 +340,13 @@ main { flex: 1; width: 100%; overflow-x: hidden; }
 .star5 { width: 3px; height: 3px; top: 80%; left: 30%; animation-delay: 1.5s; }
 .star6 { width: 4px; height: 4px; top: 50%; left: 90%; animation-delay: 2.5s; }
 
-/* --- Keyframes Animations --- */
-
-/* 위아래로 크게 출렁이며 회전하는 무중력 효과 */
 @keyframes float-vader {
     0% { transform: translateY(0) rotate(0deg); }
-    33% { transform: translateY(-22px) rotate(7deg); } /* 위로 올라가는 폭 대폭 증가 */
-    66% { transform: translateY(18px) rotate(-5deg); } /* 아래로 내려가는 폭 대폭 증가 */
+    33% { transform: translateY(-22px) rotate(7deg); } 
+    66% { transform: translateY(18px) rotate(-5deg); } 
     100% { transform: translateY(0) rotate(0deg); }
 }
 
-/* 별들이 위로 슥 지나가는 효과 */
 @keyframes float-star {
     0% { transform: translateY(20px); opacity: 0; }
     50% { opacity: 0.8; }
@@ -372,8 +357,6 @@ main { flex: 1; width: 100%; overflow-x: hidden; }
     0%, 100% { opacity: 0.5; }
     50% { opacity: 1; }
 }
-
-
 
 .autocomplete-list {
     position: absolute; top: 100%; left: 0; right: 0;
@@ -414,9 +397,6 @@ tbody tr { transition: background-color 0.15s, transform 0.2s ease; } tbody tr:h
 .name { display: block; width: 100%; color: var(--text-secondary); font-size: 0.75rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .price { font-weight: 600; font-size: 1.05rem; font-variant-numeric: tabular-nums; color: var(--text-primary); }
 
-/* =========================================================
-   ★ 메인 영역 및 하단 확장 가격의 PRE/POST/CLOSE 뱃지 통일
-   ========================================================= */
 .main-ext-label, 
 .extended-price .ext-label {
     color: var(--text-secondary);
@@ -467,9 +447,6 @@ tbody tr { transition: background-color 0.15s, transform 0.2s ease; } tbody tr:h
 
 footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); font-size: 0.8rem; font-weight: 900; opacity: 0.8; margin-top: auto; }
 
-/* =========================================================
-   NEWS LIST & TABS CSS
-   ========================================================= */
 .mobile-tabs { display: none; }
 
 .news-list { 
@@ -526,9 +503,6 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
 .tag-naver { background: rgba(69, 163, 108, 0.12); color: #45a36c; }
 .tag-yahoo { background: rgba(109, 77, 128, 0.12); color: #6d4d80; }
 
-/* =========================================================
-   KEYFRAMES (애니메이션 선언부 통합)
-   ========================================================= */
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes rotate { 100% { transform: rotate(360deg); } }
 @keyframes dash {
@@ -541,11 +515,14 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
 @keyframes skeletonLoading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
 /* =========================================================
+   모바일 전용 아코디언 스타일 (데스크탑에서는 숨김)
+   ========================================================= */
+.mobile-expanded-td { display: none; }
+
+/* =========================================================
    MOBILE RESPONSIVE
    ========================================================= */
 
-/* 1단계: 모바일/태블릿 UI 레이아웃 전환 (992px 이하) */
-/* 앱 스타일 하단 탭바 노출, 우측 뉴스 숨김 등 */
 @media (max-width: 992px) {
     header { 
         position: sticky; 
@@ -603,8 +580,7 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
     
     .news-list { overflow-y: visible; flex: none; height: auto; }
 
-    /* ★ 추가/수정: 가로 모드에서 부가 정보(Range, Cap 등)가 잘리지 않도록 공간 확보 */
-    th, td { padding: 0.875rem 0.5rem; } /* 좌우 패딩을 줄여서 실제 데이터 공간 확보 */
+    th, td { padding: 0.875rem 0.5rem; } 
     .section-container th.col-symbol, .section-container td.col-symbol { padding-left: 1.25rem; }
     .section-container th.handle-col, .section-container td.handle-col { padding-right: 0.75rem; width: 44px; }
     
@@ -613,9 +589,9 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
     th.col-change { width: 14%; }
     th.col-vol { width: 11%; }
     th.col-cap { width: 11%; }
-    th.col-range { width: 26%; } /* 가장 긴 데이터인 52주 변동폭에 너비를 대폭 할당 */
+    th.col-range { width: 26%; } 
 
-    .sub-data { font-size: 0.75rem; } /* 부가 정보 폰트 사이즈 미세 조절 */
+    .sub-data { font-size: 0.75rem; } 
 
     .add-ticker-form { 
         flex-direction: row; 
@@ -644,17 +620,12 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
     .ac-symbol { font-size: 0.85rem; } .ac-name { font-size: 0.7rem; max-width: 140px; }
 }
 
-    /* 소수점 디자인 */
-    .decimal {
-        font-size: 0.94em !important;  /* !important를 추가해 강제 적용 */
-        font-weight: 500 !important;
-        opacity: 0.70 !important;
-    }
+.decimal {
+    font-size: 0.94em !important;  
+    font-weight: 500 !important;
+    opacity: 0.70 !important;
+}
 
-
-/* =========================================================
-   News Loading Dot Animation
-   ========================================================= */
 .dot-loader {
     text-align: center;
     white-space: nowrap;
@@ -669,10 +640,9 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
     border-radius: 50%;
     margin: 0 0.5px; 
     vertical-align: middle;
-    animation: dotBounce 1.4s infinite ease-in-out both; /* 점이 늘어난 만큼 시간을 살짝(1.4s) 늘려 여유롭게 */
+    animation: dotBounce 1.4s infinite ease-in-out both; 
 }
 
-/* 4개의 점이 부드럽게 이어지도록 간격을 0.15초씩 배치합니다 */
 .dot-loader .dot:nth-child(1) { animation-delay: -0.45s; }
 .dot-loader .dot:nth-child(2) { animation-delay: -0.30s; }
 .dot-loader .dot:nth-child(3) { animation-delay: -0.15s; }
@@ -690,13 +660,9 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
     }
 }
 
-/* =========================================================
-   Chart Loading Overlay
-   ========================================================= */
 .chart-loader-overlay {
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
-    /* 테마 배경색에 맞춰 반투명하게 덮기 (글래스모피즘 효과) */
     background-color: var(--card-bg);
     opacity: 0.65;
     backdrop-filter: blur(3px);
@@ -704,19 +670,14 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 20; /* 캔버스나 날짜 뱃지보다 위로 올라오게 설정 */
+    z-index: 20; 
     border-radius: 8px;
     transition: opacity 0.2s ease;
 }
 
-
-
-/* =========================================================
-   TREND TABS (Segmented Control UI)
-   ========================================================= */
 .trend-tabs {
     display: flex;
-    background-color: var(--input-bg); /* 입력창과 같은 배경색으로 오목한 느낌 */
+    background-color: var(--input-bg); 
     border-radius: 8px;
     padding: 0.25rem;
     gap: 0.25rem;
@@ -740,16 +701,12 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
     color: var(--text-primary);
 }
 
-/* 활성화된 탭은 버튼이 튀어나온 것처럼 입체감 부여 */
 .trend-tab-btn.active {
     background-color: var(--card-bg);
     color: var(--text-primary);
     box-shadow: var(--shadow-sm); 
 }
 
-
-/* 2단계: 실제 가로 폭이 좁은 스마트폰 세로 환경 (650px 이하) */
-/* 여기서만 부가 정보(Volume, Cap, 52W Range)를 완전히 숨기고 핵심 정보만 노출합니다. */
 @media (max-width: 650px) {
     .hide-mobile { display: none; }
     
@@ -784,30 +741,77 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
     }
 
     .change-cell { font-size: 0.8rem; } .badge { padding: 0.15rem 0.25rem; font-size: 0.65rem; }
+
+    /* ★ 모바일 아코디언 확장 스타일 */
+    tbody tr {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        transition: background-color 0.2s;
+    }
+    
+    .mobile-expanded-td {
+        display: block;
+        width: 100%;
+        flex-basis: 100%;
+        max-height: 0;
+        overflow: hidden;
+        opacity: 0;
+        padding: 0 1rem;
+        transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease, margin 0.3s ease;
+        background-color: var(--hover-bg);
+        border-radius: 8px;
+    }
+
+    tbody tr.expanded {
+        background-color: var(--hover-bg); 
+    }
+    tbody tr.expanded .mobile-expanded-td {
+        max-height: 120px; 
+        opacity: 1;
+        padding: 0.75rem 1rem;
+        margin: 0 0.5rem 0.5rem 0.5rem;
+    }
+
+    .mobile-detail-grid {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        gap: 1rem;
+    }
+    
+    .md-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        font-size: 0.75rem;
+        color: var(--text-primary);
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+    }
+    .md-item.range { flex: 2; } 
+    .md-item.vol-cap { flex: 1; text-align: right; }
+
+    .md-label {
+        color: var(--text-secondary);
+        font-size: 0.60rem;
+        text-transform: uppercase;
+    }
 }
 
-
-
-/* =========================================================
-   LANDSCAPE MODE SCROLL AUTO-HIDE (가로 모드 스크롤 시 상단 숨김)
-   ========================================================= */
 @media screen and (max-width: 992px) and (orientation: landscape) {
-    /* 부드러운 애니메이션 적용 */
     header, .mobile-tabs {
         transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
         will-change: transform;
     }
 
-    /* 스크롤 다운 시 헤더와 탭을 위로 밀어서 숨김 */
     body.scrolled-down header,
     body.scrolled-down .mobile-tabs {
         transform: translateY(-120px) !important; 
     }
 }
 
-/* =========================================================
-   DAY RANGE GAUGE BAR
-   ========================================================= */
 .range-gauge-container {
     display: flex;
     flex-direction: column;
@@ -837,7 +841,7 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
 .range-marker {
     position: absolute;
     top: 50%;
-    transform: translate(-50%, -50%); /* 마커를 정확히 중심에 위치시킴 */
+    transform: translate(-50%, -50%); 
     width: 10px;
     height: 10px;
     border-radius: 50%;
@@ -845,7 +849,6 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
     transition: left 0.4s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.3s ease;
 }
 
-/* 상승/하락에 따라 마커 색상 변경 (생동감 부여) */
 .range-marker.up { 
     background-color: var(--green); 
     opacity: 0.55; 
@@ -854,5 +857,3 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
     background-color: var(--red); 
     opacity: 0.55; 
 }
-
-
