@@ -79,10 +79,8 @@ async function init() {
             const diffSec = Math.floor((Date.now() - lastFetch) / 1000);
 
             if (diffSec >= 60) {
-                // 1. 60초가 지났다면 정상적으로 새로고침
                 forceRefresh();
             } else {
-                // 2. 60초 이내라면 백그라운드에서 흘러간 시간만큼 타이머만 교정 (데이터 호출 X)
                 state.countdown = 60 - diffSec;
                 updateTimerUI(state.countdown);
             }
@@ -99,7 +97,6 @@ async function init() {
         if (tabNewsBtn) tabNewsBtn.classList.add('active');
     }
 
-    // --- 60초 캐싱 로직 적용 ---
     const lastFetchStr = localStorage.getItem('marketdash_last_fetch_time');
     const lastFetch = lastFetchStr ? parseInt(lastFetchStr, 10) : 0;
     const diffSec = Math.floor((Date.now() - lastFetch) / 1000);
@@ -141,6 +138,14 @@ async function init() {
         if (!e.target.closest('#trend-chart-wrapper')) {
             if (typeof window.hideChartTooltip === 'function') window.hideChartTooltip();
         }
+
+        // 모바일 아코디언 토글 추가
+        const row = e.target.closest('tr[data-ticker]');
+        if (row && !e.target.closest('.drag-handle') && !e.target.closest('.action-icon-btn') && !e.target.closest('.search-wrapper') && !e.target.closest('.settings-wrapper')) {
+            if (window.innerWidth <= 650) {
+                row.classList.toggle('expanded');
+            }
+        }
     });
 
     document.addEventListener('touchstart', (e) => {
@@ -158,7 +163,6 @@ function processTickerDB(data) {
 
 async function initTickerDB() {
     try {
-        // [최적화] 매번 1ms 단위로 캐시 무효화하는 대신 날짜 단위 캐시로 다운로드 속도 향상
         const todayStr = new Date().toISOString().slice(0, 10);
         const response = await fetch(`./f2/tickers_n.json?v=${todayStr}`);
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -194,7 +198,6 @@ function initSwipeToDelete() {
         isScrolling = false; 
         row.style.transition = 'none'; 
         
-        // [최적화] 터치 시작 시 GPU 가속 활성화로 스와이프 부드럽게
         row.style.willChange = 'transform, opacity';
     }, { passive: true });
 
@@ -234,7 +237,6 @@ function initSwipeToDelete() {
 
         swipingRow.style.transition = 'all 0.3s ease';
         
-        // [최적화] 터치 종료 시 GPU 메모리 해제
         swipingRow.style.willChange = 'auto';
         
         if (isSwiping && diffX < -80) {
@@ -452,6 +454,23 @@ function generateRowHTML(ticker) {
             <td class="hide-mobile sub-data" id="cap-${sid}">-</td>
             <td class="hide-mobile actions-col"><button class="action-icon-btn danger" onclick="confirmRemoveTicker('${safeTicker}')">${TRASH_ICON}</button></td>
             <td class="handle-col"><div class="action-icon-btn drag-handle">${DRAG_ICON}</div></td>
+            
+            <td class="mobile-expanded-td" colspan="8">
+                <div class="mobile-detail-grid">
+                    <div class="md-item range">
+                        <span class="md-label">Day Range</span>
+                        <div id="m-range-${sid}">-</div>
+                    </div>
+                    <div class="md-item vol-cap">
+                        <span class="md-label">Volume</span>
+                        <div id="m-vol-${sid}">-</div>
+                    </div>
+                    <div class="md-item vol-cap">
+                        <span class="md-label">Mkt Cap</span>
+                        <div id="m-cap-${sid}">-</div>
+                    </div>
+                </div>
+            </td>
         </tr>
     `;
 }
@@ -670,7 +689,9 @@ function cacheRowNodes(ticker) {
         name: document.getElementById('name-' + sid), price: document.getElementById('price-' + sid),
         extPrice: document.getElementById('ext-price-' + sid), change: document.getElementById('change-' + sid),
         pct: document.getElementById('pct-' + sid), vol: document.getElementById('vol-' + sid),
-        cap: document.getElementById('cap-' + sid), range: document.getElementById('range-' + sid)
+        cap: document.getElementById('cap-' + sid), range: document.getElementById('range-' + sid),
+        mRange: document.getElementById('m-range-' + sid), mVol: document.getElementById('m-vol-' + sid),
+        mCap: document.getElementById('m-cap-' + sid)
     });
 }
 
@@ -788,21 +809,18 @@ async function fetchData() {
     localStorage.setItem('marketdash_last_fetch_time', Date.now().toString());
     const fetchPromises = []; 
 
-    // 🕒 1. 현재 한국 시간(KST) 및 주말 여부 계산
     const now = new Date();
     const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
     const kstTime = new Date(utc + (9 * 3600000));
     const day = kstTime.getDay();
     const timeNum = kstTime.getHours() * 100 + kstTime.getMinutes();
     
-    // 토요일(6), 일요일(0)이거나 평일 오후 8시(2000) 이후 ~ 다음날 오전 8시(800) 이전인 경우
     const isKrMarketClosedCompletely = (day === 0 || day === 6) || (timeNum > 2000 || timeNum < 800);
 
     for (const sectionId of state.sectionOrder) {
         let symbols = state.watchlists[sectionId].tickers;
         if (symbols.length === 0) continue;
 
-        // 2. 야간 선물(KNIGHT)은 밤에 작동해야 하므로 먼저 처리 후 symbols에서 제외
         if (symbols.includes('KNIGHT')) {
             fetchAndProcessKnight(); 
             symbols = symbols.filter(sym => sym !== 'KNIGHT'); 
@@ -810,7 +828,6 @@ async function fetchData() {
 
         if (symbols.length === 0) continue;
 
-        // 🚀 3. KR 섹션 일반 종목 최적화 필터
         if (sectionId === 'kr' && isKrMarketClosedCompletely) {
             try {
                 const cachedQuotes = JSON.parse(localStorage.getItem('marketdash_quotes_cache')) || {};
@@ -824,7 +841,6 @@ async function fetchData() {
             } catch(e) {}
         }
 
-        // 4. 나머지 활성화된 마켓 및 시간대 분기 처리
         const chunkSize = 100; 
         const fetchFunc = sectionId === 'kr' ? fetchNaverFinance : fetchYahooFinance;
 
@@ -855,7 +871,6 @@ function updateTimerUI(seconds) {
     }
 }
 
-// --- 전체 데이터 새로고침 함수 ---
 function forceRefresh() { 
     if (typeof window.hideChartTooltip === 'function') window.hideChartTooltip(); 
     state.countdown = 60; 
@@ -864,7 +879,6 @@ function forceRefresh() {
     state.lastNewsFetch = 0; 
     fetchData(); 
     
-    // 백그라운드 포함 3개 탭 모두 동시 최신화
     const allMarkets = ['ALL', 'KOSPI', 'KOSDAQ'];
     allMarkets.forEach(market => {
         const isBackground = (market !== currentTrendMarketType);
@@ -877,8 +891,6 @@ function forceRefresh() {
 function startTimer() {
     if (state.intervalId) clearInterval(state.intervalId);
     state.intervalId = setInterval(() => {
-        
-        // 👉 화면을 안 보고 있을 때는 타이머를 완전히 일시 정지시킵니다.
         if (document.hidden) return; 
 
         state.countdown--;
@@ -887,12 +899,10 @@ function startTimer() {
     }, 1000);
 }
 
-// [최적화] 스토리지 파싱 로직을 rAF 외부로 분리 및 DOM Reflow 방지
 function updateDOMWithData(quotes) {
     let cachedQuotes = {};
     try { cachedQuotes = JSON.parse(localStorage.getItem('marketdash_quotes_cache')) || {}; } catch(e) {}
 
-    // 👉 추가: 캐시 로직에서 사용할 현재 시간(KST) 미리 계산
     const kstNow = new Date(Date.now() + (new Date().getTimezoneOffset() * 60000) + (9 * 3600000));
     const currentTimeNum = kstNow.getHours() * 100 + kstNow.getMinutes();
 
@@ -904,7 +914,6 @@ function updateDOMWithData(quotes) {
         if (isKR) {
             const cached = cachedQuotes[ticker];
             
-            // 👉 수정: 장 시작(09:00) 전이거나 거래량이 0일 때 어제 변동률 복원
             const isBeforeOpen = currentTimeNum < 900;
             
             if (cached && (isBeforeOpen || !quote.regularMarketVolume || quote.regularMarketVolume === 0)) {
@@ -919,7 +928,6 @@ function updateDOMWithData(quotes) {
 
     localStorage.setItem('marketdash_quotes_cache', JSON.stringify(cachedQuotes));
 
-    // 2. 오직 화면(DOM) 업데이트 작업만 rAF 안에서 실행
     requestAnimationFrame(() => {
         const now = new Date();
         const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
@@ -1103,7 +1111,6 @@ function updateDOMWithData(quotes) {
             const dbInfo = localTickerDB.find(q => q.s.toUpperCase() === ticker.toUpperCase());
             nodes.name.textContent = (dbInfo ? dbInfo.n : null) || quote.shortName || quote.longName || ticker;
             
-            // [최적화] DOM Reflow 완화 - 텍스트 변경사항이 있을 때만 덮어쓰기
             const newPriceHtml = mainIcon + formatNum(mainPrice);
             const newExtHtml = subHtml;
             const newChangeHtml = `<span class="${colorClass}">${sign}${formatChangeNum(mainChange)}</span>`;
@@ -1116,9 +1123,11 @@ function updateDOMWithData(quotes) {
             
             const volText = (quote.regularMarketVolume && quote.regularMarketVolume > 0) ? formatCompact(quote.regularMarketVolume) : '-';
             if (nodes.vol.textContent !== volText) nodes.vol.textContent = volText;
+            if (nodes.mVol && nodes.mVol.textContent !== volText) nodes.mVol.textContent = volText;
 
             const capText = formatCompact(quote.marketCap);
             if (nodes.cap.textContent !== capText) nodes.cap.textContent = capText;
+            if (nodes.mCap && nodes.mCap.textContent !== capText) nodes.mCap.textContent = capText;
             
             let rangeHtml = '-';
             
@@ -1126,14 +1135,12 @@ function updateDOMWithData(quotes) {
             const highVal = quote.regularMarketDayHigh;
 
             if (lowVal && highVal && highVal > lowVal) {
-                // 위치 퍼센트 계산 (0% ~ 100% 사이로 제한하여 마커가 밖으로 튀어나가지 않게 방어)
                 let percent = ((mainPrice - lowVal) / (highVal - lowVal)) * 100;
                 percent = Math.max(0, Math.min(100, percent));
                 
                 const lowStr = formatNum(lowVal);
                 const highStr = formatNum(highVal);
                 
-                // 오늘 종목이 오르고 있는지 내리고 있는지에 따라 마커 색상 클래스 부여
                 const markerColorClass = mainChange >= 0 ? 'up' : 'down';
 
                 rangeHtml = `
@@ -1148,7 +1155,6 @@ function updateDOMWithData(quotes) {
                     </div>
                 `;
             } else if (lowVal && highVal && lowVal === highVal) {
-                // 점한가/상한가 등으로 고가와 저가가 같은 경우 중앙(50%)에 마커 배치
                 const valStr = formatNum(lowVal);
                 rangeHtml = `
                     <div class="range-gauge-container">
@@ -1164,6 +1170,7 @@ function updateDOMWithData(quotes) {
             }
 
             if (nodes.range.innerHTML !== rangeHtml) nodes.range.innerHTML = rangeHtml;
+            if (nodes.mRange && nodes.mRange.innerHTML !== rangeHtml) nodes.mRange.innerHTML = rangeHtml;
         });
     });
 }
@@ -1179,6 +1186,9 @@ function setErrorState(ticker, msg) {
         nodes.name.textContent = 'Error'; nodes.price.innerHTML = `<span class="error-text">${escapeHTML(msg)}</span>`;
         nodes.extPrice.innerHTML = ''; nodes.change.innerHTML = ''; nodes.pct.innerHTML = '';
         nodes.vol.textContent = '-'; nodes.cap.textContent = '-'; nodes.range.textContent = '-';
+        if(nodes.mRange) nodes.mRange.textContent = '-';
+        if(nodes.mVol) nodes.mVol.textContent = '-';
+        if(nodes.mCap) nodes.mCap.textContent = '-';
     });
 }
 
@@ -1300,7 +1310,6 @@ function renderNews(newsList) {
     container.innerHTML = html;
 }
 
-// --- 백그라운드 갱신 로직이 포함된 차트 렌더 함수 ---
 async function fetchMarketTrend(marketType = currentTrendMarketType, isBackground = false) {
     if (!isBackground) {
         const tabs = document.querySelectorAll('.trend-tab-btn');
@@ -1729,7 +1738,6 @@ window.switchTrendMarket = function(marketType) {
     fetchMarketTrend(marketType);
 };
 
-// --- [최적화] 툴팁 캐싱 적용 ---
 let chartTooltipCache = null;
 window.hideChartTooltip = function() {
     if (!chartTooltipCache) {
@@ -1751,13 +1759,10 @@ window.hideChartTooltip = function() {
     }
 };
 
-// =========================================================
-// SCROLL RESPONSIVE HEADER HIDE (가로 모드 전용) + [최적화] rAF 쓰로틀링
-// =========================================================
 document.addEventListener('DOMContentLoaded', () => {
     let lastScrollY = window.scrollY;
     const scrollThreshold = 40; 
-    let ticking = false; // rAF 연산 중복 방지 플래그
+    let ticking = false; 
 
     function handleScroll() {
         if (!ticking) {
