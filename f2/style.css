@@ -846,7 +846,13 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
 }
 
 /* 상승/하락에 따라 마커 색상 변경 (생동감 부여) */
-.range-marker.up { background-color: var(--green); }
-.range-marker.down { background-color: var(--red); }
+.range-marker.up { 
+    background-color: var(--green); 
+    opacity: 0.55; 
+}
+.range-marker.down { 
+    background-color: var(--red); 
+    opacity: 0.55; 
+}
 
 
