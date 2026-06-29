@@ -733,10 +733,14 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
     }
 
     /* 2. 모바일에서 보여줄 열(Column)의 정확한 너비 비율 설정 (합산 100%) */
-    th.col-symbol, td.col-symbol { width: 31% !important; padding-left: 1rem !important; } /* 기존 유지 */
-    th.col-price, td.col-price { width: 43% !important; } /* 39% -> 41% 로 공간 확장 */
-    th.col-change, td.col-change { width: calc(26% - 32px) !important; padding-right: 0.5rem !important; } /* 28% -> 26% 로 축소 */
-    th.handle-col, td.handle-col { width: 32px !important; padding-right: 0.5rem !important; padding-left: 0 !important; text-align: right; } /* 축소된 여백 유지 */
+    th.col-symbol, td.col-symbol { width: 31% !important; padding-left: 0.75rem !important; } /* 좌측 여백을 1rem에서 0.75rem으로 축소 */
+    th.col-price, td.col-price { width: 43% !important; }
+    
+    /* 핸들 너비가 38px로 늘어났으므로 빼주는 값도 38px로 변경 */
+    th.col-change, td.col-change { width: calc(26% - 38px) !important; padding-right: 0.5rem !important; } 
+    
+    /* 우측 여백을 0.5rem에서 0.75rem으로 늘려 좌측과 대칭을 맞춤, 아이콘이 잘리지 않게 너비를 38px로 설정 */
+    th.handle-col, td.handle-col { width: 38px !important; padding-right: 0.75rem !important; padding-left: 0 !important; text-align: right; }
 
     /* 3. 모바일에서 불필요한 열 숨김 처리 */
     .hide-mobile, 
