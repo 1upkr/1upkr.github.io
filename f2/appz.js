@@ -458,7 +458,7 @@ function generateRowHTML(ticker) {
             <td class="mobile-expanded-td" colspan="8">
                 <div class="mobile-detail-grid">
                     <div class="md-item range">
-                        <span class="md-label">Day Range</span>
+                        <span class="md-label">Day's Range</span>
                         <div id="m-range-${sid}">-</div>
                     </div>
                     <div class="md-item vol-cap">
