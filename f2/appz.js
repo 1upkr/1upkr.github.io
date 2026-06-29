@@ -1145,12 +1145,14 @@ function updateDOMWithData(quotes) {
 
                 rangeHtml = `
                     <div class="range-gauge-container">
+                        <!-- 바(Track)를 위로 올림 -->
+                        <div class="range-track">
+                            <div class="range-marker ${markerColorClass}" style="left: ${percent}%;"></div>
+                        </div>
+                        <!-- 값(Labels)을 아래로 내림 -->
                         <div class="range-labels">
                             <span>${lowStr}</span>
                             <span>${highStr}</span>
-                        </div>
-                        <div class="range-track">
-                            <div class="range-marker ${markerColorClass}" style="left: ${percent}%;"></div>
                         </div>
                     </div>
                 `;
@@ -1158,12 +1160,14 @@ function updateDOMWithData(quotes) {
                 const valStr = formatNum(lowVal);
                 rangeHtml = `
                     <div class="range-gauge-container">
+                        <!-- 바(Track)를 위로 올림 -->
+                        <div class="range-track">
+                            <div class="range-marker ${mainChange >= 0 ? 'up' : 'down'}" style="left: 50%;"></div>
+                        </div>
+                        <!-- 값(Labels)을 아래로 내림 -->
                         <div class="range-labels">
                             <span>${valStr}</span>
                             <span>${valStr}</span>
-                        </div>
-                        <div class="range-track">
-                            <div class="range-marker ${mainChange >= 0 ? 'up' : 'down'}" style="left: 50%;"></div>
                         </div>
                     </div>
                 `;
