@@ -859,10 +859,10 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
 .range-marker {
     position: absolute;
     top: 50%;
-    transform: translate(-50%, -50%); 
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
+    transform: translate(-50%, -50%) rotate(45deg);
+    width: 12px;
+    height: 12px;
+    border-radius: 50% 50% 50% 0%;
     border: 3px solid var(--card-bg);    
     box-shadow: 0 1px 3px rgba(0,0,0,0.3);
     transition: left 0.4s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.3s ease;
