@@ -341,7 +341,7 @@ function renderLayout() {
                                 <th class="left-align col-symbol">Symbol</th>
                                 <th class="col-price">Price</th>
                                 <th class="col-change">Change</th>
-                                <th class="hide-mobile col-range">Day Range</th>
+                                <th class="hide-mobile col-range">Day's Range</th>
                                 <th class="hide-mobile col-vol">Volume</th>
                                 <th class="hide-mobile col-cap">Market Cap</th>
                                 <th class="hide-mobile actions-col"></th>
