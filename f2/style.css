@@ -836,7 +836,7 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
     gap: 6px;
     width: 100%;
     min-width: 90px;
-    padding-top: 2px;
+    padding-top: 10px;
 }
 
 .range-labels {
