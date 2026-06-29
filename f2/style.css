@@ -734,9 +734,9 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
 
     /* 2. 모바일에서 보여줄 열(Column)의 정확한 너비 비율 설정 (합산 100%) */
     th.col-symbol, td.col-symbol { width: 33% !important; padding-left: 1rem !important; } /* 기존 유지 */
-    th.col-price, td.col-price { width: 41% !important; } /* 35% -> 41% 로 공간 확대 */
-    th.col-change, td.col-change { width: calc(26% - 44px) !important; padding-right: 0.5rem !important; } /* 32% -> 28% 로 축소 */
-    th.handle-col, td.handle-col { width: 44px !important; padding-right: 1rem !important; padding-left: 0 !important; text-align: right; }
+    th.col-price, td.col-price { width: 41% !important; } /* 39% -> 41% 로 공간 확장 */
+    th.col-change, td.col-change { width: calc(26% - 32px) !important; padding-right: 0.5rem !important; } /* 28% -> 26% 로 축소 */
+    th.handle-col, td.handle-col { width: 32px !important; padding-right: 0.5rem !important; padding-left: 0 !important; text-align: right; } /* 축소된 여백 유지 */
 
     /* 3. 모바일에서 불필요한 열 숨김 처리 */
     .hide-mobile, 
