@@ -1258,11 +1258,13 @@ async function fetchNews() {
     }
 
     try {
-        const url = `${NEWS_GAS_PROXY_URL}?symbols=${encodeURIComponent(allTickers.join(','))}&t=${Date.now()}`;
-        const response = await fetch(url);
+        const url = `${NEWS_GAS_PROXY_URL}?symbols=${encodeURIComponent(allTickers.join(','))}&t=${Date.now()}`;  
         
-        if (!response.ok) throw new Error("Network response was not ok");
-        const newsData = await response.json();
+        const text = await fetchWithRetry(url, 3, 1000); 
+        
+        if (text.trim().startsWith('<')) throw new Error("GAS permission denied or proxy error.");
+        
+        const newsData = JSON.parse(text);
         
         state.lastNewsFetch = Date.now();
         renderNews(newsData);
