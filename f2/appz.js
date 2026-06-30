@@ -1245,8 +1245,15 @@ async function fetchNews() {
     if (spinner) spinner.style.display = 'block';
 
     let allTickers = [];
-    Object.values(state.watchlists).forEach(section => {
-        allTickers = allTickers.concat(section.tickers);
+    Object.keys(state.watchlists).forEach(sectionId => {
+        const tickers = state.watchlists[sectionId].tickers;
+        if (sectionId === 'kr') {
+            // 한국 주식(kr)은 네이버 서버 부하를 막기 위해 상위 3개만 뉴스 수집
+            allTickers = allTickers.concat(tickers.slice(0, 3)); 
+        } else {
+            // 미국 주식 등은 제한 없이 모두 수집 (야후는 1개의 URL로 한 번에 처리되므로 안전)
+            allTickers = allTickers.concat(tickers);
+        }
     });
 
     if (!container) return; 
