@@ -1007,7 +1007,7 @@ function updateDOMWithData(quotes) {
                 const isIndex = qType === 'INDEX' || ticker.startsWith('^');
     
                 // 1. 타임아웃(CLOSED) 처리를 무시하고 항상 열려있는 것으로 간주할 예외 티커 목록
-                const alwaysOpenTickers = ['^TNX', '^IRX', '^TYX', '^VIX']; 
+                const alwaysOpenTickers = ['^TNX', '^IRX', '^TYX', '^VIX', 'KRW=X', 'JPYKRW=X']; 
                 
                 // 2. 가상자산이거나 예외 티커에 포함되는지 확인
                 const isAlwaysOpen = isCrypto || alwaysOpenTickers.includes(ticker.toUpperCase());
