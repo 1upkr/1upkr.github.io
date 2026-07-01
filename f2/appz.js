@@ -920,6 +920,8 @@ function updateDOMWithData(quotes) {
                 if (quote.regularMarketChange === 0) {
                     quote.regularMarketChange = cached.regularMarketChange || 0;
                     quote.regularMarketChangePercent = cached.regularMarketChangePercent || 0;
+                    quote.regularMarketDayLow = cached.regularMarketDayLow || quote.regularMarketDayLow;
+                    quote.regularMarketDayHigh = cached.regularMarketDayHigh || quote.regularMarketDayHigh;
                 }
             }
         }
