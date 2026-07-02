@@ -1099,7 +1099,7 @@ function updateDOMWithData(quotes) {
             };
         }).filter(Boolean);
 
-        // 2단계: 섹션(KR, US 등)별 최고 상승률과 최대 하락률 계산
+       // 2단계: 섹션(KR, US 등)별 최고 상승률과 최대 하락률 계산
         const sectionMaxes = {};
         Object.keys(state.watchlists).forEach(sec => {
             sectionMaxes[sec] = { maxUp: 0, maxDown: 0 };
@@ -1122,39 +1122,44 @@ function updateDOMWithData(quotes) {
             }
         });
 
-        // 3단계: 비율에 따른 색상 농도를 CSS 변수에 주입 후 렌더링
+        // 3단계: 곡선 비율에 따른 색상 농도를 CSS 변수에 주입 후 렌더링
         processedQuotes.forEach(pq => {
             const { quote, ticker, nodes, mainPrice, mainChange, mainPct, mainIcon, subHtml, sectionId } = pq;
             
-            // 색상 농도 스케일링 설정 (최소 40% ~ 최대 100%)
-            let intensityStr = "100%";
+            let textIntensityStr = "100%";
             let bgIntensityStr = "15%";
             
             if (sectionId && sectionMaxes[sectionId]) {
                 const maxUp = sectionMaxes[sectionId].maxUp;
                 const maxDown = sectionMaxes[sectionId].maxDown;
 
+                let ratio = 0;
                 if (mainPct > 0 && maxUp > 0) {
-                    const ratio = mainPct / maxUp;
-                    const textPct = 40 + (60 * ratio);
-                    const bgPct = 5 + (20 * ratio); 
-                    intensityStr = `${textPct.toFixed(1)}%`;
-                    bgIntensityStr = `${bgPct.toFixed(1)}%`;
+                    ratio = mainPct / maxUp;
                 } else if (mainPct < 0 && maxDown > 0) {
-                    const ratio = Math.abs(mainPct) / maxDown;
-                    const textPct = 40 + (60 * ratio);
-                    const bgPct = 5 + (20 * ratio);
-                    intensityStr = `${textPct.toFixed(1)}%`;
+                    ratio = Math.abs(mainPct) / maxDown;
+                }
+
+                if (ratio > 0) {
+                    // 루트를 씌워 색상이 너무 급격히 연해지는 것을 방지 (곡선 스케일링)
+                    const curvedRatio = Math.sqrt(ratio);
+                    
+                    // 텍스트 농도: 55% ~ 100% (가독성 보호)
+                    const textPct = 55 + (45 * curvedRatio);
+                    // 배경 농도: 5% ~ 15% 
+                    const bgPct = 5 + (10 * curvedRatio);
+                    
+                    textIntensityStr = `${textPct.toFixed(1)}%`;
                     bgIntensityStr = `${bgPct.toFixed(1)}%`;
                 } else if (mainPct === 0) {
-                    // 변동이 아예 없는 경우 (중립)
-                    intensityStr = "30%";
+                    // 변동이 아예 없는 경우 최하단 농도 부여
+                    textIntensityStr = "55%";
                     bgIntensityStr = "5%";
                 }
             }
             
             // CSS 변수 주입
-            nodes.row.style.setProperty('--intensity-pct', intensityStr);
+            nodes.row.style.setProperty('--text-intensity-pct', textIntensityStr);
             nodes.row.style.setProperty('--bg-intensity-pct', bgIntensityStr);
 
             const isUp = mainChange >= 0;
