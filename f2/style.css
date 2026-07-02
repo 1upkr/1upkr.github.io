@@ -881,3 +881,21 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
     background-color: var(--red); 
     opacity: 0.55; 
 }
+
+/* --- Change 셀 색상 스케일링 적용 --- */
+.change-cell .up { 
+    color: color-mix(in srgb, var(--green) var(--intensity-pct, 100%), var(--text-secondary)); 
+}
+.change-cell .down { 
+    color: color-mix(in srgb, var(--red) var(--intensity-pct, 100%), var(--text-secondary)); 
+}
+
+/* 배지 배경 및 텍스트 색상 스케일링 */
+.change-cell .badge.up { 
+    background-color: color-mix(in srgb, var(--green) var(--bg-intensity-pct, 15%), transparent); 
+    color: color-mix(in srgb, var(--green) var(--intensity-pct, 100%), var(--text-primary)); 
+} 
+.change-cell .badge.down { 
+    background-color: color-mix(in srgb, var(--red) var(--bg-intensity-pct, 15%), transparent); 
+    color: color-mix(in srgb, var(--red) var(--intensity-pct, 100%), var(--text-primary)); 
+}
