@@ -913,7 +913,6 @@ function updateDOMWithData(quotes) {
 
         if (isKR) {
             const cached = cachedQuotes[ticker];
-            
             const isBeforeOpen = currentTimeNum < 900;
             
             if (cached && (isBeforeOpen || !quote.regularMarketVolume || quote.regularMarketVolume === 0)) {
@@ -936,10 +935,11 @@ function updateDOMWithData(quotes) {
         const kstTime = new Date(utc + (9 * 3600000));
         const timeNum = kstTime.getHours() * 100 + kstTime.getMinutes();
 
-        quotes.forEach(quote => {
+        // 1단계: 모든 종목의 변동값(mainPct)을 미리 계산
+        const processedQuotes = quotes.map(quote => {
             const ticker = quote.symbol; 
             const nodes = rowNodes.get(ticker);
-            if (!nodes || !nodes.row) return;
+            if (!nodes || !nodes.row) return null;
 
             const dbMatch = localTickerDB.find(q => q.s.toUpperCase() === ticker.toUpperCase());
             const isKR = dbMatch ? (dbMatch.e === 'NAVER') : /^\d/.test(ticker);
@@ -1008,14 +1008,11 @@ function updateDOMWithData(quotes) {
                 const isFXorFuture = qType === 'CURRENCY' || qType === 'FUTURE' || ticker.endsWith('=X') || ticker.endsWith('=F');
                 const isIndex = qType === 'INDEX' || ticker.startsWith('^');
     
-                // 1. 타임아웃(CLOSED) 처리를 무시하고 항상 열려있는 것으로 간주할 예외 티커 목록
                 const alwaysOpenTickers = ['^TNX', '^IRX', '^TYX', '^VIX', 'KRW=X', 'JPYKRW=X']; 
-                
-                // 2. 가상자산이거나 예외 티커에 포함되는지 확인
                 const isAlwaysOpen = isCrypto || alwaysOpenTickers.includes(ticker.toUpperCase());
     
                 if (isAlwaysOpen) {
-                    targetState = 'REGULAR'; // 15분 룰 무시하고 상시 오픈 상태로 유지
+                    targetState = 'REGULAR'; 
                 } else if (isFXorFuture || isIndex) {
                     const nowSec = Math.floor(Date.now() / 1000);
                     if ((nowSec - regTime) > 900) {
@@ -1061,7 +1058,6 @@ function updateDOMWithData(quotes) {
                 mainChange = preData.change;
                 mainPct = preData.pct;
                 mainIcon = `<span class="main-ext-label" style="${liveExtStyle}">${preData.label}</span>`; 
-                
                 const regIsUp = regChange >= 0;
                 const regColor = regIsUp ? 'up' : 'down';
                 const regSign = regIsUp ? '+' : '';
@@ -1072,7 +1068,6 @@ function updateDOMWithData(quotes) {
                 mainChange = postData.change;
                 mainPct = postData.pct;
                 mainIcon = `<span class="main-ext-label" style="${liveExtStyle}">${postData.label}</span>`; 
-                
                 const regIsUp = regChange >= 0;
                 const regColor = regIsUp ? 'up' : 'down';
                 const regSign = regIsUp ? '+' : '';
@@ -1089,7 +1084,6 @@ function updateDOMWithData(quotes) {
                 mainChange = regChange;
                 mainPct = regPct;
                 mainIcon = ''; 
-                
                 if (preData) {
                     const preIsUp = preData.change >= 0;
                     const preColor = preIsUp ? 'up' : 'down';
@@ -1098,9 +1092,74 @@ function updateDOMWithData(quotes) {
                 }
             }
 
+            return {
+                quote, ticker, nodes, isKR,
+                mainPrice, mainChange, mainPct, mainIcon, subHtml,
+                targetState
+            };
+        }).filter(Boolean);
+
+        // 2단계: 섹션(KR, US 등)별 최고 상승률과 최대 하락률 계산
+        const sectionMaxes = {};
+        Object.keys(state.watchlists).forEach(sec => {
+            sectionMaxes[sec] = { maxUp: 0, maxDown: 0 };
+        });
+
+        processedQuotes.forEach(pq => {
+            let sectionId = null;
+            for (const sec in state.watchlists) {
+                if (state.watchlists[sec].tickers.includes(pq.ticker)) {
+                    sectionId = sec; break;
+                }
+            }
+            if (sectionId) {
+                pq.sectionId = sectionId;
+                if (pq.mainPct > 0) {
+                    sectionMaxes[sectionId].maxUp = Math.max(sectionMaxes[sectionId].maxUp, pq.mainPct);
+                } else if (pq.mainPct < 0) {
+                    sectionMaxes[sectionId].maxDown = Math.max(sectionMaxes[sectionId].maxDown, Math.abs(pq.mainPct));
+                }
+            }
+        });
+
+        // 3단계: 비율에 따른 색상 농도를 CSS 변수에 주입 후 렌더링
+        processedQuotes.forEach(pq => {
+            const { quote, ticker, nodes, mainPrice, mainChange, mainPct, mainIcon, subHtml, sectionId } = pq;
+            
+            // 색상 농도 스케일링 설정 (최소 40% ~ 최대 100%)
+            let intensityStr = "100%";
+            let bgIntensityStr = "15%";
+            
+            if (sectionId && sectionMaxes[sectionId]) {
+                const maxUp = sectionMaxes[sectionId].maxUp;
+                const maxDown = sectionMaxes[sectionId].maxDown;
+
+                if (mainPct > 0 && maxUp > 0) {
+                    const ratio = mainPct / maxUp;
+                    const textPct = 40 + (60 * ratio);
+                    const bgPct = 5 + (20 * ratio); 
+                    intensityStr = `${textPct.toFixed(1)}%`;
+                    bgIntensityStr = `${bgPct.toFixed(1)}%`;
+                } else if (mainPct < 0 && maxDown > 0) {
+                    const ratio = Math.abs(mainPct) / maxDown;
+                    const textPct = 40 + (60 * ratio);
+                    const bgPct = 5 + (20 * ratio);
+                    intensityStr = `${textPct.toFixed(1)}%`;
+                    bgIntensityStr = `${bgPct.toFixed(1)}%`;
+                } else if (mainPct === 0) {
+                    // 변동이 아예 없는 경우 (중립)
+                    intensityStr = "30%";
+                    bgIntensityStr = "5%";
+                }
+            }
+            
+            // CSS 변수 주입
+            nodes.row.style.setProperty('--intensity-pct', intensityStr);
+            nodes.row.style.setProperty('--bg-intensity-pct', bgIntensityStr);
+
             const isUp = mainChange >= 0;
             const colorClass = isUp ? 'up' : 'down'; 
-            const sign = isUp ? '+' : '-'; 
+            const sign = isUp ? '+' : (mainChange < 0 ? '-' : ''); 
             const arrow = isUp ? '▲' : '▼';
             
             const oldPriceStr = nodes.price.getAttribute('data-price');
@@ -1138,7 +1197,6 @@ function updateDOMWithData(quotes) {
             if (nodes.mCap && nodes.mCap.textContent !== capText) nodes.mCap.textContent = capText;
             
             let rangeHtml = '-';
-            
             const lowVal = quote.regularMarketDayLow;
             const highVal = quote.regularMarketDayHigh;
 
@@ -1148,16 +1206,13 @@ function updateDOMWithData(quotes) {
                 
                 const lowStr = formatNum(lowVal);
                 const highStr = formatNum(highVal);
-                
                 const markerColorClass = mainChange >= 0 ? 'up' : 'down';
 
                 rangeHtml = `
                     <div class="range-gauge-container">
-                        <!-- 바(Track)를 위로 올림 -->
                         <div class="range-track">
                             <div class="range-marker ${markerColorClass}" style="left: ${percent}%;"></div>
                         </div>
-                        <!-- 값(Labels)을 아래로 내림 -->
                         <div class="range-labels">
                             <span>${lowStr}</span>
                             <span>${highStr}</span>
@@ -1168,11 +1223,9 @@ function updateDOMWithData(quotes) {
                 const valStr = formatNum(lowVal);
                 rangeHtml = `
                     <div class="range-gauge-container">
-                        <!-- 바(Track)를 위로 올림 -->
                         <div class="range-track">
                             <div class="range-marker ${mainChange >= 0 ? 'up' : 'down'}" style="left: 50%;"></div>
                         </div>
-                        <!-- 값(Labels)을 아래로 내림 -->
                         <div class="range-labels">
                             <span>${valStr}</span>
                             <span>${valStr}</span>
@@ -1186,6 +1239,8 @@ function updateDOMWithData(quotes) {
         });
     });
 }
+
+
 function markMissingData(requestedSymbols, results) {
     const returnedSymbols = new Set(results.map(r => r.symbol));
     requestedSymbols.forEach(sym => { if (!returnedSymbols.has(sym)) setErrorState(sym, 'No Data'); });
