@@ -935,7 +935,7 @@ function updateDOMWithData(quotes) {
         const kstTime = new Date(utc + (9 * 3600000));
         const timeNum = kstTime.getHours() * 100 + kstTime.getMinutes();
 
-        // 1단계: 모든 종목의 변동값(mainPct)을 미리 계산
+        // 1단계: 모든 종목의 변동값(mainPct) 및 상태 계산
         const processedQuotes = quotes.map(quote => {
             const ticker = quote.symbol; 
             const nodes = rowNodes.get(ticker);
@@ -1061,7 +1061,7 @@ function updateDOMWithData(quotes) {
                 const regIsUp = regChange >= 0;
                 const regColor = regIsUp ? 'up' : 'down';
                 const regSign = regIsUp ? '+' : '';
-                subHtml = `<span class="ext-label">closed</span>${formatNum(regPrice)} <span class="${regColor}">(${regSign}${formatPct(regPct)}%)</span>`;
+                subHtml = `<span class="ext-label">closed</span>${formatNum(regPrice, isKR)} <span class="${regColor}">(${regSign}${formatPct(regPct)}%)</span>`;
                 
             } else if (targetState === 'POST') {
                 mainPrice = postData.price;
@@ -1071,7 +1071,7 @@ function updateDOMWithData(quotes) {
                 const regIsUp = regChange >= 0;
                 const regColor = regIsUp ? 'up' : 'down';
                 const regSign = regIsUp ? '+' : '';
-                subHtml = `<span class="ext-label">closed</span>${formatNum(regPrice)} <span class="${regColor}">(${regSign}${formatPct(regPct)}%)</span>`;
+                subHtml = `<span class="ext-label">closed</span>${formatNum(regPrice, isKR)} <span class="${regColor}">(${regSign}${formatPct(regPct)}%)</span>`;
                 
             } else if (targetState === 'CLOSED_H') {
                 mainPrice = regPrice;
@@ -1088,7 +1088,7 @@ function updateDOMWithData(quotes) {
                     const preIsUp = preData.change >= 0;
                     const preColor = preIsUp ? 'up' : 'down';
                     const preSign = preIsUp ? '+' : '';
-                    subHtml = `<span class="ext-label">${preData.label}</span>${formatNum(preData.price)} <span class="${preColor}">(${preSign}${formatPct(preData.pct)}%)</span>`;
+                    subHtml = `<span class="ext-label">${preData.label}</span>${formatNum(preData.price, isKR)} <span class="${preColor}">(${preSign}${formatPct(preData.pct)}%)</span>`;
                 }
             }
 
@@ -1099,7 +1099,7 @@ function updateDOMWithData(quotes) {
             };
         }).filter(Boolean);
 
-       // 2단계: 섹션(KR, US 등)별 최고 상승률과 최대 하락률 계산
+        // 2단계: 섹션별 최고 상승률과 최대 하락률 계산 (스케일링용)
         const sectionMaxes = {};
         Object.keys(state.watchlists).forEach(sec => {
             sectionMaxes[sec] = { maxUp: 0, maxDown: 0 };
@@ -1122,9 +1122,9 @@ function updateDOMWithData(quotes) {
             }
         });
 
-        // 3단계: 곡선 비율에 따른 색상 농도를 CSS 변수에 주입 후 렌더링
+        // 3단계: 곡선 비율에 따른 색상 농도 주입 및 최종 DOM 렌더링
         processedQuotes.forEach(pq => {
-            const { quote, ticker, nodes, mainPrice, mainChange, mainPct, mainIcon, subHtml, sectionId } = pq;
+            const { quote, ticker, nodes, mainPrice, mainChange, mainPct, mainIcon, subHtml, sectionId, isKR } = pq;
             
             let textIntensityStr = "100%";
             let bgIntensityStr = "15%";
@@ -1141,24 +1141,18 @@ function updateDOMWithData(quotes) {
                 }
 
                 if (ratio > 0) {
-                    // 루트를 씌워 색상이 너무 급격히 연해지는 것을 방지 (곡선 스케일링)
                     const curvedRatio = Math.sqrt(ratio);
-                    
-                    // 텍스트 농도: 55% ~ 100% (가독성 보호)
                     const textPct = 55 + (45 * curvedRatio);
-                    // 배경 농도: 5% ~ 15% 
                     const bgPct = 5 + (10 * curvedRatio);
                     
                     textIntensityStr = `${textPct.toFixed(1)}%`;
                     bgIntensityStr = `${bgPct.toFixed(1)}%`;
                 } else if (mainPct === 0) {
-                    // 변동이 아예 없는 경우 최하단 농도 부여
                     textIntensityStr = "55%";
                     bgIntensityStr = "5%";
                 }
             }
             
-            // CSS 변수 주입
             nodes.row.style.setProperty('--text-intensity-pct', textIntensityStr);
             nodes.row.style.setProperty('--bg-intensity-pct', bgIntensityStr);
 
@@ -1183,9 +1177,9 @@ function updateDOMWithData(quotes) {
             const dbInfo = localTickerDB.find(q => q.s.toUpperCase() === ticker.toUpperCase());
             nodes.name.textContent = (dbInfo ? dbInfo.n : null) || quote.shortName || quote.longName || ticker;
             
-            const newPriceHtml = mainIcon + formatNum(mainPrice);
+            const newPriceHtml = mainIcon + formatNum(mainPrice, isKR);
             const newExtHtml = subHtml;
-            const newChangeHtml = `<span class="${colorClass}">${sign}${formatChangeNum(mainChange)}</span>`;
+            const newChangeHtml = `<span class="${colorClass}">${sign}${formatChangeNum(mainChange, isKR)}</span>`;
             const newPctHtml = `<span class="badge ${colorClass}"><span class="arrow">${arrow}</span>${formatPct(Math.abs(mainPct))}%</span>`;
 
             if (nodes.price.innerHTML !== newPriceHtml) nodes.price.innerHTML = newPriceHtml;
@@ -1209,8 +1203,8 @@ function updateDOMWithData(quotes) {
                 let percent = ((mainPrice - lowVal) / (highVal - lowVal)) * 100;
                 percent = Math.max(0, Math.min(100, percent));
                 
-                const lowStr = formatNum(lowVal);
-                const highStr = formatNum(highVal);
+                const lowStr = formatNum(lowVal, isKR);
+                const highStr = formatNum(highVal, isKR);
                 const markerColorClass = mainChange >= 0 ? 'up' : 'down';
 
                 rangeHtml = `
@@ -1225,7 +1219,7 @@ function updateDOMWithData(quotes) {
                     </div>
                 `;
             } else if (lowVal && highVal && lowVal === highVal) {
-                const valStr = formatNum(lowVal);
+                const valStr = formatNum(lowVal, isKR);
                 rangeHtml = `
                     <div class="range-gauge-container">
                         <div class="range-track">
@@ -1245,7 +1239,6 @@ function updateDOMWithData(quotes) {
     });
 }
 
-
 function markMissingData(requestedSymbols, results) {
     const returnedSymbols = new Set(results.map(r => r.symbol));
     requestedSymbols.forEach(sym => { if (!returnedSymbols.has(sym)) setErrorState(sym, 'No Data'); });
@@ -1264,14 +1257,16 @@ function setErrorState(ticker, msg) {
     });
 }
 
-function formatNum(num) {
+function formatNum(num, isKR = false) {
     if (num === undefined || num === null || isNaN(num)) return '-';
     let result = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num);
     
-    if (result.endsWith('.00')) {
+    // KR 영역이면서 .00으로 끝날 때만 소수점 제거
+    if (isKR && result.endsWith('.00')) {
         return result.slice(0, -3); 
     }
     
+    // KR 영역이 아니거나 소수점이 .00이 아니면 .xx 부분을 decimal 클래스로 감싸서 반환
     if (result.includes('.')) {
         const parts = result.split('.');
         return `${parts[0]}<span class="decimal">.${parts[1]}</span>`;
@@ -1280,11 +1275,12 @@ function formatNum(num) {
     return result;
 }
 
-function formatChangeNum(num) {
+function formatChangeNum(num, isKR = false) {
     if (num === undefined || num === null || isNaN(num)) return '-';
     let result = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Math.abs(num));
     
-    if (result.endsWith('.00')) {
+    // KR 영역이면서 .00으로 끝날 때만 소수점 제거
+    if (isKR && result.endsWith('.00')) {
         return result.slice(0, -3);
     }
     
