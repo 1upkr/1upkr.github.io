@@ -302,11 +302,11 @@ main { flex: 1; width: 100%; overflow-x: hidden; }
 }
 
 .vader-icon {
-    width: 140px;
-    height: 140px;
+    width: 100px;
+    height: 100px;
     position: absolute;
-    top: 5%; 
-    left: calc(50% - 70px); 
+    top: 3%; 
+    left: calc(50% - 50px); 
     color: var(--text-primary);
     animation: float-vader 4.5s ease-in-out infinite; 
     stroke: none;
@@ -315,7 +315,7 @@ main { flex: 1; width: 100%; overflow-x: hidden; }
 
 .vader-text {
     position: absolute;
-    top: calc(5% + 160px); 
+    top: calc(5% + 120px); 
     width: 100%; 
     text-align: center;
     font-size: 0.8rem;
