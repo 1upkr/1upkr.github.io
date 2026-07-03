@@ -417,7 +417,7 @@ tbody tr { transition: background-color 0.15s, transform 0.2s ease; } tbody tr:h
 .extended-price { font-size: 0.75rem; color: var(--text-primary); margin-top: 0.2rem; font-weight: 600; font-variant-numeric: tabular-nums; }
 .extended-price .up { color: var(--green); } .extended-price .down { color: var(--red); }
 
-.change-cell { display: flex; flex-direction: column; align-items: flex-end; font-variant-numeric: tabular-nums; font-weight: 500; font-size: 0.9rem; }
+.change-cell { display: flex; flex-direction: column; align-items: flex-end; font-variant-numeric: tabular-nums; font-weight: 500; font-size: 0.8rem; }
 .up { color: var(--green); } .down { color: var(--red); }
 .badge { display: inline-flex; align-items: center; padding: 0.2rem 0.4rem; border-radius: 4px; font-weight: 600; font-size: 0.75rem; margin-top: 0.1rem; }
 .badge.up { background-color: var(--green-bg); color: var(--green); } .badge.down { background-color: var(--red-bg); color: var(--red); }
@@ -813,9 +813,9 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
     }
 
     /* 기타 모바일 미세 폰트 조정 */
-    .symbol { font-size: 0.8rem; } 
+    .symbol { font-size: 0.75rem; } 
     .name { font-size: 0.6rem; }
-    .price { font-size: 0.5rem; }
+    .price { font-size: 0.8rem; }
     .extended-price { font-size: 0.65rem; margin-top: 0.15rem; letter-spacing: -0.03em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .extended-price .ext-label, .main-ext-label { font-size: 0.50rem; padding: 0.1rem 0.2rem; }
     .change-cell { font-size: 0.7rem; } 
