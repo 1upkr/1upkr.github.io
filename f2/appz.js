@@ -1115,14 +1115,15 @@ function updateDOMWithData(quotes) {
             if (sectionId) {
                 pq.sectionId = sectionId;
                 if (pq.mainPct > 0) {
-                    sectionMaxes[sectionId].maxUp = Math.max(sectionMaxes[sectionId].maxUp, pq.mainPct);
+                    // [적용] 최대 기준치를 10%로 제한 (아웃라이어 컷)
+                    sectionMaxes[sectionId].maxUp = Math.min(Math.max(sectionMaxes[sectionId].maxUp, pq.mainPct), 10.0);
                 } else if (pq.mainPct < 0) {
-                    sectionMaxes[sectionId].maxDown = Math.max(sectionMaxes[sectionId].maxDown, Math.abs(pq.mainPct));
+                    sectionMaxes[sectionId].maxDown = Math.min(Math.max(sectionMaxes[sectionId].maxDown, Math.abs(pq.mainPct)), 10.0);
                 }
             }
         });
 
-        // 3단계: 곡선 비율에 따른 색상 농도 주입 및 최종 DOM 렌더링
+        // 3단계: 비율에 따른 색상 농도 주입 및 최종 DOM 렌더링
         processedQuotes.forEach(pq => {
             const { quote, ticker, nodes, mainPrice, mainChange, mainPct, mainIcon, subHtml, sectionId, isKR } = pq;
             
@@ -1135,21 +1136,22 @@ function updateDOMWithData(quotes) {
 
                 let ratio = 0;
                 if (mainPct > 0 && maxUp > 0) {
-                    ratio = mainPct / maxUp;
+                    // 상한선을 넘는 값은 무조건 1.0(100%)로 처리
+                    ratio = Math.min(mainPct / maxUp, 1.0);
                 } else if (mainPct < 0 && maxDown > 0) {
-                    ratio = Math.abs(mainPct) / maxDown;
+                    ratio = Math.min(Math.abs(mainPct) / maxDown, 1.0);
                 }
 
                 if (ratio > 0) {
-                    const curvedRatio = Math.sqrt(ratio);
-                    const textPct = 55 + (45 * curvedRatio);
-                    const bgPct = 5 + (10 * curvedRatio);
+                    // [적용] 곡선 대신 선형으로 직관성 확보, 배경색 대비 극대화
+                    const textPct = 40 + (60 * ratio); // 최소 40% ~ 최대 100%
+                    const bgPct = 5 + (25 * ratio);    // 최소 5% ~ 최대 30% (주도주는 배경이 짙어짐)
                     
                     textIntensityStr = `${textPct.toFixed(1)}%`;
                     bgIntensityStr = `${bgPct.toFixed(1)}%`;
                 } else if (mainPct === 0) {
-                    textIntensityStr = "55%";
-                    bgIntensityStr = "5%";
+                    textIntensityStr = "40%";
+                    bgIntensityStr = "0%"; // 보합(0%)은 배경색을 완전히 빼서 차별화
                 }
             }
             
