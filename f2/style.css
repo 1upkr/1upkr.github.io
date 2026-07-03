@@ -395,7 +395,7 @@ tbody tr { transition: background-color 0.15s, transform 0.2s ease; } tbody tr:h
 .asset-col { display: flex; flex-direction: column; gap: 0.1rem; width: 100%; }
 .symbol { display: block; width: 100%; font-weight: 600; font-size: 0.95rem; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .name { display: block; width: 100%; color: var(--text-secondary); font-size: 0.75rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.price { font-weight: 600; font-size: 1.05rem; font-variant-numeric: tabular-nums; color: var(--text-primary); }
+.price { font-weight: 600; font-size: 0.95rem; font-variant-numeric: tabular-nums; color: var(--text-primary); }
 
 .main-ext-label, 
 .extended-price .ext-label {
@@ -417,9 +417,9 @@ tbody tr { transition: background-color 0.15s, transform 0.2s ease; } tbody tr:h
 .extended-price { font-size: 0.75rem; color: var(--text-primary); margin-top: 0.2rem; font-weight: 600; font-variant-numeric: tabular-nums; }
 .extended-price .up { color: var(--green); } .extended-price .down { color: var(--red); }
 
-.change-cell { display: flex; flex-direction: column; align-items: flex-end; font-variant-numeric: tabular-nums; font-weight: 500; font-size: 0.95rem; }
+.change-cell { display: flex; flex-direction: column; align-items: flex-end; font-variant-numeric: tabular-nums; font-weight: 500; font-size: 0.9rem; }
 .up { color: var(--green); } .down { color: var(--red); }
-.badge { display: inline-flex; align-items: center; padding: 0.2rem 0.4rem; border-radius: 4px; font-weight: 600; font-size: 0.8rem; margin-top: 0.1rem; }
+.badge { display: inline-flex; align-items: center; padding: 0.2rem 0.4rem; border-radius: 4px; font-weight: 600; font-size: 0.75rem; margin-top: 0.1rem; }
 .badge.up { background-color: var(--green-bg); color: var(--green); } .badge.down { background-color: var(--red-bg); color: var(--red); }
 .sub-data { color: var(--text-primary); font-weight: 500; font-size: 0.80rem; font-variant-numeric: tabular-nums; overflow: hidden; text-overflow: ellipsis; }
 .arrow { font-size: 0.7rem; margin-right: 0.2rem; stroke-width: 3; }
