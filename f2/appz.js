@@ -1665,7 +1665,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                 maintainAspectRatio: false,
                 interaction: { mode: 'index', intersect: false },
                 layout: {
-                    padding: { left: 0, right: 10 , top: 0, bottom: 22 }
+                    padding: { left: 5, right: 5, top: 10, bottom: 5 }
                 },
                 plugins: {
                     title: { display: false }, 
@@ -1897,7 +1897,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                     responsive: true,
                     maintainAspectRatio: false,
                     layout: {
-                        padding: { top: 15, bottom: 15 } 
+                        padding: { left: 5, right: 5, top: 25, bottom: 5 } 
                     },
                     plugins: {
                         legend: { display: false }, 
