@@ -114,7 +114,7 @@ async function init() {
         updateTimerUI(state.countdown);
         startTimer();
         
-        const allMarkets = ['ALL', 'KOSPI', 'KOSDAQ'];
+        const allMarkets = ['ALL', 'KOSPI', 'KOSDAQ', 'FUT'];
         allMarkets.forEach(m => fetchMarketTrend(m, m !== currentTrendMarketType));
         
         if ((Date.now() - state.lastNewsFetch) > 60000) fetchNews();
@@ -881,7 +881,7 @@ function forceRefresh() {
     state.lastNewsFetch = 0; 
     fetchData(); 
     
-    const allMarkets = ['ALL', 'KOSPI', 'KOSDAQ'];
+    const allMarkets = ['ALL', 'KOSPI', 'KOSDAQ', 'FUT'];
     allMarkets.forEach(market => {
         const isBackground = (market !== currentTrendMarketType);
         fetchMarketTrend(market, isBackground);
