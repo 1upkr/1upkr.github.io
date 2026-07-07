@@ -1888,7 +1888,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                         data: dataValues,
                         backgroundColor: bgColors,
                         borderColor: borderColors,
-                        borderWidth: 1,
+                        borderWidth: 0,
                         borderRadius: 0, // 플랫한 막대 
                         minBarLength: 2  // 작은 값도 최소 2px 막대로 표시
                     }]
