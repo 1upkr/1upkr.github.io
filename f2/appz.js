@@ -1532,29 +1532,17 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
     const canvas = document.getElementById('trend-chart-canvas');
     if (!canvas) return;
 
-    let badgeContainer = document.getElementById('trend-date-badge');
-    if (!badgeContainer) {
-        badgeContainer = document.createElement('div');
-        badgeContainer.id = 'trend-date-badge';
-        badgeContainer.style.position = 'absolute';
-        badgeContainer.style.right = '0';
-        badgeContainer.style.bottom = '0'; 
-        badgeContainer.style.display = 'flex';
-        badgeContainer.style.alignItems = 'center'; 
-        badgeContainer.style.gap = '4px';
-        badgeContainer.style.zIndex = '10';
+    // --- 구분선 우측 배지 업데이트 ---
+    const badgeContainer = document.getElementById('trend-date-badge');
+    if (badgeContainer) {
+        const badgeText = isLive ? 'LIVE' : 'CLOSED';
+        const liveStyle = isLive ? 'color: var(--red); background-color: var(--red-bg);' : '';
         
-        const wrapper = document.getElementById('trend-chart-wrapper');
-        if(wrapper) wrapper.appendChild(badgeContainer);
+        badgeContainer.innerHTML = `
+            <span class="main-ext-label" style="margin: 0; font-size: 0.5rem; padding: 0.2rem 0.4rem; line-height: 1; border-radius: 4px; transform: none; display: inline-block; ${liveStyle}">${badgeText}</span>
+            <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); font-family: 'Inter', sans-serif; line-height: 1; display: inline-block; transform: none;">${dateStr}</span>
+        `;
     }
-    
-    const badgeText = isLive ? 'LIVE' : 'CLOSED';
-    const liveStyle = isLive ? 'color: var(--red);' : '';
-    
-    badgeContainer.innerHTML = `
-        <span class="main-ext-label" style="margin: 0; font-size: 0.4rem; padding: 0.15rem 0.35rem; line-height: 1; transform: none; display: block; ${liveStyle}">${badgeText}</span>
-        <span style="font-size: 0.7rem; font-weight: 600; color: var(--text-secondary); font-family: 'Inter', sans-serif; line-height: 1; display: block; transform: none;">${dateStr}</span>
-    `;
 
     const sortedData = dataList.slice().reverse();
     
@@ -1852,10 +1840,6 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
         const dataValues = Object.values(detailData);
         
         // 다크모드 대응 및 테마 색상 변수 설정 (양수: 초록, 음수: 빨강)
-        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-        const redColor = isDark ? '#ff453a' : '#eb0f29';
-        const greenColor = isDark ? '#00c853' : '#00873c';
-
         const bgColors = dataValues.map(v => v >= 0 ? (isDark ? 'rgba(0, 200, 83, 0.4)' : 'rgba(0, 135, 60, 0.4)') : (isDark ? 'rgba(255, 69, 58, 0.4)' : 'rgba(235, 15, 41, 0.4)'));
         const borderColors = dataValues.map(v => v >= 0 ? greenColor : redColor);
 
@@ -1871,14 +1855,14 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                 chart.getDatasetMeta(0).data.forEach((bar, index) => {
                     const value = data.datasets[0].data[index];
                     
-                    // 값이 너무 작아 0.0에 수렴하는 경우 표기 생략 (지저분함 방지)
+                    // 값이 너무 작아 0.0에 수렴하는 경우 표기 생략
                     if (!value || Math.abs(value) < 0.05) return;
 
                     // 소수점 1자리까지 표기하고 양수는 + 기호 추가
                     const displayVal = (value > 0 ? '+' : '') + value.toFixed(1);
                     ctx.fillStyle = value > 0 ? greenColor : redColor;
                     
-                    // 양수면 막대 위, 음수면 막대 아래에 텍스트 위치 (minBarLength가 적용된 bar.y를 기준)
+                    // 양수면 막대 위, 음수면 막대 아래에 텍스트 위치
                     const padding = 6;
                     const yPos = value > 0 ? bar.y - padding : bar.y + padding;
                     ctx.textBaseline = value > 0 ? 'bottom' : 'top';
@@ -1893,6 +1877,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
             detailChartInstance.data.datasets[0].data = dataValues;
             detailChartInstance.data.datasets[0].backgroundColor = bgColors;
             detailChartInstance.data.datasets[0].borderColor = borderColors;
+            detailChartInstance.data.datasets[0].borderRadius = 0; // 플랫한 막대
             detailChartInstance.update();
         } else {
             detailChartInstance = new Chart(barCtx, {
@@ -1904,8 +1889,8 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                         backgroundColor: bgColors,
                         borderColor: borderColors,
                         borderWidth: 1,
-                        borderRadius: 0,
-                        minBarLength: 5 // [추가] 값이 0.1 처럼 작아도 최소 5px 두께의 막대를 그려줌
+                        borderRadius: 0, // 플랫한 막대 
+                        minBarLength: 2  // 작은 값도 최소 2px 막대로 표시
                     }]
                 },
                 options: {
@@ -1926,13 +1911,13 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                     },
                     scales: {
                         y: { 
-                            grace: '25%', // [추가] Y축 위아래로 25%의 여유 공간을 강제로 만들어 글자가 잘리지 않게 함
+                            grace: '25%', // Y축 위아래 여백을 줘서 글자가 짤리지 않게 함
                             grid: { color: gridColor, drawBorder: false, borderDash: [4, 4] },
                             ticks: { 
                                 color: textSecondary, 
                                 font: { family: "'Inter', sans-serif", size: 10 },
                                 callback: function(value) { 
-                                    return Math.round(value); // [수정] Y축 텍스트 소수점 제거 (예: 40.0 -> 40)
+                                    return Math.round(value); // Y축 소수점 제거
                                 }
                             }
                         },
