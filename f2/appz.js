@@ -51,7 +51,7 @@ const EMPTY_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
 
 let localTickerDB = [];
 let trendChartInstance = null;
-let detailChartInstance = null; // 막대 차트용 인스턴스 신규 추가
+let detailChartInstance = null; // 막대 차트용 인스턴스
 let tabScrollCache = { dashboard: 0, news: 0 };
 let currentTrendMarketType = localStorage.getItem('marketdash_trend_tab') || 'ALL'; 
 
@@ -1396,9 +1396,9 @@ async function fetchMarketTrend(marketType = currentTrendMarketType, isBackgroun
         const tabs = document.querySelectorAll('.trend-tab-btn');
         if (tabs.length > 0) {
             tabs.forEach(btn => btn.classList.remove('active'));
-            // 모든 탭 버튼(상단, 하단 섹션 모두)을 선택하여 활성화
-            const activeTabs = Array.from(tabs).filter(btn => btn.getAttribute('onclick').includes(marketType));
-            activeTabs.forEach(activeTab => activeTab.classList.add('active'));
+            // 하나의 컴포넌트로 묶였으므로 다시 find 사용
+            const activeTab = Array.from(tabs).find(btn => btn.getAttribute('onclick').includes(marketType));
+            if (activeTab) activeTab.classList.add('active');
         }
 
         if (currentTrendMarketType !== marketType && trendChartInstance) {
@@ -1814,7 +1814,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
     }
 
     // ==========================================
-    // [추가] 하단 독립 섹션 세부 막대 차트 렌더링
+    // [추가] 하단 통합 섹션 세부 막대 차트 렌더링
     // ==========================================
     const barCanvas = document.getElementById('detail-bar-chart');
     if (barCanvas) {
@@ -1851,9 +1851,9 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
         const labels = Object.keys(detailData);
         const dataValues = Object.values(detailData);
         
-        // 색상 지정: 양수는 Red, 음수는 Green
-        const bgColors = dataValues.map(v => v >= 0 ? 'rgba(235, 15, 41, 0.6)' : 'rgba(0, 135, 60, 0.6)');
-        const borderColors = dataValues.map(v => v >= 0 ? '#eb0f29' : '#00873c');
+        // 양수는 Red, 음수는 Blue 지정 (네이버 증권 방식 대응)
+        const bgColors = dataValues.map(v => v >= 0 ? 'rgba(235, 15, 41, 0.6)' : 'rgba(59, 130, 246, 0.6)');
+        const borderColors = dataValues.map(v => v >= 0 ? '#eb0f29' : '#3b82f6');
 
         if (detailChartInstance) {
             detailChartInstance.data.datasets[0].data = dataValues;
