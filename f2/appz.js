@@ -1897,7 +1897,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                     responsive: true,
                     maintainAspectRatio: false,
                     layout: {
-                        padding: { left: 5, right: 5, top: 25, bottom: 5 } 
+                        padding: { left: 5, right: 5, top: 30, bottom: 30 } 
                     },
                     plugins: {
                         legend: { display: false }, 
@@ -1911,7 +1911,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                     },
                     scales: {
                         y: { 
-                            grace: '35%', // Y축 위아래 여백을 줘서 글자가 짤리지 않게 함
+                            grace: '30%', // Y축 위아래 여백을 줘서 글자가 짤리지 않게 함
                             grid: { color: gridColor, drawBorder: false, borderDash: [4, 4] },
                             ticks: { 
                                 color: textSecondary, 
