@@ -1812,7 +1812,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
         // 2. 세부 주체별 데이터 담을 객체 (단위: 천억)
         const detailData = {
             '개인': 0, '외국인': 0, '금융투자': 0, '보험': 0, 
-            '투신(사모)': 0, '은행': 0, '기타금융': 0, '연기금등': 0, '기타법인': 0
+            '투신사모': 0, '은행': 0, '기타금융': 0, '연기금등': 0, '기타법인': 0
         };
 
         // 3. 코드별 분류 및 합산 (100,000,000,000 으로 나누어 1.5 = 1500억 스케일로 맞춤)
@@ -1825,7 +1825,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                     case '1000': detailData['금융투자'] += val; break;
                     case '2000': detailData['보험'] += val; break;
                     case '3000': 
-                    case '3100': detailData['투신(사모)'] += val; break;
+                    case '3100': detailData['투신사모'] += val; break;
                     case '4000': detailData['은행'] += val; break;
                     case '5000': detailData['기타금융'] += val; break;
                     case '6000': detailData['연기금등'] += val; break;
