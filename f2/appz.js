@@ -1874,12 +1874,11 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                     // 값이 너무 작아 0.0에 수렴하는 경우 표기 생략 (지저분함 방지)
                     if (!value || Math.abs(value) < 0.05) return;
 
-                    // 소수점 1자리까지 표기하고 양수는 + 기호 추가 (예: +1.5, -0.3)
+                    // 소수점 1자리까지 표기하고 양수는 + 기호 추가
                     const displayVal = (value > 0 ? '+' : '') + value.toFixed(1);
-                    
                     ctx.fillStyle = value > 0 ? greenColor : redColor;
                     
-                    // 양수면 막대 위, 음수면 막대 아래에 텍스트 위치
+                    // 양수면 막대 위, 음수면 막대 아래에 텍스트 위치 (minBarLength가 적용된 bar.y를 기준)
                     const padding = 6;
                     const yPos = value > 0 ? bar.y - padding : bar.y + padding;
                     ctx.textBaseline = value > 0 ? 'bottom' : 'top';
@@ -1905,22 +1904,21 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                         backgroundColor: bgColors,
                         borderColor: borderColors,
                         borderWidth: 1,
-                        borderRadius: 4
+                        borderRadius: 4,
+                        minBarLength: 5 // [추가] 값이 0.1 처럼 작아도 최소 5px 두께의 막대를 그려줌
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     layout: {
-                        // 텍스트가 차트 영역 바깥으로 잘리지 않도록 위아래 여백 확보
-                        padding: { top: 25, bottom: 25 } 
+                        padding: { top: 15, bottom: 15 } 
                     },
                     plugins: {
                         legend: { display: false }, 
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
-                                    // 툴팁에서는 보기 편하게 기존처럼 '1,500억' 형태로 환산해서 보여줌
                                     return new Intl.NumberFormat('ko-KR').format(Math.round(context.raw * 1000)) + '억';
                                 }
                             }
@@ -1928,11 +1926,14 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                     },
                     scales: {
                         y: { 
+                            grace: '25%', // [추가] Y축 위아래로 25%의 여유 공간을 강제로 만들어 글자가 잘리지 않게 함
                             grid: { color: gridColor, drawBorder: false, borderDash: [4, 4] },
                             ticks: { 
                                 color: textSecondary, 
                                 font: { family: "'Inter', sans-serif", size: 10 },
-                                callback: function(value) { return value.toFixed(1); } // Y축 단위도 1.5로 맞춤
+                                callback: function(value) { 
+                                    return Math.round(value); // [수정] Y축 텍스트 소수점 제거 (예: 40.0 -> 40)
+                                }
                             }
                         },
                         x: {
@@ -1945,7 +1946,6 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
             });
         }
     }
-}
 
 window.switchTrendMarket = function(marketType) {
     if (typeof window.hideChartTooltip === 'function') window.hideChartTooltip(); 
