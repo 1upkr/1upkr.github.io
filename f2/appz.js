@@ -1923,7 +1923,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                         },
                         x: {
                             grid: { display: false },
-                            ticks: { color: textSecondary, font: { family: "'Inter', sans-serif", size: 10 }, maxRotation: 30, minRotation: 30 }
+                            ticks: { color: textSecondary, font: { family: "'Inter', sans-serif", size: 8 }, maxRotation: 0, minRotation: 0, autoSkip: true }
                         }
                     }
                 },
