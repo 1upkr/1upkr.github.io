@@ -1904,7 +1904,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                         backgroundColor: bgColors,
                         borderColor: borderColors,
                         borderWidth: 1,
-                        borderRadius: 4,
+                        borderRadius: 0,
                         minBarLength: 5 // [추가] 값이 0.1 처럼 작아도 최소 5px 두께의 막대를 그려줌
                     }]
                 },
