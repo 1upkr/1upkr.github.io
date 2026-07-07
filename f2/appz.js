@@ -1897,16 +1897,12 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                     responsive: true,
                     maintainAspectRatio: false,
                     layout: {
-                        padding: { left: 5, right: 5, top: 5, bottom: 5 } 
+                        padding: { left: 5, right: 5, top: 5, bottom: 10 } 
                     },
                     plugins: {
                         legend: { display: false }, 
                         tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return new Intl.NumberFormat('ko-KR').format(Math.round(context.raw * 1000)) + '억';
-                                }
-                            }
+                            enabled: false
                         }
                     },
                     scales: {
