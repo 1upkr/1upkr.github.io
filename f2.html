@@ -20,7 +20,7 @@ layout: null
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-    <link rel="stylesheet" href="https://1up.kr/f2/style.css?ver=4.3.10">
+    <link rel="stylesheet" href="https://1up.kr/f2/style.css?ver=4.3.11">
 </head>
 <body>
     <script>
@@ -104,7 +104,11 @@ layout: null
                         <canvas id="trend-chart-canvas"></canvas>
                     </div>
             
-                    <div style="height: 1px; background-color: var(--border-color); margin: 1.5rem 0.5rem 1rem 0.5rem;"></div>
+                    <div style="display: flex; align-items: center; margin: 1.5rem 0.5rem 1rem 0.5rem;">
+                        <div style="flex: 1; height: 1px; background-color: var(--border-color);"></div>
+                        <div id="trend-date-badge" style="display: flex; align-items: center; gap: 6px; padding-left: 12px; background-color: var(--card-bg);">
+                            </div>
+                    </div>
             
                     <div id="detail-chart-wrapper" style="position: relative; width: 100%; height: 160px; min-height: 160px;">
                         <canvas id="detail-bar-chart"></canvas>
@@ -173,7 +177,7 @@ layout: null
             <div class="modal-title">credits</div>
             <div class="modal-desc" style="text-align: left; padding: 1rem 0;">
                 <div style="font-weight: 900; font-size: 1.3rem; color: var(--text-primary); margin-bottom: 0.5rem;">F I N A N C E : ¹ U P</div>
-                <div style="margin-bottom: 0.3rem;"><span style="font-weight: 600;">ver.4.3.10</span></div>
+                <div style="margin-bottom: 0.3rem;"><span style="font-weight: 600;">ver.4.3.11</span></div>
                 <div><span>N3RD - 1UP YOUR VIBE !!</span></div>
             </div>
             <div class="modal-actions">
@@ -182,7 +186,7 @@ layout: null
         </div>
     </div>
 
-    <script src="https://1up.kr/f2/appz.js?ver=4.3.10"></script>
+    <script src="https://1up.kr/f2/appz.js?ver=4.3.11"></script>
     
 </body>
 </html>
