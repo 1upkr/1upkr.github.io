@@ -1946,6 +1946,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
             });
         }
     }
+}
 
 window.switchTrendMarket = function(marketType) {
     if (typeof window.hideChartTooltip === 'function') window.hideChartTooltip(); 
