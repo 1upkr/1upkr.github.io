@@ -1849,7 +1849,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
             afterDatasetsDraw(chart) {
                 const { ctx, data } = chart;
                 ctx.save();
-                ctx.font = '600 10.5px "Inter", sans-serif';
+                ctx.font = '600 9px "Inter", sans-serif';
                 ctx.textAlign = 'center';
 
                 chart.getDatasetMeta(0).data.forEach((bar, index) => {
@@ -1911,7 +1911,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                     },
                     scales: {
                         y: { 
-                            grace: '25%', // Y축 위아래 여백을 줘서 글자가 짤리지 않게 함
+                            grace: '35%', // Y축 위아래 여백을 줘서 글자가 짤리지 않게 함
                             grid: { color: gridColor, drawBorder: false, borderDash: [4, 4] },
                             ticks: { 
                                 color: textSecondary, 
@@ -1923,7 +1923,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                         },
                         x: {
                             grid: { display: false },
-                            ticks: { color: textSecondary, font: { family: "'Inter', sans-serif", size: 8 }, maxRotation: 0, minRotation: 0, autoSkip: true }
+                            ticks: { color: textSecondary, font: { family: "'Inter', sans-serif", size: 9 }, maxRotation: 0, minRotation: 0, autoSkip: true }
                         }
                     }
                 },
