@@ -95,22 +95,16 @@ layout: null
                 </div>
                 
                 <div class="section-body" style="padding: 0.5rem; display: flex; flex-direction: column;">
-                    <div id="trend-chart-wrapper" style="position: relative; width: 100%; height: 250px; min-height: 250px;">
-                        <div id="chart-loading-overlay" class="chart-loader-overlay" style="display: none;">
-                            <div class="dot-loader">
-                                <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
-                            </div>
-                        </div>
+                    <div id="trend-chart-wrapper" style="position: relative; width: 100%; height: 250px;">
                         <canvas id="trend-chart-canvas"></canvas>
                     </div>
             
-                    <div style="display: flex; align-items: center; margin: 1.5rem 0.5rem 1rem 0.5rem;">
+                    <div style="display: flex; align-items: center; margin: 1rem 0;">
                         <div style="flex: 1; height: 1px; background-color: var(--border-color);"></div>
-                        <div id="trend-date-badge" style="display: flex; align-items: center; gap: 6px; padding-left: 12px; background-color: var(--card-bg);">
-                            </div>
+                        <div id="trend-date-badge" style="display: flex; align-items: center; gap: 6px; padding-left: 12px;"></div>
                     </div>
             
-                    <div id="detail-chart-wrapper" style="position: relative; width: 100%; height: 160px; min-height: 160px;">
+                    <div id="detail-chart-wrapper" style="position: relative; width: 100%; height: 160px;">
                         <canvas id="detail-bar-chart"></canvas>
                     </div>
                 </div>
