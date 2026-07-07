@@ -1863,7 +1863,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                     ctx.fillStyle = value > 0 ? greenColor : redColor;
                     
                     // 양수면 막대 위, 음수면 막대 아래에 텍스트 위치
-                    const padding = 6;
+                    const padding = 2;
                     const yPos = value > 0 ? bar.y - padding : bar.y + padding;
                     ctx.textBaseline = value > 0 ? 'bottom' : 'top';
 
@@ -1897,7 +1897,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                     responsive: true,
                     maintainAspectRatio: false,
                     layout: {
-                        padding: { left: 5, right: 5, top: 30, bottom: 30 } 
+                        padding: { left: 5, right: 5, top: 5, bottom: 5 } 
                     },
                     plugins: {
                         legend: { display: false }, 
@@ -1923,7 +1923,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                         },
                         x: {
                             grid: { display: false },
-                            ticks: { color: textSecondary, font: { family: "'Inter', sans-serif", size: 9 }, maxRotation: 0, minRotation: 0, autoSkip: true }
+                            ticks: { color: textSecondary, font: { family: "'Inter', sans-serif", size: 10 }, maxRotation: 0, minRotation: 0, autoSkip: true }
                         }
                     }
                 },
