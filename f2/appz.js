@@ -51,6 +51,7 @@ const EMPTY_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
 
 let localTickerDB = [];
 let trendChartInstance = null;
+let detailChartInstance = null; // 막대 차트용 인스턴스 신규 추가
 let tabScrollCache = { dashboard: 0, news: 0 };
 let currentTrendMarketType = localStorage.getItem('marketdash_trend_tab') || 'ALL'; 
 
@@ -1395,8 +1396,9 @@ async function fetchMarketTrend(marketType = currentTrendMarketType, isBackgroun
         const tabs = document.querySelectorAll('.trend-tab-btn');
         if (tabs.length > 0) {
             tabs.forEach(btn => btn.classList.remove('active'));
-            const activeTab = Array.from(tabs).find(btn => btn.getAttribute('onclick').includes(marketType));
-            if (activeTab) activeTab.classList.add('active');
+            // 모든 탭 버튼(상단, 하단 섹션 모두)을 선택하여 활성화
+            const activeTabs = Array.from(tabs).filter(btn => btn.getAttribute('onclick').includes(marketType));
+            activeTabs.forEach(activeTab => activeTab.classList.add('active'));
         }
 
         if (currentTrendMarketType !== marketType && trendChartInstance) {
@@ -1622,14 +1624,6 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
         }
     }
 
-    if (trendChartInstance) {
-        trendChartInstance.data.datasets[0].data = individualData;
-        trendChartInstance.data.datasets[1].data = foreignData;
-        trendChartInstance.data.datasets[2].data = institutionData;
-        trendChartInstance.update('none'); 
-        return;
-    }
-
     const ctx = canvas.getContext('2d');
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     
@@ -1643,174 +1637,269 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
     const greenColor = isDark ? '#00c853' : '#00873c';
     const instColor = '#f5a623';
 
-    const createGradient = (colorHex, r, g, b) => {
-        const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-        gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, 0.25)`);
-        gradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0.0)`);
-        return gradient;
-    };
+    if (trendChartInstance) {
+        trendChartInstance.data.datasets[0].data = individualData;
+        trendChartInstance.data.datasets[1].data = foreignData;
+        trendChartInstance.data.datasets[2].data = institutionData;
+        trendChartInstance.update('none'); 
+    } else {
+        const createGradient = (colorHex, r, g, b) => {
+            const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+            gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, 0.25)`);
+            gradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0.0)`);
+            return gradient;
+        };
 
-    trendChartInstance = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: fixedLabels,
-            datasets: [
-                { 
-                    label: '개인', data: individualData, borderColor: redColor, 
-                    backgroundColor: createGradient(redColor, isDark ? 255 : 235, isDark ? 69 : 15, isDark ? 58 : 41),
-                    borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 5, fill: true, tension: 0.4 
-                },
-                { 
-                    label: '외국인', data: foreignData, borderColor: greenColor, 
-                    backgroundColor: createGradient(greenColor, isDark ? 0 : 0, isDark ? 200 : 135, isDark ? 83 : 60),
-                    borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 5, fill: true, tension: 0.4 
-                },
-                { 
-                    label: '기관', data: institutionData, borderColor: instColor, 
-                    backgroundColor: createGradient(instColor, 245, 166, 35),
-                    borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 5, fill: true, tension: 0.4 
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            interaction: { mode: 'index', intersect: false },
-            layout: {
-                padding: { left: 0, right: 10 , top: 0, bottom: 22 }
+        trendChartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: fixedLabels,
+                datasets: [
+                    { 
+                        label: '개인', data: individualData, borderColor: redColor, 
+                        backgroundColor: createGradient(redColor, isDark ? 255 : 235, isDark ? 69 : 15, isDark ? 58 : 41),
+                        borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 5, fill: true, tension: 0.4 
+                    },
+                    { 
+                        label: '외국인', data: foreignData, borderColor: greenColor, 
+                        backgroundColor: createGradient(greenColor, isDark ? 0 : 0, isDark ? 200 : 135, isDark ? 83 : 60),
+                        borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 5, fill: true, tension: 0.4 
+                    },
+                    { 
+                        label: '기관', data: institutionData, borderColor: instColor, 
+                        backgroundColor: createGradient(instColor, 245, 166, 35),
+                        borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 5, fill: true, tension: 0.4 
+                    }
+                ]
             },
-            plugins: {
-                title: { display: false }, 
-                legend: { 
-                    position: 'top',
-                    align: 'end', 
-                    padding: 15, 
-                    labels: { 
-                        color: textSecondary, 
-                        font: { family: "'Inter', sans-serif", size: 12, weight: 600 },
-                        usePointStyle: false, boxWidth: 12, boxHeight: 4,
-                        useBorderRadius: true, borderRadius: 2, padding: 15,
-                        generateLabels: function(chart) {
-                            const datasets = chart.data.datasets;
-                            return datasets.map((dataset, i) => ({
-                                text: dataset.label,
-                                fillStyle: dataset.borderColor,
-                                strokeStyle: 'transparent',
-                                lineWidth: 0,
-                                hidden: !chart.isDatasetVisible(i),
-                                index: i,
-                                datasetIndex: i,
-                                borderRadius: 2,
-                                fontColor: textSecondary 
-                            }));
-                        }
-                    } 
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                layout: {
+                    padding: { left: 0, right: 10 , top: 0, bottom: 22 }
                 },
-                tooltip: {
-                    enabled: false,
-                    position: 'nearest',
-                    external: function(context) {
-                        let tooltipEl = document.getElementById('chartjs-custom-tooltip');
+                plugins: {
+                    title: { display: false }, 
+                    legend: { 
+                        position: 'top',
+                        align: 'end', 
+                        padding: 15, 
+                        labels: { 
+                            color: textSecondary, 
+                            font: { family: "'Inter', sans-serif", size: 12, weight: 600 },
+                            usePointStyle: false, boxWidth: 12, boxHeight: 4,
+                            useBorderRadius: true, borderRadius: 2, padding: 15,
+                            generateLabels: function(chart) {
+                                const datasets = chart.data.datasets;
+                                return datasets.map((dataset, i) => ({
+                                    text: dataset.label,
+                                    fillStyle: dataset.borderColor,
+                                    strokeStyle: 'transparent',
+                                    lineWidth: 0,
+                                    hidden: !chart.isDatasetVisible(i),
+                                    index: i,
+                                    datasetIndex: i,
+                                    borderRadius: 2,
+                                    fontColor: textSecondary 
+                                }));
+                            }
+                        } 
+                    },
+                    tooltip: {
+                        enabled: false,
+                        position: 'nearest',
+                        external: function(context) {
+                            let tooltipEl = document.getElementById('chartjs-custom-tooltip');
 
-                        if (!tooltipEl) {
-                            tooltipEl = document.createElement('div');
-                            tooltipEl.id = 'chartjs-custom-tooltip';
-                            tooltipEl.style.background = tooltipBg;
-                            tooltipEl.style.borderRadius = '8px';
-                            tooltipEl.style.border = `1px solid ${tooltipBorder}`;
-                            tooltipEl.style.pointerEvents = 'none';
-                            tooltipEl.style.position = 'absolute';
-                            tooltipEl.style.transition = 'all .08s ease'; 
-                            tooltipEl.style.padding = '12px';
-                            tooltipEl.style.boxShadow = '0 4px 6px -1px rgba(0,0,0,0.05)';
-                            tooltipEl.style.zIndex = 90;
-                            tooltipEl.style.whiteSpace = 'nowrap';
-                            tooltipEl.style.willChange = 'transform, opacity'; 
-                            
-                            context.chart.canvas.parentNode.appendChild(tooltipEl);
-                            context.chart.canvas.parentNode.style.position = 'relative';
-                        }
+                            if (!tooltipEl) {
+                                tooltipEl = document.createElement('div');
+                                tooltipEl.id = 'chartjs-custom-tooltip';
+                                tooltipEl.style.background = tooltipBg;
+                                tooltipEl.style.borderRadius = '8px';
+                                tooltipEl.style.border = `1px solid ${tooltipBorder}`;
+                                tooltipEl.style.pointerEvents = 'none';
+                                tooltipEl.style.position = 'absolute';
+                                tooltipEl.style.transition = 'all .08s ease'; 
+                                tooltipEl.style.padding = '12px';
+                                tooltipEl.style.boxShadow = '0 4px 6px -1px rgba(0,0,0,0.05)';
+                                tooltipEl.style.zIndex = 90;
+                                tooltipEl.style.whiteSpace = 'nowrap';
+                                tooltipEl.style.willChange = 'transform, opacity'; 
+                                
+                                context.chart.canvas.parentNode.appendChild(tooltipEl);
+                                context.chart.canvas.parentNode.style.position = 'relative';
+                            }
 
-                        const tooltipModel = context.tooltip;
-                        if (tooltipModel.opacity === 0) {
-                            tooltipEl.style.opacity = 0;
-                            return;
-                        }
+                            const tooltipModel = context.tooltip;
+                            if (tooltipModel.opacity === 0) {
+                                tooltipEl.style.opacity = 0;
+                                return;
+                            }
 
-                        if (!tooltipModel.body || tooltipModel.dataPoints[0].parsed.y === null) {
-                            tooltipEl.style.opacity = 0;
-                            return;
-                        }
+                            if (!tooltipModel.body || tooltipModel.dataPoints[0].parsed.y === null) {
+                                tooltipEl.style.opacity = 0;
+                                return;
+                            }
 
-                        if (tooltipModel.body) {
-                            const titleLines = tooltipModel.title || [];
-                            let innerHtml = `<div style="font-family:'Inter', sans-serif;">`;
+                            if (tooltipModel.body) {
+                                const titleLines = tooltipModel.title || [];
+                                let innerHtml = `<div style="font-family:'Inter', sans-serif;">`;
 
-                            titleLines.forEach(function(title) {
-                                innerHtml += `<div style="font-weight:700; font-size:13px; color:${textPrimary}; margin-bottom:10px;">${title}</div>`;
-                            });
+                                titleLines.forEach(function(title) {
+                                    innerHtml += `<div style="font-weight:700; font-size:13px; color:${textPrimary}; margin-bottom:10px;">${title}</div>`;
+                                });
 
-                            innerHtml += `<div style="display:flex; flex-direction:column; gap:8px;">`;
+                                innerHtml += `<div style="display:flex; flex-direction:column; gap:8px;">`;
 
-                            tooltipModel.dataPoints.forEach(function(dp) {
-                                const val = dp.parsed.y;
-                                if (val === null) return;
-                                const sign = val > 0 ? '+' : '';
-                                const valColor = val > 0 ? greenColor : (val < 0 ? redColor : textPrimary);
-                                const formattedVal = sign + new Intl.NumberFormat('ko-KR').format(Math.round(val)) + '억';
-                                const borderColor = dp.dataset.borderColor;
+                                tooltipModel.dataPoints.forEach(function(dp) {
+                                    const val = dp.parsed.y;
+                                    if (val === null) return;
+                                    const sign = val > 0 ? '+' : '';
+                                    const valColor = val > 0 ? greenColor : (val < 0 ? redColor : textPrimary);
+                                    const formattedVal = sign + new Intl.NumberFormat('ko-KR').format(Math.round(val)) + '억';
+                                    const borderColor = dp.dataset.borderColor;
 
-                                innerHtml += `
-                                    <div style="display:flex; align-items:center; font-size:12px; font-weight:600; justify-content:space-between; gap: 30px;">
-                                        <div style="display:flex; align-items:center;">
-                                            <span style="display:inline-block; width:12px; height:4px; background:${borderColor}; margin-right:8px; border-radius:2px;"></span>
-                                            <span style="color:${textSecondary};">${dp.dataset.label}</span>
+                                    innerHtml += `
+                                        <div style="display:flex; align-items:center; font-size:12px; font-weight:600; justify-content:space-between; gap: 30px;">
+                                            <div style="display:flex; align-items:center;">
+                                                <span style="display:inline-block; width:12px; height:4px; background:${borderColor}; margin-right:8px; border-radius:2px;"></span>
+                                                <span style="color:${textSecondary};">${dp.dataset.label}</span>
+                                            </div>
+                                            <span style="color:${valColor}; text-align:right;">${formattedVal}</span>
                                         </div>
-                                        <span style="color:${valColor}; text-align:right;">${formattedVal}</span>
-                                    </div>
-                                `;
-                            });
-                            innerHtml += `</div></div>`;
-                            tooltipEl.innerHTML = innerHtml;
-                        }
+                                    `;
+                                });
+                                innerHtml += `</div></div>`;
+                                tooltipEl.innerHTML = innerHtml;
+                            }
 
-                        tooltipEl.style.opacity = 1;
-                        
-                        const ttWidth = tooltipEl.offsetWidth || 150;
-                        const ttHeight = tooltipEl.offsetHeight || 130;
-                        const chartWidth = context.chart.width;
-                        const chartHeight = context.chart.height;
-                        
-                        let targetLeft = tooltipModel.caretX - (ttWidth / 2);
-                        let targetTop = (chartHeight / 2) - (ttHeight / 2); 
-                        
-                        if (targetLeft < 10) targetLeft = 10;
-                        else if (targetLeft + ttWidth > chartWidth - 10) targetLeft = chartWidth - ttWidth - 10;
-                        
-                        tooltipEl.style.left = '0px';
-                        tooltipEl.style.top = '0px';
-                        tooltipEl.style.transform = `translate(${targetLeft}px, ${targetTop}px)`;
+                            tooltipEl.style.opacity = 1;
+                            
+                            const ttWidth = tooltipEl.offsetWidth || 150;
+                            const ttHeight = tooltipEl.offsetHeight || 130;
+                            const chartWidth = context.chart.width;
+                            const chartHeight = context.chart.height;
+                            
+                            let targetLeft = tooltipModel.caretX - (ttWidth / 2);
+                            let targetTop = (chartHeight / 2) - (ttHeight / 2); 
+                            
+                            if (targetLeft < 10) targetLeft = 10;
+                            else if (targetLeft + ttWidth > chartWidth - 10) targetLeft = chartWidth - ttWidth - 10;
+                            
+                            tooltipEl.style.left = '0px';
+                            tooltipEl.style.top = '0px';
+                            tooltipEl.style.transform = `translate(${targetLeft}px, ${targetTop}px)`;
+                        }
+                    }
+                },
+                scales: {
+                    x: { 
+                        grid: { display: false }, 
+                        ticks: { color: textSecondary, font: { family: "'Inter', sans-serif", size: 11 }, maxTicksLimit: 7, maxRotation: 0 } 
+                    },
+                    y: { 
+                        grid: { color: gridColor, drawBorder: false, borderDash: [4, 4] }, 
+                        ticks: { 
+                            color: textSecondary, font: { family: "'Inter', sans-serif", size: 11 }, padding: 10,
+                            crossAlign: 'near', 
+                            callback: function(value) {
+                                return new Intl.NumberFormat('ko-KR').format(value / 1000);
+                            }
+                        } 
                     }
                 }
-            },
-            scales: {
-                x: { 
-                    grid: { display: false }, 
-                    ticks: { color: textSecondary, font: { family: "'Inter', sans-serif", size: 11 }, maxTicksLimit: 7, maxRotation: 0 } 
-                },
-                y: { 
-                    grid: { color: gridColor, drawBorder: false, borderDash: [4, 4] }, 
-                    ticks: { 
-                        color: textSecondary, font: { family: "'Inter', sans-serif", size: 11 }, padding: 10,
-                        crossAlign: 'near', 
-                        callback: function(value) {
-                            return new Intl.NumberFormat('ko-KR').format(value / 1000);
-                        }
-                    } 
-                }
             }
+        });
+    }
+
+    // ==========================================
+    // [추가] 하단 독립 섹션 세부 막대 차트 렌더링
+    // ==========================================
+    const barCanvas = document.getElementById('detail-bar-chart');
+    if (barCanvas) {
+        // 1. 가장 최근 데이터 추출
+        const latestEntry = sortedData[sortedData.length - 1];
+
+        // 2. 세부 주체별 데이터 담을 객체 (억 단위)
+        const detailData = {
+            '개인': 0, '외국인': 0, '금융투자': 0, '보험': 0, 
+            '투신(사모)': 0, '은행': 0, '기타금융': 0, '연기금등': 0, '기타법인': 0
+        };
+
+        // 3. 코드별 분류 및 합산
+        if (latestEntry && Array.isArray(latestEntry.netAmounts)) {
+            latestEntry.netAmounts.forEach(item => {
+                const val = (parseFloat(item.diffValue) || 0) / 100000000;
+                switch(item.investorGubun) {
+                    case '8000': detailData['개인'] += val; break;
+                    case '9000': detailData['외국인'] += val; break;
+                    case '1000': detailData['금융투자'] += val; break;
+                    case '2000': detailData['보험'] += val; break;
+                    case '3000': 
+                    case '3100': detailData['투신(사모)'] += val; break;
+                    case '4000': detailData['은행'] += val; break;
+                    case '5000': detailData['기타금융'] += val; break;
+                    case '6000': detailData['연기금등'] += val; break;
+                    case '7000': 
+                    case '7100': detailData['기타법인'] += val; break;
+                }
+            });
         }
-    });
+
+        const barCtx = barCanvas.getContext('2d');
+        const labels = Object.keys(detailData);
+        const dataValues = Object.values(detailData);
+        
+        // 색상 지정: 양수는 Red, 음수는 Green
+        const bgColors = dataValues.map(v => v >= 0 ? 'rgba(235, 15, 41, 0.6)' : 'rgba(0, 135, 60, 0.6)');
+        const borderColors = dataValues.map(v => v >= 0 ? '#eb0f29' : '#00873c');
+
+        if (detailChartInstance) {
+            detailChartInstance.data.datasets[0].data = dataValues;
+            detailChartInstance.data.datasets[0].backgroundColor = bgColors;
+            detailChartInstance.data.datasets[0].borderColor = borderColors;
+            detailChartInstance.update();
+        } else {
+            detailChartInstance = new Chart(barCtx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: dataValues,
+                        backgroundColor: bgColors,
+                        borderColor: borderColors,
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }, 
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return new Intl.NumberFormat('ko-KR').format(Math.round(context.raw)) + '억';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: { 
+                            grid: { color: gridColor, drawBorder: false, borderDash: [4, 4] },
+                            ticks: { color: textSecondary, font: { family: "'Inter', sans-serif", size: 10 } }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: textSecondary, font: { family: "'Inter', sans-serif", size: 10 }, maxRotation: 45, minRotation: 45 }
+                        }
+                    }
+                }
+            });
+        }
+    }
 }
 
 window.switchTrendMarket = function(marketType) {
