@@ -1821,16 +1821,16 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
         // 1. 가장 최근 데이터 추출
         const latestEntry = sortedData[sortedData.length - 1];
 
-        // 2. 세부 주체별 데이터 담을 객체 (억 단위)
+        // 2. 세부 주체별 데이터 담을 객체 (단위: 천억)
         const detailData = {
             '개인': 0, '외국인': 0, '금융투자': 0, '보험': 0, 
             '투신(사모)': 0, '은행': 0, '기타금융': 0, '연기금등': 0, '기타법인': 0
         };
 
-        // 3. 코드별 분류 및 합산
+        // 3. 코드별 분류 및 합산 (100,000,000,000 으로 나누어 1.5 = 1500억 스케일로 맞춤)
         if (latestEntry && Array.isArray(latestEntry.netAmounts)) {
             latestEntry.netAmounts.forEach(item => {
-                const val = (parseFloat(item.diffValue) || 0) / 100000000;
+                const val = (parseFloat(item.diffValue) || 0) / 100000000000;
                 switch(item.investorGubun) {
                     case '8000': detailData['개인'] += val; break;
                     case '9000': detailData['외국인'] += val; break;
@@ -1851,9 +1851,44 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
         const labels = Object.keys(detailData);
         const dataValues = Object.values(detailData);
         
-        // 양수는 Red, 음수는 Blue 지정 (네이버 증권 방식 대응)
-        const bgColors = dataValues.map(v => v >= 0 ? 'rgba(235, 15, 41, 0.6)' : 'rgba(59, 130, 246, 0.6)');
-        const borderColors = dataValues.map(v => v >= 0 ? '#eb0f29' : '#3b82f6');
+        // 다크모드 대응 및 테마 색상 변수 설정 (양수: 초록, 음수: 빨강)
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        const redColor = isDark ? '#ff453a' : '#eb0f29';
+        const greenColor = isDark ? '#00c853' : '#00873c';
+
+        const bgColors = dataValues.map(v => v >= 0 ? (isDark ? 'rgba(0, 200, 83, 0.4)' : 'rgba(0, 135, 60, 0.4)') : (isDark ? 'rgba(255, 69, 58, 0.4)' : 'rgba(235, 15, 41, 0.4)'));
+        const borderColors = dataValues.map(v => v >= 0 ? greenColor : redColor);
+
+        // 막대그래프 끝부분에 텍스트 값을 직접 그려주는 커스텀 플러그인
+        const barLabelPlugin = {
+            id: 'barLabelPlugin',
+            afterDatasetsDraw(chart) {
+                const { ctx, data } = chart;
+                ctx.save();
+                ctx.font = '600 10.5px "Inter", sans-serif';
+                ctx.textAlign = 'center';
+
+                chart.getDatasetMeta(0).data.forEach((bar, index) => {
+                    const value = data.datasets[0].data[index];
+                    
+                    // 값이 너무 작아 0.0에 수렴하는 경우 표기 생략 (지저분함 방지)
+                    if (!value || Math.abs(value) < 0.05) return;
+
+                    // 소수점 1자리까지 표기하고 양수는 + 기호 추가 (예: +1.5, -0.3)
+                    const displayVal = (value > 0 ? '+' : '') + value.toFixed(1);
+                    
+                    ctx.fillStyle = value > 0 ? greenColor : redColor;
+                    
+                    // 양수면 막대 위, 음수면 막대 아래에 텍스트 위치
+                    const padding = 6;
+                    const yPos = value > 0 ? bar.y - padding : bar.y + padding;
+                    ctx.textBaseline = value > 0 ? 'bottom' : 'top';
+
+                    ctx.fillText(displayVal, bar.x, yPos);
+                });
+                ctx.restore();
+            }
+        };
 
         if (detailChartInstance) {
             detailChartInstance.data.datasets[0].data = dataValues;
@@ -1876,12 +1911,17 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    layout: {
+                        // 텍스트가 차트 영역 바깥으로 잘리지 않도록 위아래 여백 확보
+                        padding: { top: 25, bottom: 25 } 
+                    },
                     plugins: {
                         legend: { display: false }, 
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
-                                    return new Intl.NumberFormat('ko-KR').format(Math.round(context.raw)) + '억';
+                                    // 툴팁에서는 보기 편하게 기존처럼 '1,500억' 형태로 환산해서 보여줌
+                                    return new Intl.NumberFormat('ko-KR').format(Math.round(context.raw * 1000)) + '억';
                                 }
                             }
                         }
@@ -1889,14 +1929,19 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                     scales: {
                         y: { 
                             grid: { color: gridColor, drawBorder: false, borderDash: [4, 4] },
-                            ticks: { color: textSecondary, font: { family: "'Inter', sans-serif", size: 10 } }
+                            ticks: { 
+                                color: textSecondary, 
+                                font: { family: "'Inter', sans-serif", size: 10 },
+                                callback: function(value) { return value.toFixed(1); } // Y축 단위도 1.5로 맞춤
+                            }
                         },
                         x: {
                             grid: { display: false },
                             ticks: { color: textSecondary, font: { family: "'Inter', sans-serif", size: 10 }, maxRotation: 45, minRotation: 45 }
                         }
                     }
-                }
+                },
+                plugins: [barLabelPlugin]
             });
         }
     }
