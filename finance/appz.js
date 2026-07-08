@@ -165,7 +165,7 @@ function processTickerDB(data) {
 async function initTickerDB() {
     try {
         const todayStr = new Date().toISOString().slice(0, 10);
-        const response = await fetch(`./f2/tickers_n.json?v=${todayStr}`);
+        const response = await fetch(`./finance/tickers_n.json?v=${todayStr}`);
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const rawData = await response.json();
         localTickerDB = processTickerDB(rawData);
