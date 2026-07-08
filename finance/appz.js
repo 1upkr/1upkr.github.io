@@ -1579,7 +1579,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                 if (Array.isArray(d.netAmounts)) {
                     d.netAmounts.forEach(item => {
                         let val = 0;
-                        if (currentTrendMarketType === 'FUT' || currentTrendMarketType === 'FUTURES') {
+                        if (currentTrendMarketType === 'FUT') {
                             const quant = parseFloat(item.buyQuant || 0) - parseFloat(item.sellQuant || 0);
                             val = (isNaN(quant) || quant === 0) ? (parseFloat(item.diffValue) || 0) : quant;
                         } else {
@@ -1748,7 +1748,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                                     const sign = val > 0 ? '+' : '';
                                     const valColor = val > 0 ? greenColor : (val < 0 ? redColor : textPrimary);
                                     
-                                    const unit = (currentTrendMarketType === 'FUT' || currentTrendMarketType === 'FUTURES') ? '계약' : '억';
+                                    const unit = (currentTrendMarketType === 'FUT') ? '계약' : '억';
                                     const formattedVal = sign + new Intl.NumberFormat('ko-KR').format(Math.round(val)) + unit;
                                     
                                     const borderColor = dp.dataset.borderColor;
@@ -1797,7 +1797,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                             color: textSecondary, font: { family: "'Inter', sans-serif", size: 11 }, padding: 10,
                             crossAlign: 'near', 
                             callback: function(value) {
-                                if (currentTrendMarketType === 'FUT' || currentTrendMarketType === 'FUTURES') {
+                                if (currentTrendMarketType === 'FUT') {
                                     // 선물: 1000 이상일 경우 'k'로 축약 (예: 5000 -> 5k)
                                     return Math.abs(value) >= 1000 ? (value / 1000).toFixed(0) + 'k' : value;
                                 }
@@ -1829,7 +1829,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
         if (latestEntry && Array.isArray(latestEntry.netAmounts)) {
             latestEntry.netAmounts.forEach(item => {
                 let val = 0;
-                if (currentTrendMarketType === 'FUT' || currentTrendMarketType === 'FUTURES') {
+                if (currentTrendMarketType === 'FUT') {
                     // 선물: 계약수 원본 데이터를 그대로 사용 (임의로 나누지 않음)
                     const quant = parseFloat(item.buyQuant || 0) - parseFloat(item.sellQuant || 0);
                     val = (isNaN(quant) || quant === 0) ? (parseFloat(item.diffValue) || 0) : quant;
@@ -1876,7 +1876,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                     if (!value || Math.abs(value) < 0.05) return;
 
                     let displayVal;
-                    if (currentTrendMarketType === 'FUT' || currentTrendMarketType === 'FUTURES') {
+                    if (currentTrendMarketType === 'FUT') {
                         // 선물: 계약수이므로 정수로 표기 (예: +3,500)
                         displayVal = (value > 0 ? '+' : '') + new Intl.NumberFormat('ko-KR').format(Math.round(value));
                     } else {
@@ -1934,7 +1934,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                                 color: textSecondary, 
                                 font: { family: "'Inter', sans-serif", size: 10 },
                                 callback: function(value) { 
-                                    if (currentTrendMarketType === 'FUT' || currentTrendMarketType === 'FUTURES') {
+                                    if (currentTrendMarketType === 'FUT') {
                                         // 선물: 1000 넘어가면 'k'로 축약 (예: 5000 -> 5k)
                                         return Math.abs(value) >= 1000 ? (value / 1000).toFixed(0) + 'k' : value;
                                     }
