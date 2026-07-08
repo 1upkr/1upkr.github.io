@@ -886,7 +886,7 @@ function forceRefresh() {
     state.lastNewsFetch = 0; 
     fetchData(); 
     
-    const allMarkets = ['ALL', 'KOSPI', 'KOSDAQ', 'FUTURES'];
+    const allMarkets = ['ALL', 'KOSPI', 'KOSDAQ', 'FUT'];
     allMarkets.forEach(market => {
         const isBackground = (market !== currentTrendMarketType);
         fetchMarketTrend(market, isBackground);
