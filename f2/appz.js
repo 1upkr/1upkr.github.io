@@ -1803,28 +1803,29 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
     }
 
     // ==========================================
-    // [추가] 하단 통합 섹션 세부 막대 차트 렌더링
+    // 하단 통합 섹션 세부 막대 차트 렌더링
     // ==========================================
     const barCanvas = document.getElementById('detail-bar-chart');
     if (barCanvas) {
         // 1. 가장 최근 데이터 추출
         const latestEntry = sortedData[sortedData.length - 1];
 
-        // 2. 세부 주체별 데이터 담을 객체 (단위: 천억)
+        // 2. 세부 주체별 데이터 담을 객체
         const detailData = {
             '개인': 0, '외국인': 0, '금융투자': 0, '보험': 0, 
             '투신(사모)': 0, '은행': 0, '기타금융': 0, '연기금등': 0, '기타법인': 0
         };
 
-        // 3. 코드별 분류 및 합산
+        // 3. 코드별 분류 및 스케일링 적용
         if (latestEntry && Array.isArray(latestEntry.netAmounts)) {
             latestEntry.netAmounts.forEach(item => {
                 let val = 0;
                 if (currentTrendMarketType === 'FUT' || currentTrendMarketType === 'FUTURES') {
+                    // 선물: 계약수 원본 데이터를 그대로 사용 (임의로 나누지 않음)
                     const quant = parseFloat(item.buyQuant || 0) - parseFloat(item.sellQuant || 0);
-                    const rawVal = (isNaN(quant) || quant === 0) ? (parseFloat(item.diffValue) || 0) : quant;
-                    val = rawVal / 1000; 
+                    val = (isNaN(quant) || quant === 0) ? (parseFloat(item.diffValue) || 0) : quant;
                 } else {
+                    // 코스피/코스닥: 천억 단위로 차트 스케일링 (1.5 = 1500억)
                     val = (parseFloat(item.diffValue) || 0) / 100000000000;
                 }
 
@@ -1848,11 +1849,10 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
         const labels = Object.keys(detailData);
         const dataValues = Object.values(detailData);
         
-        // 다크모드 대응 및 테마 색상 변수 설정 (양수: 초록, 음수: 빨강)
         const bgColors = dataValues.map(v => v >= 0 ? (isDark ? 'rgba(0, 200, 83, 0.4)' : 'rgba(0, 135, 60, 0.4)') : (isDark ? 'rgba(255, 69, 58, 0.4)' : 'rgba(235, 15, 41, 0.4)'));
         const borderColors = dataValues.map(v => v >= 0 ? greenColor : redColor);
 
-        // 막대그래프 끝부분에 텍스트 값을 직접 그려주는 커스텀 플러그인
+        // 막대그래프 끝부분 텍스트 커스텀 플러그인
         const barLabelPlugin = {
             id: 'barLabelPlugin',
             afterDatasetsDraw(chart) {
@@ -1864,20 +1864,19 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                 chart.getDatasetMeta(0).data.forEach((bar, index) => {
                     const value = data.datasets[0].data[index];
                     
-                    // 값이 너무 작아 0.0에 수렴하는 경우 표기 생략
                     if (!value || Math.abs(value) < 0.05) return;
 
                     let displayVal;
                     if (currentTrendMarketType === 'FUT' || currentTrendMarketType === 'FUTURES') {
-                        const realVal = Math.round(value * 1000);
-                        displayVal = (realVal > 0 ? '+' : '') + new Intl.NumberFormat('ko-KR').format(realVal);
+                        // 선물: 계약수이므로 정수로 표기 (예: +3,500)
+                        displayVal = (value > 0 ? '+' : '') + new Intl.NumberFormat('ko-KR').format(Math.round(value));
                     } else {
+                        // 주식: 천억 단위이므로 소수점 1자리 표기 (예: +1.5)
                         displayVal = (value > 0 ? '+' : '') + value.toFixed(1);
                     }
                     
                     ctx.fillStyle = value > 0 ? greenColor : redColor;
                     
-                    // 양수면 막대 위, 음수면 막대 아래에 텍스트 위치
                     const padding = 2;
                     const yPos = value > 0 ? bar.y - padding : bar.y + padding;
                     ctx.textBaseline = value > 0 ? 'bottom' : 'top';
@@ -1892,7 +1891,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
             detailChartInstance.data.datasets[0].data = dataValues;
             detailChartInstance.data.datasets[0].backgroundColor = bgColors;
             detailChartInstance.data.datasets[0].borderColor = borderColors;
-            detailChartInstance.data.datasets[0].borderRadius = 0; // 플랫한 막대
+            detailChartInstance.data.datasets[0].borderRadius = 0; 
             detailChartInstance.update();
         } else {
             detailChartInstance = new Chart(barCtx, {
@@ -1904,8 +1903,8 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                         backgroundColor: bgColors,
                         borderColor: borderColors,
                         borderWidth: 0,
-                        borderRadius: 0, // 플랫한 막대 
-                        minBarLength: 2  // 작은 값도 최소 2px 막대로 표시
+                        borderRadius: 0,
+                        minBarLength: 2
                     }]
                 },
                 options: {
@@ -1916,19 +1915,21 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                     },
                     plugins: {
                         legend: { display: false }, 
-                        tooltip: {
-                            enabled: false
-                        }
+                        tooltip: { enabled: false }
                     },
                     scales: {
                         y: { 
-                            grace: '30%', // Y축 위아래 여백을 줘서 글자가 짤리지 않게 함
+                            grace: '30%',
                             grid: { color: gridColor, drawBorder: false, borderDash: [4, 4] },
                             ticks: { 
                                 color: textSecondary, 
                                 font: { family: "'Inter', sans-serif", size: 10 },
                                 callback: function(value) { 
-                                    return Math.round(value); // Y축 소수점 제거
+                                    if (currentTrendMarketType === 'FUT' || currentTrendMarketType === 'FUTURES') {
+                                        // 선물: 1000 넘어가면 'k'로 축약 (예: 5000 -> 5k)
+                                        return Math.abs(value) >= 1000 ? (value / 1000).toFixed(0) + 'k' : value;
+                                    }
+                                    return Math.round(value); 
                                 }
                             }
                         },
