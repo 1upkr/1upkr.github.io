@@ -51,7 +51,7 @@ const EMPTY_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
 
 let localTickerDB = [];
 let trendChartInstance = null;
-let detailChartInstance = null; // 막대 차트용 인스턴스
+let detailChartInstance = null; 
 let tabScrollCache = { dashboard: 0, news: 0 };
 let currentTrendMarketType = localStorage.getItem('marketdash_trend_tab') || 'ALL'; 
 
@@ -114,7 +114,7 @@ async function init() {
         updateTimerUI(state.countdown);
         startTimer();
         
-        const allMarkets = ['ALL', 'KOSPI', 'KOSDAQ', 'FUT'];
+        const allMarkets = ['ALL', 'KOSPI', 'KOSDAQ', 'FUTURES'];
         allMarkets.forEach(m => fetchMarketTrend(m, m !== currentTrendMarketType));
         
         if ((Date.now() - state.lastNewsFetch) > 60000) fetchNews();
@@ -141,7 +141,6 @@ async function init() {
             if (typeof window.hideChartTooltip === 'function') window.hideChartTooltip();
         }
 
-        // 모바일 아코디언 토글 추가
         const row = e.target.closest('tr[data-ticker]');
         if (row && !e.target.closest('.drag-handle') && !e.target.closest('.action-icon-btn') && !e.target.closest('.search-wrapper') && !e.target.closest('.settings-wrapper')) {
             if (window.innerWidth <= 650) {
@@ -238,7 +237,6 @@ function initSwipeToDelete() {
         const diffX = touchCurrentX - touchStartX;
 
         swipingRow.style.transition = 'all 0.3s ease';
-        
         swipingRow.style.willChange = 'auto';
         
         if (isSwiping && diffX < -80) {
@@ -881,7 +879,7 @@ function forceRefresh() {
     state.lastNewsFetch = 0; 
     fetchData(); 
     
-    const allMarkets = ['ALL', 'KOSPI', 'KOSDAQ', 'FUT'];
+    const allMarkets = ['ALL', 'KOSPI', 'KOSDAQ', 'FUTURES'];
     allMarkets.forEach(market => {
         const isBackground = (market !== currentTrendMarketType);
         fetchMarketTrend(market, isBackground);
@@ -1117,7 +1115,6 @@ function updateDOMWithData(quotes) {
             if (sectionId) {
                 pq.sectionId = sectionId;
                 if (pq.mainPct > 0) {
-                    // [적용] 최대 기준치를 10%로 제한 (아웃라이어 컷)
                     sectionMaxes[sectionId].maxUp = Math.min(Math.max(sectionMaxes[sectionId].maxUp, pq.mainPct), 10.0);
                 } else if (pq.mainPct < 0) {
                     sectionMaxes[sectionId].maxDown = Math.min(Math.max(sectionMaxes[sectionId].maxDown, Math.abs(pq.mainPct)), 10.0);
@@ -1138,22 +1135,20 @@ function updateDOMWithData(quotes) {
 
                 let ratio = 0;
                 if (mainPct > 0 && maxUp > 0) {
-                    // 상한선을 넘는 값은 무조건 1.0(100%)로 처리
                     ratio = Math.min(mainPct / maxUp, 1.0);
                 } else if (mainPct < 0 && maxDown > 0) {
                     ratio = Math.min(Math.abs(mainPct) / maxDown, 1.0);
                 }
 
                 if (ratio > 0) {
-                    // [적용] 곡선 대신 선형으로 직관성 확보, 배경색 대비 극대화
-                    const textPct = 40 + (60 * ratio); // 최소 40% ~ 최대 100%
-                    const bgPct = 5 + (25 * ratio);    // 최소 5% ~ 최대 30% (주도주는 배경이 짙어짐)
+                    const textPct = 40 + (60 * ratio); 
+                    const bgPct = 5 + (25 * ratio);    
                     
                     textIntensityStr = `${textPct.toFixed(1)}%`;
                     bgIntensityStr = `${bgPct.toFixed(1)}%`;
                 } else if (mainPct === 0) {
                     textIntensityStr = "40%";
-                    bgIntensityStr = "0%"; // 보합(0%)은 배경색을 완전히 빼서 차별화
+                    bgIntensityStr = "0%"; 
                 }
             }
             
@@ -1265,12 +1260,10 @@ function formatNum(num, isKR = false) {
     if (num === undefined || num === null || isNaN(num)) return '-';
     let result = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num);
     
-    // KR 영역이면서 .00으로 끝날 때만 소수점 제거
     if (isKR && result.endsWith('.00')) {
         return result.slice(0, -3); 
     }
     
-    // KR 영역이 아니거나 소수점이 .00이 아니면 .xx 부분을 decimal 클래스로 감싸서 반환
     if (result.includes('.')) {
         const parts = result.split('.');
         return `${parts[0]}<span class="decimal">.${parts[1]}</span>`;
@@ -1283,7 +1276,6 @@ function formatChangeNum(num, isKR = false) {
     if (num === undefined || num === null || isNaN(num)) return '-';
     let result = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Math.abs(num));
     
-    // KR 영역이면서 .00으로 끝날 때만 소수점 제거
     if (isKR && result.endsWith('.00')) {
         return result.slice(0, -3);
     }
@@ -1310,10 +1302,8 @@ async function fetchNews() {
     Object.keys(state.watchlists).forEach(sectionId => {
         const tickers = state.watchlists[sectionId].tickers;
         if (sectionId === 'kr') {
-            // 한국 주식(kr)은 네이버 서버 부하를 막기 위해 상위 3개만 뉴스 수집
             allTickers = allTickers.concat(tickers.slice(0, 3)); 
         } else {
-            // 미국 주식 등은 제한 없이 모두 수집 (야후는 1개의 URL로 한 번에 처리되므로 안전)
             allTickers = allTickers.concat(tickers);
         }
     });
@@ -1396,7 +1386,6 @@ async function fetchMarketTrend(marketType = currentTrendMarketType, isBackgroun
         const tabs = document.querySelectorAll('.trend-tab-btn');
         if (tabs.length > 0) {
             tabs.forEach(btn => btn.classList.remove('active'));
-            // 하나의 컴포넌트로 묶였으므로 다시 find 사용
             const activeTab = Array.from(tabs).find(btn => btn.getAttribute('onclick').includes(marketType));
             if (activeTab) activeTab.classList.add('active');
         }
@@ -1532,7 +1521,6 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
     const canvas = document.getElementById('trend-chart-canvas');
     if (!canvas) return;
 
-    // --- 구분선 우측 배지 업데이트 ---
     const badgeContainer = document.getElementById('trend-date-badge');
     if (badgeContainer) {
         const badgeText = isLive ? 'LIVE' : 'CLOSED';
@@ -1583,7 +1571,14 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                 let ind = 0, forgn = 0, inst = 0;
                 if (Array.isArray(d.netAmounts)) {
                     d.netAmounts.forEach(item => {
-                        const val = (parseFloat(item.diffValue) || 0) / 100000000;
+                        let val = 0;
+                        if (currentTrendMarketType === 'FUT' || currentTrendMarketType === 'FUTURES') {
+                            const quant = parseFloat(item.buyQuant || 0) - parseFloat(item.sellQuant || 0);
+                            val = (isNaN(quant) || quant === 0) ? (parseFloat(item.diffValue) || 0) : quant;
+                        } else {
+                            val = (parseFloat(item.diffValue) || 0) / 100000000;
+                        }
+
                         if (item.investorGubun === '8000') ind = val;
                         else if (item.investorGubun === '9000') forgn = val;
                         else if (instCodes.includes(item.investorGubun)) inst += val;
@@ -1745,7 +1740,10 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                                     if (val === null) return;
                                     const sign = val > 0 ? '+' : '';
                                     const valColor = val > 0 ? greenColor : (val < 0 ? redColor : textPrimary);
-                                    const formattedVal = sign + new Intl.NumberFormat('ko-KR').format(Math.round(val)) + '억';
+                                    
+                                    const unit = (currentTrendMarketType === 'FUT' || currentTrendMarketType === 'FUTURES') ? '계약' : '억';
+                                    const formattedVal = sign + new Intl.NumberFormat('ko-KR').format(Math.round(val)) + unit;
+                                    
                                     const borderColor = dp.dataset.borderColor;
 
                                     innerHtml += `
@@ -1792,6 +1790,9 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                             color: textSecondary, font: { family: "'Inter', sans-serif", size: 11 }, padding: 10,
                             crossAlign: 'near', 
                             callback: function(value) {
+                                if (currentTrendMarketType === 'FUT' || currentTrendMarketType === 'FUTURES') {
+                                    return new Intl.NumberFormat('ko-KR').format(value);
+                                }
                                 return new Intl.NumberFormat('ko-KR').format(value / 1000);
                             }
                         } 
@@ -1815,10 +1816,18 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
             '투신(사모)': 0, '은행': 0, '기타금융': 0, '연기금등': 0, '기타법인': 0
         };
 
-        // 3. 코드별 분류 및 합산 (100,000,000,000 으로 나누어 1.5 = 1500억 스케일로 맞춤)
+        // 3. 코드별 분류 및 합산
         if (latestEntry && Array.isArray(latestEntry.netAmounts)) {
             latestEntry.netAmounts.forEach(item => {
-                const val = (parseFloat(item.diffValue) || 0) / 100000000000;
+                let val = 0;
+                if (currentTrendMarketType === 'FUT' || currentTrendMarketType === 'FUTURES') {
+                    const quant = parseFloat(item.buyQuant || 0) - parseFloat(item.sellQuant || 0);
+                    const rawVal = (isNaN(quant) || quant === 0) ? (parseFloat(item.diffValue) || 0) : quant;
+                    val = rawVal / 1000; 
+                } else {
+                    val = (parseFloat(item.diffValue) || 0) / 100000000000;
+                }
+
                 switch(item.investorGubun) {
                     case '8000': detailData['개인'] += val; break;
                     case '9000': detailData['외국인'] += val; break;
@@ -1858,8 +1867,14 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                     // 값이 너무 작아 0.0에 수렴하는 경우 표기 생략
                     if (!value || Math.abs(value) < 0.05) return;
 
-                    // 소수점 1자리까지 표기하고 양수는 + 기호 추가
-                    const displayVal = (value > 0 ? '+' : '') + value.toFixed(1);
+                    let displayVal;
+                    if (currentTrendMarketType === 'FUT' || currentTrendMarketType === 'FUTURES') {
+                        const realVal = Math.round(value * 1000);
+                        displayVal = (realVal > 0 ? '+' : '') + new Intl.NumberFormat('ko-KR').format(realVal);
+                    } else {
+                        displayVal = (value > 0 ? '+' : '') + value.toFixed(1);
+                    }
+                    
                     ctx.fillStyle = value > 0 ? greenColor : redColor;
                     
                     // 양수면 막대 위, 음수면 막대 아래에 텍스트 위치
