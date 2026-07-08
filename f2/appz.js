@@ -1791,8 +1791,10 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                             crossAlign: 'near', 
                             callback: function(value) {
                                 if (currentTrendMarketType === 'FUT' || currentTrendMarketType === 'FUTURES') {
-                                    return new Intl.NumberFormat('ko-KR').format(value);
+                                    // 선물: 1000 이상일 경우 'k'로 축약 (예: 5000 -> 5k)
+                                    return Math.abs(value) >= 1000 ? (value / 1000).toFixed(0) + 'k' : value;
                                 }
+                                // 코스피/코스닥: 천억 단위 축약
                                 return new Intl.NumberFormat('ko-KR').format(value / 1000);
                             }
                         } 
