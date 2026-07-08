@@ -1944,7 +1944,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                         },
                         x: {
                             grid: { display: false },
-                            ticks: { color: textSecondary, font: { family: "'Inter', sans-serif", size: 9.5 }, maxRotation: 0, minRotation: 0 }
+                            ticks: { color: textSecondary, font: { family: "'Inter', sans-serif", size: 9.5 }, maxRotation: 0, minRotation: 0, autoSkip: false }
                         }
                     }
                 },
