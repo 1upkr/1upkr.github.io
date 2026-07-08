@@ -74,6 +74,12 @@ async function init() {
     applyTheme(); 
     if (!state.sectionOrder || state.sectionOrder.length === 0) state.sectionOrder = Object.keys(state.watchlists);
 
+    // [추가] 초기 로드 시 선택된 탭 즉시 활성화
+    const trendTabs = document.querySelectorAll('.trend-tab-btn');
+    trendTabs.forEach(btn => btn.classList.remove('active'));
+    const activeTrendTab = Array.from(trendTabs).find(btn => btn.getAttribute('onclick').includes(`'${currentTrendMarketType}'`));
+    if (activeTrendTab) activeTrendTab.classList.add('active');
+
     document.addEventListener('visibilitychange', () => {
         if (!document.hidden) {
             const lastFetchStr = localStorage.getItem('marketdash_last_fetch_time');
@@ -114,7 +120,7 @@ async function init() {
         updateTimerUI(state.countdown);
         startTimer();
         
-        const allMarkets = ['ALL', 'KOSPI', 'KOSDAQ', 'FUTURES'];
+        const allMarkets = ['ALL', 'KOSPI', 'KOSDAQ', 'FUT'];
         allMarkets.forEach(m => fetchMarketTrend(m, m !== currentTrendMarketType));
         
         if ((Date.now() - state.lastNewsFetch) > 60000) fetchNews();
@@ -1386,7 +1392,7 @@ async function fetchMarketTrend(marketType = currentTrendMarketType, isBackgroun
         const tabs = document.querySelectorAll('.trend-tab-btn');
         if (tabs.length > 0) {
             tabs.forEach(btn => btn.classList.remove('active'));
-            const activeTab = Array.from(tabs).find(btn => btn.getAttribute('onclick').includes(marketType));
+            const activeTab = Array.from(tabs).find(btn => btn.getAttribute('onclick').includes(`'${marketType}'`));
             if (activeTab) activeTab.classList.add('active');
         }
 
