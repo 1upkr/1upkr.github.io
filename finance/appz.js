@@ -1645,17 +1645,17 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                 labels: fixedLabels,
                 datasets: [
                     { 
-                        label: '개인', data: individualData, borderColor: redColor, 
+                        label: '개인', data: individualData, borderColor: redColor + 'CC', // 'CC'는 약 80% 불투명도 
                         backgroundColor: createGradient(redColor, isDark ? 255 : 235, isDark ? 69 : 15, isDark ? 58 : 41),
                         borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 5, fill: true, tension: 0.4 
                     },
                     { 
-                        label: '외국인', data: foreignData, borderColor: greenColor, 
+                        label: '외국인', data: foreignData, borderColor: greenColor + 'CC', 
                         backgroundColor: createGradient(greenColor, isDark ? 0 : 0, isDark ? 200 : 135, isDark ? 83 : 60),
                         borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 5, fill: true, tension: 0.4 
                     },
                     { 
-                        label: '기관', data: institutionData, borderColor: instColor, 
+                        label: '기관', data: institutionData, borderColor: instColor + 'CC', 
                         backgroundColor: createGradient(instColor, 245, 166, 35),
                         borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 5, fill: true, tension: 0.4 
                     }
