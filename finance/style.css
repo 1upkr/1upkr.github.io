@@ -95,7 +95,8 @@ header {
     padding: 0.875rem 5%; display: flex; justify-content: space-between; align-items: center;
     position: sticky; top: 0; z-index: 100; box-shadow: var(--shadow-sm);
 }
-.header-left h1 { font-size: 1.00rem; font-weight: 900; display: flex; align-items: center; gap: 0.5rem; letter-spacing: -0.02em;} 
+.header-left h1 { font-size: 1.00rem; font-weight: 900; display: flex; align-items: center; gap: 0.5rem; letter-spacing: -0.02em;}
+.header-left h1 .h_colon { display: inline-block; transform: translateY(-0.06em);}
 .header-controls { display: flex; align-items: center; gap: 0.25rem; font-size: 0.875rem; font-weight: 500; }
 
 .timer { display: flex; align-items: center; justify-content: center; padding: 0.5rem; opacity: 0.65; }
