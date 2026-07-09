@@ -1737,7 +1737,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                                 let innerHtml = `<div style="font-family:'Inter', sans-serif;">`;
 
                                 titleLines.forEach(function(title) {
-                                    innerHtml += `<div style="font-weight:700; font-size:13px; color:${textPrimary}; margin-bottom:10px;">${title}</div>`;
+                                    innerHtml += `<div style="font-weight:700; font-size:11px; color:${textPrimary}; margin-bottom:10px;">${title}</div>`;
                                 });
 
                                 innerHtml += `<div style="display:flex; flex-direction:column; gap:8px;">`;
@@ -1754,7 +1754,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                                     const borderColor = dp.dataset.borderColor;
 
                                     innerHtml += `
-                                        <div style="display:flex; align-items:center; font-size:10px; font-weight:600; justify-content:space-between; gap: 30px;">
+                                        <div style="display:flex; align-items:center; font-size:11px; font-weight:600; justify-content:space-between; gap: 30px;">
                                             <div style="display:flex; align-items:center;">
                                                 <span style="display:inline-block; width:12px; height:4px; background:${borderColor}; margin-right:8px; border-radius:2px;"></span>
                                                 <span style="color:${textSecondary};">${dp.dataset.label}</span>
