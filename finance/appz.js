@@ -1627,6 +1627,10 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
     const greenColor = isDark ? '#00c853' : '#00873c';
     const instColor = '#f5a623';
 
+    const colorInd = isDark ? '#bf5af2' : '#af52de';  // 개인 (보라색)
+    const colorFor = isDark ? '#0a84ff' : '#007aff';  // 외국인 (파랑색)
+    const colorInst = isDark ? '#ff9f0a' : '#ff9500'; // 기관 (오렌지색)
+
     if (trendChartInstance) {
         trendChartInstance.data.datasets[0].data = individualData;
         trendChartInstance.data.datasets[1].data = foreignData;
@@ -1646,18 +1650,18 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                 labels: fixedLabels,
                 datasets: [
                     { 
-                        label: '개인', data: individualData, borderColor: redColor + 'CC', // 'CC'는 약 80% 불투명도 
-                        backgroundColor: createGradient(redColor, isDark ? 255 : 235, isDark ? 69 : 15, isDark ? 58 : 41),
+                        label: '개인', data: individualData, borderColor: colorInd + 'CC', 
+                        backgroundColor: createGradient(colorInd, isDark ? 191 : 175, isDark ? 90 : 82, isDark ? 242 : 222),
                         borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 5, fill: true, tension: 0.4 
                     },
                     { 
-                        label: '외국인', data: foreignData, borderColor: greenColor + 'CC', 
-                        backgroundColor: createGradient(greenColor, isDark ? 0 : 0, isDark ? 200 : 135, isDark ? 83 : 60),
+                        label: '외국인', data: foreignData, borderColor: colorFor + 'CC', 
+                        backgroundColor: createGradient(colorFor, isDark ? 10 : 0, isDark ? 132 : 122, isDark ? 255 : 255),
                         borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 5, fill: true, tension: 0.4 
                     },
                     { 
-                        label: '기관', data: institutionData, borderColor: instColor + 'CC', 
-                        backgroundColor: createGradient(instColor, 245, 166, 35),
+                        label: '기관', data: institutionData, borderColor: colorInst + 'CC', 
+                        backgroundColor: createGradient(colorInst, isDark ? 255 : 255, isDark ? 159 : 149, isDark ? 10 : 0),
                         borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 5, fill: true, tension: 0.4 
                     }
                 ]
@@ -1884,7 +1888,12 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                         displayVal = (value > 0 ? '+' : '') + value.toFixed(1);
                     }
                     
-                    ctx.fillStyle = value > 0 ? greenColor : redColor;
+                    const labelName = chart.data.labels[index];
+                    let textColor = colorInst; // 기본 기관 계열 (오렌지)
+                    if (labelName === '개인') textColor = colorInd; // 보라
+                    else if (labelName === '외국인') textColor = colorFor; // 파랑
+                    
+                    ctx.fillStyle = textColor;
                     
                     const padding = 2;
                     const yPos = value > 0 ? bar.y - padding : bar.y + padding;
