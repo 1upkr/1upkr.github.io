@@ -1934,7 +1934,24 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                     scales: {
                         y: { 
                             grace: '30%',
-                            grid: { color: gridColor, drawBorder: false, borderDash: [4, 4] },
+                            grid: { 
+                                drawBorder: false,
+                                // 값이 0일 때는 진한 색상, 그 외는 기본 그리드 색상 적용
+                                color: (context) => {
+                                    if (context.tick.value === 0) {
+                                        return isDark ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)';
+                                    }
+                                    return gridColor;
+                                },
+                                // 값이 0일 때는 선 두께 (1.0px)
+                                lineWidth: (context) => {
+                                    return context.tick.value === 0 ? 1.0 : 1;
+                                },
+                                // 값이 0일 때는 실선(빈 배열), 그 외는 점선[4,4] 적용
+                                borderDash: (context) => {
+                                    return context.tick.value === 0 ? [] : [4, 4];
+                                }
+                            },
                             ticks: { 
                                 color: textSecondary, 
                                 font: { family: "'Inter', sans-serif", size: 10 },
