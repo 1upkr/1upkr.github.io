@@ -1859,7 +1859,11 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
         const dataValues = Object.values(detailData);
         
         const bgColors = dataValues.map(v => v >= 0 ? (isDark ? 'rgba(0, 200, 83, 0.4)' : 'rgba(0, 135, 60, 0.4)') : (isDark ? 'rgba(255, 69, 58, 0.4)' : 'rgba(235, 15, 41, 0.4)'));
-        const borderColors = dataValues.map(v => v >= 0 ? greenColor : redColor);
+        const borderColors = labels.map(label => {
+            if (label === '개인') return redColor;
+            if (label === '외국인') return greenColor;
+            return instColor; // 금융투자, 연기금 등 나머지 기관
+        });
 
         // 막대그래프 끝부분 텍스트 커스텀 플러그인
         const barLabelPlugin = {
@@ -1900,6 +1904,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
             detailChartInstance.data.datasets[0].data = dataValues;
             detailChartInstance.data.datasets[0].backgroundColor = bgColors;
             detailChartInstance.data.datasets[0].borderColor = borderColors;
+            detailChartInstance.data.datasets[0].borderWidth = 1; // 테두리 두께 1px 적용
             detailChartInstance.data.datasets[0].borderRadius = 0; 
             detailChartInstance.update();
         } else {
@@ -1911,7 +1916,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                         data: dataValues,
                         backgroundColor: bgColors,
                         borderColor: borderColors,
-                        borderWidth: 0,
+                        borderWidth: 1, // 기존 0에서 1로 변경
                         borderRadius: 0,
                         minBarLength: 2
                     }]
