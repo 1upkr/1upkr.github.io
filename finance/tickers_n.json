@@ -50,6 +50,7 @@
   { "s": "AVAX-USD", "n": "아발란체 (Avalanche)", "e": "Crypto" },
   { "s": "LINK-USD", "n": "체인링크 (Chainlink)", "e": "Crypto" },
 
+  { "s": "SKHY", "n": "SK Hynix Inc (SK하이닉스)", "e": "NASDAQ" },
   { "s": "AAPL", "n": "Apple Inc. (애플)", "e": "NASDAQ" },
   { "s": "MSFT", "n": "Microsoft Corporation (마이크로소프트)", "e": "NASDAQ" },
   { "s": "NVDA", "n": "NVIDIA Corporation (엔비디아)", "e": "NASDAQ" },
@@ -72,6 +73,7 @@
   { "s": "ORCL", "n": "Oracle Corporation (오라클)", "e": "NYSE" },
   { "s": "CRM", "n": "Salesforce Inc. (세일즈포스)", "e": "NYSE" },
   { "s": "NOW", "n": "ServiceNow Inc. (서비스나우)", "e": "NYSE" },
+  { "s": "SNDK", "n": "Sandisk Corporation (샌디스크)", "e": "NASDAQ" },  
   { "s": "ADBE", "n": "Adobe Inc. (어도비)", "e": "NASDAQ" },
   { "s": "INTU", "n": "Intuit Inc. (인튜이트)", "e": "NASDAQ" },
   { "s": "PLTR", "n": "Palantir Technologies (팔란티어)", "e": "NASDAQ" },
