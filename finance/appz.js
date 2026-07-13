@@ -1628,7 +1628,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
     const instColor = '#f5a623';
 
     const colorInd = isDark ? '#bf5af2' : '#af52de';  // 개인 (보라색)
-    const colorFor = isDark ? '#0a84ff' : '#007aff';  // 외국인 (파랑색)
+    const colorFor = isDark ? '#90a4ae' : '#546e7a';  // 외국인 (블루그레이)
     const colorInst = isDark ? '#ff9f0a' : '#ff9500'; // 기관 (오렌지색)
 
     if (trendChartInstance) {
@@ -1656,7 +1656,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                     },
                     { 
                         label: '외국인', data: foreignData, borderColor: colorFor + 'CC', 
-                        backgroundColor: createGradient(colorFor, isDark ? 10 : 0, isDark ? 132 : 122, isDark ? 255 : 255),
+                        backgroundColor: createGradient(colorFor, isDark ? 144 : 84, isDark ? 164 : 110, isDark ? 174 : 122),
                         borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 5, fill: true, tension: 0.4 
                     },
                     { 
