@@ -869,12 +869,21 @@ async function fetchData() {
 }
 
 function updateTimerUI(seconds) {
-    const pie = document.getElementById('timer-pie');
-    if (pie) {
-        const maxOffset = 31.4159;
-        const pct = seconds / 60; 
+    const ring = document.getElementById('timer-ring');
+    if (ring) {
+        const maxOffset = 100.53; // 원의 둘레 (2 * PI * r(16))
+        
+        // 60초일 때 0(완전히 채워짐), 0초일 때 100.53(완전히 비워짐)
+        const pct = 1 - (seconds / 60); 
         const offset = pct * maxOffset; 
-        pie.style.strokeDashoffset = offset;
+        ring.style.strokeDashoffset = offset;
+        
+        // 10초 이하일 때 붉은색 경고 효과
+        if (seconds <= 10) {
+            ring.classList.add('warning');
+        } else {
+            ring.classList.remove('warning');
+        }
     }
 }
 
