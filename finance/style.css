@@ -101,11 +101,11 @@ header {
 
 .timer { display: flex; align-items: center; justify-content: center; padding: 0.5rem; opacity: 0.65; }
 
-/* 새로고침 링 타이머 UI (크기 축소) */
+/* 새로고침 링 타이머 UI (크기 추가 축소) */
 .timer-ring-btn {
     position: relative;
-    width: 32px !important; /* 36px -> 32px */
-    height: 32px !important;
+    width: 28px !important;
+    height: 28px !important;
     padding: 0 !important;
     display: flex;
     align-items: center;
@@ -117,31 +117,33 @@ header {
     position: absolute;
     top: 0;
     left: 0;
-    width: 32px !important;
-    height: 32px !important;
+    width: 28px !important;
+    height: 28px !important;
     transform: rotate(-90deg);
 }
 
-/* 내부 새로고침 아이콘 축소 */
+/* 내부 새로고침 아이콘 축소 및 두께 조절 */
 .timer-ring-btn .refresh-icon {
-    width: 15px !important; /* 18px -> 15px */
-    height: 15px !important;
+    width: 14px !important;
+    height: 14px !important;
     position: relative;
     z-index: 2;
+    stroke-width: 1.5; /* 링의 두께와 통일 */
 }
 
+/* 링 두께를 1.5로 얇고 모던하게 변경 */
 .ring-bg {
     fill: none;
     stroke: var(--border-color);
-    stroke-width: 2.5;
+    stroke-width: 1.5; 
 }
 
-/* 링 둘레 길이 수정 (r=14 기준) */
+/* 링 둘레 길이 수정 (r=12 기준) */
 .ring-fill {
     fill: none;
     stroke: var(--text-primary);
-    stroke-width: 2.5;
-    stroke-dasharray: 87.96; /* 100.53 -> 87.96 */
+    stroke-width: 1.5; /* 얇은 라인 */
+    stroke-dasharray: 75.40; 
     stroke-dashoffset: 0;
     stroke-linecap: round;
     transition: stroke-dashoffset 1s linear, stroke 0.3s ease;
@@ -154,21 +156,22 @@ header {
 }
 
 /* -------------------------------------
-   설정 버튼 밸런스 조정 (새로 추가) 
+   설정 버튼 밸런스 조정 
 -------------------------------------- */
 #btn-settings-toggle {
-    width: 32px !important;
-    height: 32px !important;
+    width: 28px !important; 
+    height: 28px !important;
     padding: 0 !important;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-/* 설정 아이콘 살짝 확대 */
+/* 설정 아이콘 크기 및 두께 통일 */
 #btn-settings-toggle svg {
-    width: 20px !important; /* 기존 18px -> 20px */
-    height: 20px !important;
+    width: 18px !important; 
+    height: 18px !important;
+    stroke-width: 1.5; /* 새로고침 아이콘과 일치 */
 }
 
 .action-btns { display: flex; flex-direction: row; align-items: center; gap: 0.25rem; }
