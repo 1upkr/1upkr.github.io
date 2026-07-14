@@ -871,7 +871,7 @@ async function fetchData() {
 function updateTimerUI(seconds) {
     const ring = document.getElementById('timer-ring');
     if (ring) {
-        const maxOffset = 100.53; // 원의 둘레 (2 * PI * r(16))
+        const maxOffset = 87.96; // 2 * PI * r(14)로 축소된 둘레 반영
         
         // 60초일 때 0(완전히 채워짐), 0초일 때 100.53(완전히 비워짐)
         const pct = 1 - (seconds / 60); 
