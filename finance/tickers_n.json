@@ -33,6 +33,9 @@
   { "s": "USDCAD=X", "n": "미국달러/캐나다달러 환율 (USD/CAD)", "e": "Currency" },
   { "s": "USDCHF=X", "n": "미국달러/스위스프랑 환율 (USD/CHF)", "e": "Currency" },
 
+  { "s": "ES=F", "n": "E-Mini S&P 500 Sep 26 (S&P 500 선물)", "e": "Commodity" },  
+  { "s": "YM=F", "n": "Mini Dow Jones Indus.-$5 Sep 26 (다우 선물)", "e": "Commodity" },
+  { "s": "NQ=F", "n": "Nasdaq 100 Sep 26 (나스닥 선물)", "e": "Commodity" },  
   { "s": "GC=F", "n": "금 선물 (Gold Futures)", "e": "Commodity" },
   { "s": "SI=F", "n": "은 선물 (Silver Futures)", "e": "Commodity" },
   { "s": "HG=F", "n": "구리 선물 (Copper Futures)", "e": "Commodity" },
