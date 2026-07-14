@@ -917,9 +917,9 @@ function updateDOMWithData(quotes) {
         const ticker = quote.symbol;
         const dbMatch = localTickerDB.find(q => q.s.toUpperCase() === ticker.toUpperCase());
         const isKR = dbMatch ? (dbMatch.e === 'NAVER') : /^\d/.test(ticker);
+        const cached = cachedQuotes[ticker]; // [수정] 스코프 밖으로 이동
 
         if (isKR) {
-            const cached = cachedQuotes[ticker];
             const isBeforeOpen = currentTimeNum < 900;
             
             if (cached && (isBeforeOpen || !quote.regularMarketVolume || quote.regularMarketVolume === 0)) {
@@ -931,6 +931,17 @@ function updateDOMWithData(quotes) {
                 }
             }
         }
+
+        // [추가] API 데이터에서 고/저가 누락 시 이전 캐시 값으로 복원 (모든 종목 대상)
+        if (cached) {
+            if (quote.regularMarketDayLow === undefined && cached.regularMarketDayLow !== undefined) {
+                quote.regularMarketDayLow = cached.regularMarketDayLow;
+            }
+            if (quote.regularMarketDayHigh === undefined && cached.regularMarketDayHigh !== undefined) {
+                quote.regularMarketDayHigh = cached.regularMarketDayHigh;
+            }
+        }
+
         cachedQuotes[ticker] = quote;
     });
 
@@ -1022,6 +1033,7 @@ function updateDOMWithData(quotes) {
                     targetState = 'REGULAR'; 
                 } else if (isFXorFuture || isIndex) {
                     const nowSec = Math.floor(Date.now() / 1000);
+                    // [수정] 선물 지연 데이터 처리를 위해 900초를 1800초(30분)로 연장
                     if ((nowSec - regTime) > 1800) {
                         targetState = 'CLOSED_H'; 
                     } else {
@@ -1205,7 +1217,11 @@ function updateDOMWithData(quotes) {
             const lowVal = quote.regularMarketDayLow;
             const highVal = quote.regularMarketDayHigh;
 
-            if (lowVal && highVal && highVal > lowVal) {
+            // [추가] 명시적인 숫자 타입 및 유효성 체크 함수
+            const isValidNum = (val) => val !== undefined && val !== null && !isNaN(val);
+
+            // [수정] 안전한 조건식 적용 (0도 정상 처리)
+            if (isValidNum(lowVal) && isValidNum(highVal) && highVal > lowVal) {
                 let percent = ((mainPrice - lowVal) / (highVal - lowVal)) * 100;
                 percent = Math.max(0, Math.min(100, percent));
                 
@@ -1224,7 +1240,7 @@ function updateDOMWithData(quotes) {
                         </div>
                     </div>
                 `;
-            } else if (lowVal && highVal && lowVal === highVal) {
+            } else if (isValidNum(lowVal) && isValidNum(highVal) && lowVal === highVal) { // [수정] 단일 마커 조건식 적용
                 const valStr = formatNum(lowVal, isKR);
                 rangeHtml = `
                     <div class="range-gauge-container">
