@@ -104,42 +104,50 @@ header {
 /* 새로고침 링 타이머 UI */
 .timer-ring-btn {
     position: relative;
-    width: 36px;
-    height: 36px;
-    padding: 0; 
+    width: 36px !important;
+    height: 36px !important;
+    padding: 0 !important; /* 기존 .icon-btn의 padding(0.5rem) 무시 */
     display: flex;
     align-items: center;
     justify-content: center;
+    border-radius: 50%;
 }
-.timer-ring-btn .refresh-icon {
-    width: 18px;
-    height: 18px;
-    position: relative;
-    z-index: 2;
-}
-.ring-svg {
+
+/* 링(테두리) SVG 크기 강제 고정 */
+.timer-ring-btn .ring-svg {
     position: absolute;
     top: 0;
     left: 0;
-    width: 36px;
-    height: 36px;
+    width: 36px !important; /* 기존 18px 설정 덮어쓰기 */
+    height: 36px !important;
     transform: rotate(-90deg); /* 12시 방향에서 시작 */
 }
+
+/* 내부 새로고침 아이콘 크기 고정 */
+.timer-ring-btn .refresh-icon {
+    width: 18px !important;
+    height: 18px !important;
+    position: relative;
+    z-index: 2;
+}
+
 .ring-bg {
     fill: none;
     stroke: var(--border-color);
     stroke-width: 2.5;
 }
+
 .ring-fill {
     fill: none;
     stroke: var(--text-primary);
     stroke-width: 2.5;
-    stroke-dasharray: 100.53; /* 2 * PI * 16(반지름) */
+    stroke-dasharray: 100.53;
     stroke-dashoffset: 0;
     stroke-linecap: round;
     transition: stroke-dashoffset 1s linear, stroke 0.3s ease;
     opacity: 0.6;
 }
+
 /* 10초 이하 경고 스타일 */
 .ring-fill.warning {
     stroke: var(--red);
