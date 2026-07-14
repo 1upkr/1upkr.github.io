@@ -1031,15 +1031,30 @@ function updateDOMWithData(quotes) {
     
                 if (isAlwaysOpen) {
                     targetState = 'REGULAR'; 
-                } else if (isFXorFuture || isIndex) {
-                    const nowSec = Math.floor(Date.now() / 1000);
-                    // [수정] 선물 지연 데이터 처리를 위해 900초를 1800초(30분)로 연장
-                    if ((nowSec - regTime) > 1800) {
-                        targetState = 'CLOSED_H'; 
-                    } else {
-                        targetState = 'REGULAR'; 
-                    }
+} else if (isIndex) {
+                // 지수는 기존처럼 30분(1800초) 타임아웃 유지
+                const nowSec = Math.floor(Date.now() / 1000);
+                if ((nowSec - regTime) > 1800) {
+                    targetState = 'CLOSED_H'; 
                 } else {
+                    targetState = 'REGULAR'; 
+                }
+            } else if (isIndex) {
+                // 지수는 기존처럼 30분(1800초) 타임아웃 유지
+                const nowSec = Math.floor(Date.now() / 1000);
+                if ((nowSec - regTime) > 1800) {
+                    targetState = 'CLOSED_H'; 
+                } else {
+                    targetState = 'REGULAR'; 
+                }
+            } else if (isFXorFuture) {
+                // 환율 및 선물은 타임스탬프(regTime) 버그가 있으므로, 실제 주말 시간에만 CLOSED 처리
+                const day = kstTime.getDay();
+                const hour = kstTime.getHours();
+                // 미 선물 장 휴장: 한국시간 토요일 오전 7시 ~ 월요일 오전 7시
+                const isWeekendClosed = (day === 6 && hour >= 7) || (day === 0) || (day === 1 && hour < 7);
+                targetState = isWeekendClosed ? 'CLOSED_H' : 'REGULAR';
+            } else {
                     if (mState === 'CLOSED' || mState.includes('POST') || mState.includes('PRE')) {
                         targetState = 'CLOSED_H';
                     }
