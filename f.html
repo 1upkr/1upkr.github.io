@@ -20,7 +20,7 @@ layout: null
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-    <link rel="stylesheet" href="https://1up.kr/finance/style.css?ver=4.3.53">
+    <link rel="stylesheet" href="https://1up.kr/finance/style.css?ver=4.4.00">
 </head>
 <body>
     <script>
@@ -168,12 +168,29 @@ layout: null
         </div>
     </div>
 
+    <!-- Reset Modal -->
+    <div class="modal-overlay" id="reset-modal">
+        <div class="modal-card">
+            <div class="modal-title">Reset Everything</div>
+            <div class="modal-desc" style="text-align: left; padding-top: 0.5rem;">
+                초기화 시 모든 설정과 데이터가 지워집니다.<br>
+                <span style="font-size: 0.8rem; color: var(--text-secondary);">초기화하시려면 아래에 <strong>1up.kr</strong>을 정확히 입력해 주세요.</span>
+                
+                <input type="text" id="reset-confirm-input" placeholder="1up.kr" autocomplete="off" oninput="handleResetInputChange(event)" style="width: 100%; margin-top: 10px; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background-color: var(--input-bg); color: var(--text-primary); text-align: center; font-size: 1rem; outline: none;">
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn cancel" onclick="closeResetModal()">Cancel</button>
+                <button class="modal-btn confirm" id="confirm-reset-btn" onclick="executeResetEverything()">Reset</button>
+            </div>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="about-modal">
         <div class="modal-card">
             <div class="modal-title">credits</div>
             <div class="modal-desc" style="text-align: left; padding: 1rem 0;">
                 <div style="font-weight: 900; font-size: 1.3rem; color: var(--text-primary); margin-bottom: 0.5rem;">F I N A N C E : ¹ U P</div>
-                <div style="margin-bottom: 0.3rem;"><span style="font-weight: 600;">ver.4.3.53</span></div>
+                <div style="margin-bottom: 0.3rem;"><span style="font-weight: 600;">ver.4.4.00</span></div>
                 <div><span>N3RD - 1UP YOUR VIBE !!</span></div>
             </div>
             <div class="modal-actions">
@@ -182,7 +199,7 @@ layout: null
         </div>
     </div>
 
-    <script src="https://1up.kr/finance/appz.js?ver=4.3.53"></script>
+    <script src="https://1up.kr/finance/appz.js?ver=4.4.00"></script>
     
 </body>
 </html>
