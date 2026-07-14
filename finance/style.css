@@ -101,28 +101,49 @@ header {
 
 .timer { display: flex; align-items: center; justify-content: center; padding: 0.5rem; opacity: 0.65; }
 
-/* 파이 차트 타이머 UI */
-.progress-pie {
-    width: 20px;
-    height: 20px;
-    transform: rotate(-90deg);
-    border-radius: 50%;
+/* 새로고침 링 타이머 UI */
+.timer-ring-btn {
+    position: relative;
+    width: 36px;
+    height: 36px;
+    padding: 0; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
-.progress-pie__bg {
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 1.2;
-    opacity: 0.4;
+.timer-ring-btn .refresh-icon {
+    width: 18px;
+    height: 18px;
+    position: relative;
+    z-index: 2;
 }
-.progress-pie__fill {
+.ring-svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 36px;
+    height: 36px;
+    transform: rotate(-90deg); /* 12시 방향에서 시작 */
+}
+.ring-bg {
     fill: none;
-    stroke: currentColor;
-    stroke-width: 10;
-    stroke-dasharray: 31.4159;
-    stroke-dashoffset: 31.4159;
-    stroke-linecap: butt !important; 
-    transition: stroke-dashoffset 1s linear;
-    opacity: 0.8;  
+    stroke: var(--border-color);
+    stroke-width: 2.5;
+}
+.ring-fill {
+    fill: none;
+    stroke: var(--text-primary);
+    stroke-width: 2.5;
+    stroke-dasharray: 100.53; /* 2 * PI * 16(반지름) */
+    stroke-dashoffset: 0;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s linear, stroke 0.3s ease;
+    opacity: 0.6;
+}
+/* 10초 이하 경고 스타일 */
+.ring-fill.warning {
+    stroke: var(--red);
+    opacity: 1;
 }
 
 .action-btns { display: flex; flex-direction: row; align-items: center; gap: 0.25rem; }
