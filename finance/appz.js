@@ -932,12 +932,12 @@ function updateDOMWithData(quotes) {
             }
         }
 
-        // [추가] API 데이터에서 고/저가 누락 시 이전 캐시 값으로 복원 (모든 종목 대상)
+        // [수정] API 데이터에서 고/저가 누락 또는 0일 때 이전 캐시 값으로 복원
         if (cached) {
-            if (quote.regularMarketDayLow === undefined && cached.regularMarketDayLow !== undefined) {
+            if ((quote.regularMarketDayLow === undefined || quote.regularMarketDayLow === 0) && cached.regularMarketDayLow !== undefined && cached.regularMarketDayLow !== 0) {
                 quote.regularMarketDayLow = cached.regularMarketDayLow;
             }
-            if (quote.regularMarketDayHigh === undefined && cached.regularMarketDayHigh !== undefined) {
+            if ((quote.regularMarketDayHigh === undefined || quote.regularMarketDayHigh === 0) && cached.regularMarketDayHigh !== undefined && cached.regularMarketDayHigh !== 0) {
                 quote.regularMarketDayHigh = cached.regularMarketDayHigh;
             }
         }
@@ -1217,11 +1217,12 @@ function updateDOMWithData(quotes) {
             const lowVal = quote.regularMarketDayLow;
             const highVal = quote.regularMarketDayHigh;
 
-            // [추가] 명시적인 숫자 타입 및 유효성 체크 함수
+            // [수정] 명시적인 숫자 타입 체크 및 고/저가가 모두 0인 비정상 데이터 필터링
             const isValidNum = (val) => val !== undefined && val !== null && !isNaN(val);
+            const isValidRange = isValidNum(lowVal) && isValidNum(highVal) && !(lowVal === 0 && highVal === 0 && mainPrice > 0);
 
             // [수정] 안전한 조건식 적용 (0도 정상 처리)
-            if (isValidNum(lowVal) && isValidNum(highVal) && highVal > lowVal) {
+           if (isValidRange && highVal > lowVal) {
                 let percent = ((mainPrice - lowVal) / (highVal - lowVal)) * 100;
                 percent = Math.max(0, Math.min(100, percent));
                 
@@ -1240,7 +1241,7 @@ function updateDOMWithData(quotes) {
                         </div>
                     </div>
                 `;
-            } else if (isValidNum(lowVal) && isValidNum(highVal) && lowVal === highVal) { // [수정] 단일 마커 조건식 적용
+            } else if (isValidRange && lowVal === highVal) { // [수정] 단일 마커 조건식 적용
                 const valStr = formatNum(lowVal, isKR);
                 rangeHtml = `
                     <div class="range-gauge-container">
