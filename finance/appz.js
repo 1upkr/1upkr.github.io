@@ -1022,7 +1022,7 @@ function updateDOMWithData(quotes) {
                     targetState = 'REGULAR'; 
                 } else if (isFXorFuture || isIndex) {
                     const nowSec = Math.floor(Date.now() / 1000);
-                    if ((nowSec - regTime) > 900) {
+                    if ((nowSec - regTime) > 1800) {
                         targetState = 'CLOSED_H'; 
                     } else {
                         targetState = 'REGULAR'; 
