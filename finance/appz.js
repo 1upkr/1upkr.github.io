@@ -803,20 +803,20 @@ function importSettings(event) {
 }
 // 기존 resetToDefaults 함수 교체
 function resetToDefaults() {
-    toggleSettingsMenu(); // 설정 메뉴 닫기
+    toggleSettingsMenu(); 
     const el = document.getElementById('reset-modal');
     const inputEl = document.getElementById('reset-confirm-input');
     const btnEl = document.getElementById('confirm-reset-btn');
     
     if (el && inputEl && btnEl) {
-        inputEl.value = ''; // 모달 열 때 입력창 초기화
-        btnEl.disabled = true; // 기본적으로 리셋 버튼 비활성화
-        btnEl.style.opacity = '0.5';
+        inputEl.value = ''; 
+        inputEl.style.borderColor = 'var(--border-color)'; // 테두리 색상 초기화
+        
+        btnEl.disabled = true; 
+        btnEl.style.opacity = '0.3'; // 비활성화 시 흐리게 처리
         btnEl.style.cursor = 'not-allowed';
         
-        el.classList.add('active'); // 모달 열기
-        
-        // 애니메이션 후 포커스가 가도록 약간의 딜레이
+        el.classList.add('active'); 
         setTimeout(() => inputEl.focus(), 100);
     }
 }
@@ -827,34 +827,34 @@ function closeResetModal() {
     if (el) el.classList.remove('active');
 }
 
-// 사용자가 입력창에 타이핑할 때마다 검증
+// 입력값 검증
 function handleResetInputChange(e) {
     const btnEl = document.getElementById('confirm-reset-btn');
     if (btnEl) {
+        // 정확히 1up.kr이 입력되었을 때만 종목 삭제 모달과 동일한 빨간 버튼 활성화
         if (e.target.value === '1up.kr') {
             btnEl.disabled = false;
             btnEl.style.opacity = '1';
             btnEl.style.cursor = 'pointer';
         } else {
             btnEl.disabled = true;
-            btnEl.style.opacity = '0.5';
+            btnEl.style.opacity = '0.3';
             btnEl.style.cursor = 'not-allowed';
         }
     }
 }
 
-// 실제 리셋을 수행하는 함수
+// 리셋 실행
 function executeResetEverything() {
     const inputEl = document.getElementById('reset-confirm-input');
     
-    // 최종적으로 한 번 더 값 검증
     if (inputEl && inputEl.value === '1up.kr') {
         localStorage.clear(); 
         state.watchlists = JSON.parse(JSON.stringify(DEFAULT_WATCHLISTS));
         state.sectionOrder = ['indicators', 'kr', 'us']; 
         renderLayout(); 
         forceRefresh();
-        closeResetModal(); // 리셋 완료 후 모달 닫기
+        closeResetModal(); 
     }
 }
 function openAboutModal() { toggleSettingsMenu(); const el = document.getElementById('about-modal'); if (el) el.classList.add('active'); }
