@@ -20,7 +20,7 @@ layout: null
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-    <link rel="stylesheet" href="https://1up.kr/finance/style.css?ver=4.3.48">
+    <link rel="stylesheet" href="https://1up.kr/finance/style.css?ver=4.3.49">
 </head>
 <body>
     <script>
@@ -34,15 +34,15 @@ layout: null
             <h1>F I N A N C E <span class="h_colon">:</span> ¹ U P</h1>
         </div>
         <div class="header-controls">
-            <div class="timer" title="Force flow. 60 sec.">
-                <svg class="progress-pie" viewBox="0 0 24 24">
-                    <circle class="progress-pie__bg" cx="12" cy="12" r="10" />
-                    <circle class="progress-pie__fill" id="timer-pie" cx="12" cy="12" r="5" />
-                </svg>
-            </div>
+            <!-- timer 블록이 삭제되고, btn-refresh에 링 애니메이션이 통합됨 -->
             <div class="action-btns">
-                <button id="btn-refresh" class="icon-btn" title="Force it">
-                    <svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+                <button id="btn-refresh" class="icon-btn timer-ring-btn" title="Force refresh (60s)">
+                    <svg class="ring-svg" viewBox="0 0 36 36">
+                        <circle class="ring-bg" cx="18" cy="18" r="16"></circle>
+                        <circle class="ring-fill" id="timer-ring" cx="18" cy="18" r="16"></circle>
+                    </svg>
+                    <!-- 새로고침 아이콘 -->
+                    <svg class="refresh-icon" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
                 </button>
                 <div class="settings-wrapper">
                     <button id="btn-settings-toggle" class="icon-btn" title="Set it" onclick="toggleSettingsMenu()">
@@ -172,7 +172,7 @@ layout: null
             <div class="modal-title">credits</div>
             <div class="modal-desc" style="text-align: left; padding: 1rem 0;">
                 <div style="font-weight: 900; font-size: 1.3rem; color: var(--text-primary); margin-bottom: 0.5rem;">F I N A N C E : ¹ U P</div>
-                <div style="margin-bottom: 0.3rem;"><span style="font-weight: 600;">ver.4.3.48</span></div>
+                <div style="margin-bottom: 0.3rem;"><span style="font-weight: 600;">ver.4.3.49</span></div>
                 <div><span>N3RD - 1UP YOUR VIBE !!</span></div>
             </div>
             <div class="modal-actions">
@@ -181,7 +181,7 @@ layout: null
         </div>
     </div>
 
-    <script src="https://1up.kr/finance/appz.js?ver=4.3.48"></script>
+    <script src="https://1up.kr/finance/appz.js?ver=4.3.49"></script>
     
 </body>
 </html>
