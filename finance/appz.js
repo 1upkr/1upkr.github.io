@@ -155,6 +155,19 @@ async function init() {
             if (typeof window.hideChartTooltip === 'function') window.hideChartTooltip();
         }
 
+        // ==========================================
+        // [추가] 모달 바깥 영역(어두운 배경) 클릭 시 닫기
+        // ==========================================
+        if (e.target.classList.contains('modal-overlay')) {
+            e.target.classList.remove('active'); // 모달 숨김
+            
+            // 삭제(Drop) 모달의 경우 혹시 모를 오작동을 막기 위해 타겟 변수 초기화
+            if (e.target.id === 'delete-modal' && typeof targetTickerToDelete !== 'undefined') {
+                targetTickerToDelete = null;
+            }
+        }
+        // ==========================================
+
         const row = e.target.closest('tr[data-ticker]');
         if (row && !e.target.closest('.drag-handle') && !e.target.closest('.action-icon-btn') && !e.target.closest('.search-wrapper') && !e.target.closest('.settings-wrapper')) {
             if (window.innerWidth <= 650) {
