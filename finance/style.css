@@ -129,13 +129,14 @@ header {
     position: relative;
     z-index: 2;
     stroke-width: 1.5; /* 아이콘이 작아졌으므로 형태 유지를 위해 두께를 살짝 줌 */
+    opacity: 0.8;
 }
 
 /* 링 배경 (더 얇고 투명하게) */
 .ring-bg {
     fill: none;
     stroke: var(--border-color);
-    stroke-width: 0.75; /* 1 -> 0.75로 서브픽셀 단위 축소 */
+    stroke-width: 0.85; /* 1 -> 0.75로 서브픽셀 단위 축소 */
     opacity: 0.5;       /* 배경 링도 살짝 투명하게 처리 */
 }
 
@@ -143,12 +144,12 @@ header {
 .ring-fill {
     fill: none;
     stroke: var(--text-secondary); /* primary에서 secondary로 변경하여 톤다운 */
-    stroke-width: 0.75;            /* 1 -> 0.75로 아주 얇은 선 적용 */
+    stroke-width: 0.85;            /* 1 -> 0.75로 아주 얇은 선 적용 */
     stroke-dasharray: 56.55; 
     stroke-dashoffset: 0;
     stroke-linecap: round;
     transition: stroke-dashoffset 1s linear, stroke 0.3s ease;
-    opacity: 0.4;                  /* 0.6 -> 0.4로 투명도를 낮춰 은은하게 */
+    opacity: 0.5;                  /* 0.6 -> 0.4로 투명도를 낮춰 은은하게 */
 }
 
 /* 경고 상태일 때도 너무 튀지 않게 조정 */
