@@ -101,11 +101,11 @@ header {
 
 .timer { display: flex; align-items: center; justify-content: center; padding: 0.5rem; opacity: 0.65; }
 
-/* 새로고침 링 타이머 UI (크기 초소형) */
+/* 새로고침 링 타이머 UI (크기 최소화) */
 .timer-ring-btn {
     position: relative;
-    width: 24px !important;
-    height: 24px !important;
+    width: 20px !important; /* 24px -> 20px */
+    height: 20px !important;
     padding: 0 !important;
     display: flex;
     align-items: center;
@@ -117,33 +117,26 @@ header {
     position: absolute;
     top: 0;
     left: 0;
-    width: 24px !important;
-    height: 24px !important;
+    width: 20px !important;
+    height: 20px !important;
     transform: rotate(-90deg);
 }
 
-/* 내부 새로고침 아이콘 축소 */
+/* 내부 새로고침 아이콘 최소화 */
 .timer-ring-btn .refresh-icon {
-    width: 12px !important; /* 내부 아이콘 초소형 */
-    height: 12px !important;
+    width: 10px !important; /* 12px -> 10px */
+    height: 10px !important;
     position: relative;
     z-index: 2;
-    stroke-width: 1.2; /* 링이 1이므로 아이콘은 살짝만 보이게 1.2 유지 */
+    stroke-width: 1.5; /* 아이콘이 작아졌으므로 형태 유지를 위해 두께를 살짝 줌 */
 }
 
-/* 링 두께를 1로 매우 얇게 처리 */
-.ring-bg {
-    fill: none;
-    stroke: var(--border-color);
-    stroke-width: 1; 
-}
-
-/* 링 둘레 길이 수정 (r=11 기준) */
+/* 링 둘레 길이 수정 (r=9 기준) */
 .ring-fill {
     fill: none;
     stroke: var(--text-primary);
-    stroke-width: 1; /* 매우 얇은 라인 */
-    stroke-dasharray: 69.12; 
+    stroke-width: 1; 
+    stroke-dasharray: 56.55; /* 69.12 -> 56.55 */
     stroke-dashoffset: 0;
     stroke-linecap: round;
     transition: stroke-dashoffset 1s linear, stroke 0.3s ease;
@@ -152,7 +145,7 @@ header {
 
 .ring-fill.warning {
     stroke: var(--red);
-    opacity: 1;
+    opacity: 0.8;
 }
 
 /* -------------------------------------
