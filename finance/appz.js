@@ -1122,14 +1122,17 @@ function updateDOMWithData(quotes) {
                 if (isKR) {
                     if (!preData || preData.volume === 0) targetState = 'CLOSED_H';
                 } else {
-                    if (!preData || Math.abs(preData.price - regPrice) === 0) targetState = 'CLOSED_H';
+                    // ✅ 수정: 가격 비교 조건을 없애고 API 상태(mState)와 볼륨을 기준으로 유연하게 판별
+                    if (!preData || (preData.volume === 0 && !mState.includes('PRE'))) targetState = 'CLOSED_H';
                 }
             } else if (targetState === 'POST') {
                 if (isKR) {
                     if (!postData || postData.volume === 0) targetState = 'CLOSED_H';
                 } else {
-                    if (!postData || Math.abs(postData.price - regPrice) === 0) targetState = 'CLOSED_H';
+                    // ✅ 수정: 가격 비교 조건을 없애고 API 상태(mState)와 볼륨을 기준으로 유연하게 판별
+                    if (!postData || (postData.volume === 0 && !mState.includes('POST'))) targetState = 'CLOSED_H';
                 }
+            }
             } else {
                 const qType = (quote.quoteType || '').toUpperCase();
                 const isCrypto = qType === 'CRYPTOCURRENCY' || ticker.includes('-');
