@@ -801,7 +801,7 @@ function importSettings(event) {
     };
     reader.readAsText(file); event.target.value = ''; 
 }
-// 기존 resetToDefaults 함수 교체
+// 리셋 모달 초기화
 function resetToDefaults() {
     toggleSettingsMenu(); 
     const el = document.getElementById('reset-modal');
@@ -809,11 +809,15 @@ function resetToDefaults() {
     const btnEl = document.getElementById('confirm-reset-btn');
     
     if (el && inputEl && btnEl) {
+        // 입력창 및 UI 초기화
         inputEl.value = ''; 
-        inputEl.style.borderColor = 'var(--border-color)'; // 테두리 색상 초기화
+        document.getElementById('reset-text-typed').textContent = '';
+        document.getElementById('reset-text-untyped').textContent = '1up.kr';
+        document.getElementById('reset-visual-bg').style.borderColor = 'var(--border-color)';
         
+        // 버튼 비활성화
         btnEl.disabled = true; 
-        btnEl.style.opacity = '0.3'; // 비활성화 시 흐리게 처리
+        btnEl.style.opacity = '0.3'; 
         btnEl.style.cursor = 'not-allowed';
         
         el.classList.add('active'); 
@@ -827,24 +831,43 @@ function closeResetModal() {
     if (el) el.classList.remove('active');
 }
 
-// 입력값 검증
+// 핵심 로직: 타이핑 시 글자 색상 채우기 & 오타 방지
 function handleResetInputChange(e) {
-    const btnEl = document.getElementById('confirm-reset-btn');
-    if (btnEl) {
-        // 정확히 1up.kr이 입력되었을 때만 종목 삭제 모달과 동일한 빨간 버튼 활성화
-        if (e.target.value === '1up.kr') {
-            btnEl.disabled = false;
-            btnEl.style.opacity = '1';
-            btnEl.style.cursor = 'pointer';
+    const input = e.target;
+    const targetWord = '1up.kr';
+    let rawVal = input.value.toLowerCase();
+    let validVal = "";
+
+    // 사용자가 입력한 문자 중 '1up.kr' 순서에 정확히 맞는 것만 골라냄 (오타 무시)
+    for (let i = 0; i < rawVal.length; i++) {
+        if (rawVal[i] === targetWord[i]) {
+            validVal += rawVal[i];
         } else {
-            btnEl.disabled = true;
-            btnEl.style.opacity = '0.3';
-            btnEl.style.cursor = 'not-allowed';
+            break; // 틀린 글자가 나오면 그 이후는 무시
         }
+    }
+    
+    // 입력창 실제 값을 정확한 값으로만 강제 고정
+    input.value = validVal;
+
+    // 시각적 UI 업데이트 (맞춘 부분은 빨간색, 남은 부분은 반투명 회색)
+    document.getElementById('reset-text-typed').textContent = validVal;
+    document.getElementById('reset-text-untyped').textContent = targetWord.substring(validVal.length);
+
+    // 버튼 활성화 처리
+    const btnEl = document.getElementById('confirm-reset-btn');
+    if (validVal === targetWord) {
+        btnEl.disabled = false;
+        btnEl.style.opacity = '1';
+        btnEl.style.cursor = 'pointer';
+    } else {
+        btnEl.disabled = true;
+        btnEl.style.opacity = '0.3';
+        btnEl.style.cursor = 'not-allowed';
     }
 }
 
-// 리셋 실행
+// 리셋 실행 (동일)
 function executeResetEverything() {
     const inputEl = document.getElementById('reset-confirm-input');
     
