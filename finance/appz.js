@@ -1,5 +1,5 @@
 // --- CONFIGURATION & UTILITIES ---
-// KR - NAVER data, US, MKT - YAHOO data
+// KR - NAVER data // US, Indicators - YAHOO data
 
 const DEFAULT_WATCHLISTS = {
     indicators: { title: 'Indicators', tickers: ['KRW=X', '^KS11', '^KQ11', '^IXIC', '^DJI', '^GSPC', 'BTC-USD'] },
