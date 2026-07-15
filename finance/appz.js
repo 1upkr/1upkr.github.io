@@ -1095,8 +1095,11 @@ function updateDOMWithData(quotes) {
             
             let targetState = 'REGULAR';
             const mState = (quote.marketState || '').toUpperCase();
-
-            if (mState.includes('PRE') && preData) {
+            
+            // ✅ 수정: API가 명확하게 'REGULAR'를 내려주면 가장 먼저 최우선으로 처리합니다.
+            if (mState === 'REGULAR') {
+                targetState = 'REGULAR';
+            } else if (mState.includes('PRE') && preData) {
                 targetState = 'PRE';
             } else if (mState.includes('POST') && postData) {
                 targetState = 'POST';
