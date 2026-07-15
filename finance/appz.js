@@ -1096,7 +1096,12 @@ function updateDOMWithData(quotes) {
             let targetState = 'REGULAR';
             const mState = (quote.marketState || '').toUpperCase();
 
-            if (mState.includes('PRE') && preData) {
+            // ==========================================
+            // ✅ 수정 1: 미장 개장 지연 방지 (API 상태 최우선)
+            // ==========================================
+            if (mState === 'REGULAR') {
+                targetState = 'REGULAR';
+            } else if (mState.includes('PRE') && preData) {
                 targetState = 'PRE';
             } else if (mState.includes('POST') && postData) {
                 targetState = 'POST';
@@ -1115,17 +1120,20 @@ function updateDOMWithData(quotes) {
                 }
             }
 
+            // ==========================================
+            // ✅ 수정 2: 프리/애프터장 닫힘 판별 조건 완화
+            // ==========================================
             if (targetState === 'PRE') {
                 if (isKR) {
                     if (!preData || preData.volume === 0) targetState = 'CLOSED_H';
                 } else {
-                    if (!preData || Math.abs(preData.price - regPrice) === 0) targetState = 'CLOSED_H';
+                    if (!preData || (preData.volume === 0 && !mState.includes('PRE'))) targetState = 'CLOSED_H';
                 }
             } else if (targetState === 'POST') {
                 if (isKR) {
                     if (!postData || postData.volume === 0) targetState = 'CLOSED_H';
                 } else {
-                    if (!postData || Math.abs(postData.price - regPrice) === 0) targetState = 'CLOSED_H';
+                    if (!postData || (postData.volume === 0 && !mState.includes('POST'))) targetState = 'CLOSED_H';
                 }
             } else {
                 const qType = (quote.quoteType || '').toUpperCase();
@@ -1138,30 +1146,22 @@ function updateDOMWithData(quotes) {
     
                 if (isAlwaysOpen) {
                     targetState = 'REGULAR'; 
-} else if (isIndex) {
-                // 지수는 기존처럼 30분(1800초) 타임아웃 유지
-                const nowSec = Math.floor(Date.now() / 1000);
-                if ((nowSec - regTime) > 1800) {
-                    targetState = 'CLOSED_H'; 
+                } else if (isIndex) {
+                    // 지수는 기존처럼 30분(1800초) 타임아웃 유지
+                    const nowSec = Math.floor(Date.now() / 1000);
+                    if ((nowSec - regTime) > 1800) {
+                        targetState = 'CLOSED_H'; 
+                    } else {
+                        targetState = 'REGULAR'; 
+                    }
+                } else if (isFXorFuture) {
+                    // 환율 및 선물은 타임스탬프(regTime) 버그가 있으므로, 실제 주말 시간에만 CLOSED 처리
+                    const day = kstTime.getDay();
+                    const hour = kstTime.getHours();
+                    // 미 선물 장 휴장: 한국시간 토요일 오전 7시 ~ 월요일 오전 7시
+                    const isWeekendClosed = (day === 6 && hour >= 7) || (day === 0) || (day === 1 && hour < 7);
+                    targetState = isWeekendClosed ? 'CLOSED_H' : 'REGULAR';
                 } else {
-                    targetState = 'REGULAR'; 
-                }
-            } else if (isIndex) {
-                // 지수는 기존처럼 30분(1800초) 타임아웃 유지
-                const nowSec = Math.floor(Date.now() / 1000);
-                if ((nowSec - regTime) > 1800) {
-                    targetState = 'CLOSED_H'; 
-                } else {
-                    targetState = 'REGULAR'; 
-                }
-            } else if (isFXorFuture) {
-                // 환율 및 선물은 타임스탬프(regTime) 버그가 있으므로, 실제 주말 시간에만 CLOSED 처리
-                const day = kstTime.getDay();
-                const hour = kstTime.getHours();
-                // 미 선물 장 휴장: 한국시간 토요일 오전 7시 ~ 월요일 오전 7시
-                const isWeekendClosed = (day === 6 && hour >= 7) || (day === 0) || (day === 1 && hour < 7);
-                targetState = isWeekendClosed ? 'CLOSED_H' : 'REGULAR';
-            } else {
                     if (mState === 'CLOSED' || mState.includes('POST') || mState.includes('PRE')) {
                         targetState = 'CLOSED_H';
                     }
