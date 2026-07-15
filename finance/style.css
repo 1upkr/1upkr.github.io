@@ -149,7 +149,7 @@ header {
     stroke-dashoffset: 0;
     stroke-linecap: round;
     transition: stroke-dashoffset 1s linear, stroke 0.3s ease;
-    opacity: 0.5;                  /* 0.6 -> 0.4로 투명도를 낮춰 은은하게 */
+    opacity: 0.6;                  /* 0.6 -> 0.4로 투명도를 낮춰 은은하게 */
 }
 
 /* 경고 상태일 때도 너무 튀지 않게 조정 */
