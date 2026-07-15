@@ -2,9 +2,9 @@
 // KR - NAVER data, US, MKT - YAHOO data
 
 const DEFAULT_WATCHLISTS = {
-    indicators: { title: '📈 MKT', tickers: ['KRW=X', '^KS11', '^KQ11', '^IXIC', '^DJI', '^GSPC', 'BTC-USD'] },
-    kr: { title: '🇰🇷 KR', tickers: ['005930', '000660', '373220', '005380', '035420'] },            
-    us: { title: '🇺🇸 US', tickers: ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'TSLA', 'META'] }
+    indicators: { title: 'Indicators, tickers: ['KRW=X', '^KS11', '^KQ11', '^IXIC', '^DJI', '^GSPC', 'BTC-USD'] },
+    kr: { title: 'Korea Market', tickers: ['005930', '000660', '373220', '005380', '035420'] },            
+    us: { title: 'United States Market', tickers: ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'TSLA', 'META'] }
 };
 
 const YAHOO_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbxzBxcv3llVtcWyWoldEHkpyNBgWSn0D2_j_SYLEf6r-a4zMZ4VpOE6cxtwPQw_wvKt6Q/exec";
@@ -65,6 +65,12 @@ let state = {
     intervalId: null,
     lastNewsFetch: 0 
 };
+// [추가] 로컬 스토리지 데이터가 있더라도, title은 무조건 DEFAULT_WATCHLISTS 값을 강제로 따르도록 덮어쓰기
+for (const key in state.watchlists) {
+    if (DEFAULT_WATCHLISTS[key]) {
+        state.watchlists[key].title = DEFAULT_WATCHLISTS[key].title;
+    }
+}
 
 const rowNodes = new Map(); 
 let sortables = []; 
