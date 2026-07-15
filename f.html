@@ -20,7 +20,7 @@ layout: null
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-    <link rel="stylesheet" href="https://1up.kr/finance/style.css?ver=4.4.03">
+    <link rel="stylesheet" href="https://1up.kr/finance/style.css?ver=4.4.04">
 </head>
 <body>
     <script>
@@ -173,12 +173,20 @@ layout: null
         <div class="modal-card">
             <div class="modal-title">Reset Everything</div>
             <div class="modal-desc">
-                <span style="display: inline-block; margin-top: 0.4rem; font-size: 0.8rem; color: var(--text-secondary);">Type  <strong>1up.kr</strong> — the point of no return.</span>
-                <!-- 입력창 포커스 시 테두리도 삭제 모달의 경고 색상(빨간색)으로 변하도록 인라인 스타일 추가 -->
-                <input type="text" id="reset-confirm-input" placeholder="1up.kr" autocomplete="off" oninput="handleResetInputChange(event)" onfocus="this.style.borderColor='var(--red)'" onblur="this.style.borderColor='var(--border-color)'" style="width: 100%; margin-top: 15px; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background-color: var(--input-bg); color: var(--text-primary); text-align: center; font-size: 1rem; outline: none; transition: border-color 0.2s;">
+                <span style="display: inline-block; margin-top: 0.4rem; font-size: 0.8rem; color: var(--text-secondary);">Only <strong>1up.kr</strong> can begin the end.</span>
+                
+                <!-- 입력 필드 래퍼 (상대 위치) -->
+                <div style="position: relative; width: 100%; margin-top: 15px;">
+                    <!-- 시각적 UI (가짜 입력창: 글자가 채워지는 연출) -->
+                    <div id="reset-visual-bg" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background-color: var(--input-bg); text-align: center; font-size: 1.1rem; font-weight: 700; font-family: 'Inter', monospace; transition: border-color 0.2s;">
+                        <span id="reset-text-typed" style="color: var(--red);"></span><span id="reset-text-untyped" style="color: var(--text-secondary); opacity: 0.4;">1up.kr</span>
+                    </div>
+                    
+                    <!-- 실제 입력을 받는 투명한 인풋 (사용자는 이걸 터치하게 됨) -->
+                    <input type="text" id="reset-confirm-input" autocomplete="off" oninput="handleResetInputChange(event)" onfocus="document.getElementById('reset-visual-bg').style.borderColor='var(--red)'" onblur="document.getElementById('reset-visual-bg').style.borderColor='var(--border-color)'" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: text; z-index: 10;">
+                </div>
             </div>
             <div class="modal-actions">
-                <!-- 삭제 모달과 동일한 클래스(cancel, confirm) 사용 -->
                 <button class="modal-btn cancel" onclick="closeResetModal()">Cancel</button>
                 <button class="modal-btn confirm" id="confirm-reset-btn" onclick="executeResetEverything()">Reset</button>
             </div>
@@ -190,7 +198,7 @@ layout: null
             <div class="modal-title">credits</div>
             <div class="modal-desc" style="text-align: left; padding: 1rem 0;">
                 <div style="font-weight: 900; font-size: 1.3rem; color: var(--text-primary); margin-bottom: 0.5rem;">F I N A N C E : ¹ U P</div>
-                <div style="margin-bottom: 0.3rem;"><span style="font-weight: 600;">ver.4.4.03</span></div>
+                <div style="margin-bottom: 0.3rem;"><span style="font-weight: 600;">ver.4.4.04</span></div>
                 <div><span>N3RD - 1UP YOUR VIBE !!</span></div>
             </div>
             <div class="modal-actions">
@@ -199,7 +207,7 @@ layout: null
         </div>
     </div>
 
-    <script src="https://1up.kr/finance/appz.js?ver=4.4.03"></script>
+    <script src="https://1up.kr/finance/appz.js?ver=4.4.04"></script>
     
 </body>
 </html>
