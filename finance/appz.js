@@ -975,13 +975,14 @@ function updateDOMWithData(quotes) {
         const ticker = quote.symbol;
         const dbMatch = localTickerDB.find(q => q.s.toUpperCase() === ticker.toUpperCase());
         const isKR = dbMatch ? (dbMatch.e === 'NAVER') : /^\d/.test(ticker);
-        const cached = cachedQuotes[ticker]; // [수정] 스코프 밖으로 이동
+        const cached = cachedQuotes[ticker]; 
+
+        // 한국장 9시 이전 여부 엄격하게 체크
+        const isBeforeOpenKR = isKR && currentTimeNum < 900;
 
         if (isKR) {
-            const isBeforeOpen = currentTimeNum < 900;
-            
-            // 9시 이전(장 시작 전)에만 어제 마감 데이터를 복원하도록 조건 엄격화
-            if (cached && isBeforeOpen) {
+            // [수정] 거래량(Volume) 조건 삭제. 9시 이전(장 시작 전)에만 어제 데이터를 유지하도록 조건 변경
+            if (cached && isBeforeOpenKR) {
                 if (quote.regularMarketChange === 0) {
                     quote.regularMarketChange = cached.regularMarketChange || 0;
                     quote.regularMarketChangePercent = cached.regularMarketChangePercent || 0;
@@ -991,13 +992,17 @@ function updateDOMWithData(quotes) {
             }
         }
 
-        // [수정] API 데이터에서 고/저가 누락 또는 0일 때 이전 캐시 값으로 복원
+        // [수정] 고/저가 복원 로직도 한국 주식일 경우 9시 이후엔 작동하지 않도록 방어 (어제 데이터 덮어쓰기 방지)
         if (cached) {
-            if ((quote.regularMarketDayLow === undefined || quote.regularMarketDayLow === 0) && cached.regularMarketDayLow !== undefined && cached.regularMarketDayLow !== 0) {
-                quote.regularMarketDayLow = cached.regularMarketDayLow;
-            }
-            if ((quote.regularMarketDayHigh === undefined || quote.regularMarketDayHigh === 0) && cached.regularMarketDayHigh !== undefined && cached.regularMarketDayHigh !== 0) {
-                quote.regularMarketDayHigh = cached.regularMarketDayHigh;
+            const skipCacheOverride = isKR && !isBeforeOpenKR; 
+            
+            if (!skipCacheOverride) {
+                if ((quote.regularMarketDayLow === undefined || quote.regularMarketDayLow === 0) && cached.regularMarketDayLow !== undefined && cached.regularMarketDayLow !== 0) {
+                    quote.regularMarketDayLow = cached.regularMarketDayLow;
+                }
+                if ((quote.regularMarketDayHigh === undefined || quote.regularMarketDayHigh === 0) && cached.regularMarketDayHigh !== undefined && cached.regularMarketDayHigh !== 0) {
+                    quote.regularMarketDayHigh = cached.regularMarketDayHigh;
+                }
             }
         }
 
