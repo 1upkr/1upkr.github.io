@@ -949,9 +949,9 @@ async function fetchData() {
 function updateTimerUI(seconds) {
     const ring = document.getElementById('timer-ring');
     if (ring) {
-        const maxOffset = 69.12; // r=11로 더 축소된 링의 둘레 반영
+        const maxOffset = 56.55; // r=9로 최소화된 링의 둘레 반영
         
-        // 60초일 때 0(완전히 채워짐), 0초일 때 100.53(완전히 비워짐)
+        // 60초일 때 0, 0초일 때 56.55
         const pct = 1 - (seconds / 60); 
         const offset = pct * maxOffset; 
         ring.style.strokeDashoffset = offset;
