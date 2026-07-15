@@ -863,6 +863,24 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
         text-transform: uppercase;
     }
 
+    /* 모달 오버레이를 상단 정렬로 변경하여 키보드가 올라와도 밀리지 않도록 고정 */
+    .modal-overlay {
+        align-items: flex-start !important; 
+        padding-top: 12vh; /* 화면 상단에서 12% 여백 (필요에 따라 10~15vh로 조절) */
+    }
+
+    /* 트랜지션 애니메이션 방향을 아래에서 위가 아닌, 위에서 제자리로 부드럽게 떨어지도록 수정 */
+    .modal-card {
+        transform: translateY(-20px) !important;
+    }
+    
+    .modal-overlay.active .modal-card {
+        transform: translateY(0) !important;
+    }
+
+
+    
+
     /* 기타 모바일 미세 폰트 조정 */
     .symbol { font-size: 0.75rem; } 
     .name { font-size: 0.6rem; }
