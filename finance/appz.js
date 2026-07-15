@@ -980,7 +980,8 @@ function updateDOMWithData(quotes) {
         if (isKR) {
             const isBeforeOpen = currentTimeNum < 900;
             
-            if (cached && (isBeforeOpen || !quote.regularMarketVolume || quote.regularMarketVolume === 0)) {
+            // 9시 이전(장 시작 전)에만 어제 마감 데이터를 복원하도록 조건 엄격화
+            if (cached && isBeforeOpen) {
                 if (quote.regularMarketChange === 0) {
                     quote.regularMarketChange = cached.regularMarketChange || 0;
                     quote.regularMarketChangePercent = cached.regularMarketChangePercent || 0;
