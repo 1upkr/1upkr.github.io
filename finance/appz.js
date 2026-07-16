@@ -3,8 +3,8 @@
 
 const DEFAULT_WATCHLISTS = {
     indicators: { title: 'Indicators', tickers: ['KRW=X', '^KS11', '^KQ11', '^IXIC', '^DJI', '^GSPC', 'BTC-USD'] },
-    kr: { title: 'Korea Market', tickers: ['005930', '000660', '373220', '005380', '035420'] },            
-    us: { title: 'United States Market', tickers: ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'TSLA', 'META'] }
+    kr: { title: 'Korea', tickers: ['005930', '000660', '373220', '005380', '035420'] },            
+    us: { title: 'United States', tickers: ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'TSLA', 'META'] }
 };
 
 const YAHOO_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbxzBxcv3llVtcWyWoldEHkpyNBgWSn0D2_j_SYLEf6r-a4zMZ4VpOE6cxtwPQw_wvKt6Q/exec";
