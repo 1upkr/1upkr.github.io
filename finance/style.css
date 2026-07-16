@@ -136,7 +136,7 @@ header {
 .ring-bg {
     fill: none;
     stroke: var(--border-color);
-    stroke-width: 0.85; /* 1 -> 0.75로 서브픽셀 단위 축소 */
+    stroke-width: 1; /* 1 -> 0.75로 서브픽셀 단위 축소 */
     opacity: 0.7;       /* 배경 링도 살짝 투명하게 처리 */
 }
 
@@ -144,7 +144,7 @@ header {
 .ring-fill {
     fill: none;
     stroke: var(--text-secondary); /* primary에서 secondary로 변경하여 톤다운 */
-    stroke-width: 0.85;            /* 1 -> 0.75로 아주 얇은 선 적용 */
+    stroke-width: 1;            /* 1 -> 0.75로 아주 얇은 선 적용 */
     stroke-dasharray: 56.55; 
     stroke-dashoffset: 0;
     stroke-linecap: round;
@@ -155,7 +155,7 @@ header {
 /* 경고 상태일 때도 너무 튀지 않게 조정 */
 .ring-fill.warning {
     stroke: var(--red);
-    opacity: 0.8; 
+    opacity: 0.7; 
 }
 
 /* -------------------------------------
@@ -174,7 +174,7 @@ header {
 #btn-settings-toggle svg {
     width: 18px !important; 
     height: 18px !important;
-    stroke-width: 1.5; 
+    stroke-width: 1.25; 
 }
 
 .action-btns { display: flex; flex-direction: row; align-items: center; gap: 0.5rem; }
