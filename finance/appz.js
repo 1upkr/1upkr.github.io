@@ -1121,19 +1121,21 @@ function updateDOMWithData(quotes) {
             }
 
             // ==========================================
-            // ✅ 수정 2: 프리/애프터장 닫힘 판별 조건 완화
+            // ✅ 수정 2: 프리/애프터장 닫힘 판별 조건 최적화
             // ==========================================
             if (targetState === 'PRE') {
                 if (isKR) {
                     if (!preData || preData.volume === 0) targetState = 'CLOSED_H';
                 } else {
-                    if (!preData || (preData.volume === 0 && !mState.includes('PRE'))) targetState = 'CLOSED_H';
+                    // API가 PRE장이라고 명시하지 않았는데(완전 휴장), 가격마저 동일하다면 더미 데이터로 간주
+                    if (!preData || (!mState.includes('PRE') && Math.abs(preData.price - regPrice) === 0)) targetState = 'CLOSED_H';
                 }
             } else if (targetState === 'POST') {
                 if (isKR) {
                     if (!postData || postData.volume === 0) targetState = 'CLOSED_H';
                 } else {
-                    if (!postData || (postData.volume === 0 && !mState.includes('POST'))) targetState = 'CLOSED_H';
+                    // API가 POST장이라고 명시하지 않았는데(완전 휴장), 가격마저 동일하다면 더미 데이터로 간주
+                    if (!postData || (!mState.includes('POST') && Math.abs(postData.price - regPrice) === 0)) targetState = 'CLOSED_H';
                 }
             } else {
                 const qType = (quote.quoteType || '').toUpperCase();
