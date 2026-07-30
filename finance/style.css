@@ -71,7 +71,7 @@ body {
     -webkit-touch-callout: none; 
 }
 
-/* 폼 요소들은 폰트 설정을 상속받도록 처리 */
+/* 폼 요소들은 폰트 설정 상속 처리 */
 input, textarea, button, select {
     font-family: inherit;
 }
