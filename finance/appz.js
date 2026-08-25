@@ -933,7 +933,32 @@ async function fetchData() {
                 const cachedQuotes = JSON.parse(localStorage.getItem('marketdash_quotes_cache')) || {};
                 const hasAllCache = symbols.every(sym => cachedQuotes[sym]);
                 
+                let needsUpdate = false;
                 if (hasAllCache) {
+                    const clientNow = Date.now();
+                    const clientOffset = new Date().getTimezoneOffset() * 60000;
+                    const kstNowMs = clientNow + clientOffset + (9 * 3600000);
+                    const kstDate = new Date(kstNowMs);
+                    
+                    let lastCloseKstDate = new Date(kstNowMs);
+                    if (kstDate.getDay() === 0) { 
+                        lastCloseKstDate.setDate(kstDate.getDate() - 2);
+                    } else if (kstDate.getDay() === 6) { 
+                        lastCloseKstDate.setDate(kstDate.getDate() - 1);
+                    } else if (kstDate.getHours() < 18) {
+                        lastCloseKstDate.setDate(kstDate.getDate() - (kstDate.getDay() === 1 ? 3 : 1));
+                    }
+                    lastCloseKstDate.setHours(18, 0, 0, 0);
+                    
+                    const lastMarketCloseMs = lastCloseKstDate.getTime() - clientOffset - (9 * 3600000);
+                    
+                    needsUpdate = symbols.some(sym => {
+                        const quote = cachedQuotes[sym];
+                        return !quote.updatedAt || quote.updatedAt < lastMarketCloseMs;
+                    });
+                }
+                
+                if (hasAllCache && !needsUpdate) {
                     const cachedDataToRender = symbols.map(sym => cachedQuotes[sym]);
                     updateDOMWithData(cachedDataToRender);
                     continue;
@@ -1050,6 +1075,7 @@ function updateDOMWithData(quotes) {
             }
         }
 
+        quote.updatedAt = Date.now(); // 데이터 갱신 타임스탬프 추가
         cachedQuotes[ticker] = quote;
     });
 
