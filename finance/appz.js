@@ -925,7 +925,7 @@ async function fetchData() {
 
         if (symbols.length === 0) continue;
 
-        if (sectionId === 'kr' && isKrMarketClosedCompletely) {
+    if (sectionId === 'kr' && isKrMarketClosedCompletely) {
             try {
                 const cachedQuotes = JSON.parse(localStorage.getItem('marketdash_quotes_cache')) || {};
                 const hasAllCache = symbols.every(sym => cachedQuotes[sym]);
@@ -942,10 +942,12 @@ async function fetchData() {
                         lastCloseKstDate.setDate(kstDate.getDate() - 2);
                     } else if (kstDate.getDay() === 6) { 
                         lastCloseKstDate.setDate(kstDate.getDate() - 1);
-                    } else if (kstDate.getHours() < 18) {
+                    // 🚨 20시 30분(여유 시간) 이전이라면 전 거래일 마감으로 간주
+                    } else if (kstDate.getHours() < 20 || (kstDate.getHours() === 20 && kstDate.getMinutes() < 30)) {
                         lastCloseKstDate.setDate(kstDate.getDate() - (kstDate.getDay() === 1 ? 3 : 1));
                     }
-                    lastCloseKstDate.setHours(18, 0, 0, 0);
+                    // 🚨 안전한 최종 마감 데이터 확보를 위해 기준 시간을 20시 30분으로 설정
+                    lastCloseKstDate.setHours(20, 30, 0, 0); 
                     
                     const lastMarketCloseMs = lastCloseKstDate.getTime() - clientOffset - (9 * 3600000);
                     
