@@ -64,14 +64,11 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
- 
-    /* 텍스트 선택 방지 */
     -webkit-user-select: none;
     user-select: none;         
     -webkit-touch-callout: none; 
 }
 
-/* 폼 요소들은 폰트 설정 상속 처리 */
 input, textarea, button, select {
     font-family: inherit;
 }
@@ -86,10 +83,7 @@ svg {
     stroke-linecap: round; stroke-linejoin: round; 
 }
 
-/* =========================================================
-   HEADER
-   ========================================================= */
-
+/* HEADER */
 header {
     background-color: var(--header-bg); border-bottom: 1px solid var(--border-color);
     padding: 0.875rem 5%; display: flex; justify-content: space-between; align-items: center;
@@ -101,10 +95,9 @@ header {
 
 .timer { display: flex; align-items: center; justify-content: center; padding: 0.5rem; opacity: 0.65; }
 
-/* 새로고침 링 타이머 UI (크기 최소화) */
 .timer-ring-btn {
     position: relative;
-    width: 20px !important; /* 24px -> 20px */
+    width: 20px !important;
     height: 20px !important;
     padding: 0 !important;
     display: flex;
@@ -122,45 +115,38 @@ header {
     transform: rotate(-90deg);
 }
 
-/* 내부 새로고침 아이콘 최소화 */
 .timer-ring-btn .refresh-icon {
-    width: 10px !important; /* 12px -> 10px */
+    width: 10px !important;
     height: 10px !important;
     position: relative;
     z-index: 2;
-    stroke-width: 1.5; /* 아이콘이 작아졌으므로 형태 유지를 위해 두께를 살짝 줌 */
+    stroke-width: 1.5;
     opacity: 0.7;
 }
 
-/* 링 배경 (더 얇고 투명하게) */
 .ring-bg {
     fill: none;
     stroke: var(--border-color);
-    stroke-width: 1; /* 1 -> 0.75로 서브픽셀 단위 축소 */
-    opacity: 0.7;       /* 배경 링도 살짝 투명하게 처리 */
+    stroke-width: 1;
+    opacity: 0.7;
 }
 
-/* 링 채우기 (색상을 연하게, 두께 축소) */
 .ring-fill {
     fill: none;
-    stroke: var(--text-secondary); /* primary에서 secondary로 변경하여 톤다운 */
-    stroke-width: 1;            /* 1 -> 0.75로 아주 얇은 선 적용 */
+    stroke: var(--text-secondary);
+    stroke-width: 1;
     stroke-dasharray: 56.55; 
     stroke-dashoffset: 0;
     stroke-linecap: round;
     transition: stroke-dashoffset 1s linear, stroke 0.3s ease;
-    opacity: 0.6;                  /* 0.6 -> 0.4로 투명도를 낮춰 은은하게 */
+    opacity: 0.6;
 }
 
-/* 경고 상태일 때도 너무 튀지 않게 조정 */
 .ring-fill.warning {
     stroke: var(--red);
     opacity: 0.7; 
 }
 
-/* -------------------------------------
-   설정 버튼 밸런스 조정 
--------------------------------------- */
 #btn-settings-toggle {
     width: 28px !important; 
     height: 28px !important;
@@ -170,7 +156,6 @@ header {
     justify-content: center;
 }
 
-/* 설정 아이콘 크기 및 두께 통일 */
 #btn-settings-toggle svg {
     width: 18px !important; 
     height: 18px !important;
@@ -211,9 +196,7 @@ header {
 .theme-icon-sun { display: none; } .theme-icon-moon { display: block; }
 [data-theme="dark"] .theme-icon-sun { display: block; } [data-theme="dark"] .theme-icon-moon { display: none; }
 
-/* =========================================================
-   MAIN LAYOUT (GRID: 좌측 종목 / 우측 뉴스)
-   ========================================================= */
+/* MAIN LAYOUT */
 main { flex: 1; width: 100%; overflow-x: hidden; }
 
 #main-layout {
@@ -557,6 +540,7 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
 }
 .tag-naver { background: rgba(69, 163, 108, 0.12); color: #45a36c; }
 .tag-yahoo { background: rgba(109, 77, 128, 0.12); color: #6d4d80; }
+.tag-google { background: rgba(234, 67, 53, 0.12); color: #ea4335; } /* [추가] Google News 출처 전용 태그 스타일 */
 
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes rotate { 100% { transform: rotate(360deg); } }
@@ -569,14 +553,7 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
 @keyframes flashRed { 0% { background-color: var(--flash-red); } 100% { background-color: transparent; } }
 @keyframes skeletonLoading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
-/* =========================================================
-   모바일 전용 아코디언 스타일 (데스크탑에서는 숨김)
-   ========================================================= */
 .mobile-expanded-td { display: none; }
-
-/* =========================================================
-   MOBILE RESPONSIVE
-   ========================================================= */
 
 @media (max-width: 992px) {
     header { 
@@ -762,13 +739,9 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
     box-shadow: var(--shadow-sm); 
 }
 
-/* =========================================================
-   모바일 전용 아코디언 & Flex 테이블 변환 (650px 이하)
-   ========================================================= */
-.mobile-expanded-td { display: none; } /* 데스크탑에서는 무조건 숨김 */
+.mobile-expanded-td { display: none; }
 
 @media (max-width: 650px) {
-    /* 1. 테이블 기본 구조를 Flex 레이아웃으로 변경 (헤더-바디 너비 동기화) */
     table, thead, tbody { 
         display: block; 
         width: 100%; 
@@ -776,7 +749,7 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
     
     thead tr, tbody tr {
         display: flex;
-        flex-wrap: wrap; /* 자식 요소가 넘치면 다음 줄(아코디언)로 넘어가게 설정 */
+        flex-wrap: wrap; 
         align-items: center;
         width: 100%;
         border-bottom: 1px solid var(--border-color);
@@ -784,20 +757,16 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
     }
     
     th, td { 
-        border-bottom: none !important; /* 내부 중복 테두리 제거 */
+        border-bottom: none !important; 
     }
 
-    /* 2. 모바일에서 보여줄 열(Column)의 정확한 너비 비율 설정 (합산 100%) */
-    th.col-symbol, td.col-symbol { width: 31% !important; padding-left: 0.75rem !important; } /* 좌측 여백을 1rem에서 0.75rem으로 축소 */
+    th.col-symbol, td.col-symbol { width: 31% !important; padding-left: 0.75rem !important; } 
     th.col-price, td.col-price { width: 43% !important; }
     
-    /* 핸들 너비가 38px로 늘어났으므로 빼주는 값도 38px로 변경 */
     th.col-change, td.col-change { width: calc(26% - 38px) !important; padding-right: 0.5rem !important; } 
     
-    /* 우측 여백을 0.5rem에서 0.75rem으로 늘려 좌측과 대칭을 맞춤, 아이콘이 잘리지 않게 너비를 38px로 설정 */
     th.handle-col, td.handle-col { width: 38px !important; padding-right: 0.75rem !important; padding-left: 0 !important; text-align: right; }
 
-    /* 3. 모바일에서 불필요한 열 숨김 처리 */
     .hide-mobile, 
     .section-container th.actions-col, 
     .section-container td.actions-col,
@@ -806,7 +775,6 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
         display: none !important; 
     }
 
-    /* 4. 아코디언 패널 (100% 영역을 차지하여 메인 데이터 다음 줄로 떨어짐) */
     .mobile-expanded-td {
         display: block !important;
         width: 100% !important;
@@ -819,33 +787,30 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
         transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease, margin 0.3s ease;
     }
 
-    /* 행을 탭하여 열렸을 때의 스타일 */
     tbody tr.expanded {
-        background-color: var(--hover-bg); /* 행 전체 배경을 살짝 다르게 */
-        border-bottom: 1px solid var(--border-color); /* 종목 간의 구분선 */
+        background-color: var(--hover-bg); 
+        border-bottom: 1px solid var(--border-color); 
     }
     
     tbody tr.expanded .mobile-expanded-td {
         max-height: 150px;
         opacity: 1;
         padding: 0.5rem 1rem 1rem 1rem;
-        /* 패널 자체에 위쪽 테두리를 추가하여 상단 데이터와 구분 */
         border-top: 1px dashed var(--border-color); 
         margin-top: 0.5rem;
     }
 
-    /* 내부 영역 배경을 카드처럼 강조 */
     .mobile-detail-grid {
         display: flex;
         justify-content: space-between;
         align-items: center;
         width: 100%;
         gap: 0.5rem;
-        background-color: var(--bg-color); /* 확장 영역은 전체 배경보다 약간 진하게 */
+        background-color: var(--bg-color); 
         padding: 0.75rem;
         border-radius: 8px;
         border: 1px solid var(--border-color);
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* 약간의 입체감 추가 */
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
     }
     
     .md-item {
@@ -858,7 +823,7 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
         font-variant-numeric: tabular-nums;
     }
     
-    .md-item.range { flex: 1.5; } /* 게이지 바 영역 넓게 배분 */
+    .md-item.range { flex: 1.5; } 
     .md-item.vol-cap { flex: 1; text-align: right; }
 
     .md-label {
@@ -867,13 +832,11 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
         text-transform: uppercase;
     }
 
-    /* 모달 오버레이를 상단 정렬로 변경하여 키보드가 올라와도 밀리지 않도록 고정 */
     .modal-overlay {
         align-items: flex-start !important; 
-        padding-top: 12vh; /* 화면 상단에서 12% 여백 (필요에 따라 10~15vh로 조절) */
+        padding-top: 12vh; 
     }
 
-    /* 트랜지션 애니메이션 방향을 아래에서 위가 아닌, 위에서 제자리로 부드럽게 떨어지도록 수정 */
     .modal-card {
         transform: translateY(-20px) !important;
     }
@@ -882,10 +845,6 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
         transform: translateY(0) !important;
     }
 
-
-    
-
-    /* 기타 모바일 미세 폰트 조정 */
     .symbol { font-size: 0.75rem; } 
     .name { font-size: 0.6rem; }
     .price { font-size: 0.8rem; }
@@ -955,7 +914,6 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
     opacity: 0.55; 
 }
 
-/* --- Change 셀 색상 스케일링 적용 (투명도 믹스 방식) --- */
 .change-cell .up { 
     color: color-mix(in srgb, var(--green) var(--text-intensity-pct, 100%), transparent); 
 }
@@ -963,7 +921,6 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
     color: color-mix(in srgb, var(--red) var(--text-intensity-pct, 100%), transparent); 
 }
 
-/* 배지 배경 및 텍스트 색상 스케일링 */
 .change-cell .badge.up { 
     background-color: color-mix(in srgb, var(--green) var(--bg-intensity-pct, 15%), transparent); 
     color: color-mix(in srgb, var(--green) var(--text-intensity-pct, 100%), transparent); 
