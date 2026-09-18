@@ -12,7 +12,6 @@ const NAVER_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbyXf76m
 const TREND_CHART_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycby4YZ1sOdQPfde-nrzAN0vUjhRP1Phn9C1ppFY2m8YHywGz-7GhNcHLU19PFCLeqm3u/exec";
 
 const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbwga8x6kGz0Naf8wtT9N_nNrZCtGuNO7ey6AQGyaKcmF6QKzfeU8x0dgsz2YVs4XMSz/exec"; 
-
 const KNIGHT_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbxNL4-6PqMSqylMQBP0CdqSKS0LYEK7Yn7tbFtiuIfbKlQGcAanznYX85r0CpxQ8J1f_Q/exec";
 
 const CHO_HANGUL = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
