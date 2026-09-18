@@ -1,5 +1,5 @@
 // --- CONFIGURATION & UTILITIES ---
-// KR - google & naver data // US, Indicators - YAHOO data
+// KR - NAVER data // US, Indicators - YAHOO data
 
 const DEFAULT_WATCHLISTS = {
     indicators: { title: 'Indicators', tickers: ['KRW=X', '^KS11', '^KQ11', '^IXIC', '^DJI', '^GSPC', 'BTC-USD'] },
@@ -11,7 +11,7 @@ const YAHOO_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbxzBxcv
 const NAVER_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbyXf76mrHHn3F5_ZEO8i813IyPv3e24f7K8B7N16cKNfZo1D5seaeUBOhtsyK_ciuBwjQ/exec"; 
 const TREND_CHART_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycby4YZ1sOdQPfde-nrzAN0vUjhRP1Phn9C1ppFY2m8YHywGz-7GhNcHLU19PFCLeqm3u/exec";
 
-const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbxlayGJzRO8QR0xUnTaP-Uzw-EkV7mNNQGHyeFer6Fx-VPmRK11UzfgVVfPL4XpkM6z/exec"; 
+const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbw9OpeO-W5pPQ2R_1EMok6Cufd22euuvmS0mspQZ7JM9RAMYCHXqU_Fm7Z22BXA7ece/exec"; 
 
 const KNIGHT_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbxNL4-6PqMSqylMQBP0CdqSKS0LYEK7Yn7tbFtiuIfbKlQGcAanznYX85r0CpxQ8J1f_Q/exec";
 
@@ -1426,7 +1426,6 @@ function formatCompact(num) {
     return new Intl.NumberFormat('en-US', { notation: 'compact', compactDisplay: 'short', maximumFractionDigits: 2 }).format(num);
 }
 
-// [수정] 종목 코드(000660) -> 한글 종목명(SK하이닉스) 매핑 변환하여 백엔드로 전달
 async function fetchNews() {
     const spinner = document.getElementById('news-spinner');
     const container = document.getElementById('news-container');
@@ -1451,16 +1450,8 @@ async function fetchNews() {
         return;
     }
 
-    let searchQueries = allTickers.map(ticker => {
-        if (/^\d{6}$/.test(ticker)) {
-            const dbMatch = localTickerDB.find(q => q.s.toUpperCase() === ticker.toUpperCase());
-            return dbMatch && dbMatch.n ? `${dbMatch.n}|${ticker}` : ticker;
-        }
-        return ticker;
-    });
-
     try {
-        const url = `${NEWS_GAS_PROXY_URL}?symbols=${encodeURIComponent(searchQueries.join(','))}&t=${Date.now()}`;  
+        const url = `${NEWS_GAS_PROXY_URL}?symbols=${encodeURIComponent(allTickers.join(','))}&t=${Date.now()}`;  
         
         const text = await fetchWithRetry(url, 3, 1000); 
         
@@ -1525,7 +1516,6 @@ function renderNews(newsList) {
         }
         if (!tickerLabel) tickerLabel = news.source;
 
-        // [수정] Google 뉴스일 경우 4색 닷이 있으므로 '- Google' 텍스트 생략
         const tagText = news.source === 'Google'
             ? escapeHTML(tickerLabel)
             : `${escapeHTML(tickerLabel)} - ${escapeHTML(news.source)}`;
