@@ -11,7 +11,7 @@ const YAHOO_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbxzBxcv
 const NAVER_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbyXf76mrHHn3F5_ZEO8i813IyPv3e24f7K8B7N16cKNfZo1D5seaeUBOhtsyK_ciuBwjQ/exec"; 
 const TREND_CHART_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycby4YZ1sOdQPfde-nrzAN0vUjhRP1Phn9C1ppFY2m8YHywGz-7GhNcHLU19PFCLeqm3u/exec";
 
-const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbw9OpeO-W5pPQ2R_1EMok6Cufd22euuvmS0mspQZ7JM9RAMYCHXqU_Fm7Z22BXA7ece/exec"; 
+const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbzUNB3hO9jVeTsRmgZAnP3dG1-cEolMjNenNYei45VrHOLQlJi27sEWGHkkdFROJm6Z/exec"; 
 
 const KNIGHT_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbxNL4-6PqMSqylMQBP0CdqSKS0LYEK7Yn7tbFtiuIfbKlQGcAanznYX85r0CpxQ8J1f_Q/exec";
 
@@ -270,7 +270,6 @@ function initSwipeToDelete() {
     });
 }
 
-// [수정] INSIGHT(뉴스/차트) 탭 복귀 시 차트 축 및 레이아웃 자동 복원
 window.switchMobileTab = function(tabName) {
     const currentTab = document.body.classList.contains('show-news') ? 'news' : 'dashboard';
     tabScrollCache[currentTab] = window.scrollY;
@@ -1489,7 +1488,7 @@ async function fetchNews() {
     }
 }
 
-// [추가] 네이버 및 다양한 타임스탬프 규격을 밀리초 타임스탬프로 유연하게 정규화
+// [수정] 네이버 12자리/14자리 및 다양한 시각 규격을 밀리초 타임스탬프(KST)로 정밀 변환
 function parseNewsTime(timeInput) {
     if (!timeInput) return Date.now();
     if (typeof timeInput === 'number') return timeInput;
@@ -1507,12 +1506,22 @@ function parseNewsTime(timeInput) {
         const sc = parseInt(str.substring(12, 14), 10);
         return Date.UTC(yr, mo, dy, hr - 9, mn, sc);
     }
-    
+
+    // 네이버 JSON datetime 12자리 (YYYYMMDDHHMM - KST)
+    if (/^\d{12}$/.test(str)) {
+        const yr = parseInt(str.substring(0, 4), 10);
+        const mo = parseInt(str.substring(4, 6), 10) - 1;
+        const dy = parseInt(str.substring(6, 8), 10);
+        const hr = parseInt(str.substring(8, 10), 10);
+        const mn = parseInt(str.substring(10, 12), 10);
+        return Date.UTC(yr, mo, dy, hr - 9, mn, 0);
+    }
+
     const parsed = new Date(str).getTime();
     return (!isNaN(parsed) && parsed > 0) ? parsed : Date.now();
 }
 
-// [수정] 한국시간(KST) 기준 뉴스 시각 계산 및 상대 시간(방금 전, N분 전, N시간 전 등) 정밀 표시
+// [수정] 종목 구분 없이 전체 뉴스를 작성 시각(KST) 기준 내림차순 교차 정렬
 function renderNews(newsList) {
     const container = document.getElementById('news-container');
     if (!container) return;
@@ -1723,7 +1732,7 @@ async function fetchMarketTrend(marketType = currentTrendMarketType, isBackgroun
     }
 }
 
-// [수정] 차트 영역이 화면에서 감춰진 상태일 때 Update 축 깨짐 방지
+// [수정] 숨겨진 상태에서 update 시 X/Y축 눈금 깨짐 방지
 function renderTrendChart(dataList, dateStr = "", isLive = false) {
     const canvas = document.getElementById('trend-chart-canvas');
     if (!canvas) return;
