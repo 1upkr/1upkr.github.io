@@ -11,7 +11,7 @@ const YAHOO_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbxzBxcv
 const NAVER_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbyXf76mrHHn3F5_ZEO8i813IyPv3e24f7K8B7N16cKNfZo1D5seaeUBOhtsyK_ciuBwjQ/exec"; 
 const TREND_CHART_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycby4YZ1sOdQPfde-nrzAN0vUjhRP1Phn9C1ppFY2m8YHywGz-7GhNcHLU19PFCLeqm3u/exec";
 
-const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbzUNB3hO9jVeTsRmgZAnP3dG1-cEolMjNenNYei45VrHOLQlJi27sEWGHkkdFROJm6Z/exec"; 
+const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbxxEvkanUH5bPyH9IW4rjSZ3CksapnnP4qHLP3BYrvfhlFAdQljTlKHm13nHRx06a9s/exec"; 
 
 const KNIGHT_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbxNL4-6PqMSqylMQBP0CdqSKS0LYEK7Yn7tbFtiuIfbKlQGcAanznYX85r0CpxQ8J1f_Q/exec";
 
@@ -1488,11 +1488,14 @@ async function fetchNews() {
     }
 }
 
-// [수정] 네이버 12자리/14자리 및 다양한 시각 규격을 밀리초 타임스탬프(KST)로 정밀 변환
+// [수정] 네이버 12자리/14자리/숫자 타임스탬프 규격 KST 밀리초 타임스탬프로 정밀 전환
 function parseNewsTime(timeInput) {
-    if (!timeInput) return Date.now();
-    if (typeof timeInput === 'number') return timeInput;
+    if (!timeInput) return null;
+    if (typeof timeInput === 'number') {
+        return timeInput > 1e11 ? timeInput : timeInput * 1000;
+    }
     const str = String(timeInput).trim();
+    if (!str) return null;
     if (/^\d{13}$/.test(str)) return parseInt(str, 10);
     if (/^\d{10}$/.test(str)) return parseInt(str, 10) * 1000;
     
@@ -1518,10 +1521,10 @@ function parseNewsTime(timeInput) {
     }
 
     const parsed = new Date(str).getTime();
-    return (!isNaN(parsed) && parsed > 0) ? parsed : Date.now();
+    return (!isNaN(parsed) && parsed > 0) ? parsed : null;
 }
 
-// [수정] 종목 구분 없이 전체 뉴스를 작성 시각(KST) 기준 내림차순 교차 정렬
+// [수정] 날짜 미포함 기사 필터링 및 작성 시각(KST) 기준 최신순 교차 정렬 렌더링
 function renderNews(newsList) {
     const container = document.getElementById('news-container');
     if (!container) return;
@@ -1531,10 +1534,19 @@ function renderNews(newsList) {
         return;
     }
 
-    const processedList = newsList.map(news => ({
+    // 1. 유효한 datetime/time이 존재하는 기사만 엄격 추출
+    const validNewsList = newsList.map(news => ({
         ...news,
         parsedTime: parseNewsTime(news.time)
-    })).sort((a, b) => b.parsedTime - a.parsedTime);
+    })).filter(news => news.parsedTime !== null && !isNaN(news.parsedTime) && news.parsedTime > 0);
+
+    if (validNewsList.length === 0) {
+        container.innerHTML = '<div class="empty-state"><p>No recent news found.</p></div>';
+        return;
+    }
+
+    // 2. 작성 시각(KST) 기준 종목 구분 없이 최신순(내림차순) 정렬
+    validNewsList.sort((a, b) => b.parsedTime - a.parsedTime);
 
     const now = Date.now();
     const kstFormatter = new Intl.DateTimeFormat('ko-KR', {
@@ -1546,21 +1558,29 @@ function renderNews(newsList) {
         hour12: false
     });
 
-    const html = processedList.map(news => {
+    const html = validNewsList.map(news => {
         const newsTime = news.parsedTime;
         const diffMins = Math.floor((now - newsTime) / 60000);
         let timeDisplay = '';
         
-        if (diffMins <= 1) {
+        // 0분~1분 이내인 경우에만 '방금' 표출
+        if (diffMins >= 0 && diffMins <= 1) {
             timeDisplay = '방금';
-        } else if (diffMins < 60) {
+        } else if (diffMins > 1 && diffMins < 60) {
             timeDisplay = `${diffMins}분 전`;
-        } else if (diffMins < 1440) {
+        } else if (diffMins >= 60 && diffMins < 1440) {
             timeDisplay = `${Math.floor(diffMins / 60)}시간 전`;
-        } else if (diffMins < 4320) {
+        } else if (diffMins >= 1440 && diffMins < 4320) {
             timeDisplay = `${Math.floor(diffMins / 1440)}일 전`;
-        } else {
+        } else if (diffMins >= 4320) {
             timeDisplay = kstFormatter.format(new Date(newsTime));
+        } else {
+            // 미래 시각 오차 방어 (5분 이내 오차는 방금, 그 이상은 시각 표출)
+            if (diffMins >= -5) {
+                timeDisplay = '방금';
+            } else {
+                timeDisplay = kstFormatter.format(new Date(newsTime));
+            }
         }
 
         let sourceTagClass = 'tag-yahoo';
@@ -1586,7 +1606,7 @@ function renderNews(newsList) {
                     ${escapeHTML(news.title)} 
                 </div>
                 <div class="news-meta">
-                    <span class="news-time ${diffMins < 60 ? 'recent' : ''}">${timeDisplay}</span>
+                    <span class="news-time ${diffMins >= 0 && diffMins < 60 ? 'recent' : ''}">${timeDisplay}</span>
                     <span class="news-tag ${sourceTagClass}">${tagText}</span>
                 </div>
             </a>
@@ -1732,7 +1752,6 @@ async function fetchMarketTrend(marketType = currentTrendMarketType, isBackgroun
     }
 }
 
-// [수정] 숨겨진 상태에서 update 시 X/Y축 눈금 깨짐 방지
 function renderTrendChart(dataList, dateStr = "", isLive = false) {
     const canvas = document.getElementById('trend-chart-canvas');
     if (!canvas) return;
