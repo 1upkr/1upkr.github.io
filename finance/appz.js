@@ -1,5 +1,5 @@
 // --- CONFIGURATION & UTILITIES ---
-// KR - NAVER data // US, Indicators - YAHOO data
+// KR - google news & naver data // US, Indicators - YAHOO data
 
 const DEFAULT_WATCHLISTS = {
     indicators: { title: 'Indicators', tickers: ['KRW=X', '^KS11', '^KQ11', '^IXIC', '^DJI', '^GSPC', 'BTC-USD'] },
@@ -66,7 +66,6 @@ let state = {
     lastNewsFetch: 0 
 };
 
-// [추가] 로컬 스토리지 데이터가 있더라도, title은 무조건 DEFAULT_WATCHLISTS 값을 강제로 따르도록 덮어쓰기
 for (const key in state.watchlists) {
     if (DEFAULT_WATCHLISTS[key]) {
         state.watchlists[key].title = DEFAULT_WATCHLISTS[key].title;
@@ -82,7 +81,6 @@ async function init() {
     applyTheme(); 
     if (!state.sectionOrder || state.sectionOrder.length === 0) state.sectionOrder = Object.keys(state.watchlists);
 
-    // [추가] 초기 로드 시 선택된 탭 즉시 활성화
     const trendTabs = document.querySelectorAll('.trend-tab-btn');
     trendTabs.forEach(btn => btn.classList.remove('active'));
     const activeTrendTab = Array.from(trendTabs).find(btn => btn.getAttribute('onclick').includes(`'${currentTrendMarketType}'`));
@@ -155,18 +153,12 @@ async function init() {
             if (typeof window.hideChartTooltip === 'function') window.hideChartTooltip();
         }
 
-        // ==========================================
-        // [추가] 모달 바깥 영역(어두운 배경) 클릭 시 닫기
-        // ==========================================
         if (e.target.classList.contains('modal-overlay')) {
-            e.target.classList.remove('active'); // 모달 숨김
-            
-            // 삭제(Drop) 모달의 경우 혹시 모를 오작동을 막기 위해 타겟 변수 초기화
+            e.target.classList.remove('active');
             if (e.target.id === 'delete-modal' && typeof targetTickerToDelete !== 'undefined') {
                 targetTickerToDelete = null;
             }
         }
-        // ==========================================
 
         const row = e.target.closest('tr[data-ticker]');
         if (row && !e.target.closest('.drag-handle') && !e.target.closest('.action-icon-btn') && !e.target.closest('.search-wrapper') && !e.target.closest('.settings-wrapper')) {
@@ -225,7 +217,6 @@ function initSwipeToDelete() {
         isSwiping = false;
         isScrolling = false; 
         row.style.transition = 'none'; 
-        
         row.style.willChange = 'transform, opacity';
     }, { passive: true });
 
@@ -821,7 +812,7 @@ function importSettings(event) {
     };
     reader.readAsText(file); event.target.value = ''; 
 }
-// 리셋 모달 초기화
+
 function resetToDefaults() {
     toggleSettingsMenu(); 
     const el = document.getElementById('reset-modal');
@@ -829,13 +820,11 @@ function resetToDefaults() {
     const btnEl = document.getElementById('confirm-reset-btn');
     
     if (el && inputEl && btnEl) {
-        // 입력창 및 UI 초기화
         inputEl.value = ''; 
         document.getElementById('reset-text-typed').textContent = '';
         document.getElementById('reset-text-untyped').textContent = '1up.kr';
         document.getElementById('reset-visual-bg').style.borderColor = 'var(--border-color)';
         
-        // 버튼 비활성화
         btnEl.disabled = true; 
         btnEl.style.opacity = '0.3'; 
         btnEl.style.cursor = 'not-allowed';
@@ -845,36 +834,30 @@ function resetToDefaults() {
     }
 }
 
-// 리셋 모달 닫기
 function closeResetModal() {
     const el = document.getElementById('reset-modal');
     if (el) el.classList.remove('active');
 }
 
-// 핵심 로직: 타이핑 시 글자 색상 채우기 & 오타 방지
 function handleResetInputChange(e) {
     const input = e.target;
     const targetWord = '1up.kr';
     let rawVal = input.value.toLowerCase();
     let validVal = "";
 
-    // 사용자가 입력한 문자 중 '1up.kr' 순서에 정확히 맞는 것만 골라냄 (오타 무시)
     for (let i = 0; i < rawVal.length; i++) {
         if (rawVal[i] === targetWord[i]) {
             validVal += rawVal[i];
         } else {
-            break; // 틀린 글자가 나오면 그 이후는 무시
+            break; 
         }
     }
     
-    // 입력창 실제 값을 정확한 값으로만 강제 고정
     input.value = validVal;
 
-    // 시각적 UI 업데이트 (맞춘 부분은 빨간색, 남은 부분은 반투명 회색)
     document.getElementById('reset-text-typed').textContent = validVal;
     document.getElementById('reset-text-untyped').textContent = targetWord.substring(validVal.length);
 
-    // 버튼 활성화 처리
     const btnEl = document.getElementById('confirm-reset-btn');
     if (validVal === targetWord) {
         btnEl.disabled = false;
@@ -887,7 +870,6 @@ function handleResetInputChange(e) {
     }
 }
 
-// 리셋 실행 (동일)
 function executeResetEverything() {
     const inputEl = document.getElementById('reset-confirm-input');
     
@@ -927,7 +909,7 @@ async function fetchData() {
 
         if (symbols.length === 0) continue;
 
-    if (sectionId === 'kr' && isKrMarketClosedCompletely) {
+        if (sectionId === 'kr' && isKrMarketClosedCompletely) {
             try {
                 const cachedQuotes = JSON.parse(localStorage.getItem('marketdash_quotes_cache')) || {};
                 const hasAllCache = symbols.every(sym => cachedQuotes[sym]);
@@ -944,11 +926,9 @@ async function fetchData() {
                         lastCloseKstDate.setDate(kstDate.getDate() - 2);
                     } else if (kstDate.getDay() === 6) { 
                         lastCloseKstDate.setDate(kstDate.getDate() - 1);
-                    // 🚨 20시 30분(여유 시간) 이전이라면 전 거래일 마감으로 간주
                     } else if (kstDate.getHours() < 20 || (kstDate.getHours() === 20 && kstDate.getMinutes() < 30)) {
                         lastCloseKstDate.setDate(kstDate.getDate() - (kstDate.getDay() === 1 ? 3 : 1));
                     }
-                    // 🚨 안전한 최종 마감 데이터 확보를 위해 기준 시간을 20시 30분으로 설정
                     lastCloseKstDate.setHours(20, 30, 0, 0); 
                     
                     const lastMarketCloseMs = lastCloseKstDate.getTime() - clientOffset - (9 * 3600000);
@@ -990,14 +970,11 @@ async function fetchData() {
 function updateTimerUI(seconds) {
     const ring = document.getElementById('timer-ring');
     if (ring) {
-        const maxOffset = 56.55; // r=9로 최소화된 링의 둘레 반영
-        
-        // 60초일 때 0, 0초일 때 56.55
+        const maxOffset = 56.55;
         const pct = 1 - (seconds / 60); 
         const offset = pct * maxOffset; 
         ring.style.strokeDashoffset = offset;
         
-        // 10초 이하일 때 붉은색 경고 효과
         if (seconds <= 10) {
             ring.classList.add('warning');
         } else {
@@ -1047,11 +1024,9 @@ function updateDOMWithData(quotes) {
         const isKR = dbMatch ? (dbMatch.e === 'NAVER') : /^\d/.test(ticker);
         const cached = cachedQuotes[ticker]; 
 
-        // 한국장 9시 이전 여부 엄격하게 체크
         const isBeforeOpenKR = isKR && currentTimeNum < 900;
 
         if (isKR) {
-            // [수정] 거래량(Volume) 조건 삭제. 9시 이전(장 시작 전)에만 어제 데이터를 유지하도록 조건 변경
             if (cached && isBeforeOpenKR) {
                 if (quote.regularMarketChange === 0) {
                     quote.regularMarketChange = cached.regularMarketChange || 0;
@@ -1062,7 +1037,6 @@ function updateDOMWithData(quotes) {
             }
         }
 
-        // [수정] 고/저가 복원 로직도 한국 주식일 경우 9시 이후엔 작동하지 않도록 방어 (어제 데이터 덮어쓰기 방지)
         if (cached) {
             const skipCacheOverride = isKR && !isBeforeOpenKR; 
             
@@ -1076,7 +1050,7 @@ function updateDOMWithData(quotes) {
             }
         }
 
-        quote.updatedAt = Date.now(); // 데이터 갱신 타임스탬프 추가
+        quote.updatedAt = Date.now(); 
         cachedQuotes[ticker] = quote;
     });
 
@@ -1088,7 +1062,6 @@ function updateDOMWithData(quotes) {
         const kstTime = new Date(utc + (9 * 3600000));
         const timeNum = kstTime.getHours() * 100 + kstTime.getMinutes();
 
-        // 1단계: 모든 종목의 변동값(mainPct) 및 상태 계산
         const processedQuotes = quotes.map(quote => {
             const ticker = quote.symbol; 
             const nodes = rowNodes.get(ticker);
@@ -1124,9 +1097,6 @@ function updateDOMWithData(quotes) {
             let targetState = 'REGULAR';
             const mState = (quote.marketState || '').toUpperCase();
 
-            // ==========================================
-            // ✅ 수정 1: 미장 개장 지연 방지 (API 상태 최우선)
-            // ==========================================
             if (mState === 'REGULAR') {
                 targetState = 'REGULAR';
             } else if (mState.includes('PRE') && preData) {
@@ -1148,21 +1118,16 @@ function updateDOMWithData(quotes) {
                 }
             }
 
-            // ==========================================
-            // ✅ 수정 2: 프리/애프터장 닫힘 판별 조건 최적화
-            // ==========================================
             if (targetState === 'PRE') {
                 if (isKR) {
                     if (!preData || preData.volume === 0) targetState = 'CLOSED_H';
                 } else {
-                    // API가 PRE장이라고 명시하지 않았는데(완전 휴장), 가격마저 동일하다면 더미 데이터로 간주
                     if (!preData || (!mState.includes('PRE') && Math.abs(preData.price - regPrice) === 0)) targetState = 'CLOSED_H';
                 }
             } else if (targetState === 'POST') {
                 if (isKR) {
                     if (!postData || postData.volume === 0) targetState = 'CLOSED_H';
                 } else {
-                    // API가 POST장이라고 명시하지 않았는데(완전 휴장), 가격마저 동일하다면 더미 데이터로 간주
                     if (!postData || (!mState.includes('POST') && Math.abs(postData.price - regPrice) === 0)) targetState = 'CLOSED_H';
                 }
             } else {
@@ -1177,7 +1142,6 @@ function updateDOMWithData(quotes) {
                 if (isAlwaysOpen) {
                     targetState = 'REGULAR'; 
                 } else if (isIndex) {
-                    // 지수는 기존처럼 30분(1800초) 타임아웃 유지
                     const nowSec = Math.floor(Date.now() / 1000);
                     if ((nowSec - regTime) > 1800) {
                         targetState = 'CLOSED_H'; 
@@ -1185,10 +1149,8 @@ function updateDOMWithData(quotes) {
                         targetState = 'REGULAR'; 
                     }
                 } else if (isFXorFuture) {
-                    // 환율 및 선물은 타임스탬프(regTime) 버그가 있으므로, 실제 주말 시간에만 CLOSED 처리
                     const day = kstTime.getDay();
                     const hour = kstTime.getHours();
-                    // 미 선물 장 휴장: 한국시간 토요일 오전 7시 ~ 월요일 오전 7시
                     const isWeekendClosed = (day === 6 && hour >= 7) || (day === 0) || (day === 1 && hour < 7);
                     targetState = isWeekendClosed ? 'CLOSED_H' : 'REGULAR';
                 } else {
@@ -1270,7 +1232,6 @@ function updateDOMWithData(quotes) {
             };
         }).filter(Boolean);
 
-        // 2단계: 섹션별 최고 상승률과 최대 하락률 계산 (스케일링용)
         const sectionMaxes = {};
         Object.keys(state.watchlists).forEach(sec => {
             sectionMaxes[sec] = { maxUp: 0, maxDown: 0 };
@@ -1293,7 +1254,6 @@ function updateDOMWithData(quotes) {
             }
         });
 
-        // 3단계: 비율에 따른 색상 농도 주입 및 최종 DOM 렌더링
         processedQuotes.forEach(pq => {
             const { quote, ticker, nodes, mainPrice, mainChange, mainPct, mainIcon, subHtml, sectionId, isKR } = pq;
             
@@ -1369,12 +1329,10 @@ function updateDOMWithData(quotes) {
             const lowVal = quote.regularMarketDayLow;
             const highVal = quote.regularMarketDayHigh;
 
-            // [수정] 명시적인 숫자 타입 체크 및 고/저가가 모두 0인 비정상 데이터 필터링
             const isValidNum = (val) => val !== undefined && val !== null && !isNaN(val);
             const isValidRange = isValidNum(lowVal) && isValidNum(highVal) && !(lowVal === 0 && highVal === 0 && mainPrice > 0);
 
-            // [수정] 안전한 조건식 적용 (0도 정상 처리)
-           if (isValidRange && highVal > lowVal) {
+            if (isValidRange && highVal > lowVal) {
                 let percent = ((mainPrice - lowVal) / (highVal - lowVal)) * 100;
                 percent = Math.max(0, Math.min(100, percent));
                 
@@ -1393,7 +1351,7 @@ function updateDOMWithData(quotes) {
                         </div>
                     </div>
                 `;
-            } else if (isValidRange && lowVal === highVal) { // [수정] 단일 마커 조건식 적용
+            } else if (isValidRange && lowVal === highVal) { 
                 const valStr = formatNum(lowVal, isKR);
                 rangeHtml = `
                     <div class="range-gauge-container">
@@ -1511,6 +1469,7 @@ async function fetchNews() {
     }
 }
 
+// [수정] Google / Naver / Yahoo 출처 구분 및 localTickerDB 기반 종목명 변환 반영
 function renderNews(newsList) {
     const container = document.getElementById('news-container');
     if (!container) return;
@@ -1538,8 +1497,18 @@ function renderNews(newsList) {
             timeDisplay = kstFormatter.format(new Date(news.time));
         }
 
-        const sourceTagClass = news.source === 'Naver' ? 'tag-naver' : 'tag-yahoo';
-        const tickerLabel = news.ticker ? news.ticker : news.source; 
+        let sourceTagClass = 'tag-yahoo';
+        if (news.source === 'Naver') sourceTagClass = 'tag-naver';
+        else if (news.source === 'Google') sourceTagClass = 'tag-google';
+
+        let tickerLabel = news.ticker;
+        if (news.ticker && news.ticker !== 'US') {
+            const dbMatch = localTickerDB.find(q => q.s.toUpperCase() === news.ticker.toUpperCase());
+            if (dbMatch && dbMatch.n) {
+                tickerLabel = dbMatch.n;
+            }
+        }
+        if (!tickerLabel) tickerLabel = news.source;
 
         return `
             <a href="${news.link}" target="_blank" rel="noopener noreferrer" class="news-item">
@@ -1971,10 +1940,8 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                             crossAlign: 'near', 
                             callback: function(value) {
                                 if (currentTrendMarketType === 'FUT') {
-                                    // 선물: 1000 이상일 경우 'k'로 축약 (예: 5000 -> 5k)
                                     return Math.abs(value) >= 1000 ? (value / 1000).toFixed(0) + 'k' : value;
                                 }
-                                // 코스피/코스닥: 천억 단위 축약
                                 return new Intl.NumberFormat('ko-KR').format(value / 1000);
                             }
                         } 
@@ -1984,30 +1951,22 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
         });
     }
 
-    // ==========================================
-    // 하단 통합 섹션 세부 막대 차트 렌더링
-    // ==========================================
     const barCanvas = document.getElementById('detail-bar-chart');
     if (barCanvas) {
-        // 1. 가장 최근 데이터 추출
         const latestEntry = sortedData[sortedData.length - 1];
 
-        // 2. 세부 주체별 데이터 담을 객체
         const detailData = {
             '개인': 0, '외국인': 0, '금융투자': 0, '보험': 0, 
             '투신(사모)': 0, '은행': 0, '기타금융': 0, '연기금등': 0, '기타법인': 0
         };
 
-        // 3. 코드별 분류 및 스케일링 적용
         if (latestEntry && Array.isArray(latestEntry.netAmounts)) {
             latestEntry.netAmounts.forEach(item => {
                 let val = 0;
                 if (currentTrendMarketType === 'FUT') {
-                    // 선물: 계약수 원본 데이터를 그대로 사용 (임의로 나누지 않음)
                     const quant = parseFloat(item.buyQuant || 0) - parseFloat(item.sellQuant || 0);
                     val = (isNaN(quant) || quant === 0) ? (parseFloat(item.diffValue) || 0) : quant;
                 } else {
-                    // 코스피/코스닥: 천억 단위로 차트 스케일링 (1.5 = 1500억)
                     val = (parseFloat(item.diffValue) || 0) / 100000000000;
                 }
 
@@ -2034,7 +1993,6 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
         const bgColors = dataValues.map(v => v >= 0 ? (isDark ? 'rgba(0, 200, 83, 0.4)' : 'rgba(0, 135, 60, 0.4)') : (isDark ? 'rgba(255, 69, 58, 0.4)' : 'rgba(235, 15, 41, 0.4)'));
         const borderColors = dataValues.map(v => v >= 0 ? greenColor : redColor);
 
-        // 막대그래프 끝부분 텍스트 커스텀 플러그인
         const barLabelPlugin = {
             id: 'barLabelPlugin',
             afterDatasetsDraw(chart) {
@@ -2050,17 +2008,15 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
 
                     let displayVal;
                     if (currentTrendMarketType === 'FUT') {
-                        // 선물: 계약수이므로 정수로 표기 (예: +3,500)
                         displayVal = (value > 0 ? '+' : '') + new Intl.NumberFormat('ko-KR').format(Math.round(value));
                     } else {
-                        // 주식: 천억 단위이므로 소수점 1자리 표기 (예: +1.5)
                         displayVal = (value > 0 ? '+' : '') + value.toFixed(1);
                     }
                     
                     const labelName = chart.data.labels[index];
-                    let textColor = colorInst; // 기본 기관 계열 (오렌지)
-                    if (labelName === '개인') textColor = colorInd; // 보라
-                    else if (labelName === '외국인') textColor = colorFor; // 파랑
+                    let textColor = colorInst; 
+                    if (labelName === '개인') textColor = colorInd; 
+                    else if (labelName === '외국인') textColor = colorFor; 
                     
                     ctx.fillStyle = textColor;
                     
@@ -2113,7 +2069,6 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                                 font: { family: "'Inter', sans-serif", size: 10 },
                                 callback: function(value) { 
                                     if (currentTrendMarketType === 'FUT') {
-                                        // 선물: 1000 넘어가면 'k'로 축약 (예: 5000 -> 5k)
                                         return Math.abs(value) >= 1000 ? (value / 1000).toFixed(0) + 'k' : value;
                                     }
                                     return Math.round(value); 
