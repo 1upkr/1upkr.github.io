@@ -1,5 +1,5 @@
 // --- CONFIGURATION & UTILITIES ---
-// KR - google news & naver data // US, Indicators - YAHOO data
+// KR - google & naver data // US, Indicators - YAHOO data
 
 const DEFAULT_WATCHLISTS = {
     indicators: { title: 'Indicators', tickers: ['KRW=X', '^KS11', '^KQ11', '^IXIC', '^DJI', '^GSPC', 'BTC-USD'] },
@@ -11,7 +11,8 @@ const YAHOO_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbxzBxcv
 const NAVER_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbyXf76mrHHn3F5_ZEO8i813IyPv3e24f7K8B7N16cKNfZo1D5seaeUBOhtsyK_ciuBwjQ/exec"; 
 const TREND_CHART_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycby4YZ1sOdQPfde-nrzAN0vUjhRP1Phn9C1ppFY2m8YHywGz-7GhNcHLU19PFCLeqm3u/exec";
 
-const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbwga8x6kGz0Naf8wtT9N_nNrZCtGuNO7ey6AQGyaKcmF6QKzfeU8x0dgsz2YVs4XMSz/exec"; 
+const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbwE22Mr2zhkK-XouQtOduyIQ5EaZ7eYPrUwn71uDrAPx2kAgOYcG3pNLD0uvdklQrmL/exec"; 
+
 const KNIGHT_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbxNL4-6PqMSqylMQBP0CdqSKS0LYEK7Yn7tbFtiuIfbKlQGcAanznYX85r0CpxQ8J1f_Q/exec";
 
 const CHO_HANGUL = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
@@ -1468,7 +1469,7 @@ async function fetchNews() {
     }
 }
 
-// [수정] Google / Naver / Yahoo 출처 구분 및 localTickerDB 기반 종목명 변환 반영
+// [수정] 한국시간(KST) 기준 엄격 최신순 정렬 및 타임스탬프 변환 보장
 function renderNews(newsList) {
     const container = document.getElementById('news-container');
     if (!container) return;
@@ -1478,22 +1479,30 @@ function renderNews(newsList) {
         return;
     }
 
+    // 타임스탬프 숫자 검증 및 최신순(내림차순) 정렬 2차 보장
+    newsList.sort((a, b) => (Number(b.time) || 0) - (Number(a.time) || 0));
+
     const now = Date.now();
     const kstFormatter = new Intl.DateTimeFormat('ko-KR', {
         timeZone: 'Asia/Seoul',
+        month: '2-digit',
+        day: '2-digit',
         hour: '2-digit',
         minute: '2-digit',
         hour12: false
     });
 
     const html = newsList.map(news => {
-        const diffMins = Math.floor((now - news.time) / 60000);
+        const newsTime = Number(news.time) || now;
+        const diffMins = Math.floor((now - newsTime) / 60000);
         let timeDisplay = '';
         
-        if (diffMins >= 0 && diffMins < 10) {
+        if (diffMins >= 0 && diffMins < 60) {
             timeDisplay = diffMins === 0 ? '방금' : `${diffMins}분 전`;
+        } else if (diffMins >= 60 && diffMins < 1440) {
+            timeDisplay = `${Math.floor(diffMins / 60)}시간 전`;
         } else {
-            timeDisplay = kstFormatter.format(new Date(news.time));
+            timeDisplay = kstFormatter.format(new Date(newsTime));
         }
 
         let sourceTagClass = 'tag-yahoo';
@@ -1515,7 +1524,7 @@ function renderNews(newsList) {
                     ${escapeHTML(news.title)} 
                 </div>
                 <div class="news-meta">
-                    <span class="news-time ${diffMins < 10 ? 'recent' : ''}">${timeDisplay}</span>
+                    <span class="news-time ${diffMins < 60 ? 'recent' : ''}">${timeDisplay}</span>
                     <span class="news-tag ${sourceTagClass}">${escapeHTML(tickerLabel)} - ${escapeHTML(news.source)}</span>
                 </div>
             </a>
@@ -1764,9 +1773,9 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
     const greenColor = isDark ? '#00c853' : '#00873c';
     const instColor = '#f5a623';
 
-    const colorInd = isDark ? '#bf5af2' : '#af52de';  // 개인 (보라색)
-    const colorFor = isDark ? '#90a4ae' : '#546e7a';  // 외국인 (블루그레이)
-    const colorInst = isDark ? '#ff9f0a' : '#ff9500'; // 기관 (오렌지색)
+    const colorInd = isDark ? '#bf5af2' : '#af52de';  
+    const colorFor = isDark ? '#90a4ae' : '#546e7a';  
+    const colorInst = isDark ? '#ff9f0a' : '#ff9500'; 
 
     if (trendChartInstance) {
         trendChartInstance.data.datasets[0].data = individualData;
