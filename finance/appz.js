@@ -270,6 +270,7 @@ function initSwipeToDelete() {
     });
 }
 
+// [수정] INSIGHT(뉴스/차트) 탭 복귀 시 차트 축 및 레이아웃 자동 복원
 window.switchMobileTab = function(tabName) {
     const currentTab = document.body.classList.contains('show-news') ? 'news' : 'dashboard';
     tabScrollCache[currentTab] = window.scrollY;
@@ -284,6 +285,17 @@ window.switchMobileTab = function(tabName) {
         const tabNewsBtn = document.getElementById('tab-btn-news');
         if (tabNewsBtn) tabNewsBtn.classList.add('active');
         
+        setTimeout(() => {
+            if (trendChartInstance) {
+                trendChartInstance.resize();
+                trendChartInstance.update();
+            }
+            if (detailChartInstance) {
+                detailChartInstance.resize();
+                detailChartInstance.update();
+            }
+        }, 50);
+
         const container = document.getElementById('news-container');
         const isStale = (Date.now() - state.lastNewsFetch) > 60000;
         const isEmpty = !container || container.children.length === 0 || container.querySelector('.empty-state');
@@ -300,7 +312,7 @@ window.switchMobileTab = function(tabName) {
     setTimeout(() => {
         window.scrollTo(0, tabScrollCache[tabName] || 0);
     }, 10);
-}
+};
 
 function renderLayout() {
     const dashboard = document.getElementById('dashboard');
@@ -1450,8 +1462,16 @@ async function fetchNews() {
         return;
     }
 
+    let searchQueries = allTickers.map(ticker => {
+        if (/^\d{6}$/.test(ticker)) {
+            const dbMatch = localTickerDB.find(q => q.s.toUpperCase() === ticker.toUpperCase());
+            return dbMatch && dbMatch.n ? `${dbMatch.n}|${ticker}` : ticker;
+        }
+        return ticker;
+    });
+
     try {
-        const url = `${NEWS_GAS_PROXY_URL}?symbols=${encodeURIComponent(allTickers.join(','))}&t=${Date.now()}`;  
+        const url = `${NEWS_GAS_PROXY_URL}?symbols=${encodeURIComponent(searchQueries.join(','))}&t=${Date.now()}`;  
         
         const text = await fetchWithRetry(url, 3, 1000); 
         
@@ -1469,6 +1489,30 @@ async function fetchNews() {
     }
 }
 
+// [추가] 네이버 및 다양한 타임스탬프 규격을 밀리초 타임스탬프로 유연하게 정규화
+function parseNewsTime(timeInput) {
+    if (!timeInput) return Date.now();
+    if (typeof timeInput === 'number') return timeInput;
+    const str = String(timeInput).trim();
+    if (/^\d{13}$/.test(str)) return parseInt(str, 10);
+    if (/^\d{10}$/.test(str)) return parseInt(str, 10) * 1000;
+    
+    // 네이버 JSON datetime 14자리 (YYYYMMDDHHMMSS - KST)
+    if (/^\d{14}$/.test(str)) {
+        const yr = parseInt(str.substring(0, 4), 10);
+        const mo = parseInt(str.substring(4, 6), 10) - 1;
+        const dy = parseInt(str.substring(6, 8), 10);
+        const hr = parseInt(str.substring(8, 10), 10);
+        const mn = parseInt(str.substring(10, 12), 10);
+        const sc = parseInt(str.substring(12, 14), 10);
+        return Date.UTC(yr, mo, dy, hr - 9, mn, sc);
+    }
+    
+    const parsed = new Date(str).getTime();
+    return (!isNaN(parsed) && parsed > 0) ? parsed : Date.now();
+}
+
+// [수정] 한국시간(KST) 기준 뉴스 시각 계산 및 상대 시간(방금 전, N분 전, N시간 전 등) 정밀 표시
 function renderNews(newsList) {
     const container = document.getElementById('news-container');
     if (!container) return;
@@ -1478,7 +1522,10 @@ function renderNews(newsList) {
         return;
     }
 
-    newsList.sort((a, b) => (Number(b.time) || 0) - (Number(a.time) || 0));
+    const processedList = newsList.map(news => ({
+        ...news,
+        parsedTime: parseNewsTime(news.time)
+    })).sort((a, b) => b.parsedTime - a.parsedTime);
 
     const now = Date.now();
     const kstFormatter = new Intl.DateTimeFormat('ko-KR', {
@@ -1490,15 +1537,19 @@ function renderNews(newsList) {
         hour12: false
     });
 
-    const html = newsList.map(news => {
-        const newsTime = Number(news.time) || now;
+    const html = processedList.map(news => {
+        const newsTime = news.parsedTime;
         const diffMins = Math.floor((now - newsTime) / 60000);
         let timeDisplay = '';
         
-        if (diffMins >= 0 && diffMins < 60) {
-            timeDisplay = diffMins === 0 ? '방금' : `${diffMins}분 전`;
-        } else if (diffMins >= 60 && diffMins < 1440) {
+        if (diffMins <= 1) {
+            timeDisplay = '방금';
+        } else if (diffMins < 60) {
+            timeDisplay = `${diffMins}분 전`;
+        } else if (diffMins < 1440) {
             timeDisplay = `${Math.floor(diffMins / 60)}시간 전`;
+        } else if (diffMins < 4320) {
+            timeDisplay = `${Math.floor(diffMins / 1440)}일 전`;
         } else {
             timeDisplay = kstFormatter.format(new Date(newsTime));
         }
@@ -1672,6 +1723,7 @@ async function fetchMarketTrend(marketType = currentTrendMarketType, isBackgroun
     }
 }
 
+// [수정] 차트 영역이 화면에서 감춰진 상태일 때 Update 축 깨짐 방지
 function renderTrendChart(dataList, dateStr = "", isLive = false) {
     const canvas = document.getElementById('trend-chart-canvas');
     if (!canvas) return;
@@ -1759,6 +1811,15 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
             lastInd = individualData[i];
             lastForgn = foreignData[i];
             lastInst = institutionData[i];
+        }
+    }
+
+    if (canvas.offsetWidth === 0 || canvas.offsetHeight === 0) {
+        if (trendChartInstance) {
+            trendChartInstance.data.datasets[0].data = individualData;
+            trendChartInstance.data.datasets[1].data = foreignData;
+            trendChartInstance.data.datasets[2].data = institutionData;
+            return;
         }
     }
 
