@@ -540,7 +540,30 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
 }
 .tag-naver { background: rgba(69, 163, 108, 0.12); color: #45a36c; }
 .tag-yahoo { background: rgba(109, 77, 128, 0.12); color: #6d4d80; }
-.tag-google { background: rgba(234, 67, 53, 0.12); color: #ea4335; } /* [추가] Google News 출처 전용 태그 스타일 */
+.tag-google {
+  background: #f8f9fa;
+  color: #3c4043;
+  border: 1px solid #dadce0;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.tag-google::before {
+  content: "";
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #4285F4;
+  box-shadow: 
+    7px 0 0 #EA4335, 
+    14px 0 0 #FBBC05, 
+    21px 0 0 #34A853;
+  margin-right: 18px; /* 닷 3개 공간 확보 */
+}
+
+
 
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes rotate { 100% { transform: rotate(360deg); } }
