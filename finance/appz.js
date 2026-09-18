@@ -1478,7 +1478,6 @@ async function fetchNews() {
     }
 }
 
-// [수정] 한국시간(KST) 기준 엄격 최신순 정렬 및 타임스탬프 변환 보장
 function renderNews(newsList) {
     const container = document.getElementById('news-container');
     if (!container) return;
@@ -1488,7 +1487,6 @@ function renderNews(newsList) {
         return;
     }
 
-    // 타임스탬프 숫자 검증 및 최신순(내림차순) 정렬 2차 보장
     newsList.sort((a, b) => (Number(b.time) || 0) - (Number(a.time) || 0));
 
     const now = Date.now();
@@ -1527,6 +1525,11 @@ function renderNews(newsList) {
         }
         if (!tickerLabel) tickerLabel = news.source;
 
+        // [수정] Google 뉴스일 경우 4색 닷이 있으므로 '- Google' 텍스트 생략
+        const tagText = news.source === 'Google'
+            ? escapeHTML(tickerLabel)
+            : `${escapeHTML(tickerLabel)} - ${escapeHTML(news.source)}`;
+
         return `
             <a href="${news.link}" target="_blank" rel="noopener noreferrer" class="news-item">
                 <div class="news-title">
@@ -1534,7 +1537,7 @@ function renderNews(newsList) {
                 </div>
                 <div class="news-meta">
                     <span class="news-time ${diffMins < 60 ? 'recent' : ''}">${timeDisplay}</span>
-                    <span class="news-tag ${sourceTagClass}">${escapeHTML(tickerLabel)} - ${escapeHTML(news.source)}</span>
+                    <span class="news-tag ${sourceTagClass}">${tagText}</span>
                 </div>
             </a>
         `;
