@@ -10,7 +10,7 @@ const DEFAULT_WATCHLISTS = {
 const YAHOO_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbxzBxcv3llVtcWyWoldEHkpyNBgWSn0D2_j_SYLEf6r-a4zMZ4VpOE6cxtwPQw_wvKt6Q/exec";
 const NAVER_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbyXf76mrHHn3F5_ZEO8i813IyPv3e24f7K8B7N16cKNfZo1D5seaeUBOhtsyK_ciuBwjQ/exec"; 
 const TREND_CHART_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycby4YZ1sOdQPfde-nrzAN0vUjhRP1Phn9C1ppFY2m8YHywGz-7GhNcHLU19PFCLeqm3u/exec";
-const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbw9X_G6X8ezEvQ9e6MnXqxe8hYY9kd7A6H0VAnAxfpThu-DHiEw5E2kHfei7Ab4HVJy/exec"; 
+const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbwQrqLXHp9RnzgxWxcsYNXdqBf0CtbwpJHGIZw1o0Hfc6M38QoyVzJSrYahqtfg5MIQ/exec"; 
 const KNIGHT_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbxNL4-6PqMSqylMQBP0CdqSKS0LYEK7Yn7tbFtiuIfbKlQGcAanznYX85r0CpxQ8J1f_Q/exec";
 
 const CHO_HANGUL = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
