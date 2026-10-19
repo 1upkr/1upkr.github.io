@@ -8,7 +8,7 @@ const DEFAULT_WATCHLISTS = {
 };
 
 const YAHOO_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbxzBxcv3llVtcWyWoldEHkpyNBgWSn0D2_j_SYLEf6r-a4zMZ4VpOE6cxtwPQw_wvKt6Q/exec";
-const NAVER_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbyXf76mrHHn3F5_ZEO8i813IyPv3e24f7K8B7N16cKNfZo1D5seaeUBOhtsyK_ciuBwjQ/exec"; 
+const NAVER_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbxqAEhqdJw60zZb8Pwzst1Vjox1CfshDX-Hf19ecn_UjXcaS9gcQ3SJ34PMh_EpwZZUnw/exec"; 
 const TREND_CHART_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycby4YZ1sOdQPfde-nrzAN0vUjhRP1Phn9C1ppFY2m8YHywGz-7GhNcHLU19PFCLeqm3u/exec";
 
 const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbxxEvkanUH5bPyH9IW4rjSZ3CksapnnP4qHLP3BYrvfhlFAdQljTlKHm13nHRx06a9s/exec"; 
@@ -1105,6 +1105,7 @@ function updateDOMWithData(quotes) {
             const preTime = preData ? preData.time : 0;
             const postTime = postData ? postData.time : 0;
             
+            // [수정] targetState 판정 로직: 20:00 이후 완전 마감 뷰(CLOSED_H)로의 정확한 유도
             let targetState = 'REGULAR';
             const mState = (quote.marketState || '').toUpperCase();
 
@@ -1115,9 +1116,14 @@ function updateDOMWithData(quotes) {
             } else if (mState.includes('POST') && postData) {
                 targetState = 'POST';
             } else if (mState === 'CLOSED') {
-                if (preData && postData) targetState = preTime > postTime ? 'PRE' : 'POST';
-                else if (postData) targetState = 'POST';
-                else if (preData) targetState = 'PRE';
+                if (isKR) {
+                    targetState = 'CLOSED_H'; // 한국 주식은 CLOSED 상태(주로 20:00 이후)일 때 바로 CLOSED_H 뷰로 고정
+                } else {
+                    if (preData && postData) targetState = preTime > postTime ? 'PRE' : 'POST';
+                    else if (postData) targetState = 'POST';
+                    else if (preData) targetState = 'PRE';
+                    else targetState = 'CLOSED_H';
+                }
             } else {
                 const maxTime = Math.max(regTime, preTime, postTime);
                 if (maxTime > 0) {
@@ -1129,45 +1135,22 @@ function updateDOMWithData(quotes) {
                 }
             }
 
-            if (targetState === 'PRE') {
-                if (isKR) {
-                    if (!preData || preData.volume === 0) targetState = 'CLOSED_H';
-                } else {
-                    if (!preData || (!mState.includes('PRE') && Math.abs(preData.price - regPrice) === 0)) targetState = 'CLOSED_H';
+            // 한국 주식: 거래 시간(평일 시간외 세션)에만 PRE/POST를 살리고, 그 외엔 CLOSED_H로 차단
+            if (isKR) {
+                const isAfterHoursSession = (kstTime.getDay() >= 1 && kstTime.getDay() <= 5) && (timeNum >= 1530 && timeNum <= 2000);
+                if (targetState === 'POST' && (!isAfterHoursSession || !postData || postData.volume === 0)) {
+                    targetState = 'CLOSED_H';
                 }
-            } else if (targetState === 'POST') {
-                if (isKR) {
-                    if (!postData || postData.volume === 0) targetState = 'CLOSED_H';
-                } else {
-                    if (!postData || (!mState.includes('POST') && Math.abs(postData.price - regPrice) === 0)) targetState = 'CLOSED_H';
+                
+                const isPreHoursSession = (kstTime.getDay() >= 1 && kstTime.getDay() <= 5) && (timeNum >= 800 && timeNum < 900);
+                if (targetState === 'PRE' && (!isPreHoursSession || !preData || preData.volume === 0)) {
+                    targetState = 'CLOSED_H';
                 }
             } else {
-                const qType = (quote.quoteType || '').toUpperCase();
-                const isCrypto = qType === 'CRYPTOCURRENCY' || ticker.includes('-');
-                const isFXorFuture = qType === 'CURRENCY' || qType === 'FUTURE' || ticker.endsWith('=X') || ticker.endsWith('=F');
-                const isIndex = qType === 'INDEX' || ticker.startsWith('^');
-    
-                const alwaysOpenTickers = ['^TNX', '^IRX', '^TYX', '^VIX', 'KRW=X', 'JPYKRW=X']; 
-                const isAlwaysOpen = isCrypto || alwaysOpenTickers.includes(ticker.toUpperCase());
-    
-                if (isAlwaysOpen) {
-                    targetState = 'REGULAR'; 
-                } else if (isIndex) {
-                    const nowSec = Math.floor(Date.now() / 1000);
-                    if ((nowSec - regTime) > 1800) {
-                        targetState = 'CLOSED_H'; 
-                    } else {
-                        targetState = 'REGULAR'; 
-                    }
-                } else if (isFXorFuture) {
-                    const day = kstTime.getDay();
-                    const hour = kstTime.getHours();
-                    const isWeekendClosed = (day === 6 && hour >= 7) || (day === 0) || (day === 1 && hour < 7);
-                    targetState = isWeekendClosed ? 'CLOSED_H' : 'REGULAR';
-                } else {
-                    if (mState === 'CLOSED' || mState.includes('POST') || mState.includes('PRE')) {
-                        targetState = 'CLOSED_H';
-                    }
+                if (targetState === 'PRE') {
+                    if (!preData || (!mState.includes('PRE') && Math.abs(preData.price - regPrice) === 0)) targetState = 'CLOSED_H';
+                } else if (targetState === 'POST') {
+                    if (!postData || (!mState.includes('POST') && Math.abs(postData.price - regPrice) === 0)) targetState = 'CLOSED_H';
                 }
             }
  
@@ -1488,7 +1471,6 @@ async function fetchNews() {
     }
 }
 
-// [수정] 네이버 12자리/14자리/숫자 타임스탬프 규격 KST 밀리초 타임스탬프로 정밀 전환
 function parseNewsTime(timeInput) {
     if (!timeInput) return null;
     if (typeof timeInput === 'number') {
@@ -1524,7 +1506,6 @@ function parseNewsTime(timeInput) {
     return (!isNaN(parsed) && parsed > 0) ? parsed : null;
 }
 
-// [수정] 날짜 미포함 기사 필터링 및 작성 시각(KST) 기준 최신순 교차 정렬 렌더링
 function renderNews(newsList) {
     const container = document.getElementById('news-container');
     if (!container) return;
@@ -1534,7 +1515,7 @@ function renderNews(newsList) {
         return;
     }
 
-    // 1. 유효한 datetime/time이 존재하는 기사만 엄격 추출
+    // 유효한 datetime/time이 존재하는 기사만 엄격 추출
     const validNewsList = newsList.map(news => ({
         ...news,
         parsedTime: parseNewsTime(news.time)
@@ -1545,7 +1526,7 @@ function renderNews(newsList) {
         return;
     }
 
-    // 2. 작성 시각(KST) 기준 종목 구분 없이 최신순(내림차순) 정렬
+    // 작성 시각(KST) 기준 최신순(내림차순) 정렬
     validNewsList.sort((a, b) => b.parsedTime - a.parsedTime);
 
     const now = Date.now();
@@ -1575,7 +1556,7 @@ function renderNews(newsList) {
         } else if (diffMins >= 4320) {
             timeDisplay = kstFormatter.format(new Date(newsTime));
         } else {
-            // 미래 시각 오차 방어 (5분 이내 오차는 방금, 그 이상은 시각 표출)
+            // 미래 시각 오차 방어
             if (diffMins >= -5) {
                 timeDisplay = '방금';
             } else {
