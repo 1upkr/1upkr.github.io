@@ -8,7 +8,7 @@ const DEFAULT_WATCHLISTS = {
 };
 
 const YAHOO_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbxzBxcv3llVtcWyWoldEHkpyNBgWSn0D2_j_SYLEf6r-a4zMZ4VpOE6cxtwPQw_wvKt6Q/exec";
-const NAVER_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbxqAEhqdJw60zZb8Pwzst1Vjox1CfshDX-Hf19ecn_UjXcaS9gcQ3SJ34PMh_EpwZZUnw/exec"; 
+const NAVER_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbzLiCsFeL63SGeCQOZh4cMFVmpRfGDrTNXpS32YN6clpVgV5vP8pvCawE-8XNO5Q_gFWg/exec"; 
 const TREND_CHART_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycby4YZ1sOdQPfde-nrzAN0vUjhRP1Phn9C1ppFY2m8YHywGz-7GhNcHLU19PFCLeqm3u/exec";
 
 const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbxxEvkanUH5bPyH9IW4rjSZ3CksapnnP4qHLP3BYrvfhlFAdQljTlKHm13nHRx06a9s/exec"; 
@@ -1045,6 +1045,13 @@ function updateDOMWithData(quotes) {
                     quote.regularMarketDayLow = cached.regularMarketDayLow || quote.regularMarketDayLow;
                     quote.regularMarketDayHigh = cached.regularMarketDayHigh || quote.regularMarketDayHigh;
                 }
+                // 새벽/아침 장 시작 전 전일 시간외 데이터 캐시 복원
+                if (!quote.postMarketPrice && cached.postMarketPrice) {
+                    quote.postMarketPrice = cached.postMarketPrice;
+                    quote.postMarketChange = cached.postMarketChange;
+                    quote.postMarketChangePercent = cached.postMarketChangePercent;
+                    quote.postMarketVolume = cached.postMarketVolume;
+                }
             }
         }
 
@@ -1105,7 +1112,6 @@ function updateDOMWithData(quotes) {
             const preTime = preData ? preData.time : 0;
             const postTime = postData ? postData.time : 0;
             
-            // [수정] targetState 판정 로직: 20:00 이후 완전 마감 뷰(CLOSED_H)로의 정확한 유도
             let targetState = 'REGULAR';
             const mState = (quote.marketState || '').toUpperCase();
 
@@ -1116,14 +1122,10 @@ function updateDOMWithData(quotes) {
             } else if (mState.includes('POST') && postData) {
                 targetState = 'POST';
             } else if (mState === 'CLOSED') {
-                if (isKR) {
-                    targetState = 'CLOSED_H'; // 한국 주식은 CLOSED 상태(주로 20:00 이후)일 때 바로 CLOSED_H 뷰로 고정
-                } else {
-                    if (preData && postData) targetState = preTime > postTime ? 'PRE' : 'POST';
-                    else if (postData) targetState = 'POST';
-                    else if (preData) targetState = 'PRE';
-                    else targetState = 'CLOSED_H';
-                }
+                if (preData && postData) targetState = preTime > postTime ? 'PRE' : 'POST';
+                else if (postData) targetState = 'POST';
+                else if (preData) targetState = 'PRE';
+                else targetState = 'CLOSED_H';
             } else {
                 const maxTime = Math.max(regTime, preTime, postTime);
                 if (maxTime > 0) {
@@ -1135,25 +1137,50 @@ function updateDOMWithData(quotes) {
                 }
             }
 
-            // 한국 주식: 거래 시간(평일 시간외 세션)에만 PRE/POST를 살리고, 그 외엔 CLOSED_H로 차단
-            if (isKR) {
-                const isAfterHoursSession = (kstTime.getDay() >= 1 && kstTime.getDay() <= 5) && (timeNum >= 1530 && timeNum <= 2000);
-                if (targetState === 'POST' && (!isAfterHoursSession || !postData || postData.volume === 0)) {
-                    targetState = 'CLOSED_H';
+            // 거래량과 가격 변동이 없는 종목만 CLOSED_H로 차단 (US 마켓과 동일한 원리)
+            if (targetState === 'PRE') {
+                if (isKR) {
+                    if (!preData || preData.volume === 0) targetState = 'CLOSED_H';
+                } else {
+                    if (!preData || (!mState.includes('PRE') && Math.abs(preData.price - regPrice) === 0)) targetState = 'CLOSED_H';
                 }
-                
-                const isPreHoursSession = (kstTime.getDay() >= 1 && kstTime.getDay() <= 5) && (timeNum >= 800 && timeNum < 900);
-                if (targetState === 'PRE' && (!isPreHoursSession || !preData || preData.volume === 0)) {
-                    targetState = 'CLOSED_H';
+            } else if (targetState === 'POST') {
+                if (isKR) {
+                    if (!postData || postData.volume === 0 || Math.abs(postData.price - regPrice) === 0) targetState = 'CLOSED_H';
+                } else {
+                    if (!postData || (!mState.includes('POST') && Math.abs(postData.price - regPrice) === 0)) targetState = 'CLOSED_H';
                 }
             } else {
-                if (targetState === 'PRE') {
-                    if (!preData || (!mState.includes('PRE') && Math.abs(preData.price - regPrice) === 0)) targetState = 'CLOSED_H';
-                } else if (targetState === 'POST') {
-                    if (!postData || (!mState.includes('POST') && Math.abs(postData.price - regPrice) === 0)) targetState = 'CLOSED_H';
+                const qType = (quote.quoteType || '').toUpperCase();
+                const isCrypto = qType === 'CRYPTOCURRENCY' || ticker.includes('-');
+                const isFXorFuture = qType === 'CURRENCY' || qType === 'FUTURE' || ticker.endsWith('=X') || ticker.endsWith('=F');
+                const isIndex = qType === 'INDEX' || ticker.startsWith('^');
+    
+                const alwaysOpenTickers = ['^TNX', '^IRX', '^TYX', '^VIX', 'KRW=X', 'JPYKRW=X']; 
+                const isAlwaysOpen = isCrypto || alwaysOpenTickers.includes(ticker.toUpperCase());
+    
+                if (isAlwaysOpen) {
+                    targetState = 'REGULAR'; 
+                } else if (isIndex) {
+                    const nowSec = Math.floor(Date.now() / 1000);
+                    if ((nowSec - regTime) > 1800) {
+                        targetState = 'CLOSED_H'; 
+                    } else {
+                        targetState = 'REGULAR'; 
+                    }
+                } else if (isFXorFuture) {
+                    const day = kstTime.getDay();
+                    const hour = kstTime.getHours();
+                    const isWeekendClosed = (day === 6 && hour >= 7) || (day === 0) || (day === 1 && hour < 7);
+                    targetState = isWeekendClosed ? 'CLOSED_H' : 'REGULAR';
+                } else {
+                    if (mState === 'CLOSED' || mState.includes('POST') || mState.includes('PRE')) {
+                        targetState = 'CLOSED_H';
+                    }
                 }
             }
  
+            // 실시간 세션 여부 판정 (실시간 세션 중일 때만 빨간색 활성 스타일 적용)
             let isExtLive = false;
             
             if (isKR) {
@@ -1191,6 +1218,7 @@ function updateDOMWithData(quotes) {
                 subHtml = `<span class="ext-label">closed</span>${formatNum(regPrice, isKR)} <span class="${regColor}">(${regSign}${formatPct(regPct)}%)</span>`;
                 
             } else if (targetState === 'POST') {
+                // post 장 마감 후에는 isExtLive가 false이므로 기본 회색 라벨로 표시됨
                 mainPrice = postData.price;
                 mainChange = postData.change;
                 mainPct = postData.pct;
@@ -1570,7 +1598,7 @@ function renderNews(newsList) {
 
         let tickerLabel = news.ticker;
         if (news.ticker && news.ticker !== 'US') {
-            const dbMatch = localTickerDB.find(q => q.s.toUpperCase() === news.ticker.toUpperCase());
+            const dbMatch = localTickerDB.find(q => q.s.toUpperCase() === ticker.toUpperCase());
             if (dbMatch && dbMatch.n) {
                 tickerLabel = dbMatch.n;
             }
