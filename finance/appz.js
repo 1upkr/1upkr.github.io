@@ -1045,7 +1045,6 @@ function updateDOMWithData(quotes) {
                     quote.regularMarketDayLow = cached.regularMarketDayLow || quote.regularMarketDayLow;
                     quote.regularMarketDayHigh = cached.regularMarketDayHigh || quote.regularMarketDayHigh;
                 }
-                // 새벽/아침 장 시작 전 전일 시간외 데이터 캐시 복원
                 if (!quote.postMarketPrice && cached.postMarketPrice) {
                     quote.postMarketPrice = cached.postMarketPrice;
                     quote.postMarketChange = cached.postMarketChange;
@@ -1137,7 +1136,6 @@ function updateDOMWithData(quotes) {
                 }
             }
 
-            // 거래량과 가격 변동이 없는 종목만 CLOSED_H로 차단 (US 마켓과 동일한 원리)
             if (targetState === 'PRE') {
                 if (isKR) {
                     if (!preData || preData.volume === 0) targetState = 'CLOSED_H';
@@ -1180,7 +1178,6 @@ function updateDOMWithData(quotes) {
                 }
             }
  
-            // 실시간 세션 여부 판정 (실시간 세션 중일 때만 빨간색 활성 스타일 적용)
             let isExtLive = false;
             
             if (isKR) {
@@ -1218,7 +1215,6 @@ function updateDOMWithData(quotes) {
                 subHtml = `<span class="ext-label">closed</span>${formatNum(regPrice, isKR)} <span class="${regColor}">(${regSign}${formatPct(regPct)}%)</span>`;
                 
             } else if (targetState === 'POST') {
-                // post 장 마감 후에는 isExtLive가 false이므로 기본 회색 라벨로 표시됨
                 mainPrice = postData.price;
                 mainChange = postData.change;
                 mainPct = postData.pct;
@@ -1474,7 +1470,7 @@ async function fetchNews() {
 
     let searchQueries = allTickers.map(ticker => {
         if (/^\d{6}$/.test(ticker)) {
-            const dbMatch = localTickerDB.find(q => q.s.toUpperCase() === ticker.toUpperCase());
+            const dbMatch = localTickerDB.find(q => q.s && q.s.toUpperCase() === ticker.toUpperCase());
             return dbMatch && dbMatch.n ? `${dbMatch.n}|${ticker}` : ticker;
         }
         return ticker;
@@ -1487,10 +1483,19 @@ async function fetchNews() {
         
         if (text.trim().startsWith('<')) throw new Error("GAS permission denied or proxy error.");
         
-        const newsData = JSON.parse(text);
+        let newsData = JSON.parse(text);
+        if (!Array.isArray(newsData) && typeof newsData === 'object' && newsData !== null) {
+            newsData = newsData.news || newsData.items || newsData.data || newsData.result || [];
+        }
         
         state.lastNewsFetch = Date.now();
-        renderNews(newsData);
+
+        try {
+            renderNews(newsData);
+        } catch (renderError) {
+            console.error("News render error:", renderError);
+            container.innerHTML = `<div class="empty-state"><p class="error-text">Failed to render news.</p></div>`;
+        }
     } catch (error) {
         console.error("News fetch error:", error);
         container.innerHTML = `<div class="empty-state"><p class="error-text">Failed to load news.</p></div>`;
@@ -1534,16 +1539,17 @@ function parseNewsTime(timeInput) {
     return (!isNaN(parsed) && parsed > 0) ? parsed : null;
 }
 
+// [수정] ticker 참조 오류 수정 및 안전한 렌더링 적용
 function renderNews(newsList) {
     const container = document.getElementById('news-container');
     if (!container) return;
 
-    if (!newsList || newsList.length === 0) {
+    if (!newsList || !Array.isArray(newsList) || newsList.length === 0) {
         container.innerHTML = '<div class="empty-state"><p>No recent news found.</p></div>';
         return;
     }
 
-    // 유효한 datetime/time이 존재하는 기사만 엄격 추출
+    // 1. 유효한 datetime/time이 존재하는 기사만 엄격 추출
     const validNewsList = newsList.map(news => ({
         ...news,
         parsedTime: parseNewsTime(news.time)
@@ -1554,7 +1560,7 @@ function renderNews(newsList) {
         return;
     }
 
-    // 작성 시각(KST) 기준 최신순(내림차순) 정렬
+    // 2. 작성 시각(KST) 기준 종목 구분 없이 최신순(내림차순) 정렬
     validNewsList.sort((a, b) => b.parsedTime - a.parsedTime);
 
     const now = Date.now();
@@ -1596,9 +1602,10 @@ function renderNews(newsList) {
         if (news.source === 'Naver') sourceTagClass = 'tag-naver';
         else if (news.source === 'Google') sourceTagClass = 'tag-google';
 
+        // ⭐ [버그 수정]: ticker -> news.ticker 안전 참조
         let tickerLabel = news.ticker;
         if (news.ticker && news.ticker !== 'US') {
-            const dbMatch = localTickerDB.find(q => q.s.toUpperCase() === ticker.toUpperCase());
+            const dbMatch = localTickerDB.find(q => q.s && q.s.toUpperCase() === news.ticker.toUpperCase());
             if (dbMatch && dbMatch.n) {
                 tickerLabel = dbMatch.n;
             }
