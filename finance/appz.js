@@ -8,7 +8,7 @@ const DEFAULT_WATCHLISTS = {
 };
 
 const YAHOO_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbxzBxcv3llVtcWyWoldEHkpyNBgWSn0D2_j_SYLEf6r-a4zMZ4VpOE6cxtwPQw_wvKt6Q/exec";
-const NAVER_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbxqMPV2QTJMSiTeai5Oaj-k0md0OYEUg6Ru5FOFmURU4yXCy78ge5A_ZUuMRMDCf5dmnw/exec"; 
+const NAVER_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbxKDRWerGV6EScu7oI68hIbwo26mnviUJ2wEDr_gxR_YmNKL4lys75i-imhrA3gGo429w/exec"; 
 const TREND_CHART_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycby4YZ1sOdQPfde-nrzAN0vUjhRP1Phn9C1ppFY2m8YHywGz-7GhNcHLU19PFCLeqm3u/exec";
 
 const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbxxEvkanUH5bPyH9IW4rjSZ3CksapnnP4qHLP3BYrvfhlFAdQljTlKHm13nHRx06a9s/exec"; 
@@ -907,6 +907,7 @@ async function fetchData() {
     const day = kstTime.getDay();
     const timeNum = kstTime.getHours() * 100 + kstTime.getMinutes();
     
+    // 이 조건문은 서버에 불필요한 요청을 막기 위해 주말이나 새벽에만 캐시를 사용하도록 만듭니다.
     const isKrMarketClosedCompletely = (day === 0 || day === 6) || (timeNum > 2000 || timeNum < 800);
 
     for (const sectionId of state.sectionOrder) {
@@ -1114,6 +1115,7 @@ function updateDOMWithData(quotes) {
             let targetState = 'REGULAR';
             const mState = (quote.marketState || '').toUpperCase();
 
+            // ⭐ POST/CLOSED 상태 판정 
             if (mState === 'REGULAR') {
                 targetState = 'REGULAR';
             } else if (mState.includes('PRE') && preData) {
@@ -1136,7 +1138,8 @@ function updateDOMWithData(quotes) {
                 }
             }
 
-            // [수정]: postData 유무만 확인하며, 보합(0% 변동)이더라도 postData가 유효하면 POST 뷰를 정상 유지
+            // ⭐ 시간 제약 제거. 거래량이 0인 종목만 CLOSED_H로 차단. 
+            // (보합이라도 시간외 거래가 있으면 정상적으로 POST 뷰 표시)
             if (targetState === 'PRE') {
                 if (isKR) {
                     if (!preData || preData.volume === 0) targetState = 'CLOSED_H';
@@ -1179,6 +1182,7 @@ function updateDOMWithData(quotes) {
                 }
             }
  
+            // ⭐ 실시간 세션 여부 판정: 18:00에 시간외 완전 마감하므로 18:00 이후엔 회색 배지로 전환
             let isExtLive = false;
             
             if (isKR) {
@@ -1203,7 +1207,7 @@ function updateDOMWithData(quotes) {
             let mainIcon = ''; 
             let subHtml = '';
 
-            const liveExtStyle = isExtLive ? 'color: var(--red); font-weight: 700;' : '';
+            const liveExtStyle = isExtLive ? 'color: var(--red); font-weight: 700; background-color: var(--red-bg);' : '';
 
             if (targetState === 'PRE') {
                 mainPrice = preData.price;
