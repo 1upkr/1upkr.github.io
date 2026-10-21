@@ -8,7 +8,7 @@ const DEFAULT_WATCHLISTS = {
 };
 
 const YAHOO_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbxzBxcv3llVtcWyWoldEHkpyNBgWSn0D2_j_SYLEf6r-a4zMZ4VpOE6cxtwPQw_wvKt6Q/exec";
-const NAVER_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbzLiCsFeL63SGeCQOZh4cMFVmpRfGDrTNXpS32YN6clpVgV5vP8pvCawE-8XNO5Q_gFWg/exec"; 
+const NAVER_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbxqMPV2QTJMSiTeai5Oaj-k0md0OYEUg6Ru5FOFmURU4yXCy78ge5A_ZUuMRMDCf5dmnw/exec"; 
 const TREND_CHART_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycby4YZ1sOdQPfde-nrzAN0vUjhRP1Phn9C1ppFY2m8YHywGz-7GhNcHLU19PFCLeqm3u/exec";
 
 const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbxxEvkanUH5bPyH9IW4rjSZ3CksapnnP4qHLP3BYrvfhlFAdQljTlKHm13nHRx06a9s/exec"; 
@@ -1101,8 +1101,8 @@ function updateDOMWithData(quotes) {
 
             let postData = null;
             if (quote.postMarketPrice !== undefined && quote.postMarketPrice !== null) {
-                const change = quote.postMarketPrice - regPrice;
-                const pct = regPrice ? (change / regPrice * 100) : 0;
+                const change = quote.postMarketChange !== undefined && quote.postMarketChange !== null ? quote.postMarketChange : (quote.postMarketPrice - regPrice);
+                const pct = quote.postMarketChangePercent !== undefined && quote.postMarketChangePercent !== null ? quote.postMarketChangePercent : (regPrice ? (change / regPrice * 100) : 0);
                 const vol = quote.postMarketVolume || 0;
                 postData = { price: quote.postMarketPrice, change: change, pct: pct, label: 'post', time: quote.postMarketTime || 0, volume: vol };
             }
@@ -1136,6 +1136,7 @@ function updateDOMWithData(quotes) {
                 }
             }
 
+            // [수정]: postData 유무만 확인하며, 보합(0% 변동)이더라도 postData가 유효하면 POST 뷰를 정상 유지
             if (targetState === 'PRE') {
                 if (isKR) {
                     if (!preData || preData.volume === 0) targetState = 'CLOSED_H';
@@ -1144,7 +1145,7 @@ function updateDOMWithData(quotes) {
                 }
             } else if (targetState === 'POST') {
                 if (isKR) {
-                    if (!postData || postData.volume === 0 || Math.abs(postData.price - regPrice) === 0) targetState = 'CLOSED_H';
+                    if (!postData || postData.volume === 0) targetState = 'CLOSED_H';
                 } else {
                     if (!postData || (!mState.includes('POST') && Math.abs(postData.price - regPrice) === 0)) targetState = 'CLOSED_H';
                 }
@@ -1322,7 +1323,7 @@ function updateDOMWithData(quotes) {
             
             nodes.price.setAttribute('data-price', mainPrice);
             
-            const dbInfo = localTickerDB.find(q => q.s.toUpperCase() === ticker.toUpperCase());
+            const dbInfo = localTickerDB.find(q => q.s && q.s.toUpperCase() === ticker.toUpperCase());
             nodes.name.textContent = (dbInfo ? dbInfo.n : null) || quote.shortName || quote.longName || ticker;
             
             const newPriceHtml = mainIcon + formatNum(mainPrice, isKR);
@@ -1514,7 +1515,6 @@ function parseNewsTime(timeInput) {
     if (/^\d{13}$/.test(str)) return parseInt(str, 10);
     if (/^\d{10}$/.test(str)) return parseInt(str, 10) * 1000;
     
-    // 네이버 JSON datetime 14자리 (YYYYMMDDHHMMSS - KST)
     if (/^\d{14}$/.test(str)) {
         const yr = parseInt(str.substring(0, 4), 10);
         const mo = parseInt(str.substring(4, 6), 10) - 1;
@@ -1525,7 +1525,6 @@ function parseNewsTime(timeInput) {
         return Date.UTC(yr, mo, dy, hr - 9, mn, sc);
     }
 
-    // 네이버 JSON datetime 12자리 (YYYYMMDDHHMM - KST)
     if (/^\d{12}$/.test(str)) {
         const yr = parseInt(str.substring(0, 4), 10);
         const mo = parseInt(str.substring(4, 6), 10) - 1;
@@ -1539,7 +1538,6 @@ function parseNewsTime(timeInput) {
     return (!isNaN(parsed) && parsed > 0) ? parsed : null;
 }
 
-// [수정] ticker 참조 오류 수정 및 안전한 렌더링 적용
 function renderNews(newsList) {
     const container = document.getElementById('news-container');
     if (!container) return;
@@ -1549,7 +1547,6 @@ function renderNews(newsList) {
         return;
     }
 
-    // 1. 유효한 datetime/time이 존재하는 기사만 엄격 추출
     const validNewsList = newsList.map(news => ({
         ...news,
         parsedTime: parseNewsTime(news.time)
@@ -1560,7 +1557,6 @@ function renderNews(newsList) {
         return;
     }
 
-    // 2. 작성 시각(KST) 기준 종목 구분 없이 최신순(내림차순) 정렬
     validNewsList.sort((a, b) => b.parsedTime - a.parsedTime);
 
     const now = Date.now();
@@ -1578,7 +1574,6 @@ function renderNews(newsList) {
         const diffMins = Math.floor((now - newsTime) / 60000);
         let timeDisplay = '';
         
-        // 0분~1분 이내인 경우에만 '방금' 표출
         if (diffMins >= 0 && diffMins <= 1) {
             timeDisplay = '방금';
         } else if (diffMins > 1 && diffMins < 60) {
@@ -1590,7 +1585,6 @@ function renderNews(newsList) {
         } else if (diffMins >= 4320) {
             timeDisplay = kstFormatter.format(new Date(newsTime));
         } else {
-            // 미래 시각 오차 방어
             if (diffMins >= -5) {
                 timeDisplay = '방금';
             } else {
@@ -1602,7 +1596,6 @@ function renderNews(newsList) {
         if (news.source === 'Naver') sourceTagClass = 'tag-naver';
         else if (news.source === 'Google') sourceTagClass = 'tag-google';
 
-        // ⭐ [버그 수정]: ticker -> news.ticker 안전 참조
         let tickerLabel = news.ticker;
         if (news.ticker && news.ticker !== 'US') {
             const dbMatch = localTickerDB.find(q => q.s && q.s.toUpperCase() === news.ticker.toUpperCase());
