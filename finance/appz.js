@@ -16,6 +16,9 @@ const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbxxEvkanUH5b
 
 const KNIGHT_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbxNL4-6PqMSqylMQBP0CdqSKS0LYEK7Yn7tbFtiuIfbKlQGcAanznYX85r0CpxQ8J1f_Q/exec";
 
+// 폰트 폴백 설정 (웹 폰트 미로드 시 즉시 대체할 시스템 폰트 체인)
+const FONT_FAMILY_BASE = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif";
+
 const CHO_HANGUL = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
 function getChosung(str) {
     let result = '';
@@ -57,6 +60,9 @@ let detailChartInstance = null;
 let tabScrollCache = { dashboard: 0, news: 0 };
 let currentTrendMarketType = localStorage.getItem('marketdash_trend_tab') || 'ALL'; 
 
+// 숨겨진 상태에서 받은 차트 데이터를 안전하게 보관하는 버퍼
+window.pendingTrendData = null;
+
 let state = {
     watchlists: JSON.parse(localStorage.getItem('marketdash_watchlists')) || JSON.parse(JSON.stringify(DEFAULT_WATCHLISTS)),
     sectionOrder: JSON.parse(localStorage.getItem('marketdash_sectionOrder')) || ['indicators', 'kr', 'us'],
@@ -76,6 +82,23 @@ for (const key in state.watchlists) {
 const rowNodes = new Map(); 
 let sortables = []; 
 function getSafeId(ticker) { return 'id_' + ticker.replace(/[^a-zA-Z0-9]/g, '_'); }
+
+// Chart.js 기본 폰트 전역 방어 설정
+if (window.Chart) {
+    Chart.defaults.font.family = FONT_FAMILY_BASE;
+}
+
+// 폰트 로딩 감지기: 웹 폰트 로드 완료 시 캔버스 차트 즉시 재렌더링
+if (document.fonts) {
+    document.fonts.ready.then(() => {
+        if (trendChartInstance) {
+            trendChartInstance.update('none');
+        }
+        if (detailChartInstance) {
+            detailChartInstance.update('none');
+        }
+    });
+}
 
 // --- INITIALIZATION ---
 async function init() {
@@ -137,6 +160,7 @@ async function init() {
     }
 
     initSwipeToDelete(); 
+    initChartResizeObserver();
     
     const btnRefresh = document.getElementById('btn-refresh');
     if (btnRefresh) btnRefresh.addEventListener('click', forceRefresh);
@@ -174,6 +198,33 @@ async function init() {
             if (typeof window.hideChartTooltip === 'function') window.hideChartTooltip();
         }
     }, { passive: true });
+}
+
+// 캔버스 크기 변화를 모니터링하여 파이어폭스 탭 전환/주소창 변경 시 안전 갱신
+function initChartResizeObserver() {
+    const trendWrapper = document.getElementById('trend-chart-wrapper');
+    if (!trendWrapper || typeof ResizeObserver === 'undefined') return;
+
+    const ro = new ResizeObserver(entries => {
+        for (let entry of entries) {
+            if (entry.contentRect.width > 20 && entry.contentRect.height > 20) {
+                if (window.pendingTrendData) {
+                    const p = window.pendingTrendData;
+                    renderTrendChart(p.dataList, p.dateStr, p.isLive);
+                } else {
+                    if (trendChartInstance) {
+                        trendChartInstance.resize();
+                        trendChartInstance.update('none');
+                    }
+                    if (detailChartInstance) {
+                        detailChartInstance.resize();
+                        detailChartInstance.update('none');
+                    }
+                }
+            }
+        }
+    });
+    ro.observe(trendWrapper);
 }
 
 function processTickerDB(data) {
@@ -285,16 +336,24 @@ window.switchMobileTab = function(tabName) {
         const tabNewsBtn = document.getElementById('tab-btn-news');
         if (tabNewsBtn) tabNewsBtn.classList.add('active');
         
-        setTimeout(() => {
-            if (trendChartInstance) {
-                trendChartInstance.resize();
-                trendChartInstance.update();
-            }
-            if (detailChartInstance) {
-                detailChartInstance.resize();
-                detailChartInstance.update();
-            }
-        }, 50);
+        // requestAnimationFrame과 지연 렌더링을 결합하여 리플로우 후 차트 크기 완전 복구
+        requestAnimationFrame(() => {
+            setTimeout(() => {
+                if (window.pendingTrendData) {
+                    const p = window.pendingTrendData;
+                    renderTrendChart(p.dataList, p.dateStr, p.isLive);
+                } else {
+                    if (trendChartInstance) {
+                        trendChartInstance.resize();
+                        trendChartInstance.update();
+                    }
+                    if (detailChartInstance) {
+                        detailChartInstance.resize();
+                        detailChartInstance.update();
+                    }
+                }
+            }, 60);
+        });
 
         const container = document.getElementById('news-container');
         const isStale = (Date.now() - state.lastNewsFetch) > 60000;
@@ -908,7 +967,6 @@ async function fetchData() {
     const day = kstTime.getDay();
     const timeNum = kstTime.getHours() * 100 + kstTime.getMinutes();
     
-    // 이 조건문은 서버에 불필요한 요청을 막기 위해 주말이나 새벽에만 캐시를 사용하도록 만듭니다.
     const isKrMarketClosedCompletely = (day === 0 || day === 6) || (timeNum > 2000 || timeNum < 800);
 
     for (const sectionId of state.sectionOrder) {
@@ -1116,7 +1174,6 @@ function updateDOMWithData(quotes) {
             let targetState = 'REGULAR';
             const mState = (quote.marketState || '').toUpperCase();
 
-            // ⭐ POST/CLOSED 상태 판정 
             if (mState === 'REGULAR') {
                 targetState = 'REGULAR';
             } else if (mState.includes('PRE') && preData) {
@@ -1139,8 +1196,6 @@ function updateDOMWithData(quotes) {
                 }
             }
 
-            // ⭐ 시간 제약 제거. 거래량이 0인 종목만 CLOSED_H로 차단. 
-            // (보합이라도 시간외 거래가 있으면 정상적으로 POST 뷰 표시)
             if (targetState === 'PRE') {
                 if (isKR) {
                     if (!preData || preData.volume === 0) targetState = 'CLOSED_H';
@@ -1183,7 +1238,6 @@ function updateDOMWithData(quotes) {
                 }
             }
  
-            // ⭐ 실시간 세션 여부 판정: 18:00에 시간외 완전 마감하므로 18:00 이후엔 회색 배지로 전환
             let isExtLive = false;
             
             if (isKR) {
@@ -1770,6 +1824,13 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
     const canvas = document.getElementById('trend-chart-canvas');
     if (!canvas) return;
 
+    // 모바일 탭이 숨겨져 있거나 캔버스 너비/높이가 0일 때 렌더링을 차단하고 큐에 보관
+    if (canvas.offsetWidth === 0 || canvas.offsetHeight === 0) {
+        window.pendingTrendData = { dataList, dateStr, isLive };
+        return;
+    }
+    window.pendingTrendData = null;
+
     const badgeContainer = document.getElementById('trend-date-badge');
     if (badgeContainer) {
         const badgeText = isLive ? 'LIVE' : 'CLOSED';
@@ -1777,7 +1838,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
         
         badgeContainer.innerHTML = `
             <span class="main-ext-label" style="margin: 0; font-size: 0.5rem; padding: 0.2rem 0.4rem; line-height: 1; border-radius: 4px; transform: none; display: inline-block; ${liveStyle}">${badgeText}</span>
-            <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); font-family: 'Inter', sans-serif; line-height: 1; display: inline-block; transform: none;">${dateStr}</span>
+            <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); font-family: ${FONT_FAMILY_BASE}; line-height: 1; display: inline-block; transform: none;">${dateStr}</span>
         `;
     }
 
@@ -1856,15 +1917,6 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
         }
     }
 
-    if (canvas.offsetWidth === 0 || canvas.offsetHeight === 0) {
-        if (trendChartInstance) {
-            trendChartInstance.data.datasets[0].data = individualData;
-            trendChartInstance.data.datasets[1].data = foreignData;
-            trendChartInstance.data.datasets[2].data = institutionData;
-            return;
-        }
-    }
-
     const ctx = canvas.getContext('2d');
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     
@@ -1922,7 +1974,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                 maintainAspectRatio: false,
                 interaction: { mode: 'index', intersect: false },
                 layout: {
-                    padding: { left: 5, right: 5, top: 10, bottom: 5 }
+                    padding: { left: 8, right: 10, top: 10, bottom: 5 }
                 },
                 plugins: {
                     title: { display: false }, 
@@ -1932,9 +1984,9 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                         padding: 15, 
                         labels: { 
                             color: textSecondary, 
-                            font: { family: "'Inter', sans-serif", size: 12, weight: 600 },
+                            font: { family: FONT_FAMILY_BASE, size: 12, weight: 600 },
                             usePointStyle: false, boxWidth: 12, boxHeight: 4,
-                            useBorderRadius: true, borderRadius: 2, padding: 15,
+                            useBorderRadius: true, borderRadius: 2, padding: 14,
                             generateLabels: function(chart) {
                                 const datasets = chart.data.datasets;
                                 return datasets.map((dataset, i) => ({
@@ -1946,7 +1998,8 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                                     index: i,
                                     datasetIndex: i,
                                     borderRadius: 2,
-                                    fontColor: textSecondary 
+                                    color: textSecondary,      // Chart.js 최신 표준 텍스트 색상
+                                    fontColor: textSecondary  // 레거시 브라우저 호환
                                 }));
                             }
                         } 
@@ -1989,7 +2042,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
 
                             if (tooltipModel.body) {
                                 const titleLines = tooltipModel.title || [];
-                                let innerHtml = `<div style="font-family:'Inter', sans-serif;">`;
+                                let innerHtml = `<div style="font-family:${FONT_FAMILY_BASE};">`;
 
                                 titleLines.forEach(function(title) {
                                     innerHtml += `<div style="font-weight:700; font-size:11px; color:${textPrimary}; margin-bottom:10px;">${title}</div>`;
@@ -2044,12 +2097,21 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                 scales: {
                     x: { 
                         grid: { display: false }, 
-                        ticks: { color: textSecondary, font: { family: "'Inter', sans-serif", size: 11 }, maxTicksLimit: 7, maxRotation: 0 } 
+                        ticks: { 
+                            color: textSecondary, 
+                            font: { family: FONT_FAMILY_BASE, size: 10.5 }, 
+                            maxTicksLimit: 7, 
+                            maxRotation: 0,
+                            autoSkip: true,
+                            padding: 4
+                        } 
                     },
                     y: { 
                         grid: { color: gridColor, drawBorder: false, borderDash: [4, 4] }, 
                         ticks: { 
-                            color: textSecondary, font: { family: "'Inter', sans-serif", size: 11 }, padding: 10,
+                            color: textSecondary, 
+                            font: { family: FONT_FAMILY_BASE, size: 11 }, 
+                            padding: 6,
                             crossAlign: 'near', 
                             callback: function(value) {
                                 if (currentTrendMarketType === 'FUT') {
@@ -2065,12 +2127,13 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
     }
 
     const barCanvas = document.getElementById('detail-bar-chart');
-    if (barCanvas) {
+    if (barCanvas && barCanvas.offsetWidth > 0 && barCanvas.offsetHeight > 0) {
         const latestEntry = sortedData[sortedData.length - 1];
 
+        // 모바일 가독성 및 겹침 방지를 위해 라벨명을 간결화
         const detailData = {
-            '개인': 0, '외국인': 0, '금융투자': 0, '보험': 0, 
-            '투신(사모)': 0, '은행': 0, '기타금융': 0, '연기금등': 0, '기타법인': 0
+            '개인': 0, '외국인': 0, '금투': 0, '보험': 0, 
+            '투신': 0, '은행': 0, '기타': 0, '연기금': 0, '기타법인': 0
         };
 
         if (latestEntry && Array.isArray(latestEntry.netAmounts)) {
@@ -2086,13 +2149,13 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                 switch(item.investorGubun) {
                     case '8000': detailData['개인'] += val; break;
                     case '9000': detailData['외국인'] += val; break;
-                    case '1000': detailData['금융투자'] += val; break;
+                    case '1000': detailData['금투'] += val; break;
                     case '2000': detailData['보험'] += val; break;
                     case '3000': 
-                    case '3100': detailData['투신(사모)'] += val; break;
+                    case '3100': detailData['투신'] += val; break;
                     case '4000': detailData['은행'] += val; break;
-                    case '5000': detailData['기타금융'] += val; break;
-                    case '6000': detailData['연기금등'] += val; break;
+                    case '5000': detailData['기타'] += val; break;
+                    case '6000': detailData['연기금'] += val; break;
                     case '7000': 
                     case '7100': detailData['기타법인'] += val; break;
                 }
@@ -2111,7 +2174,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
             afterDatasetsDraw(chart) {
                 const { ctx, data } = chart;
                 ctx.save();
-                ctx.font = '600 9px "Inter", sans-serif';
+                ctx.font = `600 9px ${FONT_FAMILY_BASE}`;
                 ctx.textAlign = 'center';
 
                 chart.getDatasetMeta(0).data.forEach((bar, index) => {
@@ -2167,7 +2230,8 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                     responsive: true,
                     maintainAspectRatio: false,
                     layout: {
-                        padding: { left: 5, right: 5, top: 5, bottom: 10 } 
+                        // 양 끝 라벨('개인', '기타법인')이 잘리지 않도록 좌우 패딩 확보
+                        padding: { left: 8, right: 8, top: 8, bottom: 6 } 
                     },
                     plugins: {
                         legend: { display: false }, 
@@ -2179,7 +2243,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                             grid: { color: gridColor, drawBorder: false, borderDash: [4, 4] },
                             ticks: { 
                                 color: textSecondary, 
-                                font: { family: "'Inter', sans-serif", size: 10 },
+                                font: { family: FONT_FAMILY_BASE, size: 10 },
                                 callback: function(value) { 
                                     if (currentTrendMarketType === 'FUT') {
                                         return Math.abs(value) >= 1000 ? (value / 1000).toFixed(0) + 'k' : value;
@@ -2190,7 +2254,14 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                         },
                         x: {
                             grid: { display: false },
-                            ticks: { color: textSecondary, font: { family: "'Inter', sans-serif", size: 9.5 }, maxRotation: 0, minRotation: 0, autoSkip: false }
+                            ticks: { 
+                                color: textSecondary, 
+                                font: { family: FONT_FAMILY_BASE, size: 9.5 }, 
+                                maxRotation: 0, 
+                                minRotation: 0, 
+                                autoSkip: false,
+                                padding: 4
+                            }
                         }
                     }
                 },
