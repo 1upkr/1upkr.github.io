@@ -10,13 +10,13 @@ const DEFAULT_WATCHLISTS = {
 const YAHOO_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbxzBxcv3llVtcWyWoldEHkpyNBgWSn0D2_j_SYLEf6r-a4zMZ4VpOE6cxtwPQw_wvKt6Q/exec";
 const NAVER_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbzo1GPJT9t5cAXIdJhs3ynvBXO0CicMgnQrmrxnVaDtdvE2YarGFqh8N6RCCL-k9KGWWA/exec"; 
 
-const TREND_CHART_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycby4YZ1sOdQPfde-nrzAN0vUjhRP1Phn9C1ppFY2m8YHywGz-7GhNcHLU19PFCLeqm3u/exec";
+const TREND_CHART_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbwbDTJpeDGDtOunSoswvZ7DFIXkCJy2ZJWsAN5HBBe0A2sbyMBnS6xsXdoushoMTa0M/exec";
 
 const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbxxEvkanUH5bPyH9IW4rjSZ3CksapnnP4qHLP3BYrvfhlFAdQljTlKHm13nHRx06a9s/exec"; 
 
 const KNIGHT_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbxNL4-6PqMSqylMQBP0CdqSKS0LYEK7Yn7tbFtiuIfbKlQGcAanznYX85r0CpxQ8J1f_Q/exec";
 
-// 폰트 폴백 설정 (웹 폰트 미로드 시 즉시 대체할 시스템 폰트 체인)
+// 폰트 폴백 설정 (웹 폰트 미로드 시 축 라벨 증발 방지)
 const FONT_FAMILY_BASE = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif";
 
 const CHO_HANGUL = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
@@ -60,7 +60,7 @@ let detailChartInstance = null;
 let tabScrollCache = { dashboard: 0, news: 0 };
 let currentTrendMarketType = localStorage.getItem('marketdash_trend_tab') || 'ALL'; 
 
-// 숨겨진 상태에서 받은 차트 데이터를 안전하게 보관하는 버퍼
+// 레이아웃 확정 대기용 버퍼
 window.pendingTrendData = null;
 
 let state = {
@@ -83,21 +83,86 @@ const rowNodes = new Map();
 let sortables = []; 
 function getSafeId(ticker) { return 'id_' + ticker.replace(/[^a-zA-Z0-9]/g, '_'); }
 
-// Chart.js 기본 폰트 전역 방어 설정
 if (window.Chart) {
     Chart.defaults.font.family = FONT_FAMILY_BASE;
 }
 
-// 폰트 로딩 감지기: 웹 폰트 로드 완료 시 캔버스 차트 즉시 재렌더링
 if (document.fonts) {
     document.fonts.ready.then(() => {
-        if (trendChartInstance) {
-            trendChartInstance.update('none');
-        }
-        if (detailChartInstance) {
-            detailChartInstance.update('none');
-        }
+        if (trendChartInstance) trendChartInstance.update('none');
+        if (detailChartInstance) detailChartInstance.update('none');
     });
+}
+
+// --- 직전 최근 영업일 역산 함수 (주말/휴장일 신규 접속 대응) ---
+function getLastBusinessDayStr(kstTime) {
+    const day = kstTime.getDay();
+    const timeNum = kstTime.getHours() * 100 + kstTime.getMinutes();
+    
+    let target = new Date(kstTime.getTime());
+
+    if (day === 0) {
+        target.setDate(target.getDate() - 2);
+    } else if (day === 6) {
+        target.setDate(target.getDate() - 1);
+    } else if (timeNum < 900) {
+        target.setDate(target.getDate() - (day === 1 ? 3 : 1));
+    }
+
+    const y = target.getFullYear();
+    const m = String(target.getMonth() + 1).padStart(2, '0');
+    const d = String(target.getDate()).padStart(2, '0');
+    return `${y}.${m}.${d}.`;
+}
+
+// --- API 응답 객체에서 안전하게 실제 거래일자 추출 ---
+function extractBizDateFromResponse(json, fallbackDateStr) {
+    if (!json) return fallbackDateStr;
+
+    const candidateKeys = [
+        'bizdate', 'bizDate', 'businessDate', 'trdDd', 'baseDate', 'standardDate', 'date', 'stdDate'
+    ];
+
+    const searchTargets = [
+        json.data,
+        json,
+        json.result,
+        (json.data && json.data.content && json.data.content[0]),
+        (json.result && json.result.content && json.result.content[0])
+    ].filter(Boolean);
+
+    for (const target of searchTargets) {
+        for (const key of candidateKeys) {
+            if (target[key] !== undefined && target[key] !== null) {
+                const str = String(target[key]).replace(/\D/g, '');
+                if (str.length >= 8) {
+                    const y = str.substring(0, 4);
+                    const m = str.substring(4, 6);
+                    const d = str.substring(6, 8);
+                    const yNum = parseInt(y, 10);
+                    if (yNum >= 2020 && yNum <= 2099) {
+                        return `${y}.${m}.${d}.`;
+                    }
+                }
+            }
+        }
+    }
+
+    const content = (json.data && Array.isArray(json.data.content)) ? json.data.content :
+                    (json.result && Array.isArray(json.result.content)) ? json.result.content : null;
+    if (content && content.length > 0) {
+        for (let i = 0; i < Math.min(content.length, 3); i++) {
+            const t = String(content[i].time || '').replace(/\D/g, '');
+            if (t.length >= 12) { 
+                const y = t.substring(0, 4);
+                const m = t.substring(4, 6);
+                const d = t.substring(6, 8);
+                return `${y}.${m}.${d}.`;
+            }
+        }
+    }
+
+    return fallbackDateStr;
 }
 
 // --- INITIALIZATION ---
@@ -200,27 +265,33 @@ async function init() {
     }, { passive: true });
 }
 
-// 캔버스 크기 변화를 모니터링하여 파이어폭스 탭 전환/주소창 변경 시 안전 갱신
+// 캔버스가 실제 렌더링되어 크기를 가질 때 안전하게 차트를 표시하는 감지기
 function initChartResizeObserver() {
     const trendWrapper = document.getElementById('trend-chart-wrapper');
     if (!trendWrapper || typeof ResizeObserver === 'undefined') return;
 
+    let resizeTimer = null;
     const ro = new ResizeObserver(entries => {
         for (let entry of entries) {
-            if (entry.contentRect.width > 20 && entry.contentRect.height > 20) {
-                if (window.pendingTrendData) {
-                    const p = window.pendingTrendData;
-                    renderTrendChart(p.dataList, p.dateStr, p.isLive);
-                } else {
-                    if (trendChartInstance) {
-                        trendChartInstance.resize();
-                        trendChartInstance.update('none');
+            const w = entry.contentRect.width;
+            const h = entry.contentRect.height;
+            if (w >= 100 && h >= 100) {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(() => {
+                    if (window.pendingTrendData) {
+                        const p = window.pendingTrendData;
+                        renderTrendChart(p.dataList, p.dateStr, p.isLive);
+                    } else if (trendChartInstance && (trendChartInstance.width < 100 || trendChartInstance.height < 100)) {
+                        // 손상된 인스턴스 발견 시 완전 재구축
+                        const cacheKey = `market_trend_last_known_${currentTrendMarketType}`;
+                        try {
+                            const cached = JSON.parse(localStorage.getItem(cacheKey));
+                            if (cached && cached.data) {
+                                renderTrendChart(cached.data, cached.dateStr, false);
+                            }
+                        } catch(e) {}
                     }
-                    if (detailChartInstance) {
-                        detailChartInstance.resize();
-                        detailChartInstance.update('none');
-                    }
-                }
+                }, 50);
             }
         }
     });
@@ -336,21 +407,19 @@ window.switchMobileTab = function(tabName) {
         const tabNewsBtn = document.getElementById('tab-btn-news');
         if (tabNewsBtn) tabNewsBtn.classList.add('active');
         
-        // requestAnimationFrame과 지연 렌더링을 결합하여 리플로우 후 차트 크기 완전 복구
+        // 렌더 트리가 완성될 시간을 확보한 후 차트 렌더링
         requestAnimationFrame(() => {
             setTimeout(() => {
-                if (window.pendingTrendData) {
-                    const p = window.pendingTrendData;
-                    renderTrendChart(p.dataList, p.dateStr, p.isLive);
-                } else {
-                    if (trendChartInstance) {
-                        trendChartInstance.resize();
-                        trendChartInstance.update();
-                    }
-                    if (detailChartInstance) {
-                        detailChartInstance.resize();
-                        detailChartInstance.update();
-                    }
+                const cacheKey = `market_trend_last_known_${currentTrendMarketType}`;
+                let cachedData = window.pendingTrendData;
+                if (!cachedData) {
+                    try {
+                        const c = JSON.parse(localStorage.getItem(cacheKey));
+                        if (c && c.data) cachedData = { dataList: c.data, dateStr: c.dateStr, isLive: false };
+                    } catch(e) {}
+                }
+                if (cachedData) {
+                    renderTrendChart(cachedData.dataList, cachedData.dateStr, cachedData.isLive);
                 }
             }, 60);
         });
@@ -857,7 +926,15 @@ function toggleThemeDropdown() {
     localStorage.setItem('marketdash_theme', state.theme); 
     applyTheme(); 
     toggleSettingsMenu(); 
-    if (trendChartInstance) fetchMarketTrend(); 
+    if (trendChartInstance) {
+        trendChartInstance.destroy();
+        trendChartInstance = null;
+    }
+    if (detailChartInstance) {
+        detailChartInstance.destroy();
+        detailChartInstance = null;
+    }
+    fetchMarketTrend(); 
 }
 function exportSettings() {
     const data = { watchlists: state.watchlists, sectionOrder: state.sectionOrder, expanded: state.expanded, theme: state.theme };
@@ -1684,6 +1761,7 @@ function renderNews(newsList) {
     container.innerHTML = html;
 }
 
+// --- 트렌드 차트 Fetch & 날짜/상태 해석 ---
 async function fetchMarketTrend(marketType = currentTrendMarketType, isBackground = false) {
     if (!isBackground) {
         const tabs = document.querySelectorAll('.trend-tab-btn');
@@ -1713,17 +1791,17 @@ async function fetchMarketTrend(marketType = currentTrendMarketType, isBackgroun
     
     const isWeekend = (kstTime.getDay() === 0 || kstTime.getDay() === 6);
     const timeNum = kstTime.getHours() * 100 + kstTime.getMinutes();
-    
     const isMarketOpen = !isWeekend && (timeNum >= 900 && timeNum <= 1610);
     
+    const kstOptions = { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' };
+    const todayStr = new Intl.DateTimeFormat('ko-KR', kstOptions).format(kstTime).replace(/\s/g, ''); 
+    const lastBizDateStr = getLastBusinessDayStr(kstTime);
+
     const cacheKey = `market_trend_last_known_${marketType}`;
     let cached = null;
     try { 
         cached = JSON.parse(localStorage.getItem(cacheKey)); 
     } catch(e) { console.warn("Trend cache parse error"); }
-
-    const kstOptions = { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' };
-    const todayStr = new Intl.DateTimeFormat('ko-KR', kstOptions).format(kstTime).replace(/\s/g, ''); 
 
     let needsFetch = true;
 
@@ -1738,7 +1816,7 @@ async function fetchMarketTrend(marketType = currentTrendMarketType, isBackgroun
         const isLiveCache = isCacheToday && isMarketOpen && !hasFinalDataCache;
         
         if (currentTrendMarketType === marketType) {
-            renderTrendChart(cached.data, cached.dateStr || todayStr, isLiveCache);
+            renderTrendChart(cached.data, cached.dateStr || lastBizDateStr, isLiveCache);
         }
 
         if (isMarketOpen) {
@@ -1775,20 +1853,7 @@ async function fetchMarketTrend(marketType = currentTrendMarketType, isBackgroun
 
             if (data.length === 0) return;
 
-            let actualDateStr = todayStr; 
-            const apiDate = json.data.bizdate || json.data.bizDate || json.data.businessDate;
-            
-            if (apiDate && typeof apiDate === 'string' && apiDate.length >= 8) {
-                const y = apiDate.substring(0, 4);
-                const m = apiDate.substring(4, 6);
-                const d = apiDate.substring(6, 8);
-                actualDateStr = `${y}.${m}.${d}.`;
-            } else if (data[0] && data[0].date) {
-                const dStr = String(data[0].date);
-                if (dStr.length >= 8) {
-                    actualDateStr = `${dStr.substring(0,4)}.${dStr.substring(4,6)}.${dStr.substring(6,8)}.`;
-                }
-            }
+            const actualDateStr = extractBizDateFromResponse(json, lastBizDateStr);
 
             const hasFinalData = data.some(d => {
                 const t = parseInt(d.time.substring(0, 4), 10);
@@ -1824,12 +1889,24 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
     const canvas = document.getElementById('trend-chart-canvas');
     if (!canvas) return;
 
-    // 모바일 탭이 숨겨져 있거나 캔버스 너비/높이가 0일 때 렌더링을 차단하고 큐에 보관
-    if (canvas.offsetWidth === 0 || canvas.offsetHeight === 0) {
+    // ⭐ 캔버스 스타일을 인라인으로 강제 지정하여 파이어폭스 300x150 기본 박스 계산 방어
+    canvas.style.display = 'block';
+    canvas.style.width = '100%';
+    canvas.style.height = '100%';
+
+    // ⭐ 화면에 실제로 표시되고 유효 크기(100px 이상)가 잡혔는지 엄격히 검사
+    const rect = canvas.getBoundingClientRect();
+    if (rect.width < 100 || rect.height < 100) {
         window.pendingTrendData = { dataList, dateStr, isLive };
         return;
     }
     window.pendingTrendData = null;
+
+    // ⭐ 인스턴스가 존재할 경우 무조건 파기(destroy)하여 망가진 스케일 캐시 완전 제거
+    if (trendChartInstance) {
+        trendChartInstance.destroy();
+        trendChartInstance = null;
+    }
 
     const badgeContainer = document.getElementById('trend-date-badge');
     if (badgeContainer) {
@@ -1934,203 +2011,196 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
     const colorFor = isDark ? '#90a4ae' : '#546e7a';  
     const colorInst = isDark ? '#ff9f0a' : '#ff9500'; 
 
-    if (trendChartInstance) {
-        trendChartInstance.data.datasets[0].data = individualData;
-        trendChartInstance.data.datasets[1].data = foreignData;
-        trendChartInstance.data.datasets[2].data = institutionData;
-        trendChartInstance.update('none'); 
-    } else {
-        const createGradient = (colorHex, r, g, b) => {
-            const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-            gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, 0.25)`);
-            gradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0.0)`);
-            return gradient;
-        };
+    const createGradient = (colorHex, r, g, b) => {
+        const gradient = ctx.createLinearGradient(0, 0, 0, 250);
+        gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, 0.25)`);
+        gradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0.0)`);
+        return gradient;
+    };
 
-        trendChartInstance = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: fixedLabels,
-                datasets: [
-                    { 
-                        label: '개인', data: individualData, borderColor: colorInd + 'CC', 
-                        backgroundColor: createGradient(colorInd, isDark ? 191 : 175, isDark ? 90 : 82, isDark ? 242 : 222),
-                        borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 5, fill: true, tension: 0.4 
-                    },
-                    { 
-                        label: '외국인', data: foreignData, borderColor: colorFor + 'CC', 
-                        backgroundColor: createGradient(colorFor, isDark ? 144 : 84, isDark ? 164 : 110, isDark ? 174 : 122),
-                        borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 5, fill: true, tension: 0.4 
-                    },
-                    { 
-                        label: '기관', data: institutionData, borderColor: colorInst + 'CC', 
-                        backgroundColor: createGradient(colorInst, isDark ? 255 : 255, isDark ? 159 : 149, isDark ? 10 : 0),
-                        borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 5, fill: true, tension: 0.4 
-                    }
-                ]
+    trendChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: fixedLabels,
+            datasets: [
+                { 
+                    label: '개인', data: individualData, borderColor: colorInd, 
+                    backgroundColor: createGradient(colorInd, isDark ? 191 : 175, isDark ? 90 : 82, isDark ? 242 : 222),
+                    borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 5, fill: true, tension: 0.4 
+                },
+                { 
+                    label: '외국인', data: foreignData, borderColor: colorFor, 
+                    backgroundColor: createGradient(colorFor, isDark ? 144 : 84, isDark ? 164 : 110, isDark ? 174 : 122),
+                    borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 5, fill: true, tension: 0.4 
+                },
+                { 
+                    label: '기관', data: institutionData, borderColor: colorInst, 
+                    backgroundColor: createGradient(colorInst, isDark ? 255 : 255, isDark ? 159 : 149, isDark ? 10 : 0),
+                    borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 5, fill: true, tension: 0.4 
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: false, // 레이아웃 불안정 시 깜빡임 차단
+            interaction: { mode: 'index', intersect: false },
+            layout: {
+                padding: { left: 4, right: 10, top: 10, bottom: 5 }
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                interaction: { mode: 'index', intersect: false },
-                layout: {
-                    padding: { left: 8, right: 10, top: 10, bottom: 5 }
+            plugins: {
+                title: { display: false }, 
+                legend: { 
+                    display: true,
+                    position: 'top',
+                    align: 'end', 
+                    labels: { 
+                        color: textSecondary, 
+                        font: { family: FONT_FAMILY_BASE, size: 12, weight: '600' },
+                        boxWidth: 12, 
+                        boxHeight: 4,
+                        useBorderRadius: true, 
+                        borderRadius: 2, 
+                        padding: 14
+                    } 
                 },
-                plugins: {
-                    title: { display: false }, 
-                    legend: { 
-                        position: 'top',
-                        align: 'end', 
-                        padding: 15, 
-                        labels: { 
-                            color: textSecondary, 
-                            font: { family: FONT_FAMILY_BASE, size: 12, weight: 600 },
-                            usePointStyle: false, boxWidth: 12, boxHeight: 4,
-                            useBorderRadius: true, borderRadius: 2, padding: 14,
-                            generateLabels: function(chart) {
-                                const datasets = chart.data.datasets;
-                                return datasets.map((dataset, i) => ({
-                                    text: dataset.label,
-                                    fillStyle: dataset.borderColor,
-                                    strokeStyle: 'transparent',
-                                    lineWidth: 0,
-                                    hidden: !chart.isDatasetVisible(i),
-                                    index: i,
-                                    datasetIndex: i,
-                                    borderRadius: 2,
-                                    color: textSecondary,      // Chart.js 최신 표준 텍스트 색상
-                                    fontColor: textSecondary  // 레거시 브라우저 호환
-                                }));
-                            }
-                        } 
-                    },
-                    tooltip: {
-                        enabled: false,
-                        position: 'nearest',
-                        external: function(context) {
-                            let tooltipEl = document.getElementById('chartjs-custom-tooltip');
+                tooltip: {
+                    enabled: false,
+                    position: 'nearest',
+                    external: function(context) {
+                        let tooltipEl = document.getElementById('chartjs-custom-tooltip');
 
-                            if (!tooltipEl) {
-                                tooltipEl = document.createElement('div');
-                                tooltipEl.id = 'chartjs-custom-tooltip';
-                                tooltipEl.style.background = tooltipBg;
-                                tooltipEl.style.borderRadius = '8px';
-                                tooltipEl.style.border = `1px solid ${tooltipBorder}`;
-                                tooltipEl.style.pointerEvents = 'none';
-                                tooltipEl.style.position = 'absolute';
-                                tooltipEl.style.transition = 'all .08s ease'; 
-                                tooltipEl.style.padding = '12px';
-                                tooltipEl.style.boxShadow = '0 4px 6px -1px rgba(0,0,0,0.05)';
-                                tooltipEl.style.zIndex = 90;
-                                tooltipEl.style.whiteSpace = 'nowrap';
-                                tooltipEl.style.willChange = 'transform, opacity'; 
-                                
-                                context.chart.canvas.parentNode.appendChild(tooltipEl);
-                                context.chart.canvas.parentNode.style.position = 'relative';
-                            }
-
-                            const tooltipModel = context.tooltip;
-                            if (tooltipModel.opacity === 0) {
-                                tooltipEl.style.opacity = 0;
-                                return;
-                            }
-
-                            if (!tooltipModel.body || tooltipModel.dataPoints[0].parsed.y === null) {
-                                tooltipEl.style.opacity = 0;
-                                return;
-                            }
-
-                            if (tooltipModel.body) {
-                                const titleLines = tooltipModel.title || [];
-                                let innerHtml = `<div style="font-family:${FONT_FAMILY_BASE};">`;
-
-                                titleLines.forEach(function(title) {
-                                    innerHtml += `<div style="font-weight:700; font-size:11px; color:${textPrimary}; margin-bottom:10px;">${title}</div>`;
-                                });
-
-                                innerHtml += `<div style="display:flex; flex-direction:column; gap:8px;">`;
-
-                                tooltipModel.dataPoints.forEach(function(dp) {
-                                    const val = dp.parsed.y;
-                                    if (val === null) return;
-                                    const sign = val > 0 ? '+' : '';
-                                    const valColor = val > 0 ? greenColor : (val < 0 ? redColor : textPrimary);
-                                    
-                                    const unit = (currentTrendMarketType === 'FUT') ? '계약' : '억';
-                                    const formattedVal = sign + new Intl.NumberFormat('ko-KR').format(Math.round(val)) + unit;
-                                    
-                                    const borderColor = dp.dataset.borderColor;
-
-                                    innerHtml += `
-                                        <div style="display:flex; align-items:center; font-size:11px; font-weight:600; justify-content:space-between; gap: 30px;">
-                                            <div style="display:flex; align-items:center;">
-                                                <span style="display:inline-block; width:12px; height:4px; background:${borderColor}; margin-right:8px; border-radius:2px;"></span>
-                                                <span style="color:${textSecondary};">${dp.dataset.label}</span>
-                                            </div>
-                                            <span style="color:${valColor}; text-align:right;">${formattedVal}</span>
-                                        </div>
-                                    `;
-                                });
-                                innerHtml += `</div></div>`;
-                                tooltipEl.innerHTML = innerHtml;
-                            }
-
-                            tooltipEl.style.opacity = 1;
+                        if (!tooltipEl) {
+                            tooltipEl = document.createElement('div');
+                            tooltipEl.id = 'chartjs-custom-tooltip';
+                            tooltipEl.style.background = tooltipBg;
+                            tooltipEl.style.borderRadius = '8px';
+                            tooltipEl.style.border = `1px solid ${tooltipBorder}`;
+                            tooltipEl.style.pointerEvents = 'none';
+                            tooltipEl.style.position = 'absolute';
+                            tooltipEl.style.transition = 'all .08s ease'; 
+                            tooltipEl.style.padding = '12px';
+                            tooltipEl.style.boxShadow = '0 4px 6px -1px rgba(0,0,0,0.05)';
+                            tooltipEl.style.zIndex = 90;
+                            tooltipEl.style.whiteSpace = 'nowrap';
+                            tooltipEl.style.willChange = 'transform, opacity'; 
                             
-                            const ttWidth = tooltipEl.offsetWidth || 150;
-                            const ttHeight = tooltipEl.offsetHeight || 130;
-                            const chartWidth = context.chart.width;
-                            const chartHeight = context.chart.height;
-                            
-                            let targetLeft = tooltipModel.caretX - (ttWidth / 2);
-                            let targetTop = (chartHeight / 2) - (ttHeight / 2); 
-                            
-                            if (targetLeft < 10) targetLeft = 10;
-                            else if (targetLeft + ttWidth > chartWidth - 10) targetLeft = chartWidth - ttWidth - 10;
-                            
-                            tooltipEl.style.left = '0px';
-                            tooltipEl.style.top = '0px';
-                            tooltipEl.style.transform = `translate(${targetLeft}px, ${targetTop}px)`;
+                            context.chart.canvas.parentNode.appendChild(tooltipEl);
+                            context.chart.canvas.parentNode.style.position = 'relative';
                         }
-                    }
-                },
-                scales: {
-                    x: { 
-                        grid: { display: false }, 
-                        ticks: { 
-                            color: textSecondary, 
-                            font: { family: FONT_FAMILY_BASE, size: 10.5 }, 
-                            maxTicksLimit: 7, 
-                            maxRotation: 0,
-                            autoSkip: true,
-                            padding: 4
-                        } 
-                    },
-                    y: { 
-                        grid: { color: gridColor, drawBorder: false, borderDash: [4, 4] }, 
-                        ticks: { 
-                            color: textSecondary, 
-                            font: { family: FONT_FAMILY_BASE, size: 11 }, 
-                            padding: 6,
-                            crossAlign: 'near', 
-                            callback: function(value) {
-                                if (currentTrendMarketType === 'FUT') {
-                                    return Math.abs(value) >= 1000 ? (value / 1000).toFixed(0) + 'k' : value;
-                                }
-                                return new Intl.NumberFormat('ko-KR').format(value / 1000);
-                            }
-                        } 
+
+                        const tooltipModel = context.tooltip;
+                        if (tooltipModel.opacity === 0) {
+                            tooltipEl.style.opacity = 0;
+                            return;
+                        }
+
+                        if (!tooltipModel.body || tooltipModel.dataPoints[0].parsed.y === null) {
+                            tooltipEl.style.opacity = 0;
+                            return;
+                        }
+
+                        if (tooltipModel.body) {
+                            const titleLines = tooltipModel.title || [];
+                            let innerHtml = `<div style="font-family:${FONT_FAMILY_BASE};">`;
+
+                            titleLines.forEach(function(title) {
+                                innerHtml += `<div style="font-weight:700; font-size:11px; color:${textPrimary}; margin-bottom:10px;">${title}</div>`;
+                            });
+
+                            innerHtml += `<div style="display:flex; flex-direction:column; gap:8px;">`;
+
+                            tooltipModel.dataPoints.forEach(function(dp) {
+                                const val = dp.parsed.y;
+                                if (val === null) return;
+                                const sign = val > 0 ? '+' : '';
+                                const valColor = val > 0 ? greenColor : (val < 0 ? redColor : textPrimary);
+                                
+                                const unit = (currentTrendMarketType === 'FUT') ? '계약' : '억';
+                                const formattedVal = sign + new Intl.NumberFormat('ko-KR').format(Math.round(val)) + unit;
+                                
+                                const borderColor = dp.dataset.borderColor;
+
+                                innerHtml += `
+                                    <div style="display:flex; align-items:center; font-size:11px; font-weight:600; justify-content:space-between; gap: 30px;">
+                                        <div style="display:flex; align-items:center;">
+                                            <span style="display:inline-block; width:12px; height:4px; background:${borderColor}; margin-right:8px; border-radius:2px;"></span>
+                                            <span style="color:${textSecondary};">${dp.dataset.label}</span>
+                                        </div>
+                                        <span style="color:${valColor}; text-align:right;">${formattedVal}</span>
+                                    </div>
+                                `;
+                            });
+                            innerHtml += `</div></div>`;
+                            tooltipEl.innerHTML = innerHtml;
+                        }
+
+                        tooltipEl.style.opacity = 1;
+                        
+                        const ttWidth = tooltipEl.offsetWidth || 150;
+                        const ttHeight = tooltipEl.offsetHeight || 130;
+                        const chartWidth = context.chart.width;
+                        const chartHeight = context.chart.height;
+                        
+                        let targetLeft = tooltipModel.caretX - (ttWidth / 2);
+                        let targetTop = (chartHeight / 2) - (ttHeight / 2); 
+                        
+                        if (targetLeft < 10) targetLeft = 10;
+                        else if (targetLeft + ttWidth > chartWidth - 10) targetLeft = chartWidth - ttWidth - 10;
+                        
+                        tooltipEl.style.left = '0px';
+                        tooltipEl.style.top = '0px';
+                        tooltipEl.style.transform = `translate(${targetLeft}px, ${targetTop}px)`;
                     }
                 }
+            },
+            scales: {
+                x: { 
+                    grid: { display: false }, 
+                    ticks: { 
+                        color: textSecondary, 
+                        font: { family: FONT_FAMILY_BASE, size: 10.5 }, 
+                        maxTicksLimit: 7, 
+                        maxRotation: 0,
+                        autoSkip: true,
+                        padding: 4
+                    } 
+                },
+                y: { 
+                    grid: { color: gridColor, drawBorder: false, borderDash: [4, 4] }, 
+                    ticks: { 
+                        color: textSecondary, 
+                        font: { family: FONT_FAMILY_BASE, size: 11 }, 
+                        padding: 6,
+                        callback: function(value) {
+                            if (currentTrendMarketType === 'FUT') {
+                                return Math.abs(value) >= 1000 ? (value / 1000).toFixed(0) + 'k' : value;
+                            }
+                            return new Intl.NumberFormat('ko-KR').format(value / 1000);
+                        }
+                    } 
+                }
             }
-        });
-    }
+        }
+    });
 
+    // 하단 상세 막대 차트
     const barCanvas = document.getElementById('detail-bar-chart');
-    if (barCanvas && barCanvas.offsetWidth > 0 && barCanvas.offsetHeight > 0) {
+    if (barCanvas) {
+        barCanvas.style.display = 'block';
+        barCanvas.style.width = '100%';
+        barCanvas.style.height = '100%';
+
+        const bRect = barCanvas.getBoundingClientRect();
+        if (bRect.width < 100 || bRect.height < 50) return;
+
+        if (detailChartInstance) {
+            detailChartInstance.destroy();
+            detailChartInstance = null;
+        }
+
         const latestEntry = sortedData[sortedData.length - 1];
 
-        // 모바일 가독성 및 겹침 방지를 위해 라벨명을 간결화
         const detailData = {
             '개인': 0, '외국인': 0, '금투': 0, '보험': 0, 
             '투신': 0, '은행': 0, '기타': 0, '연기금': 0, '기타법인': 0
@@ -2206,68 +2276,60 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
             }
         };
 
-        if (detailChartInstance) {
-            detailChartInstance.data.datasets[0].data = dataValues;
-            detailChartInstance.data.datasets[0].backgroundColor = bgColors;
-            detailChartInstance.data.datasets[0].borderColor = borderColors;
-            detailChartInstance.data.datasets[0].borderRadius = 0; 
-            detailChartInstance.update();
-        } else {
-            detailChartInstance = new Chart(barCtx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: dataValues,
-                        backgroundColor: bgColors,
-                        borderColor: borderColors,
-                        borderWidth: 0,
-                        borderRadius: 0,
-                        minBarLength: 2
-                    }]
+        detailChartInstance = new Chart(barCtx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: dataValues,
+                    backgroundColor: bgColors,
+                    borderColor: borderColors,
+                    borderWidth: 0,
+                    borderRadius: 0,
+                    minBarLength: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: false,
+                layout: {
+                    padding: { left: 8, right: 8, top: 8, bottom: 6 } 
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    layout: {
-                        // 양 끝 라벨('개인', '기타법인')이 잘리지 않도록 좌우 패딩 확보
-                        padding: { left: 8, right: 8, top: 8, bottom: 6 } 
-                    },
-                    plugins: {
-                        legend: { display: false }, 
-                        tooltip: { enabled: false }
-                    },
-                    scales: {
-                        y: { 
-                            grace: '30%',
-                            grid: { color: gridColor, drawBorder: false, borderDash: [4, 4] },
-                            ticks: { 
-                                color: textSecondary, 
-                                font: { family: FONT_FAMILY_BASE, size: 10 },
-                                callback: function(value) { 
-                                    if (currentTrendMarketType === 'FUT') {
-                                        return Math.abs(value) >= 1000 ? (value / 1000).toFixed(0) + 'k' : value;
-                                    }
-                                    return Math.round(value); 
+                plugins: {
+                    legend: { display: false }, 
+                    tooltip: { enabled: false }
+                },
+                scales: {
+                    y: { 
+                        grace: '30%',
+                        grid: { color: gridColor, drawBorder: false, borderDash: [4, 4] },
+                        ticks: { 
+                            color: textSecondary, 
+                            font: { family: FONT_FAMILY_BASE, size: 10 },
+                            callback: function(value) { 
+                                if (currentTrendMarketType === 'FUT') {
+                                    return Math.abs(value) >= 1000 ? (value / 1000).toFixed(0) + 'k' : value;
                                 }
-                            }
-                        },
-                        x: {
-                            grid: { display: false },
-                            ticks: { 
-                                color: textSecondary, 
-                                font: { family: FONT_FAMILY_BASE, size: 9.5 }, 
-                                maxRotation: 0, 
-                                minRotation: 0, 
-                                autoSkip: false,
-                                padding: 4
+                                return Math.round(value); 
                             }
                         }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { 
+                            color: textSecondary, 
+                            font: { family: FONT_FAMILY_BASE, size: 9.5 }, 
+                            maxRotation: 0, 
+                            minRotation: 0, 
+                            autoSkip: false,
+                            padding: 4
+                        }
                     }
-                },
-                plugins: [barLabelPlugin]
-            });
-        }
+                }
+            },
+            plugins: [barLabelPlugin]
+        });
     }
 }
 
