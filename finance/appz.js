@@ -8,9 +8,9 @@ const DEFAULT_WATCHLISTS = {
 };
 
 const YAHOO_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbxzBxcv3llVtcWyWoldEHkpyNBgWSn0D2_j_SYLEf6r-a4zMZ4VpOE6cxtwPQw_wvKt6Q/exec";
-
 //ver3
 const NAVER_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbzNZfN8Jen4-9U07QIRSSNsZs0Ubpf1iOGQwdpgNLm56FHVGLC1LBANNKqNm1jf_8WK/exec"; 
+
 const TREND_CHART_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbwbDTJpeDGDtOunSoswvZ7DFIXkCJy2ZJWsAN5HBBe0A2sbyMBnS6xsXdoushoMTa0M/exec";
 
 const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbxxEvkanUH5bPyH9IW4rjSZ3CksapnnP4qHLP3BYrvfhlFAdQljTlKHm13nHRx06a9s/exec"; 
@@ -583,10 +583,9 @@ function generateRowHTML(ticker) {
     const sid = getSafeId(ticker);
     const safeTicker = escapeHTML(ticker);
     
-    // ⭐ [수정] 6자리 영숫자(일반주식, ETF, 우선주, 금현물 등) 및 국내 주요 지수 허용
+    // ⭐ [수정] 6자리 영숫자(금현물/ETF/우선주 등) 및 지수 포함 허용 + 50x30 사이즈 적용
     const isKRSpark = /^[0-9A-Za-z]{6}$/.test(safeTicker) || /^(KOSPI|KOSDAQ|KPI200)$/i.test(safeTicker);
     const timeKey = Math.floor(Date.now() / 60000); 
-
     const sparkHtml = isKRSpark ? `
         <div class="asset-sparkline" id="spark-${sid}">
             <img src="https://financial-vn.pstatic.net/chart/mobile/mini/krx/${safeTicker}_interest.png?t=${timeKey}" 
@@ -1185,12 +1184,12 @@ function updateDOMWithData(quotes) {
         const isKR = dbMatch ? (dbMatch.e === 'NAVER') : /^\d/.test(ticker);
         const cached = cachedQuotes[ticker]; 
 
+        // ⭐ [수정] 정규장 마감 이후 캐시 덮어쓰기 방어벽 추가
         const isBeforeOpenKR = isKR && currentTimeNum < 900;
-        const isAfterCloseKR = isKR && currentTimeNum >= 1530; // ⭐ 정규장 마감 이후 여부 체크
+        const isAfterCloseKR = isKR && currentTimeNum >= 1530; 
 
         if (isKR) {
             if (cached) {
-                // 1. 장 시작 전 (캐시 활용)
                 if (isBeforeOpenKR) {
                     if (quote.regularMarketChange === 0) {
                         quote.regularMarketChange = cached.regularMarketChange || 0;
@@ -1205,10 +1204,7 @@ function updateDOMWithData(quotes) {
                         quote.postMarketVolume = cached.postMarketVolume;
                     }
                 } 
-                // 2. 장 마감 후 (캐시 오염 완벽 방어)
                 else if (isAfterCloseKR) {
-                    // ⭐ 장 마감 이후에는 GAS가 넘겨준 정규장 종가가 최고 우선순위이며,
-                    // 절대 기존 캐시의 잘못된 값으로 덮어씌워지지 않도록 보호함.
                     if (!quote.regularMarketPrice && cached.regularMarketPrice) {
                         quote.regularMarketPrice = cached.regularMarketPrice;
                     }
@@ -1221,18 +1217,7 @@ function updateDOMWithData(quotes) {
         }
 
         if (cached) {
-            // ⭐ 국내 주식이 장 마감 이후일 때는 캐시된 저가/고가 오버라이드를 건너뜀 (순수 GAS 데이터만 신뢰)
             const skipCacheOverride = isKR && (!isBeforeOpenKR || isAfterCloseKR); 
-            
-            if (!skipCacheOverride) {
-                if ((quote.regularMarketDayLow === undefined || quote.regularMarketDayLow === 0) && cached.regularMarketDayLow !== undefined && cached.regularMarketDayLow !== 0) {
-                    quote.regularMarketDayLow = cached.regularMarketDayLow;
-                }
-                if ((quote.regularMarketDayHigh === undefined || quote.regularMarketDayHigh === 0) && cached.regularMarketDayHigh !== undefined && cached.regularMarketDayHigh !== 0) {
-                    quote.regularMarketDayHigh = cached.regularMarketDayHigh;
-                }
-            }
-        }
             
             if (!skipCacheOverride) {
                 if ((quote.regularMarketDayLow === undefined || quote.regularMarketDayLow === 0) && cached.regularMarketDayLow !== undefined && cached.regularMarketDayLow !== 0) {
@@ -1512,7 +1497,7 @@ function updateDOMWithData(quotes) {
             if (nodes.change.innerHTML !== newChangeHtml) nodes.change.innerHTML = newChangeHtml;
             if (nodes.pct.innerHTML !== newPctHtml) nodes.pct.innerHTML = newPctHtml;
             
-            // ⭐ 수정 코드: && isKR 제거
+            // ⭐ [수정] 스파크라인 이미지 노드가 있다면 국/내외 구분 없이 최신화 
             if (nodes.sparkImg) {
                 const timeKey = Math.floor(Date.now() / 60000);
                 const targetSrc = `https://financial-vn.pstatic.net/chart/mobile/mini/krx/${ticker}_interest.png?t=${timeKey}`;
@@ -1724,7 +1709,7 @@ function parseNewsTime(timeInput) {
     return (!isNaN(parsed) && parsed > 0) ? parsed : null;
 }
 
-// ⭐ [수정] 숫자형 티커, null 속성 등을 안전하게 방어하는 renderNews
+// ⭐ [수정] 뉴스 티커 파싱 에러 방어
 function renderNews(newsList) {
     const container = document.getElementById('news-container');
     if (!container) return;
