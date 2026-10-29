@@ -1123,7 +1123,7 @@ function updateTimerUI(seconds) {
         const maxOffset = 56.55;
         const pct = 1 - (seconds / 60); 
         const offset = pct * maxOffset; 
-        ring.style.strokeDashoffset = offset;
+        ring.style.strokeDashoffset = -offset;
         
         if (seconds <= 10) {
             ring.classList.add('warning');
