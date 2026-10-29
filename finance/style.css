@@ -471,16 +471,16 @@ tbody tr { transition: background-color 0.15s, transform 0.2s ease; } tbody tr:h
 
 .asset-sparkline {
     flex-shrink: 0;
-    width: 44px;
-    height: 24px;
+    width: 50px;
+    height: 30px;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
 .asset-sparkline img {
-    width: 44px;
-    height: 24px;
+    width: 50px;
+    height: 30px;
     object-fit: contain;
     display: block;
 }
@@ -927,12 +927,12 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
     
     /* ⭐ 모바일 스파크라인 크기 최적화 */
     .asset-sparkline {
-        width: 36px;
-        height: 20px;
+        width: 50px;
+        height: 30px;
     }
     .asset-sparkline img {
-        width: 36px;
-        height: 20px;
+        width: 50px;
+        height: 30px;
     }
 
     .price { font-size: 0.8rem; }
