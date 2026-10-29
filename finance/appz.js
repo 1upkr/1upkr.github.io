@@ -9,8 +9,8 @@ const DEFAULT_WATCHLISTS = {
 
 const YAHOO_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbxzBxcv3llVtcWyWoldEHkpyNBgWSn0D2_j_SYLEf6r-a4zMZ4VpOE6cxtwPQw_wvKt6Q/exec";
 
-//ver3
 const NAVER_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbwiWjpIHWF8S_BTKsjsfuyPQeDipYWFiJVxn_naF7yq1fLhGvWUBqc_GnImWuYHbhv9/exec"; 
+//ver3
 
 const TREND_CHART_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbwbDTJpeDGDtOunSoswvZ7DFIXkCJy2ZJWsAN5HBBe0A2sbyMBnS6xsXdoushoMTa0M/exec";
 
@@ -584,7 +584,6 @@ function generateRowHTML(ticker) {
     const sid = getSafeId(ticker);
     const safeTicker = escapeHTML(ticker);
     
-    // ⭐ [수정] 6자리 영숫자(금현물/ETF/우선주 등) 및 지수 포함 허용 + 50x30 사이즈 적용
     const isKRSpark = /^[0-9A-Za-z]{6}$/.test(safeTicker) || /^(KOSPI|KOSDAQ|KPI200)$/i.test(safeTicker);
     const timeKey = Math.floor(Date.now() / 60000); 
     const sparkHtml = isKRSpark ? `
@@ -1057,7 +1056,8 @@ async function fetchData() {
     const day = kstTime.getDay();
     const timeNum = kstTime.getHours() * 100 + kstTime.getMinutes();
     
-    const isKrMarketClosedCompletely = (day === 0 || day === 6) || (timeNum > 2000 || timeNum < 800);
+    // ⭐ 3분 유예 적용 (20:03 이후 완전 마감)
+    const isKrMarketClosedCompletely = (day === 0 || day === 6) || (timeNum >= 2003 || timeNum < 800);
 
     for (const sectionId of state.sectionOrder) {
         let symbols = state.watchlists[sectionId].tickers;
@@ -1185,7 +1185,6 @@ function updateDOMWithData(quotes) {
         const isKR = dbMatch ? (dbMatch.e === 'NAVER') : /^\d/.test(ticker);
         const cached = cachedQuotes[ticker]; 
 
-        // ⭐ [수정] 정규장 마감 이후 캐시 덮어쓰기 방어벽 추가
         const isBeforeOpenKR = isKR && currentTimeNum < 900;
         const isAfterCloseKR = isKR && currentTimeNum >= 1530; 
 
@@ -1307,7 +1306,11 @@ function updateDOMWithData(quotes) {
                 }
             } else if (targetState === 'POST') {
                 if (isKR) {
-                    if (!postData || postData.volume === 0) targetState = 'CLOSED_H';
+                    // ⭐ NXT 장 마감(20:00) 후 3분 지연 유예(20:03까지) 적용
+                    // 20:03 이후 또는 08:00 이전에는 자동으로 정규장 종가(CLOSED_H)로 복귀
+                    if (!postData || postData.volume === 0 || timeNum >= 2003 || timeNum < 800) {
+                        targetState = 'CLOSED_H';
+                    }
                 } else {
                     if (!postData || (!mState.includes('POST') && Math.abs(postData.price - regPrice) === 0)) targetState = 'CLOSED_H';
                 }
@@ -1347,7 +1350,7 @@ function updateDOMWithData(quotes) {
                 if (kstTime.getDay() !== 0 && kstTime.getDay() !== 6) { 
                     if (targetState === 'PRE' && timeNum >= 800 && timeNum < 900) {
                         isExtLive = true;
-                    } else if (targetState === 'POST' && timeNum >= 1530 && timeNum <= 2000) {
+                    } else if (targetState === 'POST' && timeNum >= 1530 && timeNum < 2003) {
                         isExtLive = true;
                     }
                 }
@@ -1382,10 +1385,16 @@ function updateDOMWithData(quotes) {
                 mainChange = postData.change;
                 mainPct = postData.pct;
                 mainIcon = `<span class="main-ext-label" style="${liveExtStyle}">${postData.label}</span>`; 
-                const regIsUp = regChange >= 0;
-                const regColor = regIsUp ? 'up' : 'down';
-                const regSign = regIsUp ? '+' : '';
-                subHtml = `<span class="ext-label">closed</span>${formatNum(regPrice, isKR)} <span class="${regColor}">(${regSign}${formatPct(regPct)}%)</span>`;
+                
+                // ⭐ 한국 주식은 closed 서브 라인을 제거하고 POST 가격만 단독 표시
+                if (isKR) {
+                    subHtml = '';
+                } else {
+                    const regIsUp = regChange >= 0;
+                    const regColor = regIsUp ? 'up' : 'down';
+                    const regSign = regIsUp ? '+' : '';
+                    subHtml = `<span class="ext-label">closed</span>${formatNum(regPrice, isKR)} <span class="${regColor}">(${regSign}${formatPct(regPct)}%)</span>`;
+                }
                 
             } else if (targetState === 'CLOSED_H') {
                 mainPrice = regPrice;
@@ -1498,7 +1507,6 @@ function updateDOMWithData(quotes) {
             if (nodes.change.innerHTML !== newChangeHtml) nodes.change.innerHTML = newChangeHtml;
             if (nodes.pct.innerHTML !== newPctHtml) nodes.pct.innerHTML = newPctHtml;
             
-            // ⭐ [수정] 스파크라인 이미지 노드가 있다면 국/내외 구분 없이 최신화 
             if (nodes.sparkImg) {
                 const timeKey = Math.floor(Date.now() / 60000);
                 const targetSrc = `https://financial-vn.pstatic.net/chart/mobile/mini/krx/${ticker}_interest.png?t=${timeKey}`;
@@ -1710,7 +1718,6 @@ function parseNewsTime(timeInput) {
     return (!isNaN(parsed) && parsed > 0) ? parsed : null;
 }
 
-// ⭐ [수정] 뉴스 티커 파싱 에러 방어
 function renderNews(newsList) {
     const container = document.getElementById('news-container');
     if (!container) return;
