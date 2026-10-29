@@ -422,8 +422,13 @@ th, td { padding: 0.875rem 1.5rem; border-bottom: 1px solid var(--border-color);
 tr:last-child td { border-bottom: none; }
 th { color: var(--text-secondary); font-size: 0.75rem; font-weight: 500; text-transform: uppercase; }
  
-th.col-symbol { width: 22%; text-align: left; } th.col-price { width: 22%; } th.col-change { width: 14%; }
-th.col-vol { width: 12%; } th.col-cap { width: 12%; } th.col-range { width: 18%; }
+/* ⭐ 컬럼 너비 조정: Symbol 열을 26%로 확장하고 Price 열을 18%로 최적화 */
+th.col-symbol { width: 26%; text-align: left; } 
+th.col-price { width: 18%; } 
+th.col-change { width: 14%; }
+th.col-vol { width: 12%; } 
+th.col-cap { width: 12%; } 
+th.col-range { width: 18%; }
 td.left-align { text-align: left; }
  
 th.actions-col, td.actions-col { width: 44px; padding-right: 0; padding-left: 0.5rem; text-align: center; }
@@ -436,7 +441,6 @@ tbody tr { transition: background-color 0.15s, transform 0.2s ease; } tbody tr:h
     flex-direction: row; 
     align-items: center; 
     justify-content: space-between; 
-    gap: 6px; 
     width: 100%; 
 }
 
@@ -469,6 +473,7 @@ tbody tr { transition: background-color 0.15s, transform 0.2s ease; } tbody tr:h
     text-overflow: ellipsis; 
 }
 
+/* ⭐ 스파크라인: 우측(Price 쪽) 정렬 및 심볼/가격 사이 안전 여백 확보 */
 .asset-sparkline {
     flex-shrink: 0;
     width: 50px;
@@ -476,22 +481,24 @@ tbody tr { transition: background-color 0.15s, transform 0.2s ease; } tbody tr:h
     display: flex;
     align-items: center;
     justify-content: center;
+    margin-left: 12px;
+    margin-right: 4px;
 }
 
-/* 1. 라이트 모드 : 흰색 배경 투명화 + 상승(초록)/하락(빨강) 색상 치환 */
+/* 1. 라이트 모드 : 대비(contrast)와 채도를 높여 선을 진하고 굵게 표현 */
 .asset-sparkline img {
     width: 50px;
     height: 30px;
     object-fit: contain;
     display: block;
     mix-blend-mode: multiply;                /* ⭐ 흰색 배경을 100% 투명하게 투과 */
-    filter: hue-rotate(140deg) saturate(1.1); /* ⭐ 네이버 색상 -> 우리 테마 색상으로 치환 */
+    filter: hue-rotate(140deg) saturate(1.3) contrast(1.35) brightness(0.95); /* ⭐ 테마 색상 치환 및 선 굵기 보강 */
 }
 
-/* 2. 다크 모드 : 반전 후 검정 배경 투명화 + 다크 테마 발광 선 */
+/* 2. 다크 모드 : 반전 후 검정 배경 투명화 + 다크 테마 발광 선 두께감 보강 */
 [data-theme="dark"] .asset-sparkline img {
     mix-blend-mode: screen;                  /* ⭐ 검정색을 100% 투명하게 투과 */
-    filter: invert(1) hue-rotate(-32deg) saturate(1.3) brightness(1.2); /* ⭐ 배경 검정화 + 형광 초록/빨강 보정 */
+    filter: invert(1) hue-rotate(-32deg) saturate(1.4) contrast(1.3) brightness(1.25); /* ⭐ 배경 검정화 및 발광 선 강화 */
 }
 
 .price { font-weight: 600; font-size: 0.95rem; font-variant-numeric: tabular-nums; color: var(--text-primary); }
@@ -698,8 +705,8 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
     .section-container th.col-symbol, .section-container td.col-symbol { padding-left: 1.25rem; }
     .section-container th.handle-col, .section-container td.handle-col { padding-right: 0.75rem; width: 44px; }
     
-    th.col-symbol { width: 20%; }
-    th.col-price { width: 18%; }
+    th.col-symbol { width: 24%; }
+    th.col-price { width: 14%; }
     th.col-change { width: 14%; }
     th.col-vol { width: 11%; }
     th.col-cap { width: 11%; }
@@ -842,8 +849,9 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
         border-bottom: none !important; 
     }
 
-    th.col-symbol, td.col-symbol { width: 31% !important; padding-left: 0.75rem !important; } 
-    th.col-price, td.col-price { width: 43% !important; }
+    /* ⭐ 모바일 너비 재배치: Symbol 37%, Price 37%로 균형 분배 */
+    th.col-symbol, td.col-symbol { width: 37% !important; padding-left: 0.75rem !important; } 
+    th.col-price, td.col-price { width: 37% !important; }
     
     th.col-change, td.col-change { width: calc(26% - 38px) !important; padding-right: 0.5rem !important; } 
     
@@ -930,10 +938,12 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
     .symbol { font-size: 0.75rem; } 
     .name { font-size: 0.6rem; }
     
-    /* ⭐ 모바일 스파크라인 크기 최적화 */
+    /* ⭐ 모바일 스파크라인 크기 및 여백 최적화 */
     .asset-sparkline {
         width: 50px;
         height: 30px;
+        margin-left: 6px;
+        margin-right: 2px;
     }
     .asset-sparkline img {
         width: 50px;
