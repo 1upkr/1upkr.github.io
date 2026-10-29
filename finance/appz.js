@@ -2063,7 +2063,17 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                         boxHeight: 4,
                         useBorderRadius: true, 
                         borderRadius: 2, 
-                        padding: 14
+                        padding: 14,
+                        // ⭐ 가운데 빈틈을 없애고 선 색상으로 꽉 채우는 로직 추가
+                        generateLabels: function(chart) {
+                            const original = Chart.defaults.plugins.legend.labels.generateLabels(chart);
+                            original.forEach(item => {
+                                const ds = chart.data.datasets[item.datasetIndex];
+                                item.fillStyle = ds.borderColor; // 반투명 그라디언트 대신 진한 선 색상으로 채움
+                                item.lineWidth = 0;              // 테두리를 제거하여 가운데 구멍/빈틈 차단
+                            });
+                            return original;
+                        }
                     } 
                 },
                 tooltip: {
