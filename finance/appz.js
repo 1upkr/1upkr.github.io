@@ -583,9 +583,11 @@ function generateRowHTML(ticker) {
     const sid = getSafeId(ticker);
     const safeTicker = escapeHTML(ticker);
     
-    const isKRStock = /^\d{6}$/.test(safeTicker);
+    // ⭐ [수정] 6자리 영숫자(일반주식, ETF, 우선주, 금현물 등) 및 국내 주요 지수 허용
+    const isKRSpark = /^[0-9A-Za-z]{6}$/.test(safeTicker) || /^(KOSPI|KOSDAQ|KPI200)$/i.test(safeTicker);
     const timeKey = Math.floor(Date.now() / 60000); 
-    const sparkHtml = isKRStock ? `
+
+    const sparkHtml = isKRSpark ? `
         <div class="asset-sparkline" id="spark-${sid}">
             <img src="https://financial-vn.pstatic.net/chart/mobile/mini/krx/${safeTicker}_interest.png?t=${timeKey}" 
                  alt="" 
@@ -1483,7 +1485,8 @@ function updateDOMWithData(quotes) {
             if (nodes.change.innerHTML !== newChangeHtml) nodes.change.innerHTML = newChangeHtml;
             if (nodes.pct.innerHTML !== newPctHtml) nodes.pct.innerHTML = newPctHtml;
             
-            if (nodes.sparkImg && isKR) {
+            // ⭐ 수정 코드: && isKR 제거
+            if (nodes.sparkImg) {
                 const timeKey = Math.floor(Date.now() / 60000);
                 const targetSrc = `https://financial-vn.pstatic.net/chart/mobile/mini/krx/${ticker}_interest.png?t=${timeKey}`;
                 if (nodes.sparkImg.src !== targetSrc) {
