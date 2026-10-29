@@ -589,8 +589,8 @@ function generateRowHTML(ticker) {
         <div class="asset-sparkline" id="spark-${sid}">
             <img src="https://financial-vn.pstatic.net/chart/mobile/mini/krx/${safeTicker}_interest.png?t=${timeKey}" 
                  alt="" 
-                 width="44" 
-                 height="24" 
+                 width="50" 
+                 height="30" 
                  loading="lazy" 
                  onerror="this.parentElement.style.display='none'">
         </div>
