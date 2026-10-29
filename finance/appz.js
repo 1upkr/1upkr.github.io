@@ -8,7 +8,7 @@ const DEFAULT_WATCHLISTS = {
 };
 
 const YAHOO_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbxzBxcv3llVtcWyWoldEHkpyNBgWSn0D2_j_SYLEf6r-a4zMZ4VpOE6cxtwPQw_wvKt6Q/exec";
-const NAVER_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbzpfhCyzet5cbpc5v7pQMtWUvty6OaoWb-_3ljz12LMIqw-MaWP3x4cfO36oFWCSAxn/exec"; 
+const NAVER_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbwsgIKTH31wFP685H013z3mRg__3Eg6bRRNlyDUG-O6BZunP7vajk1UKhTDk6jsp_tZ/exec"; 
 
 const TREND_CHART_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbwbDTJpeDGDtOunSoswvZ7DFIXkCJy2ZJWsAN5HBBe0A2sbyMBnS6xsXdoushoMTa0M/exec";
 
