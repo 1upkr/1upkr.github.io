@@ -1186,26 +1186,53 @@ function updateDOMWithData(quotes) {
         const cached = cachedQuotes[ticker]; 
 
         const isBeforeOpenKR = isKR && currentTimeNum < 900;
+        const isAfterCloseKR = isKR && currentTimeNum >= 1530; // ⭐ 정규장 마감 이후 여부 체크
 
         if (isKR) {
-            if (cached && isBeforeOpenKR) {
-                if (quote.regularMarketChange === 0) {
-                    quote.regularMarketChange = cached.regularMarketChange || 0;
-                    quote.regularMarketChangePercent = cached.regularMarketChangePercent || 0;
-                    quote.regularMarketDayLow = cached.regularMarketDayLow || quote.regularMarketDayLow;
-                    quote.regularMarketDayHigh = cached.regularMarketDayHigh || quote.regularMarketDayHigh;
-                }
-                if (!quote.postMarketPrice && cached.postMarketPrice) {
-                    quote.postMarketPrice = cached.postMarketPrice;
-                    quote.postMarketChange = cached.postMarketChange;
-                    quote.postMarketChangePercent = cached.postMarketChangePercent;
-                    quote.postMarketVolume = cached.postMarketVolume;
+            if (cached) {
+                // 1. 장 시작 전 (캐시 활용)
+                if (isBeforeOpenKR) {
+                    if (quote.regularMarketChange === 0) {
+                        quote.regularMarketChange = cached.regularMarketChange || 0;
+                        quote.regularMarketChangePercent = cached.regularMarketChangePercent || 0;
+                        quote.regularMarketDayLow = cached.regularMarketDayLow || quote.regularMarketDayLow;
+                        quote.regularMarketDayHigh = cached.regularMarketDayHigh || quote.regularMarketDayHigh;
+                    }
+                    if (!quote.postMarketPrice && cached.postMarketPrice) {
+                        quote.postMarketPrice = cached.postMarketPrice;
+                        quote.postMarketChange = cached.postMarketChange;
+                        quote.postMarketChangePercent = cached.postMarketChangePercent;
+                        quote.postMarketVolume = cached.postMarketVolume;
+                    }
+                } 
+                // 2. 장 마감 후 (캐시 오염 완벽 방어)
+                else if (isAfterCloseKR) {
+                    // ⭐ 장 마감 이후에는 GAS가 넘겨준 정규장 종가가 최고 우선순위이며,
+                    // 절대 기존 캐시의 잘못된 값으로 덮어씌워지지 않도록 보호함.
+                    if (!quote.regularMarketPrice && cached.regularMarketPrice) {
+                        quote.regularMarketPrice = cached.regularMarketPrice;
+                    }
+                    if (!quote.regularMarketChange && cached.regularMarketChange) {
+                        quote.regularMarketChange = cached.regularMarketChange;
+                        quote.regularMarketChangePercent = cached.regularMarketChangePercent;
+                    }
                 }
             }
         }
 
         if (cached) {
-            const skipCacheOverride = isKR && !isBeforeOpenKR; 
+            // ⭐ 국내 주식이 장 마감 이후일 때는 캐시된 저가/고가 오버라이드를 건너뜀 (순수 GAS 데이터만 신뢰)
+            const skipCacheOverride = isKR && (!isBeforeOpenKR || isAfterCloseKR); 
+            
+            if (!skipCacheOverride) {
+                if ((quote.regularMarketDayLow === undefined || quote.regularMarketDayLow === 0) && cached.regularMarketDayLow !== undefined && cached.regularMarketDayLow !== 0) {
+                    quote.regularMarketDayLow = cached.regularMarketDayLow;
+                }
+                if ((quote.regularMarketDayHigh === undefined || quote.regularMarketDayHigh === 0) && cached.regularMarketDayHigh !== undefined && cached.regularMarketDayHigh !== 0) {
+                    quote.regularMarketDayHigh = cached.regularMarketDayHigh;
+                }
+            }
+        }
             
             if (!skipCacheOverride) {
                 if ((quote.regularMarketDayLow === undefined || quote.regularMarketDayLow === 0) && cached.regularMarketDayLow !== undefined && cached.regularMarketDayLow !== 0) {
