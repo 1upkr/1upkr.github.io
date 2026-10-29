@@ -9,16 +9,14 @@ const DEFAULT_WATCHLISTS = {
 
 const YAHOO_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbxzBxcv3llVtcWyWoldEHkpyNBgWSn0D2_j_SYLEf6r-a4zMZ4VpOE6cxtwPQw_wvKt6Q/exec";
 
-//ver.3
-const NAVER_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbzSjZu1ETKhnD9565vErT4vodKCnc0R67PFWoaZnNohGqx0uW7JaFcr9pgRVQ-vNxuA/exec"; 
-
+//ver3
+const NAVER_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbxB2QeuDBua-9-zGrpX9sZ069ioc779b7clvsWT1SIW4CGJMHW2A7O4aA0mwSrsfA/exec"; 
 const TREND_CHART_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbwbDTJpeDGDtOunSoswvZ7DFIXkCJy2ZJWsAN5HBBe0A2sbyMBnS6xsXdoushoMTa0M/exec";
 
 const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbxxEvkanUH5bPyH9IW4rjSZ3CksapnnP4qHLP3BYrvfhlFAdQljTlKHm13nHRx06a9s/exec"; 
 
 const KNIGHT_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbxNL4-6PqMSqylMQBP0CdqSKS0LYEK7Yn7tbFtiuIfbKlQGcAanznYX85r0CpxQ8J1f_Q/exec";
 
-// 폰트 폴백 설정 (웹 폰트 미로드 시 축 라벨 증발 방지)
 const FONT_FAMILY_BASE = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif";
 
 const CHO_HANGUL = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
@@ -33,7 +31,7 @@ function getChosung(str) {
 }
 
 function escapeHTML(str) {
-    if (typeof str !== 'string') return str;
+    if (typeof str !== 'string') return String(str || '');
     return str.replace(/[&<>'"]/g, tag => ({
         '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
     }[tag]));
@@ -62,7 +60,6 @@ let detailChartInstance = null;
 let tabScrollCache = { dashboard: 0, news: 0 };
 let currentTrendMarketType = localStorage.getItem('marketdash_trend_tab') || 'ALL'; 
 
-// 레이아웃 확정 대기용 버퍼
 window.pendingTrendData = null;
 
 let state = {
@@ -96,7 +93,6 @@ if (document.fonts) {
     });
 }
 
-// --- 직전 최근 영업일 역산 함수 (주말/휴장일 신규 접속 대응) ---
 function getLastBusinessDayStr(kstTime) {
     const day = kstTime.getDay();
     const timeNum = kstTime.getHours() * 100 + kstTime.getMinutes();
@@ -117,7 +113,6 @@ function getLastBusinessDayStr(kstTime) {
     return `${y}.${m}.${d}.`;
 }
 
-// --- API 응답 객체에서 안전하게 실제 거래일자 추출 ---
 function extractBizDateFromResponse(json, fallbackDateStr) {
     if (!json) return fallbackDateStr;
 
@@ -167,7 +162,6 @@ function extractBizDateFromResponse(json, fallbackDateStr) {
     return fallbackDateStr;
 }
 
-// --- INITIALIZATION ---
 async function init() {
     applyTheme(); 
     if (!state.sectionOrder || state.sectionOrder.length === 0) state.sectionOrder = Object.keys(state.watchlists);
@@ -585,7 +579,6 @@ window.selectAutocomplete = function(symbol, sectionId) {
     if(btn) btn.click(); 
 };
 
-// ⭐ SYMBOL 우측에 44x24px 스파크라인 이미지를 배치하는 구조로 개편
 function generateRowHTML(ticker) {
     const sid = getSafeId(ticker);
     const safeTicker = escapeHTML(ticker);
@@ -857,7 +850,6 @@ function executeRemoveTicker(ticker) {
     fetchNews(); 
 }
 
-// ⭐ 스파크라인 이미지 노드도 함께 캐싱하여 60초 주기 갱신 최적화
 function cacheRowNodes(ticker) {
     const sid = getSafeId(ticker);
     rowNodes.set(ticker, {
@@ -1134,7 +1126,6 @@ async function fetchData() {
     fetchNews(); 
 }
 
-// ⭐ 원형 프로그레스 바가 시계 방향으로 자연스럽게 회전하며 차감되도록 음수(-offset) 지정
 function updateTimerUI(seconds) {
     const ring = document.getElementById('timer-ring');
     if (ring) {
@@ -1492,7 +1483,6 @@ function updateDOMWithData(quotes) {
             if (nodes.change.innerHTML !== newChangeHtml) nodes.change.innerHTML = newChangeHtml;
             if (nodes.pct.innerHTML !== newPctHtml) nodes.pct.innerHTML = newPctHtml;
             
-            // ⭐ 60초 주기 스파크라인 이미지 캐시 갱신 (네이버 모바일 미니 차트)
             if (nodes.sparkImg && isKR) {
                 const timeKey = Math.floor(Date.now() / 60000);
                 const targetSrc = `https://financial-vn.pstatic.net/chart/mobile/mini/krx/${ticker}_interest.png?t=${timeKey}`;
@@ -1704,6 +1694,7 @@ function parseNewsTime(timeInput) {
     return (!isNaN(parsed) && parsed > 0) ? parsed : null;
 }
 
+// ⭐ [수정] 숫자형 티커, null 속성 등을 안전하게 방어하는 renderNews
 function renderNews(newsList) {
     const container = document.getElementById('news-container');
     if (!container) return;
@@ -1713,10 +1704,13 @@ function renderNews(newsList) {
         return;
     }
 
-    const validNewsList = newsList.map(news => ({
-        ...news,
-        parsedTime: parseNewsTime(news.time)
-    })).filter(news => news.parsedTime !== null && !isNaN(news.parsedTime) && news.parsedTime > 0);
+    const validNewsList = newsList
+        .filter(news => news && typeof news === 'object')
+        .map(news => ({
+            ...news,
+            parsedTime: parseNewsTime(news.time)
+        }))
+        .filter(news => news.parsedTime !== null && !isNaN(news.parsedTime) && news.parsedTime > 0);
 
     if (validNewsList.length === 0) {
         container.innerHTML = '<div class="empty-state"><p>No recent news found.</p></div>';
@@ -1748,37 +1742,39 @@ function renderNews(newsList) {
             timeDisplay = `${Math.floor(diffMins / 60)}시간 전`;
         } else if (diffMins >= 1440 && diffMins < 4320) {
             timeDisplay = `${Math.floor(diffMins / 1440)}일 전`;
-        } else if (diffMins >= 4320) {
-            timeDisplay = kstFormatter.format(new Date(newsTime));
         } else {
-            if (diffMins >= -5) {
-                timeDisplay = '방금';
-            } else {
-                timeDisplay = kstFormatter.format(new Date(newsTime));
-            }
+            timeDisplay = kstFormatter.format(new Date(newsTime));
         }
 
         let sourceTagClass = 'tag-yahoo';
-        if (news.source === 'Naver') sourceTagClass = 'tag-naver';
-        else if (news.source === 'Google') sourceTagClass = 'tag-google';
+        const sourceStr = String(news.source || '');
+        if (sourceStr === 'Naver') sourceTagClass = 'tag-naver';
+        else if (sourceStr === 'Google') sourceTagClass = 'tag-google';
 
-        let tickerLabel = news.ticker;
-        if (news.ticker && news.ticker !== 'US') {
-            const dbMatch = localTickerDB.find(q => q.s && q.s.toUpperCase() === ticker.toUpperCase());
+        let tickerLabel = news.ticker ? String(news.ticker) : '';
+        if (tickerLabel && tickerLabel !== 'US') {
+            const dbMatch = Array.isArray(localTickerDB) 
+                ? localTickerDB.find(q => q && q.s && String(q.s).toUpperCase() === tickerLabel.toUpperCase())
+                : null;
             if (dbMatch && dbMatch.n) {
                 tickerLabel = dbMatch.n;
             }
         }
-        if (!tickerLabel) tickerLabel = news.source;
+        if (!tickerLabel) tickerLabel = sourceStr || 'NEWS';
 
-        const tagText = news.source === 'Google'
-            ? escapeHTML(tickerLabel)
-            : `${escapeHTML(tickerLabel)} - ${escapeHTML(news.source)}`;
+        const safeLabel = escapeHTML(tickerLabel);
+        const safeSource = escapeHTML(sourceStr);
+        const tagText = sourceStr === 'Google'
+            ? safeLabel
+            : (safeSource ? `${safeLabel} - ${safeSource}` : safeLabel);
+
+        const safeLink = news.link ? escapeHTML(news.link) : '#';
+        const safeTitle = news.title ? escapeHTML(news.title) : '제목 없음';
 
         return `
-            <a href="${news.link}" target="_blank" rel="noopener noreferrer" class="news-item">
+            <a href="${safeLink}" target="_blank" rel="noopener noreferrer" class="news-item">
                 <div class="news-title">
-                    ${escapeHTML(news.title)} 
+                    ${safeTitle} 
                 </div>
                 <div class="news-meta">
                     <span class="news-time ${diffMins >= 0 && diffMins < 60 ? 'recent' : ''}">${timeDisplay}</span>
@@ -1791,7 +1787,6 @@ function renderNews(newsList) {
     container.innerHTML = html;
 }
 
-// --- 트렌드 차트 Fetch & 날짜/상태 해석 ---
 async function fetchMarketTrend(marketType = currentTrendMarketType, isBackground = false) {
     if (!isBackground) {
         const tabs = document.querySelectorAll('.trend-tab-btn');
@@ -2088,7 +2083,6 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                         useBorderRadius: true, 
                         borderRadius: 2, 
                         padding: 14,
-                        // ⭐ 범례 상자 내부의 빈 구멍을 없애고 선명한 선 색상으로 채움
                         generateLabels: function(chart) {
                             const original = Chart.defaults.plugins.legend.labels.generateLabels(chart);
                             original.forEach(item => {
@@ -2220,7 +2214,6 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
         }
     });
 
-    // 하단 상세 막대 차트
     const barCanvas = document.getElementById('detail-bar-chart');
     if (barCanvas) {
         barCanvas.style.display = 'block';
