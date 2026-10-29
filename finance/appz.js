@@ -267,7 +267,6 @@ async function init() {
     }, { passive: true });
 }
 
-// 캔버스가 실제 렌더링되어 크기를 가질 때 안전하게 차트를 표시하는 감지기
 function initChartResizeObserver() {
     const trendWrapper = document.getElementById('trend-chart-wrapper');
     if (!trendWrapper || typeof ResizeObserver === 'undefined') return;
@@ -284,7 +283,6 @@ function initChartResizeObserver() {
                         const p = window.pendingTrendData;
                         renderTrendChart(p.dataList, p.dateStr, p.isLive);
                     } else if (trendChartInstance && (trendChartInstance.width < 100 || trendChartInstance.height < 100)) {
-                        // 손상된 인스턴스 발견 시 완전 재구축
                         const cacheKey = `market_trend_last_known_${currentTrendMarketType}`;
                         try {
                             const cached = JSON.parse(localStorage.getItem(cacheKey));
@@ -409,7 +407,6 @@ window.switchMobileTab = function(tabName) {
         const tabNewsBtn = document.getElementById('tab-btn-news');
         if (tabNewsBtn) tabNewsBtn.classList.add('active');
         
-        // 렌더 트리가 완성될 시간을 확보한 후 차트 렌더링
         requestAnimationFrame(() => {
             setTimeout(() => {
                 const cacheKey = `market_trend_last_known_${currentTrendMarketType}`;
@@ -588,15 +585,33 @@ window.selectAutocomplete = function(symbol, sectionId) {
     if(btn) btn.click(); 
 };
 
+// ⭐ SYMBOL 우측에 44x24px 스파크라인 이미지를 배치하는 구조로 개편
 function generateRowHTML(ticker) {
     const sid = getSafeId(ticker);
     const safeTicker = escapeHTML(ticker);
+    
+    const isKRStock = /^\d{6}$/.test(safeTicker);
+    const timeKey = Math.floor(Date.now() / 60000); 
+    const sparkHtml = isKRStock ? `
+        <div class="asset-sparkline" id="spark-${sid}">
+            <img src="https://financial-vn.pstatic.net/chart/mobile/mini/krx/${safeTicker}_interest.png?t=${timeKey}" 
+                 alt="" 
+                 width="44" 
+                 height="24" 
+                 loading="lazy" 
+                 onerror="this.parentElement.style.display='none'">
+        </div>
+    ` : '';
+
     return `
         <tr id="row-${sid}" data-ticker="${safeTicker}">
             <td class="left-align col-symbol">
                 <div class="asset-col">
-                    <span class="symbol" id="symbol-${sid}" title="${safeTicker}">${safeTicker}</span>
-                    <span class="name" id="name-${sid}"><span class="skeleton sm"></span></span>
+                    <div class="asset-text">
+                        <span class="symbol" id="symbol-${sid}" title="${safeTicker}">${safeTicker}</span>
+                        <span class="name" id="name-${sid}"><span class="skeleton sm"></span></span>
+                    </div>
+                    ${sparkHtml}
                 </div>
             </td>
             <td class="col-price" id="price-cell-${sid}">
@@ -842,6 +857,7 @@ function executeRemoveTicker(ticker) {
     fetchNews(); 
 }
 
+// ⭐ 스파크라인 이미지 노드도 함께 캐싱하여 60초 주기 갱신 최적화
 function cacheRowNodes(ticker) {
     const sid = getSafeId(ticker);
     rowNodes.set(ticker, {
@@ -851,7 +867,8 @@ function cacheRowNodes(ticker) {
         pct: document.getElementById('pct-' + sid), vol: document.getElementById('vol-' + sid),
         cap: document.getElementById('cap-' + sid), range: document.getElementById('range-' + sid),
         mRange: document.getElementById('m-range-' + sid), mVol: document.getElementById('m-vol-' + sid),
-        mCap: document.getElementById('m-cap-' + sid)
+        mCap: document.getElementById('m-cap-' + sid),
+        sparkImg: document.querySelector('#spark-' + sid + ' img')
     });
 }
 
@@ -1117,6 +1134,7 @@ async function fetchData() {
     fetchNews(); 
 }
 
+// ⭐ 원형 프로그레스 바가 시계 방향으로 자연스럽게 회전하며 차감되도록 음수(-offset) 지정
 function updateTimerUI(seconds) {
     const ring = document.getElementById('timer-ring');
     if (ring) {
@@ -1474,6 +1492,15 @@ function updateDOMWithData(quotes) {
             if (nodes.change.innerHTML !== newChangeHtml) nodes.change.innerHTML = newChangeHtml;
             if (nodes.pct.innerHTML !== newPctHtml) nodes.pct.innerHTML = newPctHtml;
             
+            // ⭐ 60초 주기 스파크라인 이미지 캐시 갱신 (네이버 모바일 미니 차트)
+            if (nodes.sparkImg && isKR) {
+                const timeKey = Math.floor(Date.now() / 60000);
+                const targetSrc = `https://financial-vn.pstatic.net/chart/mobile/mini/krx/${ticker}_interest.png?t=${timeKey}`;
+                if (nodes.sparkImg.src !== targetSrc) {
+                    nodes.sparkImg.src = targetSrc;
+                }
+            }
+
             const volText = (quote.regularMarketVolume && quote.regularMarketVolume > 0) ? formatCompact(quote.regularMarketVolume) : '-';
             if (nodes.vol.textContent !== volText) nodes.vol.textContent = volText;
             if (nodes.mVol && nodes.mVol.textContent !== volText) nodes.mVol.textContent = volText;
@@ -1541,6 +1568,7 @@ function setErrorState(ticker, msg) {
         nodes.name.textContent = 'Error'; nodes.price.innerHTML = `<span class="error-text">${escapeHTML(msg)}</span>`;
         nodes.extPrice.innerHTML = ''; nodes.change.innerHTML = ''; nodes.pct.innerHTML = '';
         nodes.vol.textContent = '-'; nodes.cap.textContent = '-'; nodes.range.textContent = '-';
+        if(nodes.sparkImg) nodes.sparkImg.style.display = 'none';
         if(nodes.mRange) nodes.mRange.textContent = '-';
         if(nodes.mVol) nodes.mVol.textContent = '-';
         if(nodes.mCap) nodes.mCap.textContent = '-';
@@ -1736,7 +1764,7 @@ function renderNews(newsList) {
 
         let tickerLabel = news.ticker;
         if (news.ticker && news.ticker !== 'US') {
-            const dbMatch = localTickerDB.find(q => q.s && q.s.toUpperCase() === news.ticker.toUpperCase());
+            const dbMatch = localTickerDB.find(q => q.s && q.s.toUpperCase() === ticker.toUpperCase());
             if (dbMatch && dbMatch.n) {
                 tickerLabel = dbMatch.n;
             }
@@ -1891,12 +1919,10 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
     const canvas = document.getElementById('trend-chart-canvas');
     if (!canvas) return;
 
-    // ⭐ 캔버스 스타일을 인라인으로 강제 지정하여 파이어폭스 300x150 기본 박스 계산 방어
     canvas.style.display = 'block';
     canvas.style.width = '100%';
     canvas.style.height = '100%';
 
-    // ⭐ 화면에 실제로 표시되고 유효 크기(100px 이상)가 잡혔는지 엄격히 검사
     const rect = canvas.getBoundingClientRect();
     if (rect.width < 100 || rect.height < 100) {
         window.pendingTrendData = { dataList, dateStr, isLive };
@@ -1904,7 +1930,6 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
     }
     window.pendingTrendData = null;
 
-    // ⭐ 인스턴스가 존재할 경우 무조건 파기(destroy)하여 망가진 스케일 캐시 완전 제거
     if (trendChartInstance) {
         trendChartInstance.destroy();
         trendChartInstance = null;
@@ -2007,7 +2032,6 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
 
     const redColor = isDark ? '#ff453a' : '#eb0f29';
     const greenColor = isDark ? '#00c853' : '#00873c';
-    const instColor = '#f5a623';
 
     const colorInd = isDark ? '#bf5af2' : '#af52de';  
     const colorFor = isDark ? '#90a4ae' : '#546e7a';  
@@ -2045,7 +2069,7 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            animation: false, // 레이아웃 불안정 시 깜빡임 차단
+            animation: false,
             interaction: { mode: 'index', intersect: false },
             layout: {
                 padding: { left: 4, right: 10, top: 10, bottom: 5 }
@@ -2064,13 +2088,13 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                         useBorderRadius: true, 
                         borderRadius: 2, 
                         padding: 14,
-                        // ⭐ 가운데 빈틈을 없애고 선 색상으로 꽉 채우는 로직 추가
+                        // ⭐ 범례 상자 내부의 빈 구멍을 없애고 선명한 선 색상으로 채움
                         generateLabels: function(chart) {
                             const original = Chart.defaults.plugins.legend.labels.generateLabels(chart);
                             original.forEach(item => {
                                 const ds = chart.data.datasets[item.datasetIndex];
-                                item.fillStyle = ds.borderColor; // 반투명 그라디언트 대신 진한 선 색상으로 채움
-                                item.lineWidth = 0;              // 테두리를 제거하여 가운데 구멍/빈틈 차단
+                                item.fillStyle = ds.borderColor;
+                                item.lineWidth = 0;
                             });
                             return original;
                         }
