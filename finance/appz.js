@@ -7,10 +7,13 @@ const DEFAULT_WATCHLISTS = {
     us: { title: 'United States', tickers: ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'TSLA', 'META'] }
 };
 
+// ⭐ 스파크라인(미니 차트) 예외 허용 티커 목록
+const SPARKLINE_CUSTOM_TICKERS = ['0072R0'];
+
 const YAHOO_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbxzBxcv3llVtcWyWoldEHkpyNBgWSn0D2_j_SYLEf6r-a4zMZ4VpOE6cxtwPQw_wvKt6Q/exec";
 
-const NAVER_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbwiWjpIHWF8S_BTKsjsfuyPQeDipYWFiJVxn_naF7yq1fLhGvWUBqc_GnImWuYHbhv9/exec"; 
 //ver3
+const NAVER_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbwiWjpIHWF8S_BTKsjsfuyPQeDipYWFiJVxn_naF7yq1fLhGvWUBqc_GnImWuYHbhv9/exec"; 
 
 const TREND_CHART_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbwbDTJpeDGDtOunSoswvZ7DFIXkCJy2ZJWsAN5HBBe0A2sbyMBnS6xsXdoushoMTa0M/exec";
 
@@ -585,8 +588,8 @@ function generateRowHTML(ticker) {
     const sid = getSafeId(ticker);
     const safeTicker = escapeHTML(ticker);
     
-    // ⭐ 순수 국내 주식/ETF/금현물(예: 005930, 0072R0 등 6자리 코드)만 차트 생성 (KNIGHT, KOSPI, KOSDAQ 배제)
-    const isKRSpark = /^\d{5}[0-9A-Za-z]$/.test(safeTicker);
+    // ⭐ 기본 6자리 순수 숫자 주식이거나, 예외 등록 목록(SPARKLINE_CUSTOM_TICKERS)에 포함된 경우만 차트 생성
+    const isKRSpark = /^\d{6}$/.test(safeTicker) || SPARKLINE_CUSTOM_TICKERS.includes(safeTicker.toUpperCase());
     const timeKey = Math.floor(Date.now() / 60000); 
     const sparkHtml = isKRSpark ? `
         <div class="asset-sparkline" id="spark-${sid}">
