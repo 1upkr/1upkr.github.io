@@ -13,7 +13,7 @@ const SPARKLINE_CUSTOM_TICKERS = ['0072R0'];
 const YAHOO_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbxzBxcv3llVtcWyWoldEHkpyNBgWSn0D2_j_SYLEf6r-a4zMZ4VpOE6cxtwPQw_wvKt6Q/exec";
 
 //ver3
-const NAVER_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbwiWjpIHWF8S_BTKsjsfuyPQeDipYWFiJVxn_naF7yq1fLhGvWUBqc_GnImWuYHbhv9/exec"; 
+const NAVER_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbz0-84e47Xi2AlTCkYBUv0zex3Ma_vub-Fx_U6HjsuKLJ-FE9HzebDj8JMp8fI61ZOb/exec"; 
 
 const TREND_CHART_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbwbDTJpeDGDtOunSoswvZ7DFIXkCJy2ZJWsAN5HBBe0A2sbyMBnS6xsXdoushoMTa0M/exec";
 
