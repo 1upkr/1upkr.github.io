@@ -601,13 +601,13 @@ function generateRowHTML(ticker) {
     return `
         <tr id="row-${sid}" data-ticker="${safeTicker}">
             <td class="left-align col-symbol">
-                <div class="asset-col">
-                    <div class="asset-text">
-                        <span class="symbol" id="symbol-${sid}" title="${safeTicker}">${safeTicker}</span>
-                        <span class="name" id="name-${sid}"><span class="skeleton sm"></span></span>
-                    </div>
-                    ${sparkHtml}
+                <div class="asset-text">
+                    <span class="symbol" id="symbol-${sid}" title="${safeTicker}">${safeTicker}</span>
+                    <span class="name" id="name-${sid}"><span class="skeleton sm"></span></span>
                 </div>
+            </td>
+            <td class="col-chart">
+                ${sparkHtml}
             </td>
             <td class="col-price" id="price-cell-${sid}">
                 <div class="price" id="price-${sid}"><span class="skeleton"></span></div>
@@ -625,7 +625,7 @@ function generateRowHTML(ticker) {
             <td class="hide-mobile actions-col"><button class="action-icon-btn danger" onclick="confirmRemoveTicker('${safeTicker}')">${TRASH_ICON}</button></td>
             <td class="handle-col"><div class="action-icon-btn drag-handle">${DRAG_ICON}</div></td>
             
-            <td class="mobile-expanded-td" colspan="9">
+            <td class="mobile-expanded-td" colspan="9"> <!-- ⭐ colspan 8 -> 9로 변경 -->
                 <div class="mobile-detail-grid">
                     <div class="md-item range">
                         <span class="md-label">Day's Range</span>
