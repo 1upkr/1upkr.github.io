@@ -491,6 +491,7 @@ function renderLayout() {
                         <thead>
                             <tr>
                                 <th class="left-align col-symbol">Symbol</th>
+                                <th class="col-chart"></th> <!-- ⭐ 스파크라인 독립 헤더 추가 -->
                                 <th class="col-price">Price</th>
                                 <th class="col-change">Change</th>
                                 <th class="hide-mobile col-range">Day's Range</th>
@@ -624,7 +625,7 @@ function generateRowHTML(ticker) {
             <td class="hide-mobile actions-col"><button class="action-icon-btn danger" onclick="confirmRemoveTicker('${safeTicker}')">${TRASH_ICON}</button></td>
             <td class="handle-col"><div class="action-icon-btn drag-handle">${DRAG_ICON}</div></td>
             
-            <td class="mobile-expanded-td" colspan="8">
+            <td class="mobile-expanded-td" colspan="9">
                 <div class="mobile-detail-grid">
                     <div class="md-item range">
                         <span class="md-label">Day's Range</span>
