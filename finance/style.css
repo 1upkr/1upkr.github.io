@@ -829,6 +829,9 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
 
 .mobile-expanded-td { display: none; }
 
+/* ==========================================================================
+   모바일 (650px 이하) 열 정렬 및 스파크라인 크기 완전 고정
+   ========================================================================== */
 @media (max-width: 650px) {
     table, thead, tbody { 
         display: block; 
@@ -837,7 +840,7 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
     
     thead tr, tbody tr {
         display: flex;
-        flex-wrap: nowrap; /* ⭐ 절대 두 줄로 깨지지 않도록 한 줄 고정 */
+        flex-wrap: nowrap;
         align-items: center;
         width: 100%;
         border-bottom: 1px solid var(--border-color);
@@ -846,13 +849,56 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
     
     th, td { 
         border-bottom: none !important; 
+        box-sizing: border-box;
     }
 
-    /* ⭐ 안정적인 모바일 너비: Symbol 31%, Price 43%, Change 나머지 */
-    th.col-symbol, td.col-symbol { width: 31% !important; padding-left: 0.75rem !important; } 
-    th.col-price, td.col-price { width: 43% !important; } 
-    th.col-change, td.col-change { width: calc(26% - 38px) !important; padding-right: 0.5rem !important; } 
-    th.handle-col, td.handle-col { width: 38px !important; padding-right: 0.75rem !important; padding-left: 0 !important; text-align: right; }
+    /* ⭐ 열 비율을 flex: 0 0 % 로 강제 고정하여 글자 길이에 관계없이 헤더와 1:1 줄맞춤 */
+    th.col-symbol, td.col-symbol { 
+        flex: 0 0 40% !important; 
+        max-width: 40% !important;
+        padding-left: 0.75rem !important; 
+        padding-right: 0.25rem !important;
+        min-width: 0;
+    } 
+    th.col-price, td.col-price { 
+        flex: 0 0 32% !important; 
+        max-width: 32% !important;
+        padding-left: 0.25rem !important;
+        padding-right: 0.25rem !important;
+        min-width: 0;
+        text-align: right;
+    } 
+    th.col-change, td.col-change { 
+        flex: 1 1 auto !important; 
+        padding-right: 0.25rem !important; 
+        padding-left: 0 !important;
+        min-width: 0;
+        text-align: right;
+    } 
+    th.handle-col, td.handle-col { 
+        flex: 0 0 34px !important; 
+        width: 34px !important; 
+        padding-right: 0.5rem !important; 
+        padding-left: 0 !important; 
+        text-align: right; 
+    }
+
+    /* ⭐ 스파크라인: 절대 축소되지 않도록 44x24px 규격 고정 */
+    .asset-sparkline {
+        flex-shrink: 0 !important;
+        width: 44px !important;
+        height: 24px !important;
+        margin-left: 4px;
+        margin-right: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .asset-sparkline img {
+        width: 44px !important;
+        height: 24px !important;
+        object-fit: contain;
+    }
 
     .hide-mobile, 
     .section-container th.actions-col, 
@@ -862,6 +908,7 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
         display: none !important; 
     }
 
+    /* 펼쳐보기 상세 영역 */
     .mobile-expanded-td {
         display: block !important;
         width: 100% !important;
@@ -877,7 +924,7 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
     tbody tr.expanded {
         background-color: var(--hover-bg); 
         border-bottom: 1px solid var(--border-color); 
-        flex-wrap: wrap; /* 클릭 시 펼쳐지는 상세 박스를 위해 wrap 허용 */
+        flex-wrap: wrap; 
     }
     
     tbody tr.expanded .mobile-expanded-td {
@@ -935,16 +982,6 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
 
     .symbol { font-size: 0.75rem; } 
     .name { font-size: 0.6rem; }
-    
-    .asset-sparkline {
-        width: 50px;
-        height: 30px;
-    }
-    .asset-sparkline img {
-        width: 50px;
-        height: 30px;
-    }
-
     .price { font-size: 0.8rem; }
     .extended-price { font-size: 0.65rem; margin-top: 0.15rem; letter-spacing: -0.03em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .extended-price .ext-label, .main-ext-label { font-size: 0.50rem; padding: 0.1rem 0.2rem; }
