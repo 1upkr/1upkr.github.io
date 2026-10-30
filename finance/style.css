@@ -888,14 +888,22 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
         padding: 0.75rem 0.25rem !important;
     }
 
-    /* 3. 첫 번째 줄(Line 1) 5개 컬럼의 불변 flex 비율 고정 (합계 100%) */
+    /* 종목명 열: 전체 가변 공간을 차지하되, 다른 열을 침범하지 못하도록 차단 */
     th.col-symbol, td.col-symbol { 
-        flex: 1 1 auto !important; 
-        min-width: 0 !important;
+        flex: 1 1 0% !important; 
+        width: 0 !important; 
+        min-width: 0 !important; 
         padding-left: 0.75rem !important; 
-        padding-right: 0.25rem !important;
         text-align: left !important;
     } 
+
+    /* 텍스트 래퍼: 부모의 폭을 넘지 않고 강제 절삭(ellipsis) 되도록 보장 */
+    .asset-text {
+        flex: 1 1 0% !important;
+        min-width: 0 !important; 
+        width: 100% !important;
+        overflow: hidden !important; 
+    }
 
     th.col-chart, td.col-chart { 
         flex: 0 0 46px !important; 
