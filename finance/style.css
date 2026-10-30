@@ -444,7 +444,15 @@ td.left-align { text-align: left; }
  
 th.actions-col, td.actions-col { width: 44px; padding-right: 0; padding-left: 0.5rem; text-align: center; }
 th.handle-col, td.handle-col { width: 48px; padding-right: 0.75rem; padding-left: 0; text-align: center; } 
-tbody tr { transition: background-color 0.15s, transform 0.2s ease; } tbody tr:hover { background-color: var(--hover-bg); }
+
+/* ⭐ tr에 명시적 기본 배경색을 지정하여 다크모드 screen 블렌딩의 검은 박스 현상 차단 */
+tbody tr { 
+    background-color: var(--card-bg); 
+    transition: background-color 0.15s, transform 0.2s ease; 
+} 
+tbody tr:hover { 
+    background-color: var(--hover-bg); 
+}
 
 /* SYMBOL 텍스트 영역 */
 .asset-text {
