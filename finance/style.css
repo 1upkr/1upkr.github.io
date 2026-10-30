@@ -422,25 +422,26 @@ th, td { padding: 0.875rem 1.5rem; border-bottom: 1px solid var(--border-color);
 tr:last-child td { border-bottom: none; }
 th { color: var(--text-secondary); font-size: 0.75rem; font-weight: 500; text-transform: uppercase; }
  
-/* ⭐ 컬럼 너비 조정: Symbol 열을 26%로 확장하고 Price 열을 18%로 최적화 */
-th.col-symbol { width: 26%; text-align: left; } 
-th.col-price { width: 18%; } 
+/* 데스크톱 기본 열 너비 (안정적인 100% 분배) */
+th.col-symbol { width: 23%; text-align: left; } 
+th.col-price { width: 21%; } 
 th.col-change { width: 14%; }
+th.col-range { width: 18%; }
 th.col-vol { width: 12%; } 
 th.col-cap { width: 12%; } 
-th.col-range { width: 18%; }
 td.left-align { text-align: left; }
  
 th.actions-col, td.actions-col { width: 44px; padding-right: 0; padding-left: 0.5rem; text-align: center; }
 th.handle-col, td.handle-col { width: 48px; padding-right: 0.75rem; padding-left: 0; text-align: center; } 
 tbody tr { transition: background-color 0.15s, transform 0.2s ease; } tbody tr:hover { background-color: var(--hover-bg); }
 
-/* 심볼 열 내부 정렬 */
+/* SYMBOL 열 내부 좌우 정렬 */
 .asset-col { 
     display: flex; 
     flex-direction: row; 
     align-items: center; 
     justify-content: space-between; 
+    gap: 6px;
     width: 100%; 
 }
 
@@ -452,7 +453,28 @@ tbody tr { transition: background-color 0.15s, transform 0.2s ease; } tbody tr:h
     flex: 1;
 }
 
-/* ⭐ 스파크라인: 우측(Price 쪽) 정렬 및 심볼 텍스트/Price 간 안전 여백 */
+.symbol { 
+    display: block; 
+    width: 100%; 
+    font-weight: 600; 
+    font-size: 0.95rem; 
+    color: var(--text-primary); 
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+}
+
+.name { 
+    display: block; 
+    width: 100%; 
+    color: var(--text-secondary); 
+    font-size: 0.72rem; 
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+}
+
+/* 스파크라인 이미지 컨테이너 */
 .asset-sparkline {
     flex-shrink: 0;
     width: 50px;
@@ -460,23 +482,21 @@ tbody tr { transition: background-color 0.15s, transform 0.2s ease; } tbody tr:h
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-left: 10px;   /* 심볼 텍스트와 최소 10px 거리 유지 */
-    margin-right: 6px;   /* Price 숫자와 붙지 않도록 우측 여백 확보 */
 }
 
-/* 1. 라이트 모드 : 순수 흰색 유지로 회색 박스 100% 증발 + 테마 색상 치환 */
+/* 1. 라이트 모드 : 흰색 배경 100% 투명화 + 회색 박스 완전 제거 */
 .asset-sparkline img {
     width: 50px;
     height: 30px;
     object-fit: contain;
     display: block;
-    mix-blend-mode: multiply;                /* 흰색 배경을 100% 투명하게 투과 */
-    filter: hue-rotate(140deg) saturate(1.2); /* brightness 제거: 배경 변색 차단 */
+    mix-blend-mode: multiply;                /* 흰색 배경 완전 투명화 */
+    filter: hue-rotate(140deg) saturate(1.2); /* 상승 초록, 하락 빨강 치환 */
 }
 
-/* 2. 다크 모드 : 반전 후 검정 배경 투명화 + 선명한 발광 선 */
+/* 2. 다크 모드 : 반전 후 검정 배경 투명화 */
 [data-theme="dark"] .asset-sparkline img {
-    mix-blend-mode: screen;                  /* 검정색을 100% 투명하게 투과 */
+    mix-blend-mode: screen;                  /* 검정 배경 완전 투명화 */
     filter: invert(1) hue-rotate(-32deg) saturate(1.3) brightness(1.15);
 }
 
@@ -684,12 +704,12 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
     .section-container th.col-symbol, .section-container td.col-symbol { padding-left: 1.25rem; }
     .section-container th.handle-col, .section-container td.handle-col { padding-right: 0.75rem; width: 44px; }
     
-    th.col-symbol { width: 24%; }
-    th.col-price { width: 14%; }
+    th.col-symbol { width: 22%; }
+    th.col-price { width: 18%; }
     th.col-change { width: 14%; }
+    th.col-range { width: 24%; } 
     th.col-vol { width: 11%; }
     th.col-cap { width: 11%; }
-    th.col-range { width: 26%; } 
 
     .sub-data { font-size: 0.75rem; } 
 
@@ -817,7 +837,7 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
     
     thead tr, tbody tr {
         display: flex;
-        flex-wrap: wrap; 
+        flex-wrap: nowrap; /* ⭐ 절대 두 줄로 깨지지 않도록 한 줄 고정 */
         align-items: center;
         width: 100%;
         border-bottom: 1px solid var(--border-color);
@@ -828,12 +848,10 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
         border-bottom: none !important; 
     }
 
-    /* ⭐ 모바일 너비 재배치: Symbol 37%, Price 37%로 균형 분배 */
-    th.col-symbol, td.col-symbol { width: 37% !important; padding-left: 0.75rem !important; } 
-    th.col-price, td.col-price { width: 37% !important; }
-    
+    /* ⭐ 안정적인 모바일 너비: Symbol 31%, Price 43%, Change 나머지 */
+    th.col-symbol, td.col-symbol { width: 31% !important; padding-left: 0.75rem !important; } 
+    th.col-price, td.col-price { width: 43% !important; } 
     th.col-change, td.col-change { width: calc(26% - 38px) !important; padding-right: 0.5rem !important; } 
-    
     th.handle-col, td.handle-col { width: 38px !important; padding-right: 0.75rem !important; padding-left: 0 !important; text-align: right; }
 
     .hide-mobile, 
@@ -859,6 +877,7 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
     tbody tr.expanded {
         background-color: var(--hover-bg); 
         border-bottom: 1px solid var(--border-color); 
+        flex-wrap: wrap; /* 클릭 시 펼쳐지는 상세 박스를 위해 wrap 허용 */
     }
     
     tbody tr.expanded .mobile-expanded-td {
@@ -917,12 +936,9 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
     .symbol { font-size: 0.75rem; } 
     .name { font-size: 0.6rem; }
     
-    /* ⭐ 모바일 스파크라인 크기 및 여백 최적화 */
     .asset-sparkline {
         width: 50px;
         height: 30px;
-        margin-left: 6px;
-        margin-right: 4px;
     }
     .asset-sparkline img {
         width: 50px;
