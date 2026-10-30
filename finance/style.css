@@ -528,7 +528,7 @@ tbody tr { transition: background-color 0.15s, transform 0.2s ease; } tbody tr:h
 .sub-data { color: var(--text-primary); font-weight: 500; font-size: 0.80rem; font-variant-numeric: tabular-nums; overflow: hidden; text-overflow: ellipsis; }
 .arrow { font-size: 0.6rem; margin-right: 0.2rem; stroke-width: 3; }
 
-/* 모달 레이어 (z-index 최상위 9999로 보강) */
+/* 모달 레이어 (z-index 9999로 보강) */
 .modal-overlay { 
     position: fixed; 
     top: 0; 
@@ -862,72 +862,84 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
 .mobile-expanded-td { display: none; }
 
 /* ==========================================================================
-   모바일 (650px 이하) : 표준 테이블 유지 + 완벽한 아코디언 펼침 레이아웃
+   모바일 (650px 이하) : Flex 레이아웃 기반 완벽한 한 줄 정렬 & 전체 너비 아코디언
    ========================================================================== */
 @media (max-width: 650px) {
-    table { 
-        display: table !important; 
+    /* 1. 테이블 전체를 block 컨테이너로 통일 */
+    table, thead, tbody { 
+        display: block !important; 
         width: 100% !important; 
-        table-layout: fixed !important;
     }
-    thead { display: table-header-group !important; }
-    tbody { display: table-row-group !important; }
     
+    /* 2. 모든 행을 flex-wrap 컨테이너로 선언 */
     thead tr, tbody tr { 
-        display: table-row !important; 
+        display: flex !important; 
+        flex-wrap: wrap !important;
+        align-items: center !important;
+        width: 100% !important;
         border-bottom: 1px solid var(--border-color);
         transition: background-color 0.2s ease;
     }
     
     th, td { 
-        display: table-cell !important;
+        display: block !important;
         border-bottom: none !important; 
         box-sizing: border-box !important;
-        vertical-align: middle !important;
         padding: 0.75rem 0.25rem !important;
     }
 
-    /* 종목명 열 */
+    /* 3. 첫 번째 줄(Line 1) 5개 컬럼의 불변 flex 비율 고정 (합계 100%) */
     th.col-symbol, td.col-symbol { 
-        width: auto !important;
+        flex: 1 1 auto !important; 
+        min-width: 0 !important;
         padding-left: 0.75rem !important; 
+        padding-right: 0.25rem !important;
         text-align: left !important;
     } 
 
-    /* 스파크라인 열 (Price 좌측 밀착) */
     th.col-chart, td.col-chart { 
-        width: 50px !important; 
+        flex: 0 0 46px !important; 
+        width: 46px !important;
+        min-width: 46px !important;
         padding-left: 0 !important;
         padding-right: 2px !important; 
         text-align: right !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-end !important;
     }
 
-    /* Price 열 */
     th.col-price, td.col-price { 
-        width: 88px !important; 
+        flex: 0 0 86px !important; 
+        width: 86px !important;
+        min-width: 86px !important;
         padding-left: 2px !important;
-        padding-right: 0.4rem !important;
+        padding-right: 0.35rem !important;
         text-align: right !important;
     } 
 
-    /* Change 열 */
     th.col-change, td.col-change { 
-        width: 72px !important; 
+        flex: 0 0 74px !important; 
+        width: 74px !important;
+        min-width: 74px !important;
         padding-left: 0 !important;
         padding-right: 0.25rem !important; 
         text-align: right !important;
     } 
 
-    /* 핸들 열 */
     th.handle-col, td.handle-col { 
-        width: 32px !important; 
+        flex: 0 0 34px !important; 
+        width: 34px !important;
+        min-width: 34px !important;
         padding-right: 0.5rem !important; 
         padding-left: 0 !important; 
         text-align: right !important; 
     }
 
-    /* 모바일 숨김 열 */
+    /* 4. 모바일 데스크톱 전용 셀 완전 은닉 (중복 노출 절대 방지) */
     .hide-mobile, 
+    td.hide-mobile,
+    th.hide-mobile,
     .section-container th.actions-col, 
     .section-container td.actions-col,
     .section-container.edit-mode th.actions-col,
@@ -935,14 +947,15 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
         display: none !important; 
     }
 
+    /* 5. 스파크라인 이미지 규격 */
     .asset-sparkline {
-        width: 48px !important;
-        height: 26px !important;
+        width: 44px !important;
+        height: 24px !important;
         display: inline-flex !important;
     }
     .asset-sparkline img {
-        width: 48px !important;
-        height: 26px !important;
+        width: 44px !important;
+        height: 24px !important;
         object-fit: contain;
     }
 
@@ -954,43 +967,35 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
     .change-cell { font-size: 0.7rem; white-space: nowrap; } 
     .badge { padding: 0.15rem 0.25rem; font-size: 0.6rem; }
 
-    /* ⭐ 아코디언 펼침 레이아웃: tr 내에서 block으로 전체 너비(100%) 차지 */
-    .mobile-expanded-td { display: none !important; }
-    
+    /* 6. ⭐ 아코디언 펼침(두 번째 줄): 전체 너비(100%) 아래로 자연스럽게 래핑 */
+    .mobile-expanded-td { 
+        display: none !important; 
+    }
+
     tbody tr.expanded {
-        display: flex !important;
-        flex-wrap: wrap !important;
         background-color: var(--hover-bg); 
     }
-    tbody tr.expanded > td:not(.mobile-expanded-td) {
-        display: block !important;
-    }
-    tbody tr.expanded .col-symbol { flex: 1 1 auto !important; }
-    tbody tr.expanded .col-chart { flex: 0 0 50px !important; }
-    tbody tr.expanded .col-price { flex: 0 0 88px !important; }
-    tbody tr.expanded .col-change { flex: 0 0 72px !important; }
-    tbody tr.expanded .handle-col { flex: 0 0 32px !important; }
 
     tbody tr.expanded .mobile-expanded-td {
         display: block !important;
         flex: 0 0 100% !important;
         width: 100% !important;
         padding: 0.5rem 0.75rem 0.75rem 0.75rem !important;
-        border-top: 1px dashed var(--border-color);
+        border-top: 1px dashed var(--border-color); 
         box-sizing: border-box !important;
     }
 
     .mobile-detail-grid {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        width: 100%;
-        gap: 0.5rem;
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        width: 100% !important;
+        gap: 0.5rem !important;
         background-color: var(--bg-color); 
-        padding: 0.75rem;
-        border-radius: 8px;
-        border: 1px solid var(--border-color);
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
+        padding: 0.75rem !important;
+        border-radius: 8px !important;
+        border: 1px solid var(--border-color) !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05) !important; 
     }
     
     .md-item {
