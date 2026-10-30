@@ -435,7 +435,7 @@ th.actions-col, td.actions-col { width: 44px; padding-right: 0; padding-left: 0.
 th.handle-col, td.handle-col { width: 48px; padding-right: 0.75rem; padding-left: 0; text-align: center; } 
 tbody tr { transition: background-color 0.15s, transform 0.2s ease; } tbody tr:hover { background-color: var(--hover-bg); }
 
-/* ⭐ SYMBOL 열 내부 좌우 정렬 및 스파크라인 컨테이너 */
+/* 심볼 열 내부 정렬 */
 .asset-col { 
     display: flex; 
     flex-direction: row; 
@@ -452,28 +452,7 @@ tbody tr { transition: background-color 0.15s, transform 0.2s ease; } tbody tr:h
     flex: 1;
 }
 
-.symbol { 
-    display: block; 
-    width: 100%; 
-    font-weight: 600; 
-    font-size: 0.95rem; 
-    color: var(--text-primary); 
-    white-space: nowrap; 
-    overflow: hidden; 
-    text-overflow: ellipsis; 
-}
-
-.name { 
-    display: block; 
-    width: 100%; 
-    color: var(--text-secondary); 
-    font-size: 0.72rem; 
-    white-space: nowrap; 
-    overflow: hidden; 
-    text-overflow: ellipsis; 
-}
-
-/* ⭐ 스파크라인: 우측(Price 쪽) 정렬 및 심볼/가격 사이 안전 여백 확보 */
+/* ⭐ 스파크라인: 우측(Price 쪽) 정렬 및 심볼 텍스트/Price 간 안전 여백 */
 .asset-sparkline {
     flex-shrink: 0;
     width: 50px;
@@ -481,24 +460,24 @@ tbody tr { transition: background-color 0.15s, transform 0.2s ease; } tbody tr:h
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-left: 12px;
-    margin-right: 4px;
+    margin-left: 10px;   /* 심볼 텍스트와 최소 10px 거리 유지 */
+    margin-right: 6px;   /* Price 숫자와 붙지 않도록 우측 여백 확보 */
 }
 
-/* 1. 라이트 모드 : 대비(contrast)와 채도를 높여 선을 진하고 굵게 표현 */
+/* 1. 라이트 모드 : 순수 흰색 유지로 회색 박스 100% 증발 + 테마 색상 치환 */
 .asset-sparkline img {
     width: 50px;
     height: 30px;
     object-fit: contain;
     display: block;
-    mix-blend-mode: multiply;                /* ⭐ 흰색 배경을 100% 투명하게 투과 */
-    filter: hue-rotate(140deg) saturate(1.3) contrast(1.35) brightness(0.95); /* ⭐ 테마 색상 치환 및 선 굵기 보강 */
+    mix-blend-mode: multiply;                /* 흰색 배경을 100% 투명하게 투과 */
+    filter: hue-rotate(140deg) saturate(1.2); /* brightness 제거: 배경 변색 차단 */
 }
 
-/* 2. 다크 모드 : 반전 후 검정 배경 투명화 + 다크 테마 발광 선 두께감 보강 */
+/* 2. 다크 모드 : 반전 후 검정 배경 투명화 + 선명한 발광 선 */
 [data-theme="dark"] .asset-sparkline img {
-    mix-blend-mode: screen;                  /* ⭐ 검정색을 100% 투명하게 투과 */
-    filter: invert(1) hue-rotate(-32deg) saturate(1.4) contrast(1.3) brightness(1.25); /* ⭐ 배경 검정화 및 발광 선 강화 */
+    mix-blend-mode: screen;                  /* 검정색을 100% 투명하게 투과 */
+    filter: invert(1) hue-rotate(-32deg) saturate(1.3) brightness(1.15);
 }
 
 .price { font-weight: 600; font-size: 0.95rem; font-variant-numeric: tabular-nums; color: var(--text-primary); }
@@ -943,7 +922,7 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
         width: 50px;
         height: 30px;
         margin-left: 6px;
-        margin-right: 2px;
+        margin-right: 4px;
     }
     .asset-sparkline img {
         width: 50px;
