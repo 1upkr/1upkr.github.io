@@ -491,7 +491,7 @@ function renderLayout() {
                         <thead>
                             <tr>
                                 <th class="left-align col-symbol">Symbol</th>
-                                <th class="col-chart"></th> <!-- ⭐ 스파크라인 독립 헤더 추가 -->
+                                <th class="col-chart"></th>
                                 <th class="col-price">Price</th>
                                 <th class="col-change">Change</th>
                                 <th class="hide-mobile col-range">Day's Range</th>
@@ -585,16 +585,17 @@ function generateRowHTML(ticker) {
     const sid = getSafeId(ticker);
     const safeTicker = escapeHTML(ticker);
     
-    const isKRSpark = /^[0-9A-Za-z]{6}$/.test(safeTicker) || /^(KOSPI|KOSDAQ|KPI200)$/i.test(safeTicker);
+    // ⭐ 순수 국내 주식/ETF/금현물(예: 005930, 0072R0 등 6자리 코드)만 차트 생성 (KNIGHT, KOSPI, KOSDAQ 배제)
+    const isKRSpark = /^\d{5}[0-9A-Za-z]$/.test(safeTicker);
     const timeKey = Math.floor(Date.now() / 60000); 
     const sparkHtml = isKRSpark ? `
         <div class="asset-sparkline" id="spark-${sid}">
             <img src="https://financial-vn.pstatic.net/chart/mobile/mini/krx/${safeTicker}_interest.png?t=${timeKey}" 
                  alt="" 
-                 width="50" 
-                 height="30" 
+                 width="48" 
+                 height="26" 
                  loading="lazy" 
-                 onerror="this.parentElement.style.display='none'">
+                 onerror="this.style.display='none'; this.parentElement.style.display='none';">
         </div>
     ` : '';
 
@@ -625,7 +626,7 @@ function generateRowHTML(ticker) {
             <td class="hide-mobile actions-col"><button class="action-icon-btn danger" onclick="confirmRemoveTicker('${safeTicker}')">${TRASH_ICON}</button></td>
             <td class="handle-col"><div class="action-icon-btn drag-handle">${DRAG_ICON}</div></td>
             
-            <td class="mobile-expanded-td" colspan="9"> <!-- ⭐ colspan 8 -> 9로 변경 -->
+            <td class="mobile-expanded-td" colspan="9">
                 <div class="mobile-detail-grid">
                     <div class="md-item range">
                         <span class="md-label">Day's Range</span>
@@ -1043,8 +1044,26 @@ function executeResetEverything() {
         closeResetModal(); 
     }
 }
-function openAboutModal() { toggleSettingsMenu(); const el = document.getElementById('about-modal'); if (el) el.classList.add('active'); }
-function closeAboutModal() { const el = document.getElementById('about-modal'); if (el) el.classList.remove('active'); }
+
+window.openAboutModal = function(e) { 
+    // 1. 클릭 이벤트 버블링 차단 (f.html에서 인자를 넘기지 않아도 window.event로 자동 감지)
+    const evt = e || window.event;
+    if (evt && evt.stopPropagation) evt.stopPropagation();
+
+    // 2. 드롭다운 닫기 (불안정한 toggle 대신 remove('active')로 명확하게 닫음)
+    const dropdown = document.getElementById('settings-dropdown');
+    if (dropdown) dropdown.classList.remove('active');
+
+    // 3. Credits 모달 레이어 열기
+    const el = document.getElementById('about-modal'); 
+    if (el) el.classList.add('active'); 
+};
+
+window.closeAboutModal = function() { 
+    const el = document.getElementById('about-modal'); 
+    if (el) el.classList.remove('active'); 
+};
+
 function saveWatchlists() { localStorage.setItem('marketdash_watchlists', JSON.stringify(state.watchlists)); }
 
 async function fetchData() {
