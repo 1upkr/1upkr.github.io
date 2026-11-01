@@ -926,9 +926,9 @@ footer { text-align: right; padding: 1.0rem 5%; color: var(--text-secondary); fo
     }
 
     th.col-price, td.col-price { 
-        flex: 0 0 86px !important; 
-        width: 86px !important;
-        min-width: 86px !important;
+        flex: 0 0 90px !important; 
+        width: 90px !important;
+        min-width: 90px !important;
         padding-left: 2px !important;
         padding-right: 0.35rem !important;
         text-align: right !important;
