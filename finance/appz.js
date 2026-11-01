@@ -97,18 +97,69 @@ if (document.fonts) {
     });
 }
 
+// ⭐ 한국 증시(KRX) 평일 휴장일 캘린더 (2024~2030년: 설/추석 연휴, 대체공휴일, 선거일 등)
+const KRX_HOLIDAYS_SET = new Set([
+    // 2024년
+    "2024-01-01", "2024-02-09", "2024-02-12", "2024-03-01", "2024-04-10", "2024-05-01", 
+    "2024-05-06", "2024-05-15", "2024-06-06", "2024-08-15", "2024-09-16", "2024-09-17", 
+    "2024-09-18", "2024-10-01", "2024-10-03", "2024-10-09", "2024-12-25", "2024-12-31",
+    // 2025년
+    "2025-01-01", "2025-01-27", "2025-01-28", "2025-01-29", "2025-01-30", "2025-03-03", 
+    "2025-05-01", "2025-05-05", "2025-05-06", "2025-06-06", "2025-08-15", "2025-10-03", 
+    "2025-10-06", "2025-10-07", "2025-10-08", "2025-10-09", "2025-12-25", "2025-12-31",
+    // 2026년
+    "2026-01-01", "2026-02-16", "2026-02-17", "2026-02-18", "2026-03-02", "2026-05-01", 
+    "2026-05-05", "2026-05-25", "2026-08-17", "2026-09-24", "2026-09-25", "2026-10-05", 
+    "2026-10-09", "2026-12-25", "2026-12-31",
+    // 2027년
+    "2027-01-01", "2027-02-05", "2027-02-08", "2027-02-09", "2027-03-01", "2027-05-01",
+    "2027-05-05", "2027-05-13", "2027-06-06", "2027-08-16", "2027-09-14", "2027-09-15",
+    "2027-09-16", "2027-10-04", "2027-10-09", "2027-12-31",
+    // 2028년
+    "2028-01-01", "2028-01-26", "2028-01-27", "2028-01-28", "2028-03-01", "2028-05-01",
+    "2028-05-02", "2028-05-05", "2028-06-06", "2028-08-15", "2028-10-02", "2028-10-03",
+    "2028-10-04", "2028-10-09", "2028-12-25", "2028-12-31",
+    // 2029년
+    "2029-01-01", "2029-02-12", "2029-02-13", "2029-02-14", "2029-03-01", "2029-05-01",
+    "2029-05-05", "2029-05-07", "2029-05-21", "2029-06-06", "2029-08-15", "2029-09-21",
+    "2029-09-24", "2029-09-25", "2029-10-03", "2029-10-09", "2029-12-25", "2029-12-31",
+    // 2030년
+    "2030-01-01", "2030-02-01", "2030-02-04", "2030-02-05", "2030-03-01", "2030-05-01",
+    "2030-05-06", "2030-05-10", "2030-06-06", "2030-08-15", "2030-09-11", "2030-09-12",
+    "2030-09-13", "2030-10-03", "2030-10-09", "2030-12-25", "2030-12-31"
+]);
+
+// ⭐ 한국 증시 휴장 여부 판별 (주말 + 공휴일 + 근로자의 날 + 연말 폐장일)
+function isKRMarketHoliday(kstDate) {
+    const day = kstDate.getDay();
+    if (day === 0 || day === 6) return true; // 토요일, 일요일 무조건 휴장
+
+    const y = kstDate.getFullYear();
+    const m = String(kstDate.getMonth() + 1).padStart(2, '0');
+    const d = String(kstDate.getDate()).padStart(2, '0');
+    const dateStr = `${y}-${m}-${d}`;
+
+    if (KRX_HOLIDAYS_SET.has(dateStr)) return true;
+
+    // 매년 고정 공휴일 (월-일 검사)
+    const md = `${m}-${d}`;
+    const fixedHolidays = ['01-01', '03-01', '05-01', '05-05', '06-06', '08-15', '10-03', '10-09', '12-25', '12-31'];
+    return fixedHolidays.includes(md);
+}
+
+// ⭐ 실제 마지막 영업일 날짜 계산 (긴 연휴 역추적 지원)
 function getLastBusinessDayStr(kstTime) {
-    const day = kstTime.getDay();
     const timeNum = kstTime.getHours() * 100 + kstTime.getMinutes();
-    
     let target = new Date(kstTime.getTime());
 
-    if (day === 0) {
-        target.setDate(target.getDate() - 2);
-    } else if (day === 6) {
+    // 오늘이 휴장이거나 개장 전(09:00 이전)이면 어제부터 탐색 시작
+    if (isKRMarketHoliday(target) || timeNum < 900) {
         target.setDate(target.getDate() - 1);
-    } else if (timeNum < 900) {
-        target.setDate(target.getDate() - (day === 1 ? 3 : 1));
+    }
+
+    // 휴장일이 아닐 때까지 과거로 하루씩 거슬러 올라감
+    while (isKRMarketHoliday(target)) {
+        target.setDate(target.getDate() - 1);
     }
 
     const y = target.getFullYear();
@@ -1049,15 +1100,12 @@ function executeResetEverything() {
 }
 
 window.openAboutModal = function(e) { 
-    // 1. 클릭 이벤트 버블링 차단 (f.html에서 인자를 넘기지 않아도 window.event로 자동 감지)
     const evt = e || window.event;
     if (evt && evt.stopPropagation) evt.stopPropagation();
 
-    // 2. 드롭다운 닫기 (불안정한 toggle 대신 remove('active')로 명확하게 닫음)
     const dropdown = document.getElementById('settings-dropdown');
     if (dropdown) dropdown.classList.remove('active');
 
-    // 3. Credits 모달 레이어 열기
     const el = document.getElementById('about-modal'); 
     if (el) el.classList.add('active'); 
 };
@@ -1076,11 +1124,11 @@ async function fetchData() {
     const now = new Date();
     const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
     const kstTime = new Date(utc + (9 * 3600000));
-    const day = kstTime.getDay();
     const timeNum = kstTime.getHours() * 100 + kstTime.getMinutes();
     
-    // ⭐ 3분 유예 적용 (20:03 이후 완전 마감)
-    const isKrMarketClosedCompletely = (day === 0 || day === 6) || (timeNum >= 2003 || timeNum < 800);
+    // ⭐ 주말 및 공휴일 연휴 + 야간 마감(20:03 이후 ~ 익일 08:00 이전) 완전 차단
+    const isKrHoliday = isKRMarketHoliday(kstTime);
+    const isKrMarketClosedCompletely = isKrHoliday || (timeNum >= 2003 || timeNum < 800);
 
     for (const sectionId of state.sectionOrder) {
         let symbols = state.watchlists[sectionId].tickers;
@@ -1106,12 +1154,15 @@ async function fetchData() {
                     const kstDate = new Date(kstNowMs);
                     
                     let lastCloseKstDate = new Date(kstNowMs);
-                    if (kstDate.getDay() === 0) { 
-                        lastCloseKstDate.setDate(kstDate.getDate() - 2);
-                    } else if (kstDate.getDay() === 6) { 
-                        lastCloseKstDate.setDate(kstDate.getDate() - 1);
+                    if (isKRMarketHoliday(lastCloseKstDate)) {
+                        while (isKRMarketHoliday(lastCloseKstDate)) {
+                            lastCloseKstDate.setDate(lastCloseKstDate.getDate() - 1);
+                        }
                     } else if (kstDate.getHours() < 20 || (kstDate.getHours() === 20 && kstDate.getMinutes() < 30)) {
-                        lastCloseKstDate.setDate(kstDate.getDate() - (kstDate.getDay() === 1 ? 3 : 1));
+                        lastCloseKstDate.setDate(lastCloseKstDate.getDate() - 1);
+                        while (isKRMarketHoliday(lastCloseKstDate)) {
+                            lastCloseKstDate.setDate(lastCloseKstDate.getDate() - 1);
+                        }
                     }
                     lastCloseKstDate.setHours(20, 30, 0, 0); 
                     
@@ -1201,6 +1252,8 @@ function updateDOMWithData(quotes) {
 
     const kstNow = new Date(Date.now() + (new Date().getTimezoneOffset() * 60000) + (9 * 3600000));
     const currentTimeNum = kstNow.getHours() * 100 + kstNow.getMinutes();
+    const isTodayKRHoliday = isKRMarketHoliday(kstNow);
+    const isKrOpenDay = !isTodayKRHoliday;
 
     quotes.forEach(quote => {
         const ticker = quote.symbol;
@@ -1208,12 +1261,12 @@ function updateDOMWithData(quotes) {
         const isKR = dbMatch ? (dbMatch.e === 'NAVER') : /^\d/.test(ticker);
         const cached = cachedQuotes[ticker]; 
 
-        const isBeforeOpenKR = isKR && currentTimeNum < 900;
-        const isAfterCloseKR = isKR && currentTimeNum >= 1530; 
+        const isBeforeOpenKR = isKR && (!isKrOpenDay || currentTimeNum < 900);
+        const isAfterCloseKR = isKR && (isTodayKRHoliday || currentTimeNum >= 1530); 
 
         if (isKR) {
             if (cached) {
-                if (isBeforeOpenKR) {
+                if (isBeforeOpenKR && !isTodayKRHoliday) {
                     if (quote.regularMarketChange === 0) {
                         quote.regularMarketChange = cached.regularMarketChange || 0;
                         quote.regularMarketChangePercent = cached.regularMarketChangePercent || 0;
@@ -1263,6 +1316,9 @@ function updateDOMWithData(quotes) {
         const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
         const kstTime = new Date(utc + (9 * 3600000));
         const timeNum = kstTime.getHours() * 100 + kstTime.getMinutes();
+        
+        // ⭐ 오늘 KST 자정 타임스탬프 (오늘 체결 데이터 검증용)
+        const kstMidnightMs = new Date(kstTime.getFullYear(), kstTime.getMonth(), kstTime.getDate()).getTime();
 
         const processedQuotes = quotes.map(quote => {
             const ticker = quote.symbol; 
@@ -1323,15 +1379,24 @@ function updateDOMWithData(quotes) {
 
             if (targetState === 'PRE') {
                 if (isKR) {
-                    if (!preData || preData.volume === 0) targetState = 'CLOSED_H';
+                    // ⭐ 휴장일이거나, 볼륨이 없거나, 정규 프리마켓 시간(08:00~09:00) 밖이면 무조건 CLOSED_H
+                    if (!isKrOpenDay || !preData || preData.volume === 0 || timeNum >= 900 || timeNum < 800) {
+                        targetState = 'CLOSED_H';
+                    }
                 } else {
                     if (!preData || (!mState.includes('PRE') && Math.abs(preData.price - regPrice) === 0)) targetState = 'CLOSED_H';
                 }
             } else if (targetState === 'POST') {
                 if (isKR) {
-                    // ⭐ NXT 장 마감(20:00) 후 3분 지연 유예(20:03까지) 적용
-                    // 20:03 이후 또는 08:00 이전에는 자동으로 정규장 종가(CLOSED_H)로 복귀
-                    if (!postData || postData.volume === 0 || timeNum >= 2003 || timeNum < 800) {
+                    // ⭐ 1) 주말/공휴일 연휴 체크: 휴장일이면 무조건 정규장 종가(CLOSED_H)로 고정
+                    // ⭐ 2) NXT 시간 체크: 20:03(3분 유예) 이후이거나 08:00 이전이면 CLOSED_H
+                    const isOutsidePostTime = !isKrOpenDay || timeNum >= 2003 || timeNum < 800;
+
+                    // ⭐ 3) 당일 거래 타임스탬프 검증 (과거 직전 거래일의 잔여 데이터 차단)
+                    const postTimeMs = postData && postData.time ? (postData.time > 1e11 ? postData.time : postData.time * 1000) : 0;
+                    const isStalePostData = postTimeMs > 0 && postTimeMs < kstMidnightMs;
+
+                    if (!postData || postData.volume === 0 || isOutsidePostTime || isStalePostData) {
                         targetState = 'CLOSED_H';
                     }
                 } else {
@@ -1350,7 +1415,7 @@ function updateDOMWithData(quotes) {
                     targetState = 'REGULAR'; 
                 } else if (isIndex) {
                     const nowSec = Math.floor(Date.now() / 1000);
-                    if ((nowSec - regTime) > 1800) {
+                    if ((nowSec - regTime) > 1800 || (isKR && isTodayKRHoliday)) {
                         targetState = 'CLOSED_H'; 
                     } else {
                         targetState = 'REGULAR'; 
@@ -1361,16 +1426,16 @@ function updateDOMWithData(quotes) {
                     const isWeekendClosed = (day === 6 && hour >= 7) || (day === 0) || (day === 1 && hour < 7);
                     targetState = isWeekendClosed ? 'CLOSED_H' : 'REGULAR';
                 } else {
-                    if (mState === 'CLOSED' || mState.includes('POST') || mState.includes('PRE')) {
+                    if (mState === 'CLOSED' || mState.includes('POST') || mState.includes('PRE') || (isKR && isTodayKRHoliday)) {
                         targetState = 'CLOSED_H';
                     }
                 }
             }
  
+            // ⭐ 휴장일에는 라이브(빨간색 뱃지) 절대 비활성화
             let isExtLive = false;
-            
             if (isKR) {
-                if (kstTime.getDay() !== 0 && kstTime.getDay() !== 6) { 
+                if (isKrOpenDay) { 
                     if (targetState === 'PRE' && timeNum >= 800 && timeNum < 900) {
                         isExtLive = true;
                     } else if (targetState === 'POST' && timeNum >= 1530 && timeNum < 2003) {
@@ -1860,9 +1925,9 @@ async function fetchMarketTrend(marketType = currentTrendMarketType, isBackgroun
     const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
     const kstTime = new Date(utc + (9 * 3600000));
     
-    const isWeekend = (kstTime.getDay() === 0 || kstTime.getDay() === 6);
+    const isKrHoliday = isKRMarketHoliday(kstTime);
     const timeNum = kstTime.getHours() * 100 + kstTime.getMinutes();
-    const isMarketOpen = !isWeekend && (timeNum >= 900 && timeNum <= 1610);
+    const isMarketOpen = !isKrHoliday && (timeNum >= 900 && timeNum <= 1610);
     
     const kstOptions = { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' };
     const todayStr = new Intl.DateTimeFormat('ko-KR', kstOptions).format(kstTime).replace(/\s/g, ''); 
@@ -1894,7 +1959,7 @@ async function fetchMarketTrend(marketType = currentTrendMarketType, isBackgroun
             if (cacheAgeMs < 60000) needsFetch = false;
         } else {
             if (hasFinalDataCache) {
-                if (isCacheToday || timeNum < 900 || isWeekend) {
+                if (isCacheToday || timeNum < 900 || isKrHoliday) {
                     needsFetch = false;
                 }
             } else {
