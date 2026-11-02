@@ -1466,7 +1466,7 @@ function updateDOMWithData(quotes) {
                 const regIsUp = regChange >= 0;
                 const regColor = regIsUp ? 'up' : 'down';
                 const regSign = regIsUp ? '+' : '';
-                subHtml = `<span class="ext-label">closed</span>${formatNum(regPrice, isKR)} <span class="${regColor}">(${regSign}${formatPct(regPct)}%)</span>`;
+                subHtml = `<span class="ext-label">clsd</span>${formatNum(regPrice, isKR)} <span class="${regColor}">(${regSign}${formatPct(regPct)}%)</span>`;
                 
             } else if (targetState === 'POST') {
                 mainPrice = postData.price;
@@ -1481,14 +1481,14 @@ function updateDOMWithData(quotes) {
                     const regIsUp = regChange >= 0;
                     const regColor = regIsUp ? 'up' : 'down';
                     const regSign = regIsUp ? '+' : '';
-                    subHtml = `<span class="ext-label">closed</span>${formatNum(regPrice, isKR)} <span class="${regColor}">(${regSign}${formatPct(regPct)}%)</span>`;
+                    subHtml = `<span class="ext-label">clsd</span>${formatNum(regPrice, isKR)} <span class="${regColor}">(${regSign}${formatPct(regPct)}%)</span>`;
                 }
                 
             } else if (targetState === 'CLOSED_H') {
                 mainPrice = regPrice;
                 mainChange = regChange;
                 mainPct = regPct;
-                mainIcon = `<span class="main-ext-label">closed</span>`;
+                mainIcon = `<span class="main-ext-label">clsd</span>`;
                 subHtml = '';
             } else {
                 mainPrice = regPrice;
