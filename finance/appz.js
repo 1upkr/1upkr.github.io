@@ -19,7 +19,7 @@ const TREND_CHART_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbwbDT
 
 const NEWS_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbxxEvkanUH5bPyH9IW4rjSZ3CksapnnP4qHLP3BYrvfhlFAdQljTlKHm13nHRx06a9s/exec"; 
 
-const KNIGHT_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbxNL4-6PqMSqylMQBP0CdqSKS0LYEK7Yn7tbFtiuIfbKlQGcAanznYX85r0CpxQ8J1f_Q/exec";
+const KNIGHT_GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbzJiRjxv6XXPOBUw23NBoLFTy17TN4yDNzhNq8RE6Ep6166FANjuNNyRgduUa1yiyIgOA/exec";
 
 const FONT_FAMILY_BASE = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif";
 
