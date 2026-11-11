@@ -11,7 +11,7 @@ const DEFAULT_WATCHLISTS = {
 const SPARKLINE_CUSTOM_TICKERS = ['0072R0'];
 
 //ver3
-const YAHOO_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbyg_MJX6UvooP4h8-sh8VqhAfxTiTEy2mFi2LYeWWRcXNEvGxQFYueh0iN6r2R_eNa4gQ/exec";
+const YAHOO_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbwFDf7pOsuWK9PoccmPQrJiDO2bA3zD9FFvuoWQjNQ2SttksSuQ-1T6cJa4an4EJuPo5w/exec";
 
 //ver3
 const NAVER_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbz0-84e47Xi2AlTCkYBUv0zex3Ma_vub-Fx_U6HjsuKLJ-FE9HzebDj8JMp8fI61ZOb/exec"; 
