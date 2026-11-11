@@ -89,7 +89,7 @@ function generateSparklineSVG(prices, isUp, prevClose) {
     return `
         <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" class="yahoo-sparkline" style="display:block;">
             ${baselineHtml}
-            <polyline fill="none" stroke="${strokeColor}" stroke-width="1.0" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="0.65" points="${points}" />
+            <polyline fill="none" stroke="${strokeColor}" stroke-width="1.0" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="0.70" points="${points}" />
         </svg>
     `;
 }
