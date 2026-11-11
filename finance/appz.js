@@ -52,14 +52,13 @@ function debounce(func, wait) {
     };
 }
 
-// ⭐ 야후 파이낸스용 스파크라인 SVG 렌더러 (전일 종가 점선 기준선 포함)
+// ⭐ 야후 파이낸스용 스파크라인 SVG 렌더러 (미국식 초록/빨강 + 은은한 투명도)
 function generateSparklineSVG(prices, isUp, prevClose) {
     if (!prices || prices.length < 2) return '';
     const width = 48;
     const height = 26;
-    const pad = 3; // 위아래 여백을 3px로 주어 점선과 실선이 잘리지 않게 방어
+    const pad = 3;
 
-    // 전일 종가가 유효하면 min/max 계산에 포함 (기준선이 캔버스 밖으로 나가지 않도록)
     const hasPrevClose = typeof prevClose === 'number' && !isNaN(prevClose) && prevClose > 0;
     const allVals = hasPrevClose ? prices.concat(prevClose) : prices;
 
@@ -67,29 +66,30 @@ function generateSparklineSVG(prices, isUp, prevClose) {
     const max = Math.max(...allVals);
     const range = (max - min) || 1;
 
-    // 1) 전일 종가 기준선 (회색 점선) 계산
+    // 전일 종가 기준 점선 (투명도 0.4)
     let baselineHtml = '';
     if (hasPrevClose) {
         const baseY = (height - pad) - ((prevClose - min) / range) * (height - pad * 2);
         baselineHtml = `
             <line x1="0" y1="${baseY.toFixed(1)}" x2="${width}" y2="${baseY.toFixed(1)}" 
-                  stroke="var(--text-secondary, #888)" stroke-width="1" stroke-dasharray="2,2" stroke-opacity="0.5" />
+                  stroke="var(--text-secondary, #888)" stroke-width="1" stroke-dasharray="2,2" stroke-opacity="0.4" />
         `;
     }
 
-    // 2) 당일 주가 흐름 좌표 계산
+    // 당일 주가 흐름 좌표
     const points = prices.map((val, idx) => {
         const x = (idx / (prices.length - 1)) * (width - pad * 2) + pad;
         const y = (height - pad) - ((val - min) / range) * (height - pad * 2);
         return `${x.toFixed(1)},${y.toFixed(1)}`;
     }).join(' ');
 
-    const strokeColor = isUp ? 'var(--red, #eb0f29)' : 'var(--blue, #2563eb)';
+    // 💡 미국 오리지널: 상승 = 초록, 하락 = 빨강
+    const strokeColor = isUp ? '#00a843' : 'var(--red, #eb0f29)';
 
     return `
         <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" class="yahoo-sparkline" style="display:block;">
             ${baselineHtml}
-            <polyline fill="none" stroke="${strokeColor}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" points="${points}" />
+            <polyline fill="none" stroke="${strokeColor}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="0.75" points="${points}" />
         </svg>
     `;
 }
