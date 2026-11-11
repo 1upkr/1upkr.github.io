@@ -7,7 +7,7 @@ const DEFAULT_WATCHLISTS = {
     us: { title: 'United States', tickers: ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'TSLA', 'META'] }
 };
 
-// ⭐ 스파크라인(미니 차트) 예외 허용 티커
+// ⭐ 스파크라인(미니 차트) 예외 허용 티커 
 const SPARKLINE_CUSTOM_TICKERS = ['0072R0'];
 
 //ver3
