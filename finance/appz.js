@@ -52,15 +52,20 @@ function debounce(func, wait) {
     };
 }
 
-// ⭐ 야후 파이낸스용 스파크라인 SVG 렌더러 (미국식 초록/빨강 + 은은한 투명도)
+// ⭐ 야후 파이낸스용 스파크라인 SVG 렌더러 (NaN/null/undefined 방어 + 미국식 초록/빨강 + 은은한 투명도)
 function generateSparklineSVG(prices, isUp, prevClose) {
-    if (!prices || prices.length < 2) return '';
+    if (!prices || !Array.isArray(prices) || prices.length < 2) return '';
+
+    // 💡 방어 1: null, undefined, NaN 제거 및 유효 양수만 추출
+    const validPrices = prices.filter(p => typeof p === 'number' && !isNaN(p) && p > 0);
+    if (validPrices.length < 2) return '';
+
     const width = 48;
     const height = 26;
     const pad = 3;
 
     const hasPrevClose = typeof prevClose === 'number' && !isNaN(prevClose) && prevClose > 0;
-    const allVals = hasPrevClose ? prices.concat(prevClose) : prices;
+    const allVals = hasPrevClose ? validPrices.concat(prevClose) : validPrices;
 
     const min = Math.min(...allVals);
     const max = Math.max(...allVals);
@@ -77,8 +82,8 @@ function generateSparklineSVG(prices, isUp, prevClose) {
     }
 
     // 당일 주가 흐름 좌표
-    const points = prices.map((val, idx) => {
-        const x = (idx / (prices.length - 1)) * (width - pad * 2) + pad;
+    const points = validPrices.map((val, idx) => {
+        const x = (idx / (validPrices.length - 1)) * (width - pad * 2) + pad;
         const y = (height - pad) - ((val - min) / range) * (height - pad * 2);
         return `${x.toFixed(1)},${y.toFixed(1)}`;
     }).join(' ');
@@ -591,7 +596,7 @@ function generateRowHTML(ticker) {
     const sid = getSafeId(ticker);
     const safeTicker = escapeHTML(ticker);
     
-    // ⭐ 모든 종목에 스파크라인 컨테이너를 열어둡니다. (이미지는 updateDOMWithData에서 판단 후 삽입)
+    // ⭐ 모든 종목에 스파크라인 컨테이너 준비
     const sparkHtml = `<div class="asset-sparkline" id="spark-${sid}"></div>`;
 
     return `
@@ -1097,6 +1102,11 @@ function updateDOMWithData(quotes) {
         const isBeforeOpenKR = isKR && (!isKrOpenDay || currentTimeNum < 900);
         const isAfterCloseKR = isKR && (isTodayKRHoliday || currentTimeNum >= 1530); 
 
+        // 💡 [핵심 방어] 야후 스파크 데이터 유실 방지: 새 응답에 스파크가 누락되어도 기존 캐시 유지
+        if ((!quote.sparkData || quote.sparkData.length === 0) && cached && cached.sparkData && cached.sparkData.length > 0) {
+            quote.sparkData = cached.sparkData;
+        }
+
         if (isKR && cached) {
             if (isBeforeOpenKR && !isTodayKRHoliday) {
                 if (quote.regularMarketChange === 0) {
@@ -1343,9 +1353,11 @@ function updateDOMWithData(quotes) {
                         }
                     }
                 } else {
-                    // 야후 종목: SVG 실시간 렌더링
+                    // 야후 종목: SVG 실시간 렌더링 (전일 종가 점선 기준선 반영)
                     if (quote.sparkData && quote.sparkData.length > 1) {
-                        const prevClose = (quote.regularMarketPrice || 0) - (quote.regularMarketChange || 0);
+                        const prevClose = (typeof quote.regularMarketPreviousClose === 'number' && quote.regularMarketPreviousClose > 0)
+                            ? quote.regularMarketPreviousClose
+                            : ((quote.regularMarketPrice || 0) - (quote.regularMarketChange || 0));
                         nodes.sparkContainer.innerHTML = generateSparklineSVG(quote.sparkData, mainChange >= 0, prevClose);
                     } else {
                         nodes.sparkContainer.innerHTML = '';
