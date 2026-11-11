@@ -10,7 +10,8 @@ const DEFAULT_WATCHLISTS = {
 // ⭐ 스파크라인(미니 차트) 예외 허용 티커
 const SPARKLINE_CUSTOM_TICKERS = ['0072R0'];
 
-const YAHOO_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbxzBxcv3llVtcWyWoldEHkpyNBgWSn0D2_j_SYLEf6r-a4zMZ4VpOE6cxtwPQw_wvKt6Q/exec";
+//ver3
+const YAHOO_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbx7hSNztC6lfEpChI0Ae6RS_JWwZncjiBXotMmXyEsZF2p1nlfyy6bFWoaXRyd-OkiRhw/exec";
 
 //ver3
 const NAVER_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbz0-84e47Xi2AlTCkYBUv0zex3Ma_vub-Fx_U6HjsuKLJ-FE9HzebDj8JMp8fI61ZOb/exec"; 
@@ -49,6 +50,25 @@ function debounce(func, wait) {
         clearTimeout(timeout);
         timeout = setTimeout(later, wait);
     };
+}
+
+// ⭐ 야후 파이낸스용 스파크라인 SVG 렌더러 추가
+function generateSparklineSVG(prices, isUp) {
+    if (!prices || prices.length < 2) return '';
+    const width = 48; const height = 26; const pad = 2;
+    const min = Math.min(...prices); const max = Math.max(...prices);
+    const range = (max - min) || 1;
+    const points = prices.map((val, idx) => {
+        const x = (idx / (prices.length - 1)) * (width - pad * 2) + pad;
+        const y = (height - pad) - ((val - min) / range) * (height - pad * 2);
+        return `${x.toFixed(1)},${y.toFixed(1)}`;
+    }).join(' ');
+    const strokeColor = isUp ? 'var(--red, #eb0f29)' : 'var(--blue, #00873c)';
+    return `
+        <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" class="yahoo-sparkline" style="display:block;">
+            <polyline fill="none" stroke="${strokeColor}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" points="${points}" />
+        </svg>
+    `;
 }
 
 const DRAG_ICON = `<svg viewBox="0 0 24 24"><line x1="6" y1="6" x2="18" y2="6"/><line x1="6" y1="10" x2="18" y2="10"/><line x1="6" y1="14" x2="18" y2="14"/><line x1="6" y1="18" x2="18" y2="18"/></svg>`;
@@ -100,69 +120,51 @@ if (document.fonts) {
 
 // ⭐ 한국 증시(KRX) 평일 휴장일 캘린더 (2024~2030년: 설/추석 연휴, 대체공휴일, 선거일 등)
 const KRX_HOLIDAYS_SET = new Set([
-    // 2024년
     "2024-01-01", "2024-02-09", "2024-02-12", "2024-03-01", "2024-04-10", "2024-05-01", 
     "2024-05-06", "2024-05-15", "2024-06-06", "2024-08-15", "2024-09-16", "2024-09-17", 
     "2024-09-18", "2024-10-01", "2024-10-03", "2024-10-09", "2024-12-25", "2024-12-31",
-    // 2025년
     "2025-01-01", "2025-01-27", "2025-01-28", "2025-01-29", "2025-01-30", "2025-03-03", 
     "2025-05-01", "2025-05-05", "2025-05-06", "2025-06-06", "2025-08-15", "2025-10-03", 
     "2025-10-06", "2025-10-07", "2025-10-08", "2025-10-09", "2025-12-25", "2025-12-31",
-    // 2026년
     "2026-01-01", "2026-02-16", "2026-02-17", "2026-02-18", "2026-03-02", "2026-05-01", 
     "2026-05-05", "2026-05-25", "2026-08-17", "2026-09-24", "2026-09-25", "2026-10-05", 
     "2026-10-09", "2026-12-25", "2026-12-31",
-    // 2027년
     "2027-01-01", "2027-02-05", "2027-02-08", "2027-02-09", "2027-03-01", "2027-05-01",
     "2027-05-05", "2027-05-13", "2027-06-06", "2027-08-16", "2027-09-14", "2027-09-15",
     "2027-09-16", "2027-10-04", "2027-10-09", "2027-12-31",
-    // 2028년
     "2028-01-01", "2028-01-26", "2028-01-27", "2028-01-28", "2028-03-01", "2028-05-01",
     "2028-05-02", "2028-05-05", "2028-06-06", "2028-08-15", "2028-10-02", "2028-10-03",
     "2028-10-04", "2028-10-09", "2028-12-25", "2028-12-31",
-    // 2029년
     "2029-01-01", "2029-02-12", "2029-02-13", "2029-02-14", "2029-03-01", "2029-05-01",
     "2029-05-05", "2029-05-07", "2029-05-21", "2029-06-06", "2029-08-15", "2029-09-21",
     "2029-09-24", "2029-09-25", "2029-10-03", "2029-10-09", "2029-12-25", "2029-12-31",
-    // 2030년
     "2030-01-01", "2030-02-01", "2030-02-04", "2030-02-05", "2030-03-01", "2030-05-01",
     "2030-05-06", "2030-05-10", "2030-06-06", "2030-08-15", "2030-09-11", "2030-09-12",
     "2030-09-13", "2030-10-03", "2030-10-09", "2030-12-25", "2030-12-31"
 ]);
 
-// ⭐ 한국 증시 휴장 여부 판별 (주말 + 공휴일 + 근로자의 날 + 연말 폐장일)
 function isKRMarketHoliday(kstDate) {
     const day = kstDate.getDay();
-    if (day === 0 || day === 6) return true; // 토요일, 일요일 무조건 휴장
-
+    if (day === 0 || day === 6) return true;
     const y = kstDate.getFullYear();
     const m = String(kstDate.getMonth() + 1).padStart(2, '0');
     const d = String(kstDate.getDate()).padStart(2, '0');
     const dateStr = `${y}-${m}-${d}`;
-
     if (KRX_HOLIDAYS_SET.has(dateStr)) return true;
-
-    // 매년 고정 공휴일 (월-일 검사)
     const md = `${m}-${d}`;
     const fixedHolidays = ['01-01', '03-01', '05-01', '05-05', '06-06', '08-15', '10-03', '10-09', '12-25', '12-31'];
     return fixedHolidays.includes(md);
 }
 
-// ⭐ 실제 마지막 영업일 날짜 계산 (긴 연휴 역추적 지원)
 function getLastBusinessDayStr(kstTime) {
     const timeNum = kstTime.getHours() * 100 + kstTime.getMinutes();
     let target = new Date(kstTime.getTime());
-
-    // 오늘이 휴장이거나 개장 전(09:00 이전)이면 어제부터 탐색 시작
     if (isKRMarketHoliday(target) || timeNum < 900) {
         target.setDate(target.getDate() - 1);
     }
-
-    // 휴장일이 아닐 때까지 과거로 하루씩 거슬러 올라감
     while (isKRMarketHoliday(target)) {
         target.setDate(target.getDate() - 1);
     }
-
     const y = target.getFullYear();
     const m = String(target.getMonth() + 1).padStart(2, '0');
     const d = String(target.getDate()).padStart(2, '0');
@@ -171,15 +173,9 @@ function getLastBusinessDayStr(kstTime) {
 
 function extractBizDateFromResponse(json, fallbackDateStr) {
     if (!json) return fallbackDateStr;
-
-    const candidateKeys = [
-        'bizdate', 'bizDate', 'businessDate', 'trdDd', 'baseDate', 'standardDate', 'date', 'stdDate'
-    ];
-
+    const candidateKeys = ['bizdate', 'bizDate', 'businessDate', 'trdDd', 'baseDate', 'standardDate', 'date', 'stdDate'];
     const searchTargets = [
-        json.data,
-        json,
-        json.result,
+        json.data, json, json.result,
         (json.data && json.data.content && json.data.content[0]),
         (json.result && json.result.content && json.result.content[0])
     ].filter(Boolean);
@@ -193,28 +189,22 @@ function extractBizDateFromResponse(json, fallbackDateStr) {
                     const m = str.substring(4, 6);
                     const d = str.substring(6, 8);
                     const yNum = parseInt(y, 10);
-                    if (yNum >= 2020 && yNum <= 2099) {
-                        return `${y}.${m}.${d}.`;
-                    }
+                    if (yNum >= 2020 && yNum <= 2099) return `${y}.${m}.${d}.`;
                 }
             }
         }
     }
-
     const content = (json.data && Array.isArray(json.data.content)) ? json.data.content :
                     (json.result && Array.isArray(json.result.content)) ? json.result.content : null;
     if (content && content.length > 0) {
         for (let i = 0; i < Math.min(content.length, 3); i++) {
             const t = String(content[i].time || '').replace(/\D/g, '');
             if (t.length >= 12) { 
-                const y = t.substring(0, 4);
-                const m = t.substring(4, 6);
-                const d = t.substring(6, 8);
+                const y = t.substring(0, 4); const m = t.substring(4, 6); const d = t.substring(6, 8);
                 return `${y}.${m}.${d}.`;
             }
         }
     }
-
     return fallbackDateStr;
 }
 
@@ -233,9 +223,8 @@ async function init() {
             const lastFetch = lastFetchStr ? parseInt(lastFetchStr, 10) : 0;
             const diffSec = Math.floor((Date.now() - lastFetch) / 1000);
 
-            if (diffSec >= 60) {
-                forceRefresh();
-            } else {
+            if (diffSec >= 60) forceRefresh();
+            else {
                 state.countdown = 60 - diffSec;
                 updateTimerUI(state.countdown);
             }
@@ -271,7 +260,6 @@ async function init() {
         allMarkets.forEach(m => fetchMarketTrend(m, m !== currentTrendMarketType));
         
         if ((Date.now() - state.lastNewsFetch) > 60000) fetchNews();
-        
     } else {
         forceRefresh(); 
     }
@@ -294,19 +282,13 @@ async function init() {
         if (!e.target.closest('#trend-chart-wrapper')) {
             if (typeof window.hideChartTooltip === 'function') window.hideChartTooltip();
         }
-
         if (e.target.classList.contains('modal-overlay')) {
             e.target.classList.remove('active');
-            if (e.target.id === 'delete-modal' && typeof targetTickerToDelete !== 'undefined') {
-                targetTickerToDelete = null;
-            }
+            if (e.target.id === 'delete-modal' && typeof targetTickerToDelete !== 'undefined') targetTickerToDelete = null;
         }
-
         const row = e.target.closest('tr[data-ticker]');
         if (row && !e.target.closest('.drag-handle') && !e.target.closest('.action-icon-btn') && !e.target.closest('.search-wrapper') && !e.target.closest('.settings-wrapper')) {
-            if (window.innerWidth <= 650) {
-                row.classList.toggle('expanded');
-            }
+            if (window.innerWidth <= 650) row.classList.toggle('expanded');
         }
     });
 
@@ -336,9 +318,7 @@ function initChartResizeObserver() {
                         const cacheKey = `market_trend_last_known_${currentTrendMarketType}`;
                         try {
                             const cached = JSON.parse(localStorage.getItem(cacheKey));
-                            if (cached && cached.data) {
-                                renderTrendChart(cached.data, cached.dateStr, false);
-                            }
+                            if (cached && cached.data) renderTrendChart(cached.data, cached.dateStr, false);
                         } catch(e) {}
                     }
                 }, 50);
@@ -371,49 +351,28 @@ async function initTickerDB() {
 }
 
 function initSwipeToDelete() {
-    let touchStartX = 0;
-    let touchStartY = 0;
-    let swipingRow = null;
-    let isSwiping = false;
-    let isScrolling = false;
-
+    let touchStartX = 0, touchStartY = 0, swipingRow = null, isSwiping = false, isScrolling = false;
     const dashboard = document.getElementById('dashboard');
     if (!dashboard) return;
 
     dashboard.addEventListener('touchstart', e => {
         const row = e.target.closest('tr[data-ticker]');
         if (!row || e.target.closest('.drag-handle') || e.target.closest('.action-icon-btn')) return;
-        
-        touchStartX = e.touches[0].clientX;
-        touchStartY = e.touches[0].clientY;
-        swipingRow = row;
-        isSwiping = false;
-        isScrolling = false; 
-        row.style.transition = 'none'; 
-        row.style.willChange = 'transform, opacity';
+        touchStartX = e.touches[0].clientX; touchStartY = e.touches[0].clientY;
+        swipingRow = row; isSwiping = false; isScrolling = false; 
+        row.style.transition = 'none'; row.style.willChange = 'transform, opacity';
     }, { passive: true });
 
     dashboard.addEventListener('touchmove', e => {
         if (!swipingRow) return;
-        
-        const touchCurrentX = e.touches[0].clientX;
-        const touchCurrentY = e.touches[0].clientY;
-        const diffX = touchCurrentX - touchStartX;
-        const diffY = touchCurrentY - touchStartY;
-        
-        const absDiffX = Math.abs(diffX);
-        const absDiffY = Math.abs(diffY);
-
+        const touchCurrentX = e.touches[0].clientX, touchCurrentY = e.touches[0].clientY;
+        const diffX = touchCurrentX - touchStartX, diffY = touchCurrentY - touchStartY;
+        const absDiffX = Math.abs(diffX), absDiffY = Math.abs(diffY);
         if (!isSwiping && !isScrolling && (absDiffX > 10 || absDiffY > 10)) {
-            if (absDiffX > absDiffY * 1.5 && diffX < 0) {
-                isSwiping = true;
-            } else {
-                isScrolling = true; 
-            }
+            if (absDiffX > absDiffY * 1.5 && diffX < 0) isSwiping = true;
+            else isScrolling = true; 
         }
-
         if (isScrolling) return;
-
         if (isSwiping && diffX < 0) { 
             if (e.cancelable) e.preventDefault();
             const moveX = Math.max(diffX, -150); 
@@ -426,29 +385,17 @@ function initSwipeToDelete() {
         if (!swipingRow) return;
         const touchCurrentX = e.changedTouches[0].clientX;
         const diffX = touchCurrentX - touchStartX;
-
-        swipingRow.style.transition = 'all 0.3s ease';
-        swipingRow.style.willChange = 'auto';
-        
-        if (isSwiping && diffX < -80) {
-            const ticker = swipingRow.dataset.ticker;
-            confirmRemoveTicker(ticker); 
-        } 
-        
-        swipingRow.style.transform = 'translateX(0)';
-        swipingRow.style.opacity = '1';
-        swipingRow = null;
-        isSwiping = false;
-        isScrolling = false;
+        swipingRow.style.transition = 'all 0.3s ease'; swipingRow.style.willChange = 'auto';
+        if (isSwiping && diffX < -80) confirmRemoveTicker(swipingRow.dataset.ticker); 
+        swipingRow.style.transform = 'translateX(0)'; swipingRow.style.opacity = '1';
+        swipingRow = null; isSwiping = false; isScrolling = false;
     });
 }
 
 window.switchMobileTab = function(tabName) {
     const currentTab = document.body.classList.contains('show-news') ? 'news' : 'dashboard';
     tabScrollCache[currentTab] = window.scrollY;
-
     localStorage.setItem('marketdash_active_tab', tabName);
-
     const tabs = document.querySelectorAll('.tab-btn');
     tabs.forEach(btn => btn.classList.remove('active'));
     
@@ -467,28 +414,20 @@ window.switchMobileTab = function(tabName) {
                         if (c && c.data) cachedData = { dataList: c.data, dateStr: c.dateStr, isLive: false };
                     } catch(e) {}
                 }
-                if (cachedData) {
-                    renderTrendChart(cachedData.dataList, cachedData.dateStr, cachedData.isLive);
-                }
+                if (cachedData) renderTrendChart(cachedData.dataList, cachedData.dateStr, cachedData.isLive);
             }, 60);
         });
 
         const container = document.getElementById('news-container');
         const isStale = (Date.now() - state.lastNewsFetch) > 60000;
         const isEmpty = !container || container.children.length === 0 || container.querySelector('.empty-state');
-        
-        if (isStale || isEmpty) {
-            fetchNews(); 
-        }
+        if (isStale || isEmpty) fetchNews(); 
     } else {
         document.body.classList.remove('show-news');
         const tabDashBtn = document.getElementById('tab-btn-dashboard');
         if (tabDashBtn) tabDashBtn.classList.add('active');
     }
-
-    setTimeout(() => {
-        window.scrollTo(0, tabScrollCache[tabName] || 0);
-    }, 10);
+    setTimeout(() => { window.scrollTo(0, tabScrollCache[tabName] || 0); }, 10);
 };
 
 function renderLayout() {
@@ -510,15 +449,11 @@ function renderLayout() {
         sectionContainer.id = `section-${sectionId}`;
         sectionContainer.dataset.id = sectionId;
 
-        const guideText = sectionId === 'kr' 
-            ? "Please choose a ticker from the search list only." 
-            : "Please enter only the ticker symbol from Yahoo Finance.";
+        const guideText = sectionId === 'kr' ? "Please choose a ticker from the search list only." : "Please enter only the ticker symbol from Yahoo Finance.";
 
         sectionContainer.innerHTML = `
             <div class="section-header">
-                <div class="section-header-left" onclick="toggleSection(event, '${sectionId}')">
-                    <h2>${sectionData.title}</h2>
-                </div>
+                <div class="section-header-left" onclick="toggleSection(event, '${sectionId}')"><h2>${sectionData.title}</h2></div>
                 <div class="section-header-right">
                     <button class="action-icon-btn btn-add-symbol" onclick="toggleAddForm(event, '${sectionId}')">${PLUS_ICON}</button>
                     <div class="action-icon-btn drag-handle">${DRAG_ICON}</div>
@@ -533,9 +468,7 @@ function renderLayout() {
                         <input type="text" id="input-${sectionId}" placeholder="Quote Lookup" autocomplete="off">
                         <ul class="autocomplete-list" id="autocomplete-${sectionId}"></ul>
                     </div>
-                    <button type="submit" id="btn-add-${sectionId}">
-                        ${PLUS_ICON}<span>Add tickers</span>
-                    </button>
+                    <button type="submit" id="btn-add-${sectionId}">${PLUS_ICON}<span>Add tickers</span></button>
                 </form>
                 <div class="table-wrapper">
                     <div class="empty-state" id="empty-${sectionId}" style="display: ${isEmpty ? 'flex' : 'none'};">
@@ -597,7 +530,6 @@ function handleAutocomplete(query, sectionId) {
     }
     
     query = query.trim().toLowerCase();
-    
     const isChosungQuery = /[ㄱ-ㅎ]/.test(query) && !/[가-힣]/.test(query);
     const isKrSection = sectionId === 'kr';
 
@@ -611,12 +543,8 @@ function handleAutocomplete(query, sectionId) {
     if (matchedQuotes.length > 0) {
         if(list) list.innerHTML = matchedQuotes.map(q => {
             const safeSymbol = escapeHTML(q.s); const safeName = escapeHTML(q.n); const safeExch = escapeHTML(q.e);
-            return `
-            <li onclick="selectAutocomplete('${safeSymbol}', '${sectionId}')">
-                <div class="ac-info"><span class="ac-symbol">${safeSymbol}</span><span class="ac-name">${safeName}</span></div>
-                <span class="ac-exch">${safeExch}</span>
-            </li>
-        `}).join('');
+            return `<li onclick="selectAutocomplete('${safeSymbol}', '${sectionId}')"><div class="ac-info"><span class="ac-symbol">${safeSymbol}</span><span class="ac-name">${safeName}</span></div><span class="ac-exch">${safeExch}</span></li>`
+        }).join('');
         if(list) list.style.display = 'block'; 
         if(guide) guide.style.display = 'none';
     } else {
@@ -640,19 +568,8 @@ function generateRowHTML(ticker) {
     const sid = getSafeId(ticker);
     const safeTicker = escapeHTML(ticker);
     
-    // ⭐ 기본 6자리 순수 숫자 주식이거나, 예외 등록 목록(SPARKLINE_CUSTOM_TICKERS)에 포함된 경우만 차트 생성
-    const isKRSpark = /^\d{6}$/.test(safeTicker) || SPARKLINE_CUSTOM_TICKERS.includes(safeTicker.toUpperCase());
-    const timeKey = Math.floor(Date.now() / 60000); 
-    const sparkHtml = isKRSpark ? `
-        <div class="asset-sparkline" id="spark-${sid}">
-            <img src="https://financial-vn.pstatic.net/chart/mobile/mini/krx/${safeTicker}_interest.png?t=${timeKey}" 
-                 alt="" 
-                 width="48" 
-                 height="26" 
-                 loading="lazy" 
-                 onerror="this.style.display='none'; this.parentElement.style.display='none';">
-        </div>
-    ` : '';
+    // ⭐ 모든 종목에 스파크라인 컨테이너를 열어둡니다. (이미지는 updateDOMWithData에서 판단 후 삽입)
+    const sparkHtml = `<div class="asset-sparkline" id="spark-${sid}"></div>`;
 
     return `
         <tr id="row-${sid}" data-ticker="${safeTicker}">
@@ -728,10 +645,8 @@ async function fetchWithRetry(url, maxRetries = 3, baseDelayMs = 1000) {
 async function fetchYahooFinance(symbols) {
     if (symbols.length === 0) return [];
     if (!navigator.onLine) throw new Error("No network connection.");
-
     const symbolsStr = symbols.join(',');
     const targetUrl = `${YAHOO_FINANCE_PROXY_URL}?symbols=${encodeURIComponent(symbolsStr)}&t=${Date.now()}`;
-
     try {
         const text = await fetchWithRetry(targetUrl);
         if (text.trim().startsWith('<')) throw new Error("GAS permission denied or limit reached.");
@@ -745,10 +660,8 @@ async function fetchYahooFinance(symbols) {
 async function fetchNaverFinance(symbols) {
     if (symbols.length === 0) return [];
     if (!navigator.onLine) throw new Error("No network connection.");
-
     const symbolsStr = symbols.join(',');
     const targetUrl = `${NAVER_FINANCE_PROXY_URL}?symbols=${encodeURIComponent(symbolsStr)}&t=${Date.now()}`;
-
     try {
         const text = await fetchWithRetry(targetUrl);
         if (text.trim().startsWith('<')) throw new Error("Naver GAS proxy permission denied.");
@@ -770,7 +683,6 @@ async function fetchAndProcessKnight() {
         const isEveningOpen = (day >= 1 && day <= 5) && (timeNum >= 1800);
         const isMorningOpen = (day >= 2 && day <= 6) && (timeNum <= 530);
         const isNightSession = isEveningOpen || isMorningOpen;
-
         const intervalMs = isNightSession ? (15 * 60 * 1000) : (120 * 60 * 1000);
 
         const lastFetchTime = parseInt(localStorage.getItem('knight_last_fetch_time') || '0', 10);
@@ -790,15 +702,12 @@ async function fetchAndProcessKnight() {
         if (data && data.quoteResponse && data.quoteResponse.result && data.quoteResponse.result.length > 0) {
             const resultData = data.quoteResponse.result[0];
             resultData.marketState = isNightSession ? "REGULAR" : "CLOSED";
-            
             localStorage.setItem('knight_cached_data', JSON.stringify(resultData));
             localStorage.setItem('knight_last_fetch_time', Date.now().toString());
-
             updateDOMWithData([resultData]); 
         }
     } catch(e) {
         console.error("KNIGHT 야간선물 크롤링 에러:", e);
-        
         const fallbackDataStr = localStorage.getItem('knight_cached_data');
         if (fallbackDataStr) {
             const fallbackData = JSON.parse(fallbackDataStr);
@@ -846,24 +755,20 @@ async function handleAddTicker(e, sectionId) {
         if (sectionId === 'kr') fetchFunc = fetchNaverFinance;
 
         let data = [];
-
         if (ticker === 'KNIGHT') {
             const url = `${KNIGHT_GAS_PROXY_URL}?t=${Date.now()}`;
             const res = await fetch(url);
             const knightData = await res.json();
             if (knightData && knightData.quoteResponse && knightData.quoteResponse.result) {
                 data = knightData.quoteResponse.result;
-                
                 const now = new Date();
                 const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
                 const kstTime = new Date(utc + (9 * 3600000));
                 const timeNum = kstTime.getHours() * 100 + kstTime.getMinutes();
-                
                 const day = kstTime.getDay();
                 const isEveningOpen = (day >= 1 && day <= 5) && (timeNum >= 1800);
                 const isMorningOpen = (day >= 2 && day <= 6) && (timeNum <= 530);
                 const isNightSession = isEveningOpen || isMorningOpen;
-                
                 data[0].marketState = isNightSession ? "REGULAR" : "CLOSED";
             }
         } else {
@@ -897,8 +802,7 @@ function executeRemoveTicker(ticker) {
     for (const sectionId in state.watchlists) {
         if (state.watchlists[sectionId].tickers.includes(ticker)) {
             state.watchlists[sectionId].tickers = state.watchlists[sectionId].tickers.filter(t => t !== ticker);
-            sectionIdToUpdate = sectionId;
-            break;
+            sectionIdToUpdate = sectionId; break;
         }
     }
     saveWatchlists();
@@ -918,14 +822,13 @@ function cacheRowNodes(ticker) {
         cap: document.getElementById('cap-' + sid), range: document.getElementById('range-' + sid),
         mRange: document.getElementById('m-range-' + sid), mVol: document.getElementById('m-vol-' + sid),
         mCap: document.getElementById('m-cap-' + sid),
-        sparkImg: document.querySelector('#spark-' + sid + ' img')
+        sparkContainer: document.getElementById('spark-' + sid)
     });
 }
 
 function initDragAndDrop() {
     const dashboard = document.getElementById('dashboard');
     if (!dashboard) return;
-    
     Sortable.create(dashboard, {
         handle: '.drag-handle', animation: 200, ghostClass: 'sortable-ghost', delay: 100, delayOnTouchOnly: true,
         onEnd: function () {
@@ -933,7 +836,6 @@ function initDragAndDrop() {
             localStorage.setItem('marketdash_sectionOrder', JSON.stringify(state.sectionOrder));
         }
     });
-
     state.sectionOrder.forEach(sectionId => {
         const tbody = document.getElementById(`tbody-${sectionId}`);
         if (tbody) {
@@ -992,17 +894,9 @@ function toggleSettingsMenu() { const el = document.getElementById('settings-dro
 function applyTheme() { document.documentElement.setAttribute('data-theme', state.theme); }
 function toggleThemeDropdown() { 
     state.theme = state.theme === 'dark' ? 'light' : 'dark'; 
-    localStorage.setItem('marketdash_theme', state.theme); 
-    applyTheme(); 
-    toggleSettingsMenu(); 
-    if (trendChartInstance) {
-        trendChartInstance.destroy();
-        trendChartInstance = null;
-    }
-    if (detailChartInstance) {
-        detailChartInstance.destroy();
-        detailChartInstance = null;
-    }
+    localStorage.setItem('marketdash_theme', state.theme); applyTheme(); toggleSettingsMenu(); 
+    if (trendChartInstance) { trendChartInstance.destroy(); trendChartInstance = null; }
+    if (detailChartInstance) { detailChartInstance.destroy(); detailChartInstance = null; }
     fetchMarketTrend(); 
 }
 function exportSettings() {
@@ -1031,91 +925,45 @@ function importSettings(event) {
 }
 
 function resetToDefaults() {
-    toggleSettingsMenu(); 
-    const el = document.getElementById('reset-modal');
-    const inputEl = document.getElementById('reset-confirm-input');
-    const btnEl = document.getElementById('confirm-reset-btn');
-    
+    toggleSettingsMenu(); const el = document.getElementById('reset-modal');
+    const inputEl = document.getElementById('reset-confirm-input'); const btnEl = document.getElementById('confirm-reset-btn');
     if (el && inputEl && btnEl) {
-        inputEl.value = ''; 
-        document.getElementById('reset-text-typed').textContent = '';
+        inputEl.value = ''; document.getElementById('reset-text-typed').textContent = '';
         document.getElementById('reset-text-untyped').textContent = '1up.kr';
         document.getElementById('reset-visual-bg').style.borderColor = 'var(--border-color)';
-        
-        btnEl.disabled = true; 
-        btnEl.style.opacity = '0.3'; 
-        btnEl.style.cursor = 'not-allowed';
-        
-        el.classList.add('active'); 
-        setTimeout(() => inputEl.focus(), 100);
+        btnEl.disabled = true; btnEl.style.opacity = '0.3'; btnEl.style.cursor = 'not-allowed';
+        el.classList.add('active'); setTimeout(() => inputEl.focus(), 100);
     }
 }
 
-function closeResetModal() {
-    const el = document.getElementById('reset-modal');
-    if (el) el.classList.remove('active');
-}
+function closeResetModal() { const el = document.getElementById('reset-modal'); if (el) el.classList.remove('active'); }
 
 function handleResetInputChange(e) {
-    const input = e.target;
-    const targetWord = '1up.kr';
-    let rawVal = input.value.toLowerCase();
-    let validVal = "";
-
-    for (let i = 0; i < rawVal.length; i++) {
-        if (rawVal[i] === targetWord[i]) {
-            validVal += rawVal[i];
-        } else {
-            break; 
-        }
-    }
-    
+    const input = e.target; const targetWord = '1up.kr';
+    let rawVal = input.value.toLowerCase(); let validVal = "";
+    for (let i = 0; i < rawVal.length; i++) { if (rawVal[i] === targetWord[i]) validVal += rawVal[i]; else break; }
     input.value = validVal;
-
     document.getElementById('reset-text-typed').textContent = validVal;
     document.getElementById('reset-text-untyped').textContent = targetWord.substring(validVal.length);
-
     const btnEl = document.getElementById('confirm-reset-btn');
-    if (validVal === targetWord) {
-        btnEl.disabled = false;
-        btnEl.style.opacity = '1';
-        btnEl.style.cursor = 'pointer';
-    } else {
-        btnEl.disabled = true;
-        btnEl.style.opacity = '0.3';
-        btnEl.style.cursor = 'not-allowed';
-    }
+    if (validVal === targetWord) { btnEl.disabled = false; btnEl.style.opacity = '1'; btnEl.style.cursor = 'pointer'; } 
+    else { btnEl.disabled = true; btnEl.style.opacity = '0.3'; btnEl.style.cursor = 'not-allowed'; }
 }
 
 function executeResetEverything() {
     const inputEl = document.getElementById('reset-confirm-input');
-    
     if (inputEl && inputEl.value === '1up.kr') {
-        localStorage.clear(); 
-        state.watchlists = JSON.parse(JSON.stringify(DEFAULT_WATCHLISTS));
-        state.sectionOrder = ['indicators', 'kr', 'us']; 
-        renderLayout(); 
-        forceRefresh();
-        closeResetModal(); 
+        localStorage.clear(); state.watchlists = JSON.parse(JSON.stringify(DEFAULT_WATCHLISTS));
+        state.sectionOrder = ['indicators', 'kr', 'us']; renderLayout(); forceRefresh(); closeResetModal(); 
     }
 }
 
 window.openAboutModal = function(e) { 
-    const evt = e || window.event;
-    if (evt && evt.stopPropagation) evt.stopPropagation();
-
-    const dropdown = document.getElementById('settings-dropdown');
-    if (dropdown) dropdown.classList.remove('active');
-
-    const el = document.getElementById('about-modal'); 
-    if (el) el.classList.add('active'); 
+    const evt = e || window.event; if (evt && evt.stopPropagation) evt.stopPropagation();
+    const dropdown = document.getElementById('settings-dropdown'); if (dropdown) dropdown.classList.remove('active');
+    const el = document.getElementById('about-modal'); if (el) el.classList.add('active'); 
 };
-
-window.closeAboutModal = function() { 
-    const el = document.getElementById('about-modal'); 
-    if (el) el.classList.remove('active'); 
-};
-
+window.closeAboutModal = function() { const el = document.getElementById('about-modal'); if (el) el.classList.remove('active'); };
 function saveWatchlists() { localStorage.setItem('marketdash_watchlists', JSON.stringify(state.watchlists)); }
 
 async function fetchData() {
@@ -1126,8 +974,6 @@ async function fetchData() {
     const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
     const kstTime = new Date(utc + (9 * 3600000));
     const timeNum = kstTime.getHours() * 100 + kstTime.getMinutes();
-    
-    // ⭐ 주말 및 공휴일 연휴 + 야간 마감(20:03 이후 ~ 익일 08:00 이전) 완전 차단
     const isKrHoliday = isKRMarketHoliday(kstTime);
     const isKrMarketClosedCompletely = isKrHoliday || (timeNum >= 2003 || timeNum < 800);
 
@@ -1135,18 +981,13 @@ async function fetchData() {
         let symbols = state.watchlists[sectionId].tickers;
         if (symbols.length === 0) continue;
 
-        if (symbols.includes('KNIGHT')) {
-            fetchAndProcessKnight(); 
-            symbols = symbols.filter(sym => sym !== 'KNIGHT'); 
-        }
-
+        if (symbols.includes('KNIGHT')) { fetchAndProcessKnight(); symbols = symbols.filter(sym => sym !== 'KNIGHT'); }
         if (symbols.length === 0) continue;
 
         if (sectionId === 'kr' && isKrMarketClosedCompletely) {
             try {
                 const cachedQuotes = JSON.parse(localStorage.getItem('marketdash_quotes_cache')) || {};
                 const hasAllCache = symbols.every(sym => cachedQuotes[sym]);
-                
                 let needsUpdate = false;
                 if (hasAllCache) {
                     const clientNow = Date.now();
@@ -1156,46 +997,30 @@ async function fetchData() {
                     
                     let lastCloseKstDate = new Date(kstNowMs);
                     if (isKRMarketHoliday(lastCloseKstDate)) {
-                        while (isKRMarketHoliday(lastCloseKstDate)) {
-                            lastCloseKstDate.setDate(lastCloseKstDate.getDate() - 1);
-                        }
+                        while (isKRMarketHoliday(lastCloseKstDate)) lastCloseKstDate.setDate(lastCloseKstDate.getDate() - 1);
                     } else if (kstDate.getHours() < 20 || (kstDate.getHours() === 20 && kstDate.getMinutes() < 30)) {
                         lastCloseKstDate.setDate(lastCloseKstDate.getDate() - 1);
-                        while (isKRMarketHoliday(lastCloseKstDate)) {
-                            lastCloseKstDate.setDate(lastCloseKstDate.getDate() - 1);
-                        }
+                        while (isKRMarketHoliday(lastCloseKstDate)) lastCloseKstDate.setDate(lastCloseKstDate.getDate() - 1);
                     }
                     lastCloseKstDate.setHours(20, 30, 0, 0); 
-                    
                     const lastMarketCloseMs = lastCloseKstDate.getTime() - clientOffset - (9 * 3600000);
-                    
-                    needsUpdate = symbols.some(sym => {
-                        const quote = cachedQuotes[sym];
-                        return !quote.updatedAt || quote.updatedAt < lastMarketCloseMs;
-                    });
+                    needsUpdate = symbols.some(sym => { const quote = cachedQuotes[sym]; return !quote.updatedAt || quote.updatedAt < lastMarketCloseMs; });
                 }
                 
                 if (hasAllCache && !needsUpdate) {
                     const cachedDataToRender = symbols.map(sym => cachedQuotes[sym]);
-                    updateDOMWithData(cachedDataToRender);
-                    continue;
+                    updateDOMWithData(cachedDataToRender); continue;
                 }
             } catch(e) {}
         }
 
         const chunkSize = 100; 
         const fetchFunc = sectionId === 'kr' ? fetchNaverFinance : fetchYahooFinance;
-
         for (let i = 0; i < symbols.length; i += chunkSize) {
             const chunk = symbols.slice(i, i + chunkSize);
             const promise = fetchFunc(chunk)
-                .then(results => {
-                    updateDOMWithData(results); 
-                    markMissingData(chunk, results);
-                })
-                .catch(error => { 
-                    markAllError(chunk, error.message); 
-                });
+                .then(results => { updateDOMWithData(results); markMissingData(chunk, results); })
+                .catch(error => { markAllError(chunk, error.message); });
             fetchPromises.push(promise);
         }
     }
@@ -1210,29 +1035,16 @@ function updateTimerUI(seconds) {
         const pct = 1 - (seconds / 60); 
         const offset = pct * maxOffset; 
         ring.style.strokeDashoffset = -offset;
-        
-        if (seconds <= 10) {
-            ring.classList.add('warning');
-        } else {
-            ring.classList.remove('warning');
-        }
+        if (seconds <= 10) ring.classList.add('warning'); else ring.classList.remove('warning');
     }
 }
 
 function forceRefresh() { 
     if (typeof window.hideChartTooltip === 'function') window.hideChartTooltip(); 
-    state.countdown = 60; 
-    updateTimerUI(state.countdown); 
-    localStorage.setItem('marketdash_last_fetch_time', '0'); 
-    state.lastNewsFetch = 0; 
-    fetchData(); 
-    
+    state.countdown = 60; updateTimerUI(state.countdown); 
+    localStorage.setItem('marketdash_last_fetch_time', '0'); state.lastNewsFetch = 0; fetchData(); 
     const allMarkets = ['ALL', 'KOSPI', 'KOSDAQ', 'FUT'];
-    allMarkets.forEach(market => {
-        const isBackground = (market !== currentTrendMarketType);
-        fetchMarketTrend(market, isBackground);
-    });
-
+    allMarkets.forEach(market => fetchMarketTrend(market, market !== currentTrendMarketType));
     startTimer(); 
 }
 
@@ -1240,10 +1052,8 @@ function startTimer() {
     if (state.intervalId) clearInterval(state.intervalId);
     state.intervalId = setInterval(() => {
         if (document.hidden) return; 
-
         state.countdown--;
-        if (state.countdown <= 0) forceRefresh(); 
-        else updateTimerUI(state.countdown); 
+        if (state.countdown <= 0) forceRefresh(); else updateTimerUI(state.countdown); 
     }, 1000);
 }
 
@@ -1261,51 +1071,39 @@ function updateDOMWithData(quotes) {
         const dbMatch = localTickerDB.find(q => q.s.toUpperCase() === ticker.toUpperCase());
         const isKR = dbMatch ? (dbMatch.e === 'NAVER') : /^\d/.test(ticker);
         const cached = cachedQuotes[ticker]; 
-
         const isBeforeOpenKR = isKR && (!isKrOpenDay || currentTimeNum < 900);
         const isAfterCloseKR = isKR && (isTodayKRHoliday || currentTimeNum >= 1530); 
 
-        if (isKR) {
-            if (cached) {
-                if (isBeforeOpenKR && !isTodayKRHoliday) {
-                    if (quote.regularMarketChange === 0) {
-                        quote.regularMarketChange = cached.regularMarketChange || 0;
-                        quote.regularMarketChangePercent = cached.regularMarketChangePercent || 0;
-                        quote.regularMarketDayLow = cached.regularMarketDayLow || quote.regularMarketDayLow;
-                        quote.regularMarketDayHigh = cached.regularMarketDayHigh || quote.regularMarketDayHigh;
-                    }
-                    if (!quote.postMarketPrice && cached.postMarketPrice) {
-                        quote.postMarketPrice = cached.postMarketPrice;
-                        quote.postMarketChange = cached.postMarketChange;
-                        quote.postMarketChangePercent = cached.postMarketChangePercent;
-                        quote.postMarketVolume = cached.postMarketVolume;
-                    }
-                } 
-                else if (isAfterCloseKR) {
-                    if (!quote.regularMarketPrice && cached.regularMarketPrice) {
-                        quote.regularMarketPrice = cached.regularMarketPrice;
-                    }
-                    if (!quote.regularMarketChange && cached.regularMarketChange) {
-                        quote.regularMarketChange = cached.regularMarketChange;
-                        quote.regularMarketChangePercent = cached.regularMarketChangePercent;
-                    }
+        if (isKR && cached) {
+            if (isBeforeOpenKR && !isTodayKRHoliday) {
+                if (quote.regularMarketChange === 0) {
+                    quote.regularMarketChange = cached.regularMarketChange || 0;
+                    quote.regularMarketChangePercent = cached.regularMarketChangePercent || 0;
+                    quote.regularMarketDayLow = cached.regularMarketDayLow || quote.regularMarketDayLow;
+                    quote.regularMarketDayHigh = cached.regularMarketDayHigh || quote.regularMarketDayHigh;
+                }
+                if (!quote.postMarketPrice && cached.postMarketPrice) {
+                    quote.postMarketPrice = cached.postMarketPrice;
+                    quote.postMarketChange = cached.postMarketChange;
+                    quote.postMarketChangePercent = cached.postMarketChangePercent;
+                    quote.postMarketVolume = cached.postMarketVolume;
+                }
+            } 
+            else if (isAfterCloseKR) {
+                if (!quote.regularMarketPrice && cached.regularMarketPrice) quote.regularMarketPrice = cached.regularMarketPrice;
+                if (!quote.regularMarketChange && cached.regularMarketChange) {
+                    quote.regularMarketChange = cached.regularMarketChange;
+                    quote.regularMarketChangePercent = cached.regularMarketChangePercent;
                 }
             }
         }
-
         if (cached) {
             const skipCacheOverride = isKR && (!isBeforeOpenKR || isAfterCloseKR); 
-            
             if (!skipCacheOverride) {
-                if ((quote.regularMarketDayLow === undefined || quote.regularMarketDayLow === 0) && cached.regularMarketDayLow !== undefined && cached.regularMarketDayLow !== 0) {
-                    quote.regularMarketDayLow = cached.regularMarketDayLow;
-                }
-                if ((quote.regularMarketDayHigh === undefined || quote.regularMarketDayHigh === 0) && cached.regularMarketDayHigh !== undefined && cached.regularMarketDayHigh !== 0) {
-                    quote.regularMarketDayHigh = cached.regularMarketDayHigh;
-                }
+                if ((quote.regularMarketDayLow === undefined || quote.regularMarketDayLow === 0) && cached.regularMarketDayLow !== undefined && cached.regularMarketDayLow !== 0) quote.regularMarketDayLow = cached.regularMarketDayLow;
+                if ((quote.regularMarketDayHigh === undefined || quote.regularMarketDayHigh === 0) && cached.regularMarketDayHigh !== undefined && cached.regularMarketDayHigh !== 0) quote.regularMarketDayHigh = cached.regularMarketDayHigh;
             }
         }
-
         quote.updatedAt = Date.now(); 
         cachedQuotes[ticker] = quote;
     });
@@ -1317,8 +1115,6 @@ function updateDOMWithData(quotes) {
         const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
         const kstTime = new Date(utc + (9 * 3600000));
         const timeNum = kstTime.getHours() * 100 + kstTime.getMinutes();
-        
-        // ⭐ 오늘 KST 자정 타임스탬프 (오늘 체결 데이터 검증용)
         const kstMidnightMs = new Date(kstTime.getFullYear(), kstTime.getMonth(), kstTime.getDate()).getTime();
 
         const processedQuotes = quotes.map(quote => {
@@ -1328,7 +1124,6 @@ function updateDOMWithData(quotes) {
 
             const dbMatch = localTickerDB.find(q => q.s.toUpperCase() === ticker.toUpperCase());
             const isKR = dbMatch ? (dbMatch.e === 'NAVER') : /^\d/.test(ticker);
-
             const regPrice = quote.regularMarketPrice || 0; 
             const regChange = quote.regularMarketChange || 0;
             const regPct = quote.regularMarketChangePercent || 0; 
@@ -1337,16 +1132,14 @@ function updateDOMWithData(quotes) {
             if (quote.preMarketPrice !== undefined && quote.preMarketPrice !== null) {
                 const change = quote.preMarketPrice - regPrice;
                 const pct = regPrice ? (change / regPrice * 100) : 0;
-                const vol = quote.preMarketVolume || 0; 
-                preData = { price: quote.preMarketPrice, change: change, pct: pct, label: 'pre', time: quote.preMarketTime || 0, volume: vol };
+                preData = { price: quote.preMarketPrice, change: change, pct: pct, label: 'pre', time: quote.preMarketTime || 0, volume: quote.preMarketVolume || 0 };
             }
 
             let postData = null;
             if (quote.postMarketPrice !== undefined && quote.postMarketPrice !== null) {
                 const change = quote.postMarketChange !== undefined && quote.postMarketChange !== null ? quote.postMarketChange : (quote.postMarketPrice - regPrice);
                 const pct = quote.postMarketChangePercent !== undefined && quote.postMarketChangePercent !== null ? quote.postMarketChangePercent : (regPrice ? (change / regPrice * 100) : 0);
-                const vol = quote.postMarketVolume || 0;
-                postData = { price: quote.postMarketPrice, change: change, pct: pct, label: 'post', time: quote.postMarketTime || 0, volume: vol };
+                postData = { price: quote.postMarketPrice, change: change, pct: pct, label: 'post', time: quote.postMarketTime || 0, volume: quote.postMarketVolume || 0 };
             }
 
             const regTime = quote.regularMarketTime || 0;
@@ -1356,13 +1149,10 @@ function updateDOMWithData(quotes) {
             let targetState = 'REGULAR';
             const mState = (quote.marketState || '').toUpperCase();
 
-            if (mState === 'REGULAR') {
-                targetState = 'REGULAR';
-            } else if (mState.includes('PRE') && preData) {
-                targetState = 'PRE';
-            } else if (mState.includes('POST') && postData) {
-                targetState = 'POST';
-            } else if (mState === 'CLOSED') {
+            if (mState === 'REGULAR') targetState = 'REGULAR';
+            else if (mState.includes('PRE') && preData) targetState = 'PRE';
+            else if (mState.includes('POST') && postData) targetState = 'POST';
+            else if (mState === 'CLOSED') {
                 if (preData && postData) targetState = preTime > postTime ? 'PRE' : 'POST';
                 else if (postData) targetState = 'POST';
                 else if (preData) targetState = 'PRE';
@@ -1370,36 +1160,23 @@ function updateDOMWithData(quotes) {
             } else {
                 const maxTime = Math.max(regTime, preTime, postTime);
                 if (maxTime > 0) {
-                    if (maxTime === postTime && postTime > regTime && postData) {
-                        targetState = 'POST';
-                    } else if (maxTime === preTime && preTime > regTime && preData) {
-                        targetState = 'PRE';
-                    }
+                    if (maxTime === postTime && postTime > regTime && postData) targetState = 'POST';
+                    else if (maxTime === preTime && preTime > regTime && preData) targetState = 'PRE';
                 }
             }
 
             if (targetState === 'PRE') {
                 if (isKR) {
-                    // ⭐ 휴장일이거나, 볼륨이 없거나, 정규 프리마켓 시간(08:00~09:00) 밖이면 무조건 CLOSED_H
-                    if (!isKrOpenDay || !preData || preData.volume === 0 || timeNum >= 900 || timeNum < 800) {
-                        targetState = 'CLOSED_H';
-                    }
+                    if (!isKrOpenDay || !preData || preData.volume === 0 || timeNum >= 900 || timeNum < 800) targetState = 'CLOSED_H';
                 } else {
                     if (!preData || (!mState.includes('PRE') && Math.abs(preData.price - regPrice) === 0)) targetState = 'CLOSED_H';
                 }
             } else if (targetState === 'POST') {
                 if (isKR) {
-                    // ⭐ 1) 주말/공휴일 연휴 체크: 휴장일이면 무조건 정규장 종가(CLOSED_H)로 고정
-                    // ⭐ 2) NXT 시간 체크: 20:03(3분 유예) 이후이거나 08:00 이전이면 CLOSED_H
                     const isOutsidePostTime = !isKrOpenDay || timeNum >= 2003 || timeNum < 800;
-
-                    // ⭐ 3) 당일 거래 타임스탬프 검증 (과거 직전 거래일의 잔여 데이터 차단)
                     const postTimeMs = postData && postData.time ? (postData.time > 1e11 ? postData.time : postData.time * 1000) : 0;
                     const isStalePostData = postTimeMs > 0 && postTimeMs < kstMidnightMs;
-
-                    if (!postData || postData.volume === 0 || isOutsidePostTime || isStalePostData) {
-                        targetState = 'CLOSED_H';
-                    }
+                    if (!postData || postData.volume === 0 || isOutsidePostTime || isStalePostData) targetState = 'CLOSED_H';
                 } else {
                     if (!postData || (!mState.includes('POST') && Math.abs(postData.price - regPrice) === 0)) targetState = 'CLOSED_H';
                 }
@@ -1408,157 +1185,93 @@ function updateDOMWithData(quotes) {
                 const isCrypto = qType === 'CRYPTOCURRENCY' || ticker.includes('-');
                 const isFXorFuture = qType === 'CURRENCY' || qType === 'FUTURE' || ticker.endsWith('=X') || ticker.endsWith('=F');
                 const isIndex = qType === 'INDEX' || ticker.startsWith('^');
-    
                 const alwaysOpenTickers = ['^TNX', '^IRX', '^TYX', '^VIX', 'KRW=X', 'JPYKRW=X']; 
                 const isAlwaysOpen = isCrypto || alwaysOpenTickers.includes(ticker.toUpperCase());
     
-                if (isAlwaysOpen) {
-                    targetState = 'REGULAR'; 
-                } else if (isIndex) {
+                if (isAlwaysOpen) targetState = 'REGULAR'; 
+                else if (isIndex) {
                     const nowSec = Math.floor(Date.now() / 1000);
-                    if ((nowSec - regTime) > 1800 || (isKR && isTodayKRHoliday)) {
-                        targetState = 'CLOSED_H'; 
-                    } else {
-                        targetState = 'REGULAR'; 
-                    }
+                    targetState = ((nowSec - regTime) > 1800 || (isKR && isTodayKRHoliday)) ? 'CLOSED_H' : 'REGULAR'; 
                 } else if (isFXorFuture) {
-                    const day = kstTime.getDay();
-                    const hour = kstTime.getHours();
+                    const day = kstTime.getDay(), hour = kstTime.getHours();
                     const isWeekendClosed = (day === 6 && hour >= 7) || (day === 0) || (day === 1 && hour < 7);
                     targetState = isWeekendClosed ? 'CLOSED_H' : 'REGULAR';
                 } else {
-                    if (mState === 'CLOSED' || mState.includes('POST') || mState.includes('PRE') || (isKR && isTodayKRHoliday)) {
-                        targetState = 'CLOSED_H';
-                    }
+                    if (mState === 'CLOSED' || mState.includes('POST') || mState.includes('PRE') || (isKR && isTodayKRHoliday)) targetState = 'CLOSED_H';
                 }
             }
  
-            // ⭐ 휴장일에는 라이브(빨간색 뱃지) 절대 비활성화
             let isExtLive = false;
             if (isKR) {
                 if (isKrOpenDay) { 
-                    if (targetState === 'PRE' && timeNum >= 800 && timeNum < 900) {
-                        isExtLive = true;
-                    } else if (targetState === 'POST' && timeNum >= 1530 && timeNum < 2003) {
-                        isExtLive = true;
-                    }
+                    if (targetState === 'PRE' && timeNum >= 800 && timeNum < 900) isExtLive = true;
+                    else if (targetState === 'POST' && timeNum >= 1530 && timeNum < 2003) isExtLive = true;
                 }
             } else {
-                if (targetState === 'PRE' && mState === 'PRE') {
-                    isExtLive = true;
-                } else if (targetState === 'POST' && mState === 'POST') {
-                    isExtLive = true;
-                }
+                if (targetState === 'PRE' && mState === 'PRE') isExtLive = true;
+                else if (targetState === 'POST' && mState === 'POST') isExtLive = true;
             }
 
-            let mainPrice = regPrice;
-            let mainChange = regChange;
-            let mainPct = regPct;
-            let mainIcon = ''; 
-            let subHtml = '';
-
+            let mainPrice = regPrice, mainChange = regChange, mainPct = regPct, mainIcon = '', subHtml = '';
             const liveExtStyle = isExtLive ? 'color: var(--red); font-weight: 700; background-color: var(--red-bg);' : '';
 
             if (targetState === 'PRE') {
-                mainPrice = preData.price;
-                mainChange = preData.change;
-                mainPct = preData.pct;
+                mainPrice = preData.price; mainChange = preData.change; mainPct = preData.pct;
                 mainIcon = `<span class="main-ext-label" style="${liveExtStyle}">${preData.label}</span>`; 
-                const regIsUp = regChange >= 0;
-                const regColor = regIsUp ? 'up' : 'down';
-                const regSign = regIsUp ? '+' : '';
+                const regColor = regChange >= 0 ? 'up' : 'down'; const regSign = regChange >= 0 ? '+' : '';
                 subHtml = `<span class="ext-label">clsd</span>${formatNum(regPrice, isKR)} <span class="${regColor}">(${regSign}${formatPct(regPct)}%)</span>`;
-                
             } else if (targetState === 'POST') {
-                mainPrice = postData.price;
-                mainChange = postData.change;
-                mainPct = postData.pct;
+                mainPrice = postData.price; mainChange = postData.change; mainPct = postData.pct;
                 mainIcon = `<span class="main-ext-label" style="${liveExtStyle}">${postData.label}</span>`; 
-                
-                // ⭐ 한국 주식은 closed 서브 라인을 제거하고 POST 가격만 단독 표시
-                if (isKR) {
-                    subHtml = '';
-                } else {
-                    const regIsUp = regChange >= 0;
-                    const regColor = regIsUp ? 'up' : 'down';
-                    const regSign = regIsUp ? '+' : '';
+                if (isKR) subHtml = '';
+                else {
+                    const regColor = regChange >= 0 ? 'up' : 'down'; const regSign = regChange >= 0 ? '+' : '';
                     subHtml = `<span class="ext-label">clsd</span>${formatNum(regPrice, isKR)} <span class="${regColor}">(${regSign}${formatPct(regPct)}%)</span>`;
                 }
-                
             } else if (targetState === 'CLOSED_H') {
-                mainPrice = regPrice;
-                mainChange = regChange;
-                mainPct = regPct;
-                mainIcon = `<span class="main-ext-label">clsd</span>`;
-                subHtml = '';
+                mainPrice = regPrice; mainChange = regChange; mainPct = regPct;
+                mainIcon = `<span class="main-ext-label">clsd</span>`; subHtml = '';
             } else {
-                mainPrice = regPrice;
-                mainChange = regChange;
-                mainPct = regPct;
-                mainIcon = ''; 
+                mainPrice = regPrice; mainChange = regChange; mainPct = regPct; mainIcon = ''; 
                 if (preData) {
-                    const preIsUp = preData.change >= 0;
-                    const preColor = preIsUp ? 'up' : 'down';
-                    const preSign = preIsUp ? '+' : '';
+                    const preColor = preData.change >= 0 ? 'up' : 'down'; const preSign = preData.change >= 0 ? '+' : '';
                     subHtml = `<span class="ext-label">${preData.label}</span>${formatNum(preData.price, isKR)} <span class="${preColor}">(${preSign}${formatPct(preData.pct)}%)</span>`;
                 }
             }
 
-            return {
-                quote, ticker, nodes, isKR,
-                mainPrice, mainChange, mainPct, mainIcon, subHtml,
-                targetState
-            };
+            return { quote, ticker, nodes, isKR, mainPrice, mainChange, mainPct, mainIcon, subHtml, targetState };
         }).filter(Boolean);
 
         const sectionMaxes = {};
-        Object.keys(state.watchlists).forEach(sec => {
-            sectionMaxes[sec] = { maxUp: 0, maxDown: 0 };
-        });
+        Object.keys(state.watchlists).forEach(sec => { sectionMaxes[sec] = { maxUp: 0, maxDown: 0 }; });
 
         processedQuotes.forEach(pq => {
             let sectionId = null;
             for (const sec in state.watchlists) {
-                if (state.watchlists[sec].tickers.includes(pq.ticker)) {
-                    sectionId = sec; break;
-                }
+                if (state.watchlists[sec].tickers.includes(pq.ticker)) { sectionId = sec; break; }
             }
             if (sectionId) {
                 pq.sectionId = sectionId;
-                if (pq.mainPct > 0) {
-                    sectionMaxes[sectionId].maxUp = Math.min(Math.max(sectionMaxes[sectionId].maxUp, pq.mainPct), 10.0);
-                } else if (pq.mainPct < 0) {
-                    sectionMaxes[sectionId].maxDown = Math.min(Math.max(sectionMaxes[sectionId].maxDown, Math.abs(pq.mainPct)), 10.0);
-                }
+                if (pq.mainPct > 0) sectionMaxes[sectionId].maxUp = Math.min(Math.max(sectionMaxes[sectionId].maxUp, pq.mainPct), 10.0);
+                else if (pq.mainPct < 0) sectionMaxes[sectionId].maxDown = Math.min(Math.max(sectionMaxes[sectionId].maxDown, Math.abs(pq.mainPct)), 10.0);
             }
         });
 
         processedQuotes.forEach(pq => {
             const { quote, ticker, nodes, mainPrice, mainChange, mainPct, mainIcon, subHtml, sectionId, isKR } = pq;
-            
-            let textIntensityStr = "100%";
-            let bgIntensityStr = "15%";
+            let textIntensityStr = "100%", bgIntensityStr = "15%";
             
             if (sectionId && sectionMaxes[sectionId]) {
-                const maxUp = sectionMaxes[sectionId].maxUp;
-                const maxDown = sectionMaxes[sectionId].maxDown;
-
+                const maxUp = sectionMaxes[sectionId].maxUp, maxDown = sectionMaxes[sectionId].maxDown;
                 let ratio = 0;
-                if (mainPct > 0 && maxUp > 0) {
-                    ratio = Math.min(mainPct / maxUp, 1.0);
-                } else if (mainPct < 0 && maxDown > 0) {
-                    ratio = Math.min(Math.abs(mainPct) / maxDown, 1.0);
-                }
+                if (mainPct > 0 && maxUp > 0) ratio = Math.min(mainPct / maxUp, 1.0);
+                else if (mainPct < 0 && maxDown > 0) ratio = Math.min(Math.abs(mainPct) / maxDown, 1.0);
 
                 if (ratio > 0) {
-                    const textPct = 40 + (60 * ratio); 
-                    const bgPct = 5 + (25 * ratio);    
-                    
-                    textIntensityStr = `${textPct.toFixed(1)}%`;
-                    bgIntensityStr = `${bgPct.toFixed(1)}%`;
+                    const textPct = 40 + (60 * ratio); const bgPct = 5 + (25 * ratio);    
+                    textIntensityStr = `${textPct.toFixed(1)}%`; bgIntensityStr = `${bgPct.toFixed(1)}%`;
                 } else if (mainPct === 0) {
-                    textIntensityStr = "40%";
-                    bgIntensityStr = "0%"; 
+                    textIntensityStr = "40%"; bgIntensityStr = "0%"; 
                 }
             }
             
@@ -1574,13 +1287,8 @@ function updateDOMWithData(quotes) {
             const oldPrice = oldPriceStr ? parseFloat(oldPriceStr) : null;
             if (oldPrice !== null && oldPrice !== mainPrice) {
                 nodes.row.classList.remove('flash-up', 'flash-down');
-                setTimeout(() => {
-                    if (nodes && nodes.row) {
-                        nodes.row.classList.add(mainPrice > oldPrice ? 'flash-up' : 'flash-down');
-                    }
-                }, 10);
+                setTimeout(() => { if (nodes && nodes.row) nodes.row.classList.add(mainPrice > oldPrice ? 'flash-up' : 'flash-down'); }, 10);
             }
-            
             nodes.price.setAttribute('data-price', mainPrice);
             
             const dbInfo = localTickerDB.find(q => q.s && q.s.toUpperCase() === ticker.toUpperCase());
@@ -1596,11 +1304,28 @@ function updateDOMWithData(quotes) {
             if (nodes.change.innerHTML !== newChangeHtml) nodes.change.innerHTML = newChangeHtml;
             if (nodes.pct.innerHTML !== newPctHtml) nodes.pct.innerHTML = newPctHtml;
             
-            if (nodes.sparkImg) {
-                const timeKey = Math.floor(Date.now() / 60000);
-                const targetSrc = `https://financial-vn.pstatic.net/chart/mobile/mini/krx/${ticker}_interest.png?t=${timeKey}`;
-                if (nodes.sparkImg.src !== targetSrc) {
-                    nodes.sparkImg.src = targetSrc;
+            // ⭐ 스파크라인 컨테이너 렌더링 로직
+            if (nodes.sparkContainer) {
+                nodes.sparkContainer.style.display = 'block'; 
+                if (isKR) {
+                    const isKRSpark = /^\d{6}$/.test(ticker) || SPARKLINE_CUSTOM_TICKERS.includes(ticker.toUpperCase());
+                    if (isKRSpark) {
+                        const timeKey = Math.floor(Date.now() / 60000);
+                        const targetSrc = `https://financial-vn.pstatic.net/chart/mobile/mini/krx/${ticker}_interest.png?t=${timeKey}`;
+                        const currentImg = nodes.sparkContainer.querySelector('img');
+                        if (!currentImg) {
+                            nodes.sparkContainer.innerHTML = `<img src="${targetSrc}" alt="" width="48" height="26" loading="lazy" onerror="this.style.display='none'; this.parentElement.style.display='none';">`;
+                        } else if (currentImg.src !== targetSrc) {
+                            currentImg.src = targetSrc;
+                        }
+                    }
+                } else {
+                    // 야후 종목: SVG 실시간 렌더링
+                    if (quote.sparkData && quote.sparkData.length > 1) {
+                        nodes.sparkContainer.innerHTML = generateSparklineSVG(quote.sparkData, mainChange >= 0);
+                    } else {
+                        nodes.sparkContainer.innerHTML = '';
+                    }
                 }
             }
 
@@ -1613,46 +1338,30 @@ function updateDOMWithData(quotes) {
             if (nodes.mCap && nodes.mCap.textContent !== capText) nodes.mCap.textContent = capText;
             
             let rangeHtml = '-';
-            const lowVal = quote.regularMarketDayLow;
-            const highVal = quote.regularMarketDayHigh;
-
+            const lowVal = quote.regularMarketDayLow, highVal = quote.regularMarketDayHigh;
             const isValidNum = (val) => val !== undefined && val !== null && !isNaN(val);
             const isValidRange = isValidNum(lowVal) && isValidNum(highVal) && !(lowVal === 0 && highVal === 0 && mainPrice > 0);
 
             if (isValidRange && highVal > lowVal) {
                 let percent = ((mainPrice - lowVal) / (highVal - lowVal)) * 100;
                 percent = Math.max(0, Math.min(100, percent));
-                
-                const lowStr = formatNum(lowVal, isKR);
-                const highStr = formatNum(highVal, isKR);
+                const lowStr = formatNum(lowVal, isKR), highStr = formatNum(highVal, isKR);
                 const markerColorClass = mainChange >= 0 ? 'up' : 'down';
-
                 rangeHtml = `
                     <div class="range-gauge-container">
-                        <div class="range-track">
-                            <div class="range-marker ${markerColorClass}" style="left: ${percent}%;"></div>
-                        </div>
-                        <div class="range-labels">
-                            <span>${lowStr}</span>
-                            <span>${highStr}</span>
-                        </div>
+                        <div class="range-track"><div class="range-marker ${markerColorClass}" style="left: ${percent}%;"></div></div>
+                        <div class="range-labels"><span>${lowStr}</span><span>${highStr}</span></div>
                     </div>
                 `;
             } else if (isValidRange && lowVal === highVal) { 
                 const valStr = formatNum(lowVal, isKR);
                 rangeHtml = `
                     <div class="range-gauge-container">
-                        <div class="range-track">
-                            <div class="range-marker ${mainChange >= 0 ? 'up' : 'down'}" style="left: 50%;"></div>
-                        </div>
-                        <div class="range-labels">
-                            <span>${valStr}</span>
-                            <span>${valStr}</span>
-                        </div>
+                        <div class="range-track"><div class="range-marker ${mainChange >= 0 ? 'up' : 'down'}" style="left: 50%;"></div></div>
+                        <div class="range-labels"><span>${valStr}</span><span>${valStr}</span></div>
                     </div>
                 `;
             }
-
             if (nodes.range.innerHTML !== rangeHtml) nodes.range.innerHTML = rangeHtml;
             if (nodes.mRange && nodes.mRange.innerHTML !== rangeHtml) nodes.mRange.innerHTML = rangeHtml;
         });
@@ -1671,7 +1380,7 @@ function setErrorState(ticker, msg) {
         nodes.name.textContent = 'Error'; nodes.price.innerHTML = `<span class="error-text">${escapeHTML(msg)}</span>`;
         nodes.extPrice.innerHTML = ''; nodes.change.innerHTML = ''; nodes.pct.innerHTML = '';
         nodes.vol.textContent = '-'; nodes.cap.textContent = '-'; nodes.range.textContent = '-';
-        if(nodes.sparkImg) nodes.sparkImg.style.display = 'none';
+        if(nodes.sparkContainer) { nodes.sparkContainer.innerHTML = ''; nodes.sparkContainer.style.display = 'none'; }
         if(nodes.mRange) nodes.mRange.textContent = '-';
         if(nodes.mVol) nodes.mVol.textContent = '-';
         if(nodes.mCap) nodes.mCap.textContent = '-';
@@ -1681,27 +1390,15 @@ function setErrorState(ticker, msg) {
 function formatNum(num, isKR = false) {
     if (num === undefined || num === null || isNaN(num)) return '-';
     let result = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num);
-    
-    if (isKR && result.endsWith('.00')) {
-        return result.slice(0, -3); 
-    }
-    
-    if (result.includes('.')) {
-        const parts = result.split('.');
-        return `${parts[0]}<span class="decimal">.${parts[1]}</span>`;
-    }
-    
+    if (isKR && result.endsWith('.00')) return result.slice(0, -3); 
+    if (result.includes('.')) { const parts = result.split('.'); return `${parts[0]}<span class="decimal">.${parts[1]}</span>`; }
     return result;
 }
 
 function formatChangeNum(num, isKR = false) {
     if (num === undefined || num === null || isNaN(num)) return '-';
     let result = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Math.abs(num));
-    
-    if (isKR && result.endsWith('.00')) {
-        return result.slice(0, -3);
-    }
-    
+    if (isKR && result.endsWith('.00')) return result.slice(0, -3);
     return result;
 }
 
@@ -1717,25 +1414,20 @@ function formatCompact(num) {
 async function fetchNews() {
     const spinner = document.getElementById('news-spinner');
     const container = document.getElementById('news-container');
-    
     if (spinner) spinner.style.display = 'block';
 
     let allTickers = [];
     Object.keys(state.watchlists).forEach(sectionId => {
         const tickers = state.watchlists[sectionId].tickers;
-        if (sectionId === 'kr') {
-            allTickers = allTickers.concat(tickers.slice(0, 3)); 
-        } else {
-            allTickers = allTickers.concat(tickers);
-        }
+        if (sectionId === 'kr') allTickers = allTickers.concat(tickers.slice(0, 3)); 
+        else allTickers = allTickers.concat(tickers);
     });
 
     if (!container) return; 
 
     if (allTickers.length === 0) {
         container.innerHTML = '<div class="empty-state"><p>No tickers to fetch news for.</p></div>';
-        if (spinner) spinner.style.display = 'none';
-        return;
+        if (spinner) spinner.style.display = 'none'; return;
     }
 
     let searchQueries = allTickers.map(ticker => {
@@ -1748,26 +1440,18 @@ async function fetchNews() {
 
     try {
         const url = `${NEWS_GAS_PROXY_URL}?symbols=${encodeURIComponent(searchQueries.join(','))}&t=${Date.now()}`;  
-        
         const text = await fetchWithRetry(url, 3, 1000); 
-        
         if (text.trim().startsWith('<')) throw new Error("GAS permission denied or proxy error.");
         
         let newsData = JSON.parse(text);
         if (!Array.isArray(newsData) && typeof newsData === 'object' && newsData !== null) {
             newsData = newsData.news || newsData.items || newsData.data || newsData.result || [];
         }
-        
         state.lastNewsFetch = Date.now();
-
-        try {
-            renderNews(newsData);
-        } catch (renderError) {
-            console.error("News render error:", renderError);
+        try { renderNews(newsData); } catch (renderError) {
             container.innerHTML = `<div class="empty-state"><p class="error-text">Failed to render news.</p></div>`;
         }
     } catch (error) {
-        console.error("News fetch error:", error);
         container.innerHTML = `<div class="empty-state"><p class="error-text">Failed to load news.</p></div>`;
     } finally {
         if (spinner) spinner.style.display = 'none';
@@ -1776,33 +1460,24 @@ async function fetchNews() {
 
 function parseNewsTime(timeInput) {
     if (!timeInput) return null;
-    if (typeof timeInput === 'number') {
-        return timeInput > 1e11 ? timeInput : timeInput * 1000;
-    }
+    if (typeof timeInput === 'number') return timeInput > 1e11 ? timeInput : timeInput * 1000;
     const str = String(timeInput).trim();
     if (!str) return null;
     if (/^\d{13}$/.test(str)) return parseInt(str, 10);
     if (/^\d{10}$/.test(str)) return parseInt(str, 10) * 1000;
     
     if (/^\d{14}$/.test(str)) {
-        const yr = parseInt(str.substring(0, 4), 10);
-        const mo = parseInt(str.substring(4, 6), 10) - 1;
-        const dy = parseInt(str.substring(6, 8), 10);
-        const hr = parseInt(str.substring(8, 10), 10);
-        const mn = parseInt(str.substring(10, 12), 10);
-        const sc = parseInt(str.substring(12, 14), 10);
+        const yr = parseInt(str.substring(0, 4), 10); const mo = parseInt(str.substring(4, 6), 10) - 1;
+        const dy = parseInt(str.substring(6, 8), 10); const hr = parseInt(str.substring(8, 10), 10);
+        const mn = parseInt(str.substring(10, 12), 10); const sc = parseInt(str.substring(12, 14), 10);
         return Date.UTC(yr, mo, dy, hr - 9, mn, sc);
     }
-
     if (/^\d{12}$/.test(str)) {
-        const yr = parseInt(str.substring(0, 4), 10);
-        const mo = parseInt(str.substring(4, 6), 10) - 1;
-        const dy = parseInt(str.substring(6, 8), 10);
-        const hr = parseInt(str.substring(8, 10), 10);
+        const yr = parseInt(str.substring(0, 4), 10); const mo = parseInt(str.substring(4, 6), 10) - 1;
+        const dy = parseInt(str.substring(6, 8), 10); const hr = parseInt(str.substring(8, 10), 10);
         const mn = parseInt(str.substring(10, 12), 10);
         return Date.UTC(yr, mo, dy, hr - 9, mn, 0);
     }
-
     const parsed = new Date(str).getTime();
     return (!isNaN(parsed) && parsed > 0) ? parsed : null;
 }
@@ -1810,53 +1485,31 @@ function parseNewsTime(timeInput) {
 function renderNews(newsList) {
     const container = document.getElementById('news-container');
     if (!container) return;
-
     if (!newsList || !Array.isArray(newsList) || newsList.length === 0) {
-        container.innerHTML = '<div class="empty-state"><p>No recent news found.</p></div>';
-        return;
+        container.innerHTML = '<div class="empty-state"><p>No recent news found.</p></div>'; return;
     }
-
     const validNewsList = newsList
         .filter(news => news && typeof news === 'object')
-        .map(news => ({
-            ...news,
-            parsedTime: parseNewsTime(news.time)
-        }))
+        .map(news => ({ ...news, parsedTime: parseNewsTime(news.time) }))
         .filter(news => news.parsedTime !== null && !isNaN(news.parsedTime) && news.parsedTime > 0);
 
-    if (validNewsList.length === 0) {
-        container.innerHTML = '<div class="empty-state"><p>No recent news found.</p></div>';
-        return;
-    }
+    if (validNewsList.length === 0) { container.innerHTML = '<div class="empty-state"><p>No recent news found.</p></div>'; return; }
 
     validNewsList.sort((a, b) => b.parsedTime - a.parsedTime);
-
     const now = Date.now();
     const kstFormatter = new Intl.DateTimeFormat('ko-KR', {
-        timeZone: 'Asia/Seoul',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false
+        timeZone: 'Asia/Seoul', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false
     });
 
     const html = validNewsList.map(news => {
         const newsTime = news.parsedTime;
         const diffMins = Math.floor((now - newsTime) / 60000);
         let timeDisplay = '';
-        
-        if (diffMins >= 0 && diffMins <= 1) {
-            timeDisplay = '방금';
-        } else if (diffMins > 1 && diffMins < 60) {
-            timeDisplay = `${diffMins}분 전`;
-        } else if (diffMins >= 60 && diffMins < 1440) {
-            timeDisplay = `${Math.floor(diffMins / 60)}시간 전`;
-        } else if (diffMins >= 1440 && diffMins < 4320) {
-            timeDisplay = `${Math.floor(diffMins / 1440)}일 전`;
-        } else {
-            timeDisplay = kstFormatter.format(new Date(newsTime));
-        }
+        if (diffMins >= 0 && diffMins <= 1) timeDisplay = '방금';
+        else if (diffMins > 1 && diffMins < 60) timeDisplay = `${diffMins}분 전`;
+        else if (diffMins >= 60 && diffMins < 1440) timeDisplay = `${Math.floor(diffMins / 60)}시간 전`;
+        else if (diffMins >= 1440 && diffMins < 4320) timeDisplay = `${Math.floor(diffMins / 1440)}일 전`;
+        else timeDisplay = kstFormatter.format(new Date(newsTime));
 
         let sourceTagClass = 'tag-yahoo';
         const sourceStr = String(news.source || '');
@@ -1865,29 +1518,19 @@ function renderNews(newsList) {
 
         let tickerLabel = news.ticker ? String(news.ticker) : '';
         if (tickerLabel && tickerLabel !== 'US') {
-            const dbMatch = Array.isArray(localTickerDB) 
-                ? localTickerDB.find(q => q && q.s && String(q.s).toUpperCase() === tickerLabel.toUpperCase())
-                : null;
-            if (dbMatch && dbMatch.n) {
-                tickerLabel = dbMatch.n;
-            }
+            const dbMatch = Array.isArray(localTickerDB) ? localTickerDB.find(q => q && q.s && String(q.s).toUpperCase() === tickerLabel.toUpperCase()) : null;
+            if (dbMatch && dbMatch.n) tickerLabel = dbMatch.n;
         }
         if (!tickerLabel) tickerLabel = sourceStr || 'NEWS';
 
-        const safeLabel = escapeHTML(tickerLabel);
-        const safeSource = escapeHTML(sourceStr);
-        const tagText = sourceStr === 'Google'
-            ? safeLabel
-            : (safeSource ? `${safeLabel} - ${safeSource}` : safeLabel);
-
+        const safeLabel = escapeHTML(tickerLabel); const safeSource = escapeHTML(sourceStr);
+        const tagText = sourceStr === 'Google' ? safeLabel : (safeSource ? `${safeLabel} - ${safeSource}` : safeLabel);
         const safeLink = news.link ? escapeHTML(news.link) : '#';
         const safeTitle = news.title ? escapeHTML(news.title) : '제목 없음';
 
         return `
             <a href="${safeLink}" target="_blank" rel="noopener noreferrer" class="news-item">
-                <div class="news-title">
-                    ${safeTitle} 
-                </div>
+                <div class="news-title">${safeTitle}</div>
                 <div class="news-meta">
                     <span class="news-time ${diffMins >= 0 && diffMins < 60 ? 'recent' : ''}">${timeDisplay}</span>
                     <span class="news-tag ${sourceTagClass}">${tagText}</span>
@@ -1895,7 +1538,6 @@ function renderNews(newsList) {
             </a>
         `;
     }).join('');
-
     container.innerHTML = html;
 }
 
@@ -1907,21 +1549,13 @@ async function fetchMarketTrend(marketType = currentTrendMarketType, isBackgroun
             const activeTab = Array.from(tabs).find(btn => btn.getAttribute('onclick').includes(`'${marketType}'`));
             if (activeTab) activeTab.classList.add('active');
         }
-
-        if (currentTrendMarketType !== marketType && trendChartInstance) {
-            trendChartInstance.destroy();
-            trendChartInstance = null;
-        }
-
-        currentTrendMarketType = marketType;
-        localStorage.setItem('marketdash_trend_tab', currentTrendMarketType);
+        if (currentTrendMarketType !== marketType && trendChartInstance) { trendChartInstance.destroy(); trendChartInstance = null; }
+        currentTrendMarketType = marketType; localStorage.setItem('marketdash_trend_tab', currentTrendMarketType);
     }
 
     const container = document.getElementById('trend-chart-wrapper');
     if (!container) return;
-
     const chartLoader = document.getElementById('chart-loading-overlay');
-
     const now = new Date();
     const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
     const kstTime = new Date(utc + (9 * 3600000));
@@ -1936,47 +1570,26 @@ async function fetchMarketTrend(marketType = currentTrendMarketType, isBackgroun
 
     const cacheKey = `market_trend_last_known_${marketType}`;
     let cached = null;
-    try { 
-        cached = JSON.parse(localStorage.getItem(cacheKey)); 
-    } catch(e) { console.warn("Trend cache parse error"); }
+    try { cached = JSON.parse(localStorage.getItem(cacheKey)); } catch(e) {}
 
     let needsFetch = true;
-
     if (cached && cached.data) {
-        const hasFinalDataCache = cached.data.some(d => {
-            const t = parseInt(d.time.substring(0, 4), 10);
-            return t >= 1600;
-        });
+        const hasFinalDataCache = cached.data.some(d => { const t = parseInt(d.time.substring(0, 4), 10); return t >= 1600; });
         const isCacheToday = (cached.dateStr === todayStr);
         const cacheAgeMs = Date.now() - (cached.lastFetchTime || 0);
-
         const isLiveCache = isCacheToday && isMarketOpen && !hasFinalDataCache;
         
-        if (currentTrendMarketType === marketType) {
-            renderTrendChart(cached.data, cached.dateStr || lastBizDateStr, isLiveCache);
-        }
-
+        if (currentTrendMarketType === marketType) renderTrendChart(cached.data, cached.dateStr || lastBizDateStr, isLiveCache);
         if (isMarketOpen) {
             if (cacheAgeMs < 60000) needsFetch = false;
         } else {
-            if (hasFinalDataCache) {
-                if (isCacheToday || timeNum < 900 || isKrHoliday) {
-                    needsFetch = false;
-                }
-            } else {
-                needsFetch = true;
-            }
+            if (hasFinalDataCache) { if (isCacheToday || timeNum < 900 || isKrHoliday) needsFetch = false; } 
+            else needsFetch = true;
         }
     }
 
-    if (!needsFetch) {
-        if (!isBackground && chartLoader) chartLoader.style.display = 'none';
-        return;
-    }
-
-    if (!isBackground && chartLoader && !trendChartInstance) {
-        chartLoader.style.display = 'flex';
-    }
+    if (!needsFetch) { if (!isBackground && chartLoader) chartLoader.style.display = 'none'; return; }
+    if (!isBackground && chartLoader && !trendChartInstance) chartLoader.style.display = 'flex';
 
     try {
         const url = `${TREND_CHART_GAS_PROXY_URL}?tradeType=KRX&marketType=${marketType}&t=${Date.now()}`;
@@ -1984,39 +1597,18 @@ async function fetchMarketTrend(marketType = currentTrendMarketType, isBackgroun
         if (!response.ok) throw new Error("Trend fetch failed");
         
         const json = await response.json();
-        
         if (json.success && json.data && Array.isArray(json.data.content)) {
             const data = json.data.content;
-
             if (data.length === 0) return;
-
             const actualDateStr = extractBizDateFromResponse(json, lastBizDateStr);
-
-            const hasFinalData = data.some(d => {
-                const t = parseInt(d.time.substring(0, 4), 10);
-                return t >= 1600;
-            });
-            
+            const hasFinalData = data.some(d => { const t = parseInt(d.time.substring(0, 4), 10); return t >= 1600; });
             const isLiveAPI = (actualDateStr === todayStr) && isMarketOpen && !hasFinalData;
 
-            localStorage.setItem(cacheKey, JSON.stringify({
-                dateStr: actualDateStr,
-                data: data,
-                lastFetchTime: Date.now() 
-            }));
-
-            if (currentTrendMarketType === marketType) {
-                renderTrendChart(data, actualDateStr, isLiveAPI);
-            }
-
-        } else {
-            throw new Error("Invalid trend data structure");
-        }
+            localStorage.setItem(cacheKey, JSON.stringify({ dateStr: actualDateStr, data: data, lastFetchTime: Date.now() }));
+            if (currentTrendMarketType === marketType) renderTrendChart(data, actualDateStr, isLiveAPI);
+        } else throw new Error("Invalid trend data structure");
     } catch (error) {
-        console.error(`Trend Chart Error (${marketType}):`, error);
-        if (!cached && currentTrendMarketType === marketType) {
-            container.innerHTML = '<div class="empty-state"><p class="error-text">Failed to load trend data.</p></div>';
-        }
+        if (!cached && currentTrendMarketType === marketType) container.innerHTML = '<div class="empty-state"><p class="error-text">Failed to load trend data.</p></div>';
     } finally {
         if (!isBackground && chartLoader) chartLoader.style.display = 'none';
     }
@@ -2025,28 +1617,18 @@ async function fetchMarketTrend(marketType = currentTrendMarketType, isBackgroun
 function renderTrendChart(dataList, dateStr = "", isLive = false) {
     const canvas = document.getElementById('trend-chart-canvas');
     if (!canvas) return;
-
-    canvas.style.display = 'block';
-    canvas.style.width = '100%';
-    canvas.style.height = '100%';
+    canvas.style.display = 'block'; canvas.style.width = '100%'; canvas.style.height = '100%';
 
     const rect = canvas.getBoundingClientRect();
-    if (rect.width < 100 || rect.height < 100) {
-        window.pendingTrendData = { dataList, dateStr, isLive };
-        return;
-    }
+    if (rect.width < 100 || rect.height < 100) { window.pendingTrendData = { dataList, dateStr, isLive }; return; }
     window.pendingTrendData = null;
 
-    if (trendChartInstance) {
-        trendChartInstance.destroy();
-        trendChartInstance = null;
-    }
+    if (trendChartInstance) { trendChartInstance.destroy(); trendChartInstance = null; }
 
     const badgeContainer = document.getElementById('trend-date-badge');
     if (badgeContainer) {
         const badgeText = isLive ? 'LIVE' : 'CLOSED';
         const liveStyle = isLive ? 'color: var(--red); background-color: var(--red-bg);' : '';
-        
         badgeContainer.innerHTML = `
             <span class="main-ext-label" style="margin: 0; font-size: 0.5rem; padding: 0.2rem 0.4rem; line-height: 1; border-radius: 4px; transform: none; display: inline-block; ${liveStyle}">${badgeText}</span>
             <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); font-family: ${FONT_FAMILY_BASE}; line-height: 1; display: inline-block; transform: none;">${dateStr}</span>
@@ -2054,7 +1636,6 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
     }
 
     const sortedData = dataList.slice().reverse();
-    
     const fixedLabels = [];
     for (let h = 9; h <= 16; h++) {
         for (let m = 0; m < 60; m += 5) {
@@ -2066,26 +1647,19 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
     const individualData = new Array(fixedLabels.length).fill(null);
     const foreignData = new Array(fixedLabels.length).fill(null);
     const institutionData = new Array(fixedLabels.length).fill(null);
-
     const instCodes = ['1000', '2000', '3000', '3100', '4000', '5000', '6000'];
     let maxDataIndex = -1;
 
     sortedData.forEach(d => {
         const t = d.time;
         if (!t || t.length < 4) return;
-
-        const hh = parseInt(t.substring(0, 2), 10);
-        const mm = parseInt(t.substring(2, 4), 10);
+        const hh = parseInt(t.substring(0, 2), 10); const mm = parseInt(t.substring(2, 4), 10);
         const timeVal = hh * 100 + mm;
 
         if (timeVal >= 900 && timeVal <= 1610) {
             let label;
-            if (timeVal >= 1600) {
-                label = "16:00";
-            } else {
-                const bucketMm = Math.floor(mm / 5) * 5;
-                label = `${String(hh).padStart(2, '0')}:${String(bucketMm).padStart(2, '0')}`;
-            }
+            if (timeVal >= 1600) label = "16:00";
+            else { const bucketMm = Math.floor(mm / 5) * 5; label = `${String(hh).padStart(2, '0')}:${String(bucketMm).padStart(2, '0')}`; }
 
             const labelIdx = fixedLabels.indexOf(label);
             if (labelIdx !== -1) {
@@ -2096,20 +1670,13 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                         if (currentTrendMarketType === 'FUT') {
                             const quant = parseFloat(item.buyQuant || 0) - parseFloat(item.sellQuant || 0);
                             val = (isNaN(quant) || quant === 0) ? (parseFloat(item.diffValue) || 0) : quant;
-                        } else {
-                            val = (parseFloat(item.diffValue) || 0) / 100000000;
-                        }
-
+                        } else val = (parseFloat(item.diffValue) || 0) / 100000000;
                         if (item.investorGubun === '8000') ind = val;
                         else if (item.investorGubun === '9000') forgn = val;
                         else if (instCodes.includes(item.investorGubun)) inst += val;
                     });
                 }
-
-                individualData[labelIdx] = ind;
-                foreignData[labelIdx] = forgn;
-                institutionData[labelIdx] = inst;
-
+                individualData[labelIdx] = ind; foreignData[labelIdx] = forgn; institutionData[labelIdx] = inst;
                 if (labelIdx > maxDataIndex) maxDataIndex = labelIdx;
             }
         }
@@ -2118,28 +1685,21 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
     let lastInd = 0, lastForgn = 0, lastInst = 0;
     for (let i = 0; i <= maxDataIndex; i++) {
         if (individualData[i] === null) {
-            individualData[i] = lastInd;
-            foreignData[i] = lastForgn;
-            institutionData[i] = lastInst;
+            individualData[i] = lastInd; foreignData[i] = lastForgn; institutionData[i] = lastInst;
         } else {
-            lastInd = individualData[i];
-            lastForgn = foreignData[i];
-            lastInst = institutionData[i];
+            lastInd = individualData[i]; lastForgn = foreignData[i]; lastInst = institutionData[i];
         }
     }
 
     const ctx = canvas.getContext('2d');
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    
     const textPrimary = isDark ? '#e3e3e3' : '#18191a';
     const textSecondary = isDark ? '#a0a4a8' : '#5f6368';
     const gridColor = isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)';
     const tooltipBg = isDark ? 'rgba(30, 30, 30, 0.8)' : 'rgba(255, 255, 255, 0.8)';
     const tooltipBorder = isDark ? '#2b2b2b' : '#e2e6eb';
-
     const redColor = isDark ? '#ff453a' : '#eb0f29';
     const greenColor = isDark ? '#00c853' : '#00873c';
-
     const colorInd = isDark ? '#bf5af2' : '#af52de';  
     const colorFor = isDark ? '#90a4ae' : '#546e7a';  
     const colorInst = isDark ? '#ff9f0a' : '#ff9500'; 
@@ -2156,168 +1716,80 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
         data: {
             labels: fixedLabels,
             datasets: [
-                { 
-                    label: '개인', data: individualData, borderColor: colorInd, 
-                    backgroundColor: createGradient(colorInd, isDark ? 191 : 175, isDark ? 90 : 82, isDark ? 242 : 222),
-                    borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 5, fill: true, tension: 0.4 
-                },
-                { 
-                    label: '외국인', data: foreignData, borderColor: colorFor, 
-                    backgroundColor: createGradient(colorFor, isDark ? 144 : 84, isDark ? 164 : 110, isDark ? 174 : 122),
-                    borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 5, fill: true, tension: 0.4 
-                },
-                { 
-                    label: '기관', data: institutionData, borderColor: colorInst, 
-                    backgroundColor: createGradient(colorInst, isDark ? 255 : 255, isDark ? 159 : 149, isDark ? 10 : 0),
-                    borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 5, fill: true, tension: 0.4 
-                }
+                { label: '개인', data: individualData, borderColor: colorInd, backgroundColor: createGradient(colorInd, isDark ? 191 : 175, isDark ? 90 : 82, isDark ? 242 : 222), borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 5, fill: true, tension: 0.4 },
+                { label: '외국인', data: foreignData, borderColor: colorFor, backgroundColor: createGradient(colorFor, isDark ? 144 : 84, isDark ? 164 : 110, isDark ? 174 : 122), borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 5, fill: true, tension: 0.4 },
+                { label: '기관', data: institutionData, borderColor: colorInst, backgroundColor: createGradient(colorInst, isDark ? 255 : 255, isDark ? 159 : 149, isDark ? 10 : 0), borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 5, fill: true, tension: 0.4 }
             ]
         },
         options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            animation: false,
-            interaction: { mode: 'index', intersect: false },
-            layout: {
-                padding: { left: 4, right: 10, top: 10, bottom: 5 }
-            },
+            responsive: true, maintainAspectRatio: false, animation: false, interaction: { mode: 'index', intersect: false },
+            layout: { padding: { left: 4, right: 10, top: 10, bottom: 5 } },
             plugins: {
                 title: { display: false }, 
                 legend: { 
-                    display: true,
-                    position: 'top',
-                    align: 'end', 
+                    display: true, position: 'top', align: 'end', 
                     labels: { 
-                        color: textSecondary, 
-                        font: { family: FONT_FAMILY_BASE, size: 12, weight: '600' },
-                        boxWidth: 12, 
-                        boxHeight: 4,
-                        useBorderRadius: true, 
-                        borderRadius: 2, 
-                        padding: 14,
+                        color: textSecondary, font: { family: FONT_FAMILY_BASE, size: 12, weight: '600' }, boxWidth: 12, boxHeight: 4, useBorderRadius: true, borderRadius: 2, padding: 14,
                         generateLabels: function(chart) {
                             const original = Chart.defaults.plugins.legend.labels.generateLabels(chart);
-                            original.forEach(item => {
-                                const ds = chart.data.datasets[item.datasetIndex];
-                                item.fillStyle = ds.borderColor;
-                                item.lineWidth = 0;
-                            });
+                            original.forEach(item => { const ds = chart.data.datasets[item.datasetIndex]; item.fillStyle = ds.borderColor; item.lineWidth = 0; });
                             return original;
                         }
                     } 
                 },
                 tooltip: {
-                    enabled: false,
-                    position: 'nearest',
+                    enabled: false, position: 'nearest',
                     external: function(context) {
                         let tooltipEl = document.getElementById('chartjs-custom-tooltip');
-
                         if (!tooltipEl) {
-                            tooltipEl = document.createElement('div');
-                            tooltipEl.id = 'chartjs-custom-tooltip';
-                            tooltipEl.style.background = tooltipBg;
-                            tooltipEl.style.borderRadius = '8px';
-                            tooltipEl.style.border = `1px solid ${tooltipBorder}`;
-                            tooltipEl.style.pointerEvents = 'none';
-                            tooltipEl.style.position = 'absolute';
-                            tooltipEl.style.transition = 'all .08s ease'; 
-                            tooltipEl.style.padding = '12px';
-                            tooltipEl.style.boxShadow = '0 4px 6px -1px rgba(0,0,0,0.05)';
-                            tooltipEl.style.zIndex = 90;
-                            tooltipEl.style.whiteSpace = 'nowrap';
-                            tooltipEl.style.willChange = 'transform, opacity'; 
-                            
+                            tooltipEl = document.createElement('div'); tooltipEl.id = 'chartjs-custom-tooltip';
+                            tooltipEl.style.background = tooltipBg; tooltipEl.style.borderRadius = '8px';
+                            tooltipEl.style.border = `1px solid ${tooltipBorder}`; tooltipEl.style.pointerEvents = 'none';
+                            tooltipEl.style.position = 'absolute'; tooltipEl.style.transition = 'all .08s ease'; 
+                            tooltipEl.style.padding = '12px'; tooltipEl.style.boxShadow = '0 4px 6px -1px rgba(0,0,0,0.05)';
+                            tooltipEl.style.zIndex = 90; tooltipEl.style.whiteSpace = 'nowrap'; tooltipEl.style.willChange = 'transform, opacity'; 
                             context.chart.canvas.parentNode.appendChild(tooltipEl);
                             context.chart.canvas.parentNode.style.position = 'relative';
                         }
-
                         const tooltipModel = context.tooltip;
-                        if (tooltipModel.opacity === 0) {
-                            tooltipEl.style.opacity = 0;
-                            return;
+                        if (tooltipModel.opacity === 0 || !tooltipModel.body || tooltipModel.dataPoints[0].parsed.y === null) {
+                            tooltipEl.style.opacity = 0; return;
                         }
-
-                        if (!tooltipModel.body || tooltipModel.dataPoints[0].parsed.y === null) {
-                            tooltipEl.style.opacity = 0;
-                            return;
-                        }
-
                         if (tooltipModel.body) {
                             const titleLines = tooltipModel.title || [];
                             let innerHtml = `<div style="font-family:${FONT_FAMILY_BASE};">`;
-
-                            titleLines.forEach(function(title) {
-                                innerHtml += `<div style="font-weight:700; font-size:11px; color:${textPrimary}; margin-bottom:10px;">${title}</div>`;
-                            });
-
+                            titleLines.forEach(function(title) { innerHtml += `<div style="font-weight:700; font-size:11px; color:${textPrimary}; margin-bottom:10px;">${title}</div>`; });
                             innerHtml += `<div style="display:flex; flex-direction:column; gap:8px;">`;
-
                             tooltipModel.dataPoints.forEach(function(dp) {
-                                const val = dp.parsed.y;
-                                if (val === null) return;
-                                const sign = val > 0 ? '+' : '';
-                                const valColor = val > 0 ? greenColor : (val < 0 ? redColor : textPrimary);
-                                
+                                const val = dp.parsed.y; if (val === null) return;
+                                const sign = val > 0 ? '+' : ''; const valColor = val > 0 ? greenColor : (val < 0 ? redColor : textPrimary);
                                 const unit = (currentTrendMarketType === 'FUT') ? '계약' : '억';
                                 const formattedVal = sign + new Intl.NumberFormat('ko-KR').format(Math.round(val)) + unit;
-                                
                                 const borderColor = dp.dataset.borderColor;
-
-                                innerHtml += `
-                                    <div style="display:flex; align-items:center; font-size:11px; font-weight:600; justify-content:space-between; gap: 30px;">
-                                        <div style="display:flex; align-items:center;">
-                                            <span style="display:inline-block; width:12px; height:4px; background:${borderColor}; margin-right:8px; border-radius:2px;"></span>
-                                            <span style="color:${textSecondary};">${dp.dataset.label}</span>
-                                        </div>
-                                        <span style="color:${valColor}; text-align:right;">${formattedVal}</span>
-                                    </div>
-                                `;
+                                innerHtml += `<div style="display:flex; align-items:center; font-size:11px; font-weight:600; justify-content:space-between; gap: 30px;"><div style="display:flex; align-items:center;"><span style="display:inline-block; width:12px; height:4px; background:${borderColor}; margin-right:8px; border-radius:2px;"></span><span style="color:${textSecondary};">${dp.dataset.label}</span></div><span style="color:${valColor}; text-align:right;">${formattedVal}</span></div>`;
                             });
                             innerHtml += `</div></div>`;
                             tooltipEl.innerHTML = innerHtml;
                         }
-
                         tooltipEl.style.opacity = 1;
-                        
-                        const ttWidth = tooltipEl.offsetWidth || 150;
-                        const ttHeight = tooltipEl.offsetHeight || 130;
-                        const chartWidth = context.chart.width;
-                        const chartHeight = context.chart.height;
-                        
-                        let targetLeft = tooltipModel.caretX - (ttWidth / 2);
-                        let targetTop = (chartHeight / 2) - (ttHeight / 2); 
-                        
+                        const ttWidth = tooltipEl.offsetWidth || 150; const ttHeight = tooltipEl.offsetHeight || 130;
+                        const chartWidth = context.chart.width; const chartHeight = context.chart.height;
+                        let targetLeft = tooltipModel.caretX - (ttWidth / 2); let targetTop = (chartHeight / 2) - (ttHeight / 2); 
                         if (targetLeft < 10) targetLeft = 10;
                         else if (targetLeft + ttWidth > chartWidth - 10) targetLeft = chartWidth - ttWidth - 10;
-                        
-                        tooltipEl.style.left = '0px';
-                        tooltipEl.style.top = '0px';
+                        tooltipEl.style.left = '0px'; tooltipEl.style.top = '0px';
                         tooltipEl.style.transform = `translate(${targetLeft}px, ${targetTop}px)`;
                     }
                 }
             },
             scales: {
-                x: { 
-                    grid: { display: false }, 
-                    ticks: { 
-                        color: textSecondary, 
-                        font: { family: FONT_FAMILY_BASE, size: 10.5 }, 
-                        maxTicksLimit: 7, 
-                        maxRotation: 0,
-                        autoSkip: true,
-                        padding: 4
-                    } 
-                },
+                x: { grid: { display: false }, ticks: { color: textSecondary, font: { family: FONT_FAMILY_BASE, size: 10.5 }, maxTicksLimit: 7, maxRotation: 0, autoSkip: true, padding: 4 } },
                 y: { 
                     grid: { color: gridColor, drawBorder: false, borderDash: [4, 4] }, 
                     ticks: { 
-                        color: textSecondary, 
-                        font: { family: FONT_FAMILY_BASE, size: 11 }, 
-                        padding: 6,
+                        color: textSecondary, font: { family: FONT_FAMILY_BASE, size: 11 }, padding: 6,
                         callback: function(value) {
-                            if (currentTrendMarketType === 'FUT') {
-                                return Math.abs(value) >= 1000 ? (value / 1000).toFixed(0) + 'k' : value;
-                            }
+                            if (currentTrendMarketType === 'FUT') return Math.abs(value) >= 1000 ? (value / 1000).toFixed(0) + 'k' : value;
                             return new Intl.NumberFormat('ko-KR').format(value / 1000);
                         }
                     } 
@@ -2328,24 +1800,13 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
 
     const barCanvas = document.getElementById('detail-bar-chart');
     if (barCanvas) {
-        barCanvas.style.display = 'block';
-        barCanvas.style.width = '100%';
-        barCanvas.style.height = '100%';
-
+        barCanvas.style.display = 'block'; barCanvas.style.width = '100%'; barCanvas.style.height = '100%';
         const bRect = barCanvas.getBoundingClientRect();
         if (bRect.width < 100 || bRect.height < 50) return;
-
-        if (detailChartInstance) {
-            detailChartInstance.destroy();
-            detailChartInstance = null;
-        }
+        if (detailChartInstance) { detailChartInstance.destroy(); detailChartInstance = null; }
 
         const latestEntry = sortedData[sortedData.length - 1];
-
-        const detailData = {
-            '개인': 0, '외국인': 0, '금투': 0, '보험': 0, 
-            '투신': 0, '은행': 0, '기타': 0, '연기금': 0, '기타법인': 0
-        };
+        const detailData = { '개인': 0, '외국인': 0, '금투': 0, '보험': 0, '투신': 0, '은행': 0, '기타': 0, '연기금': 0, '기타법인': 0 };
 
         if (latestEntry && Array.isArray(latestEntry.netAmounts)) {
             latestEntry.netAmounts.forEach(item => {
@@ -2353,64 +1814,45 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
                 if (currentTrendMarketType === 'FUT') {
                     const quant = parseFloat(item.buyQuant || 0) - parseFloat(item.sellQuant || 0);
                     val = (isNaN(quant) || quant === 0) ? (parseFloat(item.diffValue) || 0) : quant;
-                } else {
-                    val = (parseFloat(item.diffValue) || 0) / 100000000000;
-                }
+                } else val = (parseFloat(item.diffValue) || 0) / 100000000000;
 
                 switch(item.investorGubun) {
                     case '8000': detailData['개인'] += val; break;
                     case '9000': detailData['외국인'] += val; break;
                     case '1000': detailData['금투'] += val; break;
                     case '2000': detailData['보험'] += val; break;
-                    case '3000': 
-                    case '3100': detailData['투신'] += val; break;
+                    case '3000': case '3100': detailData['투신'] += val; break;
                     case '4000': detailData['은행'] += val; break;
                     case '5000': detailData['기타'] += val; break;
                     case '6000': detailData['연기금'] += val; break;
-                    case '7000': 
-                    case '7100': detailData['기타법인'] += val; break;
+                    case '7000': case '7100': detailData['기타법인'] += val; break;
                 }
             });
         }
 
         const barCtx = barCanvas.getContext('2d');
-        const labels = Object.keys(detailData);
-        const dataValues = Object.values(detailData);
-        
+        const labels = Object.keys(detailData); const dataValues = Object.values(detailData);
         const bgColors = dataValues.map(v => v >= 0 ? (isDark ? 'rgba(0, 200, 83, 0.4)' : 'rgba(0, 135, 60, 0.4)') : (isDark ? 'rgba(255, 69, 58, 0.4)' : 'rgba(235, 15, 41, 0.4)'));
         const borderColors = dataValues.map(v => v >= 0 ? greenColor : redColor);
 
         const barLabelPlugin = {
             id: 'barLabelPlugin',
             afterDatasetsDraw(chart) {
-                const { ctx, data } = chart;
-                ctx.save();
-                ctx.font = `600 9px ${FONT_FAMILY_BASE}`;
-                ctx.textAlign = 'center';
-
+                const { ctx, data } = chart; ctx.save(); ctx.font = `600 9px ${FONT_FAMILY_BASE}`; ctx.textAlign = 'center';
                 chart.getDatasetMeta(0).data.forEach((bar, index) => {
                     const value = data.datasets[0].data[index];
-                    
                     if (!value || Math.abs(value) < 0.05) return;
-
                     let displayVal;
-                    if (currentTrendMarketType === 'FUT') {
-                        displayVal = (value > 0 ? '+' : '') + new Intl.NumberFormat('ko-KR').format(Math.round(value));
-                    } else {
-                        displayVal = (value > 0 ? '+' : '') + value.toFixed(1);
-                    }
+                    if (currentTrendMarketType === 'FUT') displayVal = (value > 0 ? '+' : '') + new Intl.NumberFormat('ko-KR').format(Math.round(value));
+                    else displayVal = (value > 0 ? '+' : '') + value.toFixed(1);
                     
                     const labelName = chart.data.labels[index];
                     let textColor = colorInst; 
-                    if (labelName === '개인') textColor = colorInd; 
-                    else if (labelName === '외국인') textColor = colorFor; 
+                    if (labelName === '개인') textColor = colorInd; else if (labelName === '외국인') textColor = colorFor; 
                     
                     ctx.fillStyle = textColor;
-                    
-                    const padding = 2;
-                    const yPos = value > 0 ? bar.y - padding : bar.y + padding;
+                    const padding = 2; const yPos = value > 0 ? bar.y - padding : bar.y + padding;
                     ctx.textBaseline = value > 0 ? 'bottom' : 'top';
-
                     ctx.fillText(displayVal, bar.x, yPos);
                 });
                 ctx.restore();
@@ -2419,54 +1861,23 @@ function renderTrendChart(dataList, dateStr = "", isLive = false) {
 
         detailChartInstance = new Chart(barCtx, {
             type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{
-                    data: dataValues,
-                    backgroundColor: bgColors,
-                    borderColor: borderColors,
-                    borderWidth: 0,
-                    borderRadius: 0,
-                    minBarLength: 2
-                }]
-            },
+            data: { labels: labels, datasets: [{ data: dataValues, backgroundColor: bgColors, borderColor: borderColors, borderWidth: 0, borderRadius: 0, minBarLength: 2 }] },
             options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                animation: false,
-                layout: {
-                    padding: { left: 8, right: 8, top: 8, bottom: 6 } 
-                },
-                plugins: {
-                    legend: { display: false }, 
-                    tooltip: { enabled: false }
-                },
+                responsive: true, maintainAspectRatio: false, animation: false,
+                layout: { padding: { left: 8, right: 8, top: 8, bottom: 6 } },
+                plugins: { legend: { display: false }, tooltip: { enabled: false } },
                 scales: {
                     y: { 
-                        grace: '30%',
-                        grid: { color: gridColor, drawBorder: false, borderDash: [4, 4] },
+                        grace: '30%', grid: { color: gridColor, drawBorder: false, borderDash: [4, 4] },
                         ticks: { 
-                            color: textSecondary, 
-                            font: { family: FONT_FAMILY_BASE, size: 10 },
+                            color: textSecondary, font: { family: FONT_FAMILY_BASE, size: 10 },
                             callback: function(value) { 
-                                if (currentTrendMarketType === 'FUT') {
-                                    return Math.abs(value) >= 1000 ? (value / 1000).toFixed(0) + 'k' : value;
-                                }
+                                if (currentTrendMarketType === 'FUT') return Math.abs(value) >= 1000 ? (value / 1000).toFixed(0) + 'k' : value;
                                 return Math.round(value); 
                             }
                         }
                     },
-                    x: {
-                        grid: { display: false },
-                        ticks: { 
-                            color: textSecondary, 
-                            font: { family: FONT_FAMILY_BASE, size: 9.5 }, 
-                            maxRotation: 0, 
-                            minRotation: 0, 
-                            autoSkip: false,
-                            padding: 4
-                        }
-                    }
+                    x: { grid: { display: false }, ticks: { color: textSecondary, font: { family: FONT_FAMILY_BASE, size: 9.5 }, maxRotation: 0, minRotation: 0, autoSkip: false, padding: 4 } }
                 }
             },
             plugins: [barLabelPlugin]
@@ -2481,59 +1892,39 @@ window.switchTrendMarket = function(marketType) {
 
 let chartTooltipCache = null;
 window.hideChartTooltip = function() {
-    if (!chartTooltipCache) {
-        chartTooltipCache = document.getElementById('chartjs-custom-tooltip');
-    }
-    
+    if (!chartTooltipCache) chartTooltipCache = document.getElementById('chartjs-custom-tooltip');
     if (chartTooltipCache && chartTooltipCache.style.opacity === '1') {
         chartTooltipCache.style.opacity = '0';
-        
         if (trendChartInstance) {
             try {
                 trendChartInstance.setActiveElements([]); 
                 trendChartInstance.tooltip.setActiveElements([], {x: 0, y: 0});
-                requestAnimationFrame(() => {
-                    trendChartInstance.update();
-                });
+                requestAnimationFrame(() => { trendChartInstance.update(); });
             } catch(e) {}
         }
     }
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-    let lastScrollY = window.scrollY;
-    const scrollThreshold = 40; 
-    let ticking = false; 
-
+    let lastScrollY = window.scrollY; const scrollThreshold = 40; let ticking = false; 
     function handleScroll() {
         if (!ticking) {
             requestAnimationFrame(() => {
                 const currentScrollY = window.scrollY;
                 const isLandscape = window.matchMedia("(max-width: 992px) and (orientation: landscape)").matches;
-                
                 if (isLandscape) {
-                    if (currentScrollY > lastScrollY && currentScrollY > scrollThreshold) {
-                        document.body.classList.add('scrolled-down');
-                    } else {
-                        document.body.classList.remove('scrolled-down');
-                    }
-                } else {
-                    document.body.classList.remove('scrolled-down');
-                }
-                
-                lastScrollY = currentScrollY;
-                ticking = false; 
+                    if (currentScrollY > lastScrollY && currentScrollY > scrollThreshold) document.body.classList.add('scrolled-down');
+                    else document.body.classList.remove('scrolled-down');
+                } else document.body.classList.remove('scrolled-down');
+                lastScrollY = currentScrollY; ticking = false; 
             });
             ticking = true;
         }
     }
-
     window.addEventListener('scroll', handleScroll, { passive: true });
     window.addEventListener('resize', () => {
         const isLandscape = window.matchMedia("(max-width: 992px) and (orientation: landscape)").matches;
-        if (!isLandscape) {
-            document.body.classList.remove('scrolled-down');
-        }
+        if (!isLandscape) document.body.classList.remove('scrolled-down');
     }, { passive: true });
 });
 
