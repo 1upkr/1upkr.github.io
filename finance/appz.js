@@ -66,13 +66,13 @@ function generateSparklineSVG(prices, isUp, prevClose) {
     const max = Math.max(...allVals);
     const range = (max - min) || 1;
 
-    // 전일 종가 기준 점선 (투명도 0.4)
+    // 전일 종가 기준 점선 (투명도 0.3)
     let baselineHtml = '';
     if (hasPrevClose) {
         const baseY = (height - pad) - ((prevClose - min) / range) * (height - pad * 2);
         baselineHtml = `
             <line x1="0" y1="${baseY.toFixed(1)}" x2="${width}" y2="${baseY.toFixed(1)}" 
-                  stroke="var(--text-secondary, #888)" stroke-width="1" stroke-dasharray="2,2" stroke-opacity="0.4" />
+                  stroke="var(--text-secondary, #888)" stroke-width="1" stroke-dasharray="2,2" stroke-opacity="0.3" />
         `;
     }
 
