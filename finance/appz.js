@@ -52,11 +52,10 @@ function debounce(func, wait) {
     };
 }
 
-// ⭐ 야후 파이낸스용 스파크라인 SVG 렌더러 (NaN/null/undefined 방어 + 미국식 초록/빨강 + 은은한 투명도)
+// ⭐ 기준선(점선) 위 = 초록, 기준선 아래 = 빨강 복합 분할 렌더러
 function generateSparklineSVG(prices, isUp, prevClose) {
     if (!prices || !Array.isArray(prices) || prices.length < 2) return '';
 
-    // 💡 방어 1: null, undefined, NaN 제거 및 유효 양수만 추출
     const validPrices = prices.filter(p => typeof p === 'number' && !isNaN(p) && p > 0);
     if (validPrices.length < 2) return '';
 
@@ -71,30 +70,46 @@ function generateSparklineSVG(prices, isUp, prevClose) {
     const max = Math.max(...allVals);
     const range = (max - min) || 1;
 
-    // 전일 종가 기준 점선 (투명도 0.3)
     let baselineHtml = '';
+    let strokeStyle = `stroke="${isUp ? '#00a843' : 'var(--red, #eb0f29)'}"`;
+    let defsHtml = '';
+
     if (hasPrevClose) {
         const baseY = (height - pad) - ((prevClose - min) / range) * (height - pad * 2);
+        
+        // 1) 전일 종가 기준 점선
         baselineHtml = `
             <line x1="0" y1="${baseY.toFixed(1)}" x2="${width}" y2="${baseY.toFixed(1)}" 
                   stroke="var(--text-secondary, #888)" stroke-width="1" stroke-dasharray="2,2" stroke-opacity="0.3" />
         `;
+
+        // 2) 기준선 높이 비율(0%~100%)을 계산하여 위는 초록, 아래는 빨강으로 그라디언트 컷
+        const splitPct = Math.max(0, Math.min(100, (baseY / height) * 100)).toFixed(1);
+        const gradId = 'grad_' + Math.random().toString(36).substring(2, 9); // 고유 ID
+
+        defsHtml = `
+            <defs>
+                <linearGradient id="${gradId}" x1="0" y1="0" x2="0" y2="100%" gradientUnits="userSpaceOnUse">
+                    <stop offset="${splitPct}%" stop-color="#00a843" />
+                    <stop offset="${splitPct}%" stop-color="var(--red, #eb0f29)" />
+                </linearGradient>
+            </defs>
+        `;
+        strokeStyle = `stroke="url(#${gradId})"`;
     }
 
-    // 당일 주가 흐름 좌표
+    // 3) 주가 좌표 계산
     const points = validPrices.map((val, idx) => {
         const x = (idx / (validPrices.length - 1)) * (width - pad * 2) + pad;
         const y = (height - pad) - ((val - min) / range) * (height - pad * 2);
         return `${x.toFixed(1)},${y.toFixed(1)}`;
     }).join(' ');
 
-    // 💡 미국 오리지널: 상승 = 초록, 하락 = 빨강
-    const strokeColor = isUp ? '#00a843' : 'var(--red, #eb0f29)';
-
     return `
         <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" class="yahoo-sparkline" style="display:block;">
+            ${defsHtml}
             ${baselineHtml}
-            <polyline fill="none" stroke="${strokeColor}" stroke-width="1.0" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="0.70" points="${points}" />
+            <polyline fill="none" ${strokeStyle} stroke-width="1.0" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="0.75" points="${points}" />
         </svg>
     `;
 }
