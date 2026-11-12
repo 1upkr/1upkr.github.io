@@ -10,6 +10,16 @@ const DEFAULT_WATCHLISTS = {
 // ⭐ 스파크라인(미니 차트) 예외 허용 티커 
 const SPARKLINE_CUSTOM_TICKERS = ['0072R0'];
 
+// ⭐ 네이버 지수 전용 미니 차트 매핑 테이블 (야후 티커 ^KS11, ^KQ11 및 영문 지수 지원)
+const NAVER_INDEX_MAP = {
+    'KOSPI': 'KOSPI',
+    '^KS11': 'KOSPI',
+    'KOSDAQ': 'KOSDAQ',
+    '^KQ11': 'KOSDAQ',
+    'KPI200': 'KPI200',
+    '^KS200': 'KPI200'
+};
+
 //ver3
 const YAHOO_FINANCE_PROXY_URL = "https://script.google.com/macros/s/AKfycbwFDf7pOsuWK9PoccmPQrJiDO2bA3zD9FFvuoWQjNQ2SttksSuQ-1T6cJa4an4EJuPo5w/exec";
 
@@ -1352,11 +1362,25 @@ function updateDOMWithData(quotes) {
             if (nodes.change.innerHTML !== newChangeHtml) nodes.change.innerHTML = newChangeHtml;
             if (nodes.pct.innerHTML !== newPctHtml) nodes.pct.innerHTML = newPctHtml;
             
-            // ⭐ 스파크라인 컨테이너 렌더링 로직
+           // ⭐ 스파크라인 컨테이너 렌더링 로직
             if (nodes.sparkContainer) {
                 nodes.sparkContainer.style.display = 'block'; 
-                if (isKR) {
-                    const isKRSpark = /^\d{6}$/.test(ticker) || SPARKLINE_CUSTOM_TICKERS.includes(ticker.toUpperCase());
+                const upperTicker = ticker.toUpperCase();
+                const naverIndexCode = NAVER_INDEX_MAP[upperTicker];
+
+                if (naverIndexCode) {
+                    // 1. 국내 지수 (KOSPI, KOSDAQ 등): 네이버 지수 전용 미니 차트 PNG
+                    const timeKey = Math.floor(Date.now() / 60000);
+                    const targetSrc = `https://financial-vn.pstatic.net/chart/mobile/mini/${naverIndexCode}_home_open.png?t=${timeKey}`;
+                    const currentImg = nodes.sparkContainer.querySelector('img');
+                    if (!currentImg) {
+                        nodes.sparkContainer.innerHTML = `<img src="${targetSrc}" alt="" width="48" height="26" loading="lazy" onerror="this.style.display='none'; this.parentElement.style.display='none';">`;
+                    } else if (currentImg.src !== targetSrc) {
+                        currentImg.src = targetSrc;
+                    }
+                } else if (isKR) {
+                    // 2. 국내 개별 주식: 기존 네이버 6자리 주식 미니 차트 PNG
+                    const isKRSpark = /^\d{6}$/.test(ticker) || SPARKLINE_CUSTOM_TICKERS.includes(upperTicker);
                     if (isKRSpark) {
                         const timeKey = Math.floor(Date.now() / 60000);
                         const targetSrc = `https://financial-vn.pstatic.net/chart/mobile/mini/krx/${ticker}_interest.png?t=${timeKey}`;
@@ -1368,7 +1392,7 @@ function updateDOMWithData(quotes) {
                         }
                     }
                 } else {
-                    // 야후 종목: SVG 실시간 렌더링 (전일 종가 점선 기준선 반영)
+                    // 3. 해외 주식 / 코인: 야후 SVG 실시간 렌더링
                     if (quote.sparkData && quote.sparkData.length > 1) {
                         const prevClose = (typeof quote.regularMarketPreviousClose === 'number' && quote.regularMarketPreviousClose > 0)
                             ? quote.regularMarketPreviousClose
